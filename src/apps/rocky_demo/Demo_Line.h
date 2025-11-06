@@ -73,6 +73,83 @@ auto Demo_Line_Absolute = [](Application& app)
     }
 };
 
+
+auto Demo_Line_Dynamic_Allocation_Test = [](Application& app)
+    {
+        static entt::entity entity = entt::null;
+        static bool visible = true;
+        static double step = 45.0;
+
+        auto tessellate = [&](LineGeometry& line, PointGeometry& point)
+            {
+                line.points.clear();
+                point.points.clear();
+
+                auto xform = SRS::WGS84.to(app.mapNode->srs());
+                for (double lon = -180; lon <= 180; lon += step)
+                {
+                    auto world = xform(glm::dvec3(lon, 00.0, 1e6));
+                    line.points.emplace_back(world);
+                    point.points.emplace_back(world);
+                }
+            };
+
+        if (entity == entt::null)
+        {
+            app.registry.write([&](entt::registry& r)
+                {
+                    // Create a new entity to host our line.
+                    entity = r.create();
+
+                    // Build the geometry.
+                    auto& lineGeom = r.emplace<LineGeometry>(entity);
+                    auto& pointGeom = r.emplace<PointGeometry>(entity);
+
+                    tessellate(lineGeom, pointGeom);
+
+
+                    // Style our line.
+                    auto& lineStyle = r.emplace<LineStyle>(entity);
+                    lineStyle.color = Color::Lime;
+                    lineStyle.width = 3.0f;
+
+                    auto& line = r.emplace<Line>(entity, lineGeom, lineStyle);
+
+
+                    auto& pointStyle = r.emplace<PointStyle>(entity);
+                    pointStyle.color = Color::Yellow;
+                    pointStyle.width = 10.0f;
+                    pointStyle.depthOffset = 1000.0f;
+
+                    auto& point = r.emplace<Point>(entity, pointGeom, pointStyle);
+
+                    app.vsgcontext->requestFrame();
+                });
+        }
+
+        if (ImGuiLTable::Begin("absolute linestring"))
+        {
+            auto [lock, r] = app.registry.read();
+
+            static bool visible = true;
+
+            if (ImGuiLTable::Checkbox("Show", &visible))
+                setVisible(r, entity, visible);
+
+            if (ImGuiLTable::SliderDouble("Tessellation step", &step, 1.0, 90.0, "%.1lf"))
+            {
+                // retessellate
+                auto& lg = r.get<LineGeometry>(entity);
+                auto& pg = r.get<PointGeometry>(entity);
+                tessellate(lg, pg);
+                lg.dirty(r);
+                pg.dirty(r);
+            }
+
+            ImGuiLTable::End();
+        }
+    };
+
 auto Demo_Line_Per_Vertex_Colors = [](Application& app)
 {
     static entt::entity entity = entt::null;

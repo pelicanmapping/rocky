@@ -15,8 +15,8 @@ layout(location = 1) in vec4 in_color;
 struct PointStyle {
     vec4 color;
     float width;
-    float depthOffset;
     float antialias;
+    float depthOffset;
     float padding[1];
 };
 

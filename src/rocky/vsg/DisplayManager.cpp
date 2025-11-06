@@ -95,6 +95,9 @@ ROCKY_NAMESPACE::pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, in
 
 namespace
 {
+    bool s_debugCallbackMessagesUnique = false;
+    std::set<std::string> s_uniqueMessages;
+
     //! True is the viewer has been "realized" (compiled at least once)
     inline bool compiled(vsg::ref_ptr<vsg::Viewer> viewer)
     {
@@ -108,13 +111,20 @@ namespace
         const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
         void* user_data)
     {
+        std::string str(callback_data->pMessage);
+
+        if (s_debugCallbackMessagesUnique)
+        {
+            if (s_uniqueMessages.emplace(str).second == false)
+                return VK_FALSE;
+        }
         if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
         {
-            Log()->warn(std::string(callback_data->pMessage));
+            Log()->warn(str);
         }
         else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
         {
-            Log()->error(std::string(callback_data->pMessage));
+            Log()->error(str);
         }
         return VK_FALSE;
     }
@@ -236,15 +246,19 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
         static VkDebugUtilsMessengerEXT debug_utils_messenger;
 
         auto vki = window->getDevice()->getInstance();
+        
+        auto vkCreateDebugUtilsMessengerEXT =
+            reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+                vkGetInstanceProcAddr(vki->vk(), "vkCreateDebugUtilsMessengerEXT"));
 
-        using PFN_vkCreateDebugUtilsMessengerEXT = VkResult(VKAPI_PTR*)(VkInstance, const VkDebugUtilsMessengerCreateInfoEXT*, const VkAllocationCallbacks*, VkDebugUtilsMessengerEXT*);
-        PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
-        if (vki->getProcAddr(vkCreateDebugUtilsMessengerEXT, "vkCreateDebugUtilsMessenger", "vkCreateDebugUtilsMessengerEXT"))
+        if (vkCreateDebugUtilsMessengerEXT)
         {
+            Log()->info("Installed Vulkan debug callback messenger.");
             vkCreateDebugUtilsMessengerEXT(vki->vk(), &debug_utils_create_info, nullptr, &debug_utils_messenger);
         }
 
         _debugCallbackInstalled = true;
+        s_debugCallbackMessagesUnique = _app->_debuglayerUnique;
     }
 
     if (sharedDevice()->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
@@ -304,6 +318,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     // This will install the debug messaging callback so we can capture validation errors
     if (vsg::isExtensionSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
     {
+        Log()->info("Enabling: {}", VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         traits->instanceExtensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 

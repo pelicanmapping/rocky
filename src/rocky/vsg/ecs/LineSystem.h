@@ -21,16 +21,17 @@ namespace ROCKY_NAMESPACE
         //! Populate the geometry arrays
         template<typename VEC3_T, typename VEC4_T>
         inline void set(const std::vector<VEC3_T>& verts, 
-            const std::vector<VEC4_T>& colors, LineTopology topology, std::size_t capacity);
+            const std::vector<VEC4_T>& colors, LineTopology topology);
 
-        //! The first vertex in the line string to render
+        //! First vertex in the line string to render
         void setFirst(unsigned value);
 
-        //! Last vertex in the line string to render
+        //! Number of verts in the line string to render
         void setCount(unsigned value);
 
-        //protected:
-        std::size_t _capacity = 0u;
+        //! Currently allocated capacity (expressed in number of verts)
+        std::size_t allocatedCapacity = 0u;
+
         vsg::ref_ptr<vsg::DrawIndexed> _drawCommand;
         vsg::ref_ptr<vsg::vec3Array> _current;
         vsg::ref_ptr<vsg::vec3Array> _previous;
@@ -100,15 +101,15 @@ namespace ROCKY_NAMESPACE
 
         struct LineGeometryDetail
         {
-            vsg::ref_ptr<vsg::Node> node;
+            vsg::ref_ptr<vsg::Node> root;
             vsg::ref_ptr<LineGeometryNode> geomNode;
-            std::size_t capacity = 0;
         };
 
-        struct LineDetail
-        {
-            vsg::ref_ptr<vsg::Node> node;
-        };
+        //struct LineDetail
+        //{
+        //    // points to the (possibly shared!) geometry used by this Line instance
+        //    vsg::ref_ptr<vsg::Node> node;
+        //};
     }
 
 
@@ -156,7 +157,7 @@ namespace ROCKY_NAMESPACE
 
         // Called when a Line is marked dirty (i.e., upon first creation or when either the
         // style of the geometry entity is reassigned).
-        void createOrUpdateComponent(const Line&, detail::LineDetail&, detail::LineGeometryDetail*);
+        //void createOrUpdateComponent(const Line&, detail::LineDetail&, detail::LineGeometryDetail*);
 
         // Called when a line geometry component is found in the dirty list
         void createOrUpdateGeometry(const LineGeometry& geom, detail::LineGeometryDetail&, VSGContext& context);
@@ -170,7 +171,7 @@ namespace ROCKY_NAMESPACE
 
     template<typename VEC3_T, typename VEC4_T>
     void LineGeometryNode::set(const std::vector<VEC3_T>& t_verts, 
-        const std::vector<VEC4_T>& t_colors, LineTopology topology, std::size_t capacity)
+        const std::vector<VEC4_T>& t_colors, LineTopology topology)
     {
         const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -179,36 +180,31 @@ namespace ROCKY_NAMESPACE
 
         bool colorPerVert = (colors.size() == verts.size());
 
-        capacity = std::max(capacity, verts.size());
-        capacity = std::max(capacity, (std::size_t)4);
+        // always allocate space for a minimum of 4 verts.
+        std::size_t requiredCapacity = std::max((std::size_t)4, verts.capacity());
 
-        ROCKY_HARD_ASSERT(capacity > 0);
-
-        std::size_t indices_to_allocate =
-            topology == LineTopology::Strip ? (capacity - 1) * 6 :
-            (capacity / 2) * 6; // Segments
-
-        ROCKY_SOFT_ASSERT_AND_RETURN(_current == nullptr || capacity <= _capacity, void(),
-            "LineGeometry state corruption - capacity overflow should always result in a new LineGeometry");
-
-        if (!_current) // capacity exceeded, new object
+        if (!_current)
         {
             // this should only happen on a new LineGeometry
-            _current = vsg::vec3Array::create(capacity * 4);
-            _previous = vsg::vec3Array::create(capacity * 4);
-            _next = vsg::vec3Array::create(capacity * 4);
-            _colors = vsg::vec4Array::create(capacity * 4);
+            _current = vsg::vec3Array::create(requiredCapacity * 4);
+            _previous = vsg::vec3Array::create(requiredCapacity * 4);
+            _next = vsg::vec3Array::create(requiredCapacity * 4);
+            _colors = vsg::vec4Array::create(requiredCapacity * 4);
             assignArrays({ _current, _previous, _next, _colors });
+
+            std::size_t indices_to_allocate =
+                topology == LineTopology::Strip ? (requiredCapacity - 1) * 6 :
+                (requiredCapacity / 2) * 6; // Segments
 
             _indices = vsg::uintArray::create(indices_to_allocate * 4);
             assignIndices(_indices);
+
+            allocatedCapacity = requiredCapacity;
         }
         else
         {
-            ROCKY_SOFT_ASSERT_AND_RETURN(capacity * 4 <= _current->size(), void(), "LineGeometry overflow");
+            ROCKY_SOFT_ASSERT_AND_RETURN(requiredCapacity * 4 <= _current->size(), void(), "LineGeometry overflow");
         }
-
-        _capacity = capacity;
 
         auto* current = (_current->data());
         auto* prev = (_previous->data());

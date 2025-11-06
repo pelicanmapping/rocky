@@ -109,7 +109,8 @@ Application::ctor(int& argc, char** argv)
     // parse the command line
     vsg::CommandLine commandLine(&argc, argv);
     commandLine.read(vsgcontext->readerWriterOptions);
-    _debuglayer = commandLine.read("--debug");
+    _debuglayerUnique = commandLine.read("--debug-once");
+    _debuglayer = _debuglayerUnique || commandLine.read("--debug");
     _apilayer = commandLine.read("--api");
     _vsync = !commandLine.read({ "--novsync", "--no-vsync" });
 

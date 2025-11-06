@@ -46,7 +46,7 @@ namespace
         VkFormat depthFormat)
     {
         auto colorAttachment = vsg::defaultColorAttachment(imageFormat);
-        colorAttachment.finalLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+		colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR; // VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
         auto depthAttachment = vsg::defaultDepthAttachment(depthFormat);
 		depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -298,7 +298,7 @@ auto Demo_Screenshot = [](Application& app)
         return;
     }
 
-	static char filenameBuffer[512] = "C:\\screenshot.png";
+	static char filenameBuffer[512] = "D:/screenshot.png";
 	ImGui::Text("Save Path:");
 	ImGui::SameLine();
 	ImGui::InputText("##Save Path", filenameBuffer, sizeof(filenameBuffer));

@@ -94,15 +94,18 @@ namespace ROCKY_NAMESPACE
         // internal data paired with MeshGeometry
         struct MeshGeometryDetail
         {
-            vsg::ref_ptr<MeshGeometryNode> node;
+            vsg::ref_ptr<vsg::Node> rootNode;
+            vsg::ref_ptr<MeshGeometryNode> geomNode;
             std::size_t capacity = 0;
         };
 
         // internal data paired with Mesh
-        struct MeshDetail
-        {
-            vsg::ref_ptr<vsg::Node> node;
-        };
+        //struct MeshDetail
+        //{
+        //    //! Points at the mesh geometry node associated with this Mesh,
+        //    //! since many Mesh components may share the same geometry.
+        //    vsg::ref_ptr<vsg::Node> node;
+        //};
 
         // internal data paired with MeshTexture
         struct MeshTextureDetail
@@ -171,8 +174,8 @@ namespace ROCKY_NAMESPACE
 
         // Called when a component is marked dirty (i.e., upon first creation or when either the
         // style of the geometry entity is reassigned).
-        void createOrUpdateComponent(const Mesh&, detail::MeshDetail&, detail::MeshStyleDetail*,
-            detail::MeshGeometryDetail*, VSGContext&);
+        //void createOrUpdateComponent(const Mesh&, detail::MeshDetail&, detail::MeshStyleDetail*,
+        //    detail::MeshGeometryDetail*, VSGContext&);
 
         // Called when a line geometry component is found in the dirty list
         void createOrUpdateGeometry(const MeshGeometry&, detail::MeshGeometryDetail&, VSGContext&);

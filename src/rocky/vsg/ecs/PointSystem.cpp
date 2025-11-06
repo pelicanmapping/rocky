@@ -104,7 +104,7 @@ namespace
 
     void on_construct_Point(entt::registry& r, entt::entity e)
     {
-        r.emplace<PointDetail>(e);
+        //r.emplace<PointDetail>(e);
 
         // TODO: put this in a utility function somewhere
         // common components that may already exist on this entity:
@@ -127,11 +127,11 @@ namespace
         r.get<PointGeometry>(e).dirty(r);
     }
 
-    void on_destroy_PointDetail(entt::registry& r, entt::entity e)
-    {
-        auto& d = r.get<PointDetail>(e);
-        d = PointDetail();
-    }
+    //void on_destroy_PointDetail(entt::registry& r, entt::entity e)
+    //{
+    //    auto& d = r.get<PointDetail>(e);
+    //    d = PointDetail();
+    //}
     void on_destroy_PointStyleDetail(entt::registry& r, entt::entity e)
     {
         auto& d = r.get<PointStyleDetail>(e);
@@ -147,7 +147,7 @@ namespace
 
     void on_update_Point(entt::registry& r, entt::entity e)
     {
-        on_destroy_PointDetail(r, e); // reset
+        //on_destroy_PointDetail(r, e); // reset
         r.get<Point>(e).dirty(r);
     }
     void on_update_PointStyle(entt::registry& r, entt::entity e)
@@ -253,7 +253,7 @@ PointSystemNode::initialize(VSGContext& vsgcontext)
             r.on_update<PointStyle>().connect<&on_update_PointStyle>();
             r.on_update<PointGeometry>().connect<&on_update_PointGeometry>();
 
-            r.on_destroy<PointDetail>().connect<&on_destroy_PointDetail>();
+            //r.on_destroy<PointDetail>().connect<&on_destroy_PointDetail>();
             r.on_destroy<PointStyleDetail>().connect<&on_destroy_PointStyleDetail>();
             r.on_destroy<PointGeometryDetail>().connect<&on_destroy_PointGeometryDetail>();
 
@@ -287,34 +287,24 @@ PointSystemNode::compile(vsg::Context& compileContext)
     Inherit::compile(compileContext);
 }
 
-void
-PointSystemNode::createOrUpdateComponent(const Point& c, PointDetail& pointDetail, PointGeometryDetail* geomDetail)
-{
-    // NB: registry is read-locked
-    if (geomDetail)
-    {
-        pointDetail.node = geomDetail->rootNode;
-    }
-}
+//void
+//PointSystemNode::createOrUpdateComponent(const Point& c, PointDetail& pointDetail, PointGeometryDetail* geomDetail)
+//{
+//    // NB: registry is read-locked
+//    if (geomDetail)
+//    {
+//        pointDetail.node = geomDetail->rootNode;
+//    }
+//}
 
 void
 PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometryDetail& geomDetail, VSGContext& vsgcontext)
 {
     // NB: registry is read-locked
 
-    bool reallocate = false;
-
-    if (!geomDetail.geomNode)
-    {
-        reallocate = true;
-    }
-    else
-    {
-        if (geomDetail.geomNode && geom.points.capacity() > geomDetail.capacity)
-        {
-            reallocate = true;
-        }
-    }
+    bool reallocate =
+        geomDetail.geomNode == nullptr ||
+        geomDetail.geomNode->allocatedCapacity < geom.points.capacity();
 
     if (reallocate)
     {
@@ -322,9 +312,6 @@ PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometry
             vsgcontext->dispose(geomDetail.geomNode);
 
         geomDetail.geomNode = PointGeometryNode::create();
-
-        // update the known capacity:
-        geomDetail.capacity = geom.points.capacity();
 
         vsg::ref_ptr<vsg::Node> root;
         vsg::dmat4 localizer_matrix;
@@ -346,11 +333,11 @@ PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometry
                 for (auto& point : copy)
                     point -= offset;
 
-                geomDetail.geomNode->set(copy, geom.colors, geomDetail.capacity);
+                geomDetail.geomNode->set(copy, geom.colors);
             }
             else
             {
-                geomDetail.geomNode->set(geom.points, geom.colors, geomDetail.capacity);
+                geomDetail.geomNode->set(geom.points, geom.colors);
             }
 
 
@@ -362,7 +349,7 @@ PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometry
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.colors, geomDetail.capacity);
+            geomDetail.geomNode->set(geom.points, geom.colors);
             root = geomDetail.geomNode;
         }
 
@@ -390,16 +377,16 @@ PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometry
             for (auto& point : copy)
                 point -= offset;
 
-            geomDetail.geomNode->set(copy, geom.colors, geomDetail.capacity);
+            geomDetail.geomNode->set(copy, geom.colors);
 
-            auto mt = util::find<vsg::MatrixTransform>(geomDetail.geomNode);
+            auto mt = util::find<vsg::MatrixTransform>(geomDetail.rootNode);
             mt->matrix = vsg::translate(to_vsg(offset));
             localizer_matrix = mt->matrix;
         }
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.colors, geomDetail.capacity);
+            geomDetail.geomNode->set(geom.points, geom.colors);
         }
 
         // upload the changed arrays
@@ -454,31 +441,35 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
                 });
 
             int count = 0;
-            auto view = reg.view<Point, PointDetail, ActiveState, Visibility>();
+            auto view = reg.view<Point, ActiveState, Visibility>();
 
-            view.each([&](auto entity, auto& comp, auto& compDetail, auto& active, auto& visibility)
+            view.each([&](auto entity, auto& point, auto& active, auto& visibility)
                 {
+                    auto* geom = reg.try_get<PointGeometryDetail>(point.geometry);
+                    if (!geom || !geom->rootNode)
+                        return;
+
                     auto* styleDetail = &_defaultStyleDetail;
-                    auto* style = reg.try_get<PointStyle>(comp.style);
+                    auto* style = reg.try_get<PointStyle>(point.style);
                     if (style)
                     {
-                        styleDetail = &reg.get<PointStyleDetail>(comp.style);
+                        styleDetail = &reg.get<PointStyleDetail>(point.style);
                     }
 
-                    if (compDetail.node && visible(visibility, rs))
+                    if (visible(visibility, rs))
                     {
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
                         if (transformDetail)
                         {
                             if (transformDetail->views[rs.viewID].passingCull)
                             {
-                                styleDetail->drawList.emplace_back(PointDrawable{ compDetail.node, transformDetail });
+                                styleDetail->drawList.emplace_back(PointDrawable{ geom->rootNode, transformDetail });
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(PointDrawable{ compDetail.node, nullptr });
+                            styleDetail->drawList.emplace_back(PointDrawable{ geom->rootNode, nullptr });
                             ++count;
                         }
                     }
@@ -532,11 +523,12 @@ PointSystemNode::traverse(vsg::ConstVisitor& v) const
 
     _registry.read([&](entt::registry& reg)
         {
-            auto view = reg.view<Point, PointDetail, ActiveState>();
+            auto view = reg.view<Point, ActiveState>();
 
-            view.each([&](auto entity, auto& comp, auto& compDetail, auto& active)
+            view.each([&](auto entity, auto& point, auto& active)
                 {
-                    if (compDetail.node)
+                    auto* geom = reg.try_get<PointGeometryDetail>(point.geometry);
+                    if (geom && geom->rootNode)
                     {
                         if (ecsVisitor)
                             ecsVisitor->currentEntity = entity;
@@ -545,12 +537,12 @@ PointSystemNode::traverse(vsg::ConstVisitor& v) const
                         if (transformDetail)
                         {
                             _tempMT->matrix = transformDetail->views[viewID].model;
-                            _tempMT->children[0] = compDetail.node;
+                            _tempMT->children[0] = geom->rootNode;
                             _tempMT->accept(v);
                         }
                         else
                         {
-                            compDetail.node->accept(v);
+                            geom->rootNode->accept(v);
                         }
                     }
                 });
@@ -585,23 +577,15 @@ PointSystemNode::update(VSGContext& vsgcontext)
                     createOrUpdateGeometry(geom, geomDetail, vsgcontext);
                 });
 
-            Point::eachDirty(reg, [&](entt::entity e)
-                {
-                    const auto& [c, pointDetail] = reg.get<Point, PointDetail>(e);
-                    auto* geomDetail = c.geometry != entt::null ? reg.try_get<PointGeometryDetail>(c.geometry) : nullptr;
-                    createOrUpdateComponent(c, pointDetail, geomDetail);
-                });                    
+            //Point::eachDirty(reg, [&](entt::entity e)
+            //    {
+            //        const auto& [c, pointDetail] = reg.get<Point, PointDetail>(e);
+            //        auto* geomDetail = c.geometry != entt::null ? reg.try_get<PointGeometryDetail>(c.geometry) : nullptr;
+            //        createOrUpdateComponent(c, pointDetail, geomDetail);
+            //    });                    
         });
 
     Inherit::update(vsgcontext);
-}
-
-PointGeometryNode::PointGeometryNode()
-{
-    //_drawCommand = vsg::VertexDraw::create();
-    //_drawCommand->instanceCount = 0;
-
-    //commands.push_back(_drawCommand);
 }
 
 void
@@ -621,13 +605,13 @@ PointGeometryNode::calcBound(vsg::dsphere& output, const vsg::dmat4& matrix) con
 void
 PointGeometry::recycle(entt::registry& reg)
 {
-    auto& geomDetail = reg.get<PointGeometryDetail>(owner);
-    if (geomDetail.geomNode)
-    {
-        auto geom = util::find<PointGeometryNode>(geomDetail.geomNode);
-        //if (geom)
-        //    geom->setCount(0);
-    }
+    //auto& geomDetail = reg.get<PointGeometryDetail>(owner);
+    //if (geomDetail.geomNode)
+    //{
+    //    auto geom = util::find<PointGeometryNode>(geomDetail.geomNode);
+    //    if (geom)
+    //        geom->setCount(0);
+    //}
     points.clear();
     dirty(reg);
 }

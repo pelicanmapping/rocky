@@ -15,9 +15,9 @@ namespace ROCKY_NAMESPACE
     {
         // if alpha is zero, use the line's per-vertex color instead
         Color color = Color{ 1, 1, 1, 1 };
-        float width = 2.0f; // pixels
+        float width = 3.0f; // pixels
+        float antialias = 0.25f;
         float depthOffset = 0.0f; // meters
-        float antialias = 0.5f;
     };
 
 

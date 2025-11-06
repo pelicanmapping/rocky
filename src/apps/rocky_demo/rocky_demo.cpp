@@ -76,6 +76,7 @@ std::vector<Demo> demos =
         Demo{ "  Line - per-vertex colors", Demo_Line_Per_Vertex_Colors },
         Demo{ "  Line - relative", Demo_Line_Relative },
         Demo{ "  Line - shared", Demo_Line_Shared },
+        Demo{ "  Line - dynamic allocation test", Demo_Line_Dynamic_Allocation_Test },
         Demo{ "Mesh -   absolute", Demo_Mesh_Absolute },
         Demo{ "  Mesh - relative", Demo_Mesh_Relative },
         Demo{ "  Mesh - textured", Demo_Mesh_Textured },
@@ -90,7 +91,7 @@ std::vector<Demo> demos =
         Demo{ "Drawing", Demo_Draw },
         Demo{ "Node Pager", Demo_NodePager },
         Demo{ "RTT", Demo_RTT }
-        //Demo{ "Screenshot", Demo_Screenshot },
+        //Demo{ "Screenshot", Demo_Screenshot }
     } },
     Demo{ "GIS Data", {},
     {
@@ -106,7 +107,7 @@ std::vector<Demo> demos =
         Demo{ "Track histories", Demo_TrackHistory }
     } },
     Demo{ "Decluttering", Demo_Decluttering },
-    Demo{ "Elevation Queries", Demo_ElevationSampler },
+    Demo{ "Elevation Query", Demo_ElevationSampler },
     Demo{ "Intersection", Demo_Intersect },
     Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "Camera", Demo_MapManipulator },

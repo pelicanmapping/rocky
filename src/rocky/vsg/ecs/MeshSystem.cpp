@@ -114,7 +114,7 @@ namespace
 
     void on_construct_Mesh(entt::registry& r, entt::entity e)
     {
-        r.emplace<MeshDetail>(e);
+        //r.emplace<MeshDetail>(e);
 
         // TODO: put this in a utility function somewhere
         // common components that may already exist on this entity:
@@ -145,11 +145,11 @@ namespace
     }
 
 
-    void on_destroy_MeshDetail(entt::registry& r, entt::entity e)
-    {
-        auto& d = r.get<MeshDetail>(e);
-        d = MeshDetail();
-    }
+    //void on_destroy_MeshDetail(entt::registry& r, entt::entity e)
+    //{
+    //    auto& d = r.get<MeshDetail>(e);
+    //    d = MeshDetail();
+    //}
     void on_destroy_MeshStyleDetail(entt::registry& r, entt::entity e)
     {
         auto& d = r.get<MeshStyleDetail>(e);
@@ -161,7 +161,7 @@ namespace
     void on_destroy_MeshGeometryDetail(entt::registry& r, entt::entity e)
     {
         auto& d = r.get<MeshGeometryDetail>(e);
-        dispose(d.node);
+        dispose(d.rootNode);
         d = MeshGeometryDetail();
     }
     void on_destroy_MeshTextureDetail(entt::registry& r, entt::entity e)
@@ -172,7 +172,7 @@ namespace
 
     void on_update_Mesh(entt::registry& r, entt::entity e)
     {
-        on_destroy_MeshDetail(r, e);
+        //on_destroy_MeshDetail(r, e);
         r.get<Mesh>(e).dirty(r);
     }
     void on_update_MeshStyle(entt::registry& r, entt::entity e)
@@ -319,7 +319,7 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
             r.on_update<MeshGeometry>().connect<&on_update_MeshGeometry>();
             r.on_update<MeshTexture>().connect<&on_update_Texture>();
 
-            r.on_destroy<MeshDetail>().connect<&on_destroy_MeshDetail>();
+            //r.on_destroy<MeshDetail>().connect<&on_destroy_MeshDetail>();
             r.on_destroy<MeshStyleDetail>().connect<&on_destroy_MeshStyleDetail>();
             r.on_destroy<MeshGeometryDetail>().connect<&on_destroy_MeshGeometryDetail>();
             r.on_destroy<MeshTextureDetail>().connect<&on_destroy_MeshTextureDetail>();
@@ -347,36 +347,37 @@ MeshSystemNode::compile(vsg::Context& compileContext)
 
             reg.view<MeshGeometryDetail>().each([&](auto& geomDetail)
                 {
-                    if (geomDetail.node)
-                        geomDetail.node->compile(compileContext);
+                    if (geomDetail.geomNode)
+                        geomDetail.geomNode->compile(compileContext);
                 });
         });
 
     Inherit::compile(compileContext);
 }
 
-void
-MeshSystemNode::createOrUpdateComponent(const Mesh& mesh, MeshDetail& meshDetail,
-    MeshStyleDetail* styleDetail, MeshGeometryDetail* geomDetail, VSGContext& vsgcontext)
-{
-    // NB: registry is read-locked
-    if (geomDetail)
-    {
-        meshDetail.node = geomDetail->node;
-    }
-}
+//void
+//MeshSystemNode::createOrUpdateComponent(const Mesh& mesh, MeshDetail& meshDetail,
+//    MeshStyleDetail* styleDetail, MeshGeometryDetail* geomDetail, VSGContext& vsgcontext)
+//{
+//    // NB: registry is read-locked
+//    if (geomDetail)
+//    {
+//        // Point this mesh at a (possibly shared) geometry node.
+//        meshDetail.node = geomDetail->geomNode;
+//    }
+//}
 
 void
 MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDetail& geomDetail, VSGContext& vsgcontext)
 {
     // NB: registry is read-locked
 
-    if (geomDetail.node)
+    if (geomDetail.geomNode)
     {
-        vsgcontext->dispose(geomDetail.node);
+        vsgcontext->dispose(geomDetail.geomNode);
     }
 
-    geomDetail.node = MeshGeometryNode::create();
+    geomDetail.geomNode = MeshGeometryNode::create();
 
     vsg::ref_ptr<vsg::Node> root;
     vsg::dmat4 localizer_matrix;
@@ -393,7 +394,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             xform.transformRange(verts.begin(), verts.end());
             for (auto& v : verts) v -= offset;
 
-            auto& gn = geomDetail.node;
+            auto& gn = geomDetail.geomNode;
 
             gn->_verts.resize(verts.size());
             std::transform(verts.begin(), verts.end(), gn->_verts.begin(),
@@ -410,7 +411,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             gn->_indices = geom.indices;
 
             auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
-            localizer->addChild(geomDetail.node);
+            localizer->addChild(geomDetail.geomNode);
             root = localizer;
         }
 
@@ -419,7 +420,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             GeoPoint anchor(geom.srs, geom.triangles.front().verts[0]);
             auto [xform, offset] = anchor.parseAsReferencePoint();
 
-            geomDetail.node->reserve(geom.triangles.size() * 3);
+            geomDetail.geomNode->reserve(geom.triangles.size() * 3);
 
             vsg::dvec3 v0, v1, v2;
             vsg::vec3 v32[3];
@@ -429,14 +430,14 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
                 xform(tri.verts[1], v1); v32[1] = v1 - to_vsg(offset);
                 xform(tri.verts[2], v2); v32[2] = v2 - to_vsg(offset);
 
-                geomDetail.node->addTriangle(
+                geomDetail.geomNode->addTriangle(
                     v32,
                     reinterpret_cast<const vsg::vec2*>(&tri.uvs),
                     reinterpret_cast<const vsg::vec4*>(&tri.colors));
             }
 
             auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
-            localizer->addChild(geomDetail.node);
+            localizer->addChild(geomDetail.geomNode);
             root = localizer;
         }
     }
@@ -444,7 +445,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
     {
         if (geom.verts.size() > 0)
         {
-            auto& gn = geomDetail.node;
+            auto& gn = geomDetail.geomNode;
 
             gn->_verts.resize(geom.verts.size());
             std::transform(geom.verts.begin(), geom.verts.end(), gn->_verts.begin(),
@@ -469,17 +470,19 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
         {
             for (auto& tri : geom.triangles)
             {
-                geomDetail.node->addTriangle(
+                geomDetail.geomNode->addTriangle(
                     reinterpret_cast<const vsg::dvec3*>(&tri.verts),
                     reinterpret_cast<const vsg::vec2*>(&tri.uvs),
                     reinterpret_cast<const vsg::vec4*>(&tri.colors));
             }
         }
 
-        root = geomDetail.node;
+        root = geomDetail.geomNode;
     }
 
-    requestCompile(geomDetail.node);
+    geomDetail.rootNode = root;
+
+    requestCompile(geomDetail.geomNode);
 }
 
 
@@ -627,10 +630,14 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                 });
 
             int count = 0;
-            auto view = reg.view<Mesh, MeshDetail, ActiveState, Visibility>();
+            auto view = reg.view<Mesh, ActiveState, Visibility>();
 
-            view.each([&](auto entity, auto& comp, auto& compDetail, auto& active, auto& visibility)
+            view.each([&](auto entity, auto& comp, auto& active, auto& visibility)
                 {
+                    auto* geom = reg.try_get<MeshGeometryDetail>(comp.geometry);
+                    if (!geom || !geom->rootNode)
+                        return;
+
                     auto* styleDetail = &_defaultMeshStyleDetail;
                     auto* style = reg.try_get<MeshStyle>(comp.style);
                     if (style)
@@ -638,20 +645,20 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                         styleDetail = &reg.get<MeshStyleDetail>(comp.style);
                     }
 
-                    if (compDetail.node && visible(visibility, rs))
+                    if (visible(visibility, rs))
                     {
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
                         if (transformDetail)
                         {
                             if (transformDetail->views[rs.viewID].passingCull)
                             {
-                                styleDetail->drawList.emplace_back(MeshDrawable{ compDetail.node, transformDetail });
+                                styleDetail->drawList.emplace_back(MeshDrawable{ geom->rootNode, transformDetail });
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(MeshDrawable{ compDetail.node, nullptr });
+                            styleDetail->drawList.emplace_back(MeshDrawable{ geom->rootNode, nullptr });
                             ++count;
                         }
                     }
@@ -708,11 +715,12 @@ MeshSystemNode::traverse(vsg::ConstVisitor& v) const
 
     _registry.read([&](entt::registry& reg)
         {
-            auto view = reg.view<Mesh, MeshDetail, ActiveState>();
+            auto view = reg.view<Mesh, ActiveState>();
 
-            view.each([&](auto entity, auto& comp, auto& compDetail, auto& active)
+            view.each([&](auto entity, auto& comp, auto& active)
                 {
-                    if (compDetail.node)
+                    auto* geom = reg.try_get<MeshGeometryDetail>(comp.geometry);
+                    if (geom && geom->rootNode)
                     {
                         if (ecsVisitor)
                             ecsVisitor->currentEntity = entity;
@@ -721,12 +729,12 @@ MeshSystemNode::traverse(vsg::ConstVisitor& v) const
                         if (transformDetail)
                         {
                             _tempMT->matrix = transformDetail->views[viewID].model;
-                            _tempMT->children[0] = compDetail.node;
+                            _tempMT->children[0] = geom->rootNode;
                             _tempMT->accept(v);
                         }
                         else
                         {
-                            compDetail.node->accept(v);
+                            geom->rootNode->accept(v);
                         }
                     }
                 });
@@ -768,13 +776,13 @@ MeshSystemNode::update(VSGContext& vsgcontext)
                     createOrUpdateGeometry(geom, geomDetail, vsgcontext);
                 });
 
-            Mesh::eachDirty(reg, [&](entt::entity e)
-                {
-                    const auto& [comp, compDetail] = reg.get<Mesh, MeshDetail>(e);
-                    auto* styleDetail = comp.style != entt::null ? reg.try_get<MeshStyleDetail>(comp.style) : nullptr;
-                    auto* geomDetail = comp.geometry != entt::null ? reg.try_get<MeshGeometryDetail>(comp.geometry) : nullptr;
-                    createOrUpdateComponent(comp, compDetail, styleDetail, geomDetail, vsgcontext);
-                });
+            //Mesh::eachDirty(reg, [&](entt::entity e)
+            //    {
+            //        const auto& [comp, compDetail] = reg.get<Mesh, MeshDetail>(e);
+            //        auto* styleDetail = comp.style != entt::null ? reg.try_get<MeshStyleDetail>(comp.style) : nullptr;
+            //        auto* geomDetail = comp.geometry != entt::null ? reg.try_get<MeshGeometryDetail>(comp.geometry) : nullptr;
+            //        createOrUpdateComponent(comp, compDetail, styleDetail, geomDetail, vsgcontext);
+            //    });
         });
 
     Inherit::update(vsgcontext);

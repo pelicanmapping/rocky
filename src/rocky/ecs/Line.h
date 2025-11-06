@@ -70,10 +70,6 @@ namespace ROCKY_NAMESPACE
         //! Whether lines should write to the depth buffer
         bool writeDepth = true;
 
-        //! Call this to reset the underlying data if you plan to re-use the line
-        //! later for a different set of points.
-        //void recycle(entt::registry&);
-
         //! Useful constructors
         inline Line() = default;
         inline Line(const LineGeometry& geometry_) : geometry(geometry_.owner) {}

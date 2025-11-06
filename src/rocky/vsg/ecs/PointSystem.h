@@ -16,25 +16,19 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Construct a new line string geometry node
-        PointGeometryNode();
+        PointGeometryNode() = default;
 
         //! Populate the geometry arrays
         template<typename VEC3_T, typename VEC4_T>
-        inline void set(const std::vector<VEC3_T>& verts,
-            const std::vector<VEC4_T>& colors, std::size_t capacity);
+        inline void set(const std::vector<VEC3_T>& verts, const std::vector<VEC4_T>& colors);
 
-        std::size_t _capacity = 0u;
+        std::size_t allocatedCapacity = 0u;
+
         vsg::ref_ptr<vsg::VertexDraw> _drawCommand;
         vsg::ref_ptr<vsg::vec3Array> _verts;
         vsg::ref_ptr<vsg::vec4Array> _colors;
 
         void calcBound(vsg::dsphere& out, const vsg::dmat4& matrix) const;
-
-        //void record(vsg::CommandBuffer& commandBuffer) const override
-        //{
-        //    if (_drawCommand->vertexCount > 0)
-        //        vsg::Geometry::record(commandBuffer);
-        //}
     };
 
     namespace detail
@@ -44,15 +38,15 @@ namespace ROCKY_NAMESPACE
         {
             Color color;
             float width;
+            float antialias;
             float depthOffset;
-            float antialias = 0.5f;
             std::uint32_t padding[1]; // pad to 16 bytes
 
             inline void populate(const PointStyle& in) {
                 color = in.color;
                 width = in.width;
-                depthOffset = in.depthOffset;
                 antialias = in.antialias;
+                depthOffset = in.depthOffset;
             }
         };
         static_assert(sizeof(PointStyleRecord) % 16 == 0, "PointStyleRecord must be 16-byte aligned");
@@ -89,12 +83,6 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Node> rootNode;
             vsg::ref_ptr<PointGeometryNode> geomNode;
             std::size_t capacity = 0;
-        };
-
-        // not used?
-        struct PointDetail
-        {
-            vsg::ref_ptr<vsg::Node> node;
         };
     }
 
@@ -143,7 +131,7 @@ namespace ROCKY_NAMESPACE
 
         // Called when a Line is marked dirty (i.e., upon first creation or when either the
         // style of the geometry entity is reassigned).
-        void createOrUpdateComponent(const Point&, detail::PointDetail&, detail::PointGeometryDetail*);
+        //void createOrUpdateComponent(const Point&, detail::PointDetail&, detail::PointGeometryDetail*);
 
         // Called when a point geometry component is found in the dirty list
         void createOrUpdateGeometry(const PointGeometry& geom, detail::PointGeometryDetail&, VSGContext& context);
@@ -156,32 +144,29 @@ namespace ROCKY_NAMESPACE
 
     template<typename VEC3_T, typename VEC4_T>
     void PointGeometryNode::set(const std::vector<VEC3_T>& t_verts, 
-        const std::vector<VEC4_T>& t_colors, std::size_t capacity)
+        const std::vector<VEC4_T>& t_colors)
     {
         const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
         auto& verts = reinterpret_cast<const std::vector<vsg::dvec3>&>(t_verts);
         auto& colors = reinterpret_cast<const std::vector<vsg::vec4>&>(t_colors);
 
-        capacity = std::max(capacity, verts.size());
-
-        ROCKY_HARD_ASSERT(capacity > 0);
-        ROCKY_SOFT_ASSERT_AND_RETURN(_verts == nullptr || capacity <= _capacity, void(),
-            "PointGeometryNode state corruption - capacity overflow should always result in a new LineGeometry");
+        // always allocate space for a minimum of 4 verts.
+        std::size_t requiredCapacity = std::max((std::size_t)4, verts.capacity());
 
         if (!_verts) // capacity exceeded, new object
         {
             // this should only happen on a new PointGeometry
-            _verts = vsg::vec3Array::create(capacity);
-            _colors = vsg::vec4Array::create(capacity);            
+            _verts = vsg::vec3Array::create(requiredCapacity);
+            _colors = vsg::vec4Array::create(requiredCapacity);
             assignArrays({ _verts, _colors });
+
+            allocatedCapacity = requiredCapacity;
         }
         else
         {
-            ROCKY_SOFT_ASSERT_AND_RETURN(capacity <= _verts->size(), void(), "PointGeometry overflow");
+            ROCKY_SOFT_ASSERT_AND_RETURN(requiredCapacity <= _verts->size(), void(), "PointGeometry overflow");
         }
-
-        _capacity = capacity;
 
         std::copy(verts.begin(), verts.end(), _verts->begin());
         std::copy(colors.begin(), colors.end(), _colors->begin());

@@ -106,7 +106,7 @@ namespace
 
     void on_construct_Line(entt::registry& r, entt::entity e)
     {
-        r.emplace<LineDetail>(e);
+        //r.emplace<LineDetail>(e);
 
         // TODO: put this in a utility function somewhere
         // common components that may already exist on this entity:
@@ -129,11 +129,11 @@ namespace
         r.get<LineGeometry>(e).dirty(r);
     }
 
-    void on_destroy_LineDetail(entt::registry& r, entt::entity e)
-    {
-        auto& d = r.get<LineDetail>(e);
-        d = LineDetail();
-    }
+    //void on_destroy_LineDetail(entt::registry& r, entt::entity e)
+    //{
+    //    auto& d = r.get<LineDetail>(e);
+    //    d = LineDetail();
+    //}
     void on_destroy_LineStyleDetail(entt::registry& r, entt::entity e)
     {
         auto& d = r.get<LineStyleDetail>(e);
@@ -143,13 +143,13 @@ namespace
     void on_destroy_LineGeometryDetail(entt::registry& r, entt::entity e)
     {
         auto& d = r.get<LineGeometryDetail>(e);
-        dispose(d.node);
+        dispose(d.root);
         d = LineGeometryDetail();
     }
 
     void on_update_Line(entt::registry& r, entt::entity e)
     {
-        on_destroy_LineDetail(r, e); // reset
+        //on_destroy_LineDetail(r, e); // reset
         r.get<Line>(e).dirty(r);
     }
     void on_update_LineStyle(entt::registry& r, entt::entity e)
@@ -253,7 +253,7 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
             r.on_update<LineStyle>().connect<&on_update_LineStyle>();
             r.on_update<LineGeometry>().connect<&on_update_LineGeometry>();
 
-            r.on_destroy<LineDetail>().connect<&on_destroy_LineDetail>();
+            //r.on_destroy<LineDetail>().connect<&on_destroy_LineDetail>();
             r.on_destroy<LineStyleDetail>().connect<&on_destroy_LineStyleDetail>();
             r.on_destroy<LineGeometryDetail>().connect<&on_destroy_LineGeometryDetail>();
 
@@ -287,15 +287,15 @@ LineSystemNode::compile(vsg::Context& compileContext)
     Inherit::compile(compileContext);
 }
 
-void
-LineSystemNode::createOrUpdateComponent(const Line& line, LineDetail& lineDetail, LineGeometryDetail* geomDetail)
-{
-    // NB: registry is read-locked
-    if (geomDetail)
-    {
-        lineDetail.node = geomDetail->node;
-    }
-}
+//void
+//LineSystemNode::createOrUpdateComponent(const Line& line, LineDetail& lineDetail, LineGeometryDetail* geomDetail)
+//{
+//    // NB: registry is read-locked
+//    if (geomDetail)
+//    {
+//        lineDetail.node = geomDetail->root;
+//    }
+//}
 
 void
 LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDetail& geomDetail, VSGContext& vsgcontext)
@@ -304,13 +304,13 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
 
     bool reallocate = false;
 
-    if (!geomDetail.node)
+    if (!geomDetail.root)
     {
         reallocate = true;
     }
     else
     {
-        if (geomDetail.geomNode && geom.points.capacity() > geomDetail.capacity)
+        if (geomDetail.geomNode && geom.points.capacity() > geomDetail.geomNode->allocatedCapacity)
         {
             reallocate = true;
         }
@@ -318,13 +318,11 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
 
     if (reallocate)
     {
+        // discard the old node and create a new one.
         if (geomDetail.geomNode)
             vsgcontext->dispose(geomDetail.geomNode);
 
         geomDetail.geomNode = LineGeometryNode::create();
-
-        // update the known capacity:
-        geomDetail.capacity = geom.points.capacity();
 
         vsg::ref_ptr<vsg::Node> root;
         vsg::dmat4 localizer_matrix;
@@ -346,11 +344,11 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
                 for (auto& point : copy)
                     point -= offset;
 
-                geomDetail.geomNode->set(copy, geom.colors, geom.topology, geomDetail.capacity);
+                geomDetail.geomNode->set(copy, geom.colors, geom.topology);
             }
             else
             {
-                geomDetail.geomNode->set(geom.points, geom.colors, geom.topology, geomDetail.capacity);
+                geomDetail.geomNode->set(geom.points, geom.colors, geom.topology);
             }
 
 
@@ -362,13 +360,13 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.colors, geom.topology, geomDetail.capacity);
+            geomDetail.geomNode->set(geom.points, geom.colors, geom.topology);
             root = geomDetail.geomNode;
         }
 
-        geomDetail.node = root;
+        geomDetail.root = root;
 
-        requestCompile(geomDetail.node);
+        requestCompile(geomDetail.root);
     }
 
     else // existing node -- update:
@@ -390,16 +388,16 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
             for (auto& point : copy)
                 point -= offset;
 
-            geomDetail.geomNode->set(copy, geom.colors, geom.topology, geomDetail.capacity);
+            geomDetail.geomNode->set(copy, geom.colors, geom.topology);
 
-            auto mt = util::find<vsg::MatrixTransform>(geomDetail.node);
+            auto mt = util::find<vsg::MatrixTransform>(geomDetail.root);
             mt->matrix = vsg::translate(to_vsg(offset));
             localizer_matrix = mt->matrix;
         }
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.colors, geom.topology, geomDetail.capacity);
+            geomDetail.geomNode->set(geom.points, geom.colors, geom.topology);
         }
 
         // upload the changed arrays
@@ -455,31 +453,33 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
                 });
 
             int count = 0;
-            auto view = reg.view<Line, LineDetail, ActiveState, Visibility>();
+            auto view = reg.view<Line, ActiveState, Visibility>();
 
-            view.each([&](auto entity, auto& comp, auto& compDetail, auto& active, auto& visibility)
+            view.each([&](auto entity, auto& line, auto& active, auto& visibility)
                 {
+                    auto* geom = reg.try_get<LineGeometryDetail>(line.geometry);
+                    if (!geom)
+                        return;                        
+                        
                     auto* styleDetail = &_defaultStyleDetail;
-                    auto* style = reg.try_get<LineStyle>(comp.style);
+                    auto* style = reg.try_get<LineStyle>(line.style);
                     if (style)
-                    {
-                        styleDetail = &reg.get<LineStyleDetail>(comp.style);
-                    }
+                        styleDetail = &reg.get<LineStyleDetail>(line.style);
 
-                    if (compDetail.node && visible(visibility, rs))
+                    if (geom->root && visible(visibility, rs))
                     {
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
                         if (transformDetail)
                         {
                             if (transformDetail->views[rs.viewID].passingCull)
                             {
-                                styleDetail->drawList.emplace_back(LineDrawable{ compDetail.node, transformDetail });
+                                styleDetail->drawList.emplace_back(LineDrawable{ geom->root, transformDetail });
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(LineDrawable{ compDetail.node, nullptr });
+                            styleDetail->drawList.emplace_back(LineDrawable{ geom->root, nullptr });
                             ++count;
                         }
                     }
@@ -533,11 +533,13 @@ LineSystemNode::traverse(vsg::ConstVisitor& v) const
 
     _registry.read([&](entt::registry& reg)
         {
-            auto view = reg.view<Line, LineDetail, ActiveState>();
+            auto view = reg.view<Line, ActiveState>();
 
-            view.each([&](auto entity, auto& comp, auto& compDetail, auto& active)
+            view.each([&](auto entity, auto& line, auto& active)
                 {
-                    if (compDetail.node)
+                    auto* geom = reg.try_get<LineGeometryDetail>(line.geometry);
+
+                    if (geom && geom->root)
                     {
                         if (ecsVisitor)
                             ecsVisitor->currentEntity = entity;
@@ -546,12 +548,12 @@ LineSystemNode::traverse(vsg::ConstVisitor& v) const
                         if (transformDetail)
                         {
                             _tempMT->matrix = transformDetail->views[viewID].model;
-                            _tempMT->children[0] = compDetail.node;
+                            _tempMT->children[0] = geom->root;
                             _tempMT->accept(v);
                         }
                         else
                         {
-                            compDetail.node->accept(v);
+                            geom->root->accept(v);
                         }
                     }
                 });
@@ -586,12 +588,12 @@ LineSystemNode::update(VSGContext& vsgcontext)
                     createOrUpdateGeometry(geom, geomDetail, vsgcontext);
                 });
 
-            Line::eachDirty(reg, [&](entt::entity e)
-                {
-                    const auto& [line, lineDetail] = reg.get<Line, LineDetail>(e);
-                    auto* geomDetail = line.geometry != entt::null ? reg.try_get<LineGeometryDetail>(line.geometry) : nullptr;
-                    createOrUpdateComponent(line, lineDetail, geomDetail);
-                });                    
+            //Line::eachDirty(reg, [&](entt::entity e)
+            //    {
+            //        const auto& [line, lineDetail] = reg.get<Line, LineDetail>(e);
+            //        auto* geomDetail = line.geometry != entt::null ? reg.try_get<LineGeometryDetail>(line.geometry) : nullptr;
+            //        createOrUpdateComponent(line, lineDetail, geomDetail);
+            //    });                    
         });
 
     Inherit::update(vsgcontext);
@@ -640,11 +642,9 @@ void
 LineGeometry::recycle(entt::registry& reg)
 {
     auto& geomDetail = reg.get<LineGeometryDetail>(owner);
-    if (geomDetail.node)
+    if (geomDetail.geomNode)
     {
-        auto geom = util::find<LineGeometryNode>(geomDetail.node);
-        if (geom)
-            geom->setCount(0);
+        geomDetail.geomNode->setCount(0);
     }
     points.clear();
     dirty(reg);

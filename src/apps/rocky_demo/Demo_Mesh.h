@@ -328,7 +328,7 @@ auto Demo_Mesh_Shared = [](Application& app)
         // Create a few different styles.
         styles[0] = entities.emplace_back(reg.create());
         auto& style0 = reg.emplace<MeshStyle>(styles[0]);
-        style0.color = Color::Lime;
+        style0.color = Color::Red;
 
         styles[1] = entities.emplace_back(reg.create());
         auto& style1 = reg.emplace<MeshStyle>(styles[1]);
