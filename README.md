@@ -506,18 +506,6 @@ widget.render = [](WidgetInstance& i)
 ImGui::SetCurrentContext(...);
 ```
 
-If you want to do some custom ImGui setup for Widgets, you can pass a function to the `WidgetSystem`. The function will run in ALL ImGui Contexts:
-```c++
-app.getSystem<WidgetSystem>()->preRecord([&](std::uint3_t viewID, ImGuiContext* igc)
-{
-    if (!font)
-    {
-        ImGui::SetCurrentContext(igc);
-        font = ImGui::GetIO().Fonts->AddFontFromFileTTF("c:/windows/fonts/arial.ttf");
-    }
-});
-```
-
 [Demo_Widget.h](src/apps/rocky_demo/Demo_Widget.h) and [Demo_LabelFeatures](src/apps/rocky_demo/Demo_LabelFeatures.h) have more examples.
 
 ### Creating an Application GUI
