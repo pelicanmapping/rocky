@@ -183,7 +183,7 @@ auto Demo_Line_Per_Vertex_Colors = [](Application& app)
 
                 // Style our line.
                 auto& style = r.emplace<LineStyle>(entity);
-                style.color = Color::Transparent; // signals to use per-vertex colors
+                style.useGeometryColors = true;
                 style.width = 6.0f;
 
                 // A "Line" renders the given geometry with the given style.
@@ -283,6 +283,11 @@ auto Demo_Line_Shared = [](Application& app)
     static bool regenerate = false;
     const unsigned count = 10000;
 
+    struct SharedLineDemoObject
+    {
+        bool used = false;
+    };
+
     if (regenerate)
     {
         app.registry.write([&](entt::registry& reg)
@@ -368,10 +373,31 @@ auto Demo_Line_Shared = [](Application& app)
             auto& dc = reg.emplace<Declutter>(e);
             dc.rect = { -10, -10, 10, 10 };
             dc.priority = i % 3;
+
+            reg.emplace<SharedLineDemoObject>(e);
         }
 
         app.vsgcontext->requestFrame();
     }
+
+    app.background.start("Animate shared lines", [&](Cancelable& task)
+        {
+            while (!task.canceled())
+            {
+                app.registry.read([&](entt::registry& reg)
+                    {
+                        for (auto&& [e, t, s] : reg.view<Transform, SharedLineDemoObject>().each())
+                        {
+                            double r = 360 * sin(0.01 * (double)app.frameCount());
+                            t.localMatrix = glm::mat4_cast(glm::angleAxis(glm::radians(r), glm::dvec3(0.0, 0.0, 1.0)));
+                            t.dirty();
+                        }
+                    });
+
+                app.vsgcontext->requestFrame();
+                std::this_thread::sleep_for(std::chrono::milliseconds(16));
+            }
+        });
 
     ImGui::TextWrapped("Sharing: %d Line instances share LineStyle and LineGeometry components, but each has its own Transform.", count);
 

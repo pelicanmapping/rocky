@@ -22,6 +22,7 @@ namespace ROCKY_NAMESPACE
         int stippleFactor = 1;
         float resolution = 100000.0f; // meters
         float depthOffset = 0.0f; // meters
+        bool useGeometryColors = false;
     };
 
 
@@ -45,8 +46,8 @@ namespace ROCKY_NAMESPACE
         //! referencePoint if that is in use.
         std::vector<glm::dvec3> points;
 
-        //! Colors per vertex (optional). If this vector is empty, the color in the 
-        //! LineStyle is used for all points.
+        //! Colors per point (optional). These apply when this geometry is coupled with a
+        //! style that has useGeometryColors = true.
         std::vector<Color> colors;
 
         //! reset this geometry for reuse.
@@ -66,9 +67,6 @@ namespace ROCKY_NAMESPACE
 
         //! Entity holding the LineGeometry to use
         entt::entity geometry = entt::null;
-
-        //! Whether lines should write to the depth buffer
-        bool writeDepth = true;
 
         //! Useful constructors
         inline Line() = default;

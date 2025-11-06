@@ -34,6 +34,7 @@ auto Demo_LabelFeatures = [](Application& app)
     static float minFontSize = 13.0f;
     static float maxFontSize = 32.0f;
     static int outlineSize = 2;
+    static int borderSize = 0;
 
     struct FontData {
         ImGuiContext* igc = nullptr;
@@ -101,7 +102,9 @@ auto Demo_LabelFeatures = [](Application& app)
                 {
                     ImGui::SetCurrentContext(i.context);
                     ImGui::SetNextWindowBgAlpha(0.0f); // fully transparent background
-                    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, (float)borderSize);
+                    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
+                    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 1));
                     ImGui::SetNextWindowPos(ImVec2(i.position.x - i.size.x / 2, i.position.y - i.size.y / 2));
                     ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
 
@@ -123,7 +126,8 @@ auto Demo_LabelFeatures = [](Application& app)
 #endif
                     i.size = ImGui::GetWindowSize();
                     ImGui::End();
-                    ImGui::PopStyleVar(1);
+                    ImGui::PopStyleColor(1);
+                    ImGui::PopStyleVar(2);                    
 
                     // update the decluttering record to reflect our widget's size
                     auto& dc = i.registry.get<Declutter>(i.entity);
@@ -183,6 +187,11 @@ auto Demo_LabelFeatures = [](Application& app)
 #endif
 
             if (ImGuiLTable::SliderInt("Outline size", &outlineSize, 0, 5))
+            {
+                app.vsgcontext->requestFrame();
+            }
+
+            if (ImGuiLTable::SliderInt("Border size", &borderSize, 0, 2))
             {
                 app.vsgcontext->requestFrame();
             }

@@ -57,8 +57,8 @@ namespace ROCKY_NAMESPACE
             float width;
             std::int32_t stipplePattern;
             std::int32_t stippleFactor;
-            float resolution;
             float depthOffset;
+            std::uint32_t perVertexMask = 0; // 0x01 = colors
             std::uint32_t padding[3]; // pad to 16 bytes
 
             inline void populate(const LineStyle& in) {
@@ -66,8 +66,9 @@ namespace ROCKY_NAMESPACE
                 width = in.width;
                 stipplePattern = in.stipplePattern;
                 stippleFactor = in.stippleFactor;
-                resolution = in.resolution;
                 depthOffset = in.depthOffset;
+                perVertexMask =
+                    (in.useGeometryColors ? 0x1 : 0x0);
             }
         };
         static_assert(sizeof(LineStyleRecord) % 16 == 0, "LineStyleRecord must be 16-byte aligned");
@@ -189,7 +190,10 @@ namespace ROCKY_NAMESPACE
             _current = vsg::vec3Array::create(requiredCapacity * 4);
             _previous = vsg::vec3Array::create(requiredCapacity * 4);
             _next = vsg::vec3Array::create(requiredCapacity * 4);
+
             _colors = vsg::vec4Array::create(requiredCapacity * 4);
+            std::fill(_colors->begin(), _colors->end(), defaultColor);
+
             assignArrays({ _current, _previous, _next, _colors });
 
             std::size_t indices_to_allocate =

@@ -18,9 +18,9 @@ struct LineStyle {
     float width;
     int stipplePattern;
     int stippleFactor;
-    float resolution;
     float depthOffset;
-    int padding[3];
+    uint perVertexMask; // 0x1 = color
+    uint padding[3];
 };
 
 // rocky::detail::LineStyleUniform
@@ -62,7 +62,9 @@ vec3 apply_depth_offset(in vec3 vertex, float offset, float n)
 
 void main()
 {
-    vary.color = line.style.color.a > 0.0 ? line.style.color : in_color;
+    bool perVertexColor = (line.style.perVertexMask & 0x1) != 0;
+
+    vary.color = perVertexColor ? in_color : line.style.color;
     vary.stipplePattern = line.style.stipplePattern;
     vary.stippleFactor = line.style.stippleFactor;
 
