@@ -20,13 +20,15 @@ namespace ROCKY_NAMESPACE
 
         //! Populate the geometry arrays
         template<typename VEC3_T, typename VEC4_T>
-        inline void set(const std::vector<VEC3_T>& verts, const std::vector<VEC4_T>& colors);
+        inline void set(const std::vector<VEC3_T>& verts, const std::vector<VEC4_T>& colors,
+            const std::vector<float>& widths);
 
         std::size_t allocatedCapacity = 0u;
 
         vsg::ref_ptr<vsg::VertexDraw> _drawCommand;
         vsg::ref_ptr<vsg::vec3Array> _verts;
         vsg::ref_ptr<vsg::vec4Array> _colors;
+        vsg::ref_ptr<vsg::floatArray> _widths;
 
         void calcBound(vsg::dsphere& out, const vsg::dmat4& matrix) const;
     };
@@ -40,13 +42,16 @@ namespace ROCKY_NAMESPACE
             float width;
             float antialias;
             float depthOffset;
-            std::uint32_t padding[1]; // pad to 16 bytes
+            std::uint32_t perVertexMask = 0; // bit 0 = color, bit 1 = width
 
             inline void populate(const PointStyle& in) {
                 color = in.color;
                 width = in.width;
                 antialias = in.antialias;
                 depthOffset = in.depthOffset;
+                perVertexMask =
+                    (in.useGeometryColors ? 0x1 : 0x0) |
+                    (in.useGeometryWidths ? 0x2 : 0x0);
             }
         };
         static_assert(sizeof(PointStyleRecord) % 16 == 0, "PointStyleRecord must be 16-byte aligned");
@@ -144,9 +149,10 @@ namespace ROCKY_NAMESPACE
 
     template<typename VEC3_T, typename VEC4_T>
     void PointGeometryNode::set(const std::vector<VEC3_T>& t_verts, 
-        const std::vector<VEC4_T>& t_colors)
+        const std::vector<VEC4_T>& t_colors, const std::vector<float>& widths)
     {
-        const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        const vsg::vec4 useStyleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        const float useStyleWidth = 2.0f;
 
         auto& verts = reinterpret_cast<const std::vector<vsg::dvec3>&>(t_verts);
         auto& colors = reinterpret_cast<const std::vector<vsg::vec4>&>(t_colors);
@@ -158,8 +164,14 @@ namespace ROCKY_NAMESPACE
         {
             // this should only happen on a new PointGeometry
             _verts = vsg::vec3Array::create(requiredCapacity);
+
             _colors = vsg::vec4Array::create(requiredCapacity);
-            assignArrays({ _verts, _colors });
+            std::fill(_colors->begin(), _colors->end(), useStyleColor);
+
+            _widths = vsg::floatArray::create(requiredCapacity);
+            std::fill(_widths->begin(), _widths->end(), useStyleWidth);
+
+            assignArrays({ _verts, _colors, _widths });
 
             allocatedCapacity = requiredCapacity;
         }
@@ -169,7 +181,16 @@ namespace ROCKY_NAMESPACE
         }
 
         std::copy(verts.begin(), verts.end(), _verts->begin());
+
         std::copy(colors.begin(), colors.end(), _colors->begin());
+        //if (colors.size() < allocatedCapacity)
+        //    for (auto i = colors.size(); i < allocatedCapacity; ++i)
+        //        _colors->at(i) = useStyleColor;
+
+        std::copy(widths.begin(), widths.end(), _widths->begin());        
+        //if (widths.size() < allocatedCapacity)
+        //    for (auto i = widths.size(); i < allocatedCapacity; ++i)
+        //        _widths->at(i) = useStyleWidth;
 
         vertexCount = (std::uint32_t)verts.size();
         instanceCount = 1;
@@ -178,5 +199,6 @@ namespace ROCKY_NAMESPACE
         // but keep for good measure
         _verts->dirty();
         _colors->dirty();
+        _widths->dirty();
     }
 }

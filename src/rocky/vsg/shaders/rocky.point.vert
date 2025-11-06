@@ -10,6 +10,7 @@ layout(push_constant) uniform PushConstants {
 // input vertex attributes
 layout(location = 0) in vec3 in_vertex;
 layout(location = 1) in vec4 in_color;
+layout(location = 2) in float in_width;
 
 // rocky::detail::PointStyleRecord
 struct PointStyle {
@@ -17,8 +18,11 @@ struct PointStyle {
     float width;
     float antialias;
     float depthOffset;
-    float padding[1];
+    uint perVertexMask; // 0x1 = color, 0x2 = width
 };
+
+#define PER_VERTEX_COLOR 0x1
+#define PER_VERTEX_WIDTH 0x2
 
 layout(set = 0, binding = 1) uniform PointUniform {
     PointStyle style;
@@ -49,7 +53,10 @@ vec3 apply_depth_offset(in vec3 vertex, in float offset)
 
 void main()
 {    
-    vary.color = point.style.color.a > 0.0 ? point.style.color : in_color;
+    bool perVertexColor = (point.style.perVertexMask & PER_VERTEX_COLOR) != 0;
+    bool perVertexWidth = (point.style.perVertexMask & PER_VERTEX_WIDTH) != 0;
+
+    vary.color = perVertexColor ? in_color : point.style.color;
     vary.antialias = point.style.antialias;
 
     float depthOffset = point.style.depthOffset;
@@ -59,6 +66,6 @@ void main()
     view.xyz = apply_depth_offset(view.xyz, depthOffset);
     vec4 clip = pc.projection * view;
 
-    gl_PointSize = point.style.width;
+    gl_PointSize = perVertexWidth ? in_width : point.style.width;
     gl_Position = clip;
 }

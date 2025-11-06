@@ -46,7 +46,8 @@ namespace
 
         // "binding" (3rd param) must match "layout(location=X) in" in the vertex shader
         shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, {});
-        shaderSet->addAttributeBinding("in_color",  "", 1, VK_FORMAT_R32G32B32A32_SFLOAT, {});
+        shaderSet->addAttributeBinding("in_color", "", 1, VK_FORMAT_R32G32B32A32_SFLOAT, {});
+        shaderSet->addAttributeBinding("in_width", "", 2, VK_FORMAT_R32_SFLOAT, {});
 
         shaderSet->addDescriptorBinding("point", "", LAYOUT_SET, LAYOUT_BINDING_UNIFORM,
             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
@@ -192,6 +193,7 @@ PointSystemNode::initialize(VSGContext& vsgcontext)
         // activate the arrays we intend to use
         c.config->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
         c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
+        c.config->enableArray("in_width", VK_VERTEX_INPUT_RATE_VERTEX, 4);
 
         // Uniforms we will need:
         c.config->enableDescriptor("point");
@@ -333,11 +335,11 @@ PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometry
                 for (auto& point : copy)
                     point -= offset;
 
-                geomDetail.geomNode->set(copy, geom.colors);
+                geomDetail.geomNode->set(copy, geom.colors, geom.widths);
             }
             else
             {
-                geomDetail.geomNode->set(geom.points, geom.colors);
+                geomDetail.geomNode->set(geom.points, geom.colors, geom.widths);
             }
 
 
@@ -349,7 +351,7 @@ PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometry
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.colors);
+            geomDetail.geomNode->set(geom.points, geom.colors, geom.widths);
             root = geomDetail.geomNode;
         }
 
@@ -377,7 +379,7 @@ PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometry
             for (auto& point : copy)
                 point -= offset;
 
-            geomDetail.geomNode->set(copy, geom.colors);
+            geomDetail.geomNode->set(copy, geom.colors, geom.widths);
 
             auto mt = util::find<vsg::MatrixTransform>(geomDetail.rootNode);
             mt->matrix = vsg::translate(to_vsg(offset));
@@ -386,7 +388,7 @@ PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometry
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.colors);
+            geomDetail.geomNode->set(geom.points, geom.colors, geom.widths);
         }
 
         // upload the changed arrays

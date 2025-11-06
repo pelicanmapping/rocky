@@ -13,11 +13,12 @@ namespace ROCKY_NAMESPACE
 {
     struct ROCKY_EXPORT PointStyle : public ComponentBase2<PointStyle>
     {
-        // if alpha is zero, use the line's per-vertex color instead
-        Color color = Color{ 1, 1, 1, 1 };
-        float width = 3.0f; // pixels
+        Color color = Color{ 1, 1, 1, 1 }; // used when useGeometryColors == false
+        float width = 3.0f; // pixels; used then useGeometryWidths = false
         float antialias = 0.25f;
         float depthOffset = 0.0f; // meters
+        bool useGeometryColors = false;
+        bool useGeometryWidths = false;
     };
 
 
@@ -31,9 +32,13 @@ namespace ROCKY_NAMESPACE
         //! referencePoint if that is in use.
         std::vector<glm::dvec3> points;
 
-        //! Colors per vertex (optional). If this vector is empty, the color in the 
-        //! LineStyle is used for all points.
+        //! Colors per point (optional). These apply when this geometry is coupled with a 
+        //! style that has useGeometryColors = true.
         std::vector<Color> colors;
+
+        //! Widths per point (optional). These apply when this geometry is coupled with a 
+        //! style that has useGeometryWidths = true.
+        std::vector<float> widths;
 
         //! reset this geometry for reuse.
         void recycle(entt::registry&);
@@ -51,9 +56,6 @@ namespace ROCKY_NAMESPACE
 
         //! Entity holding the PointGeometry to use
         entt::entity geometry = entt::null;
-
-        //! Whether lines should write to the depth buffer
-        bool writeDepth = true;
 
         //! Useful constructors
         inline Point() = default;

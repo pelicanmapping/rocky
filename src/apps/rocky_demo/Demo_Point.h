@@ -29,6 +29,7 @@ auto Demo_Point = [](Application& app)
 
                 geometry.points.reserve(360);
                 geometry.colors.reserve(360);
+                geometry.widths.reserve(360);
 
                 for (double lon = -180; lon < 180; lon += 1.0)
                 {
@@ -40,6 +41,8 @@ auto Demo_Point = [](Application& app)
                     hsl[1] = 1.0f; // saturation
                     hsl[2] = 0.5f; // lightness
                     geometry.colors.emplace_back().fromHSL(hsl);
+                    
+                    geometry.widths.emplace_back(8.0f + 6.0f * sin(lon / 45.0));
                 }
 
                 // Style our points.
@@ -69,14 +72,13 @@ auto Demo_Point = [](Application& app)
         if (ImGuiLTable::ColorEdit3("Color", col))
             style.dirty(reg);
 
-        bool perVertex = style.color.a == 0.0f;
-        if (ImGuiLTable::Checkbox("Per-vertex colors", &perVertex))
-        {
-            style.color.a = perVertex ? 0.0f : 1.0f;
+        if (ImGuiLTable::Checkbox("Per-vertex colors", &style.useGeometryColors))
             style.dirty(reg);
-        }
 
         if (ImGuiLTable::SliderFloat("Width", &style.width, 1.0f, 15.0f, "%.0f"))
+            style.dirty(reg);
+
+        if (ImGuiLTable::Checkbox("Per-vertex widths", &style.useGeometryWidths))
             style.dirty(reg);
 
         if (ImGuiLTable::SliderFloat("Antialias", &style.antialias, 0.0f, 1.0f, "%.1f"))
