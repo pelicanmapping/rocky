@@ -19,9 +19,11 @@ if (NOT TARGET imgui::imgui)
         endif()
 
     else()
-    
-        message(STATUS "Since you set IMGUI_DIR, I will try to build ImGui from source.")
-        message(STATUS "IMGUI_DIR = ${IMGUI_DIR}")
+
+        if(NOT ImGui_FIND_QUIETLY)
+            message(STATUS "Since you set IMGUI_DIR, I will try to build ImGui from source.")
+            message(STATUS "IMGUI_DIR = ${IMGUI_DIR}")
+        endif()
         
         set(IMGUI_SOURCES "")
 
@@ -46,18 +48,21 @@ if (NOT TARGET imgui::imgui)
 
                 if(NOT _source_${_file})
                     set(IMGUI_ALL_SOURCES_FOUND FALSE)          
-                    message(WARNING "Failed to find ${_source_${_file}} in ${IMGUI_DIR}")
+                    if(NOT ImGui_FIND_QUIETLY)
+                        message(WARNING "Failed to find ${_source_${_file}} in ${IMGUI_DIR}")
+                    endif()
                     break()
                 endif()
 
                 list(APPEND IMGUI_SOURCES ${_source_${_file}})
-                
+                set_property(SOURCE "${_source_${_file}}" PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
+
                 unset(_source_${_file})
             endforeach()
 
             if(IMGUI_ALL_SOURCES_FOUND)                
                 add_library(imgui::sources INTERFACE IMPORTED)
-                
+
                 set_property(TARGET imgui::sources APPEND PROPERTY
                     INTERFACE_SOURCES "${IMGUI_SOURCES}")
                     
@@ -66,7 +71,9 @@ if (NOT TARGET imgui::imgui)
                     INTERFACE_LINK_LIBRARIES imgui::sources)          
             endif()
         else()
-            message(WARNING "Could not find any ImGui source code at ${IMGUI_DIR}")
+            if(NOT ImGui_FIND_QUIETLY)
+                message(WARNING "Could not find any ImGui source code at ${IMGUI_DIR}")
+            endif()
         endif()
         
         if(IMGUI_ALL_SOURCES_FOUND)
@@ -79,5 +86,7 @@ if (NOT TARGET imgui::imgui)
 endif()
 
 if(NOT ImGui_FOUND)
-    message(WARNING "ImGui wasn't found. You may want to try setting IMGUI_DIR to automatically build it from source.")
+    if(NOT ImGui_FIND_QUIETLY)
+        message(WARNING "ImGui wasn't found. You may want to try setting IMGUI_DIR to automatically build it from source.")
+    endif()
 endif()
