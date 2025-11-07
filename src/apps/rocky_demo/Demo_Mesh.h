@@ -108,15 +108,11 @@ auto Demo_Mesh_Relative = [](Application& app)
         // Make some geometry that will be relative to a geolocation:
         const double s = 250000.0;
 
-        glm::dvec3 verts[8] = {
-            { -s, -s, -s },
-            {  s, -s, -s },
-            {  s,  s, -s },
-            { -s,  s, -s },
-            { -s, -s,  s },
-            {  s, -s,  s },
-            {  s,  s,  s },
-            { -s,  s,  s }
+        glm::dvec3 vertices[8] = {
+            { -s, -s, -s }, {  s, -s, -s },
+            {  s,  s, -s }, { -s,  s, -s },
+            { -s, -s,  s }, {  s, -s,  s },
+            {  s,  s,  s }, { -s,  s,  s }
         };
 
         unsigned indices[48] = {
@@ -126,18 +122,25 @@ auto Demo_Mesh_Relative = [](Application& app)
         };
 
         Color color{ 1, 0, 1, 0.85f };
+        geom.vertices.reserve(12 * 3);
+        geom.colors.reserve(12 * 3);
 
-        for (unsigned i = 0; i < 48; )
+        for (int i = 0; i < 48; )
         {
-            geom.triangles.emplace_back(Triangle{
-                {verts[indices[i++]], verts[indices[i++]], verts[indices[i++]]},
-                {color, color, color} });
+            for (int v = 0; v < 3; ++v)
+            {
+                geom.indices.emplace_back(i);
+                geom.vertices.emplace_back(vertices[indices[i++]]);
+                geom.colors.emplace_back(color);
+            }
 
             if ((i % 6) == 0)
                 color.r *= 0.8f, color.b *= 0.8f;
         }
 
+        // Set up our style to use the embedded colors.
         auto& style = reg.emplace<MeshStyle>(entity);
+        style.useGeometryColors = true;
 
         auto& mesh = reg.emplace<Mesh>(entity, geom, style);
 
@@ -210,7 +213,7 @@ auto Demo_Mesh_Textured = [](Application& app)
         // Make some geometry that will be relative to a geolocation:
         auto& geom = reg.emplace<MeshGeometry>(entity);
         const double s = 1000000.0;
-        geom.verts = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
+        geom.vertices = { { -s, -s, 0 }, {  s, -s, 0 }, {  s,  s, 0 }, { -s,  s, 0 } };
         geom.uvs = { {0,0}, {1,0}, {1,1}, {0,1} };
         geom.indices = { 0, 1, 2, 0, 2, 3 };
 
@@ -345,25 +348,25 @@ auto Demo_Mesh_Shared = [](Application& app)
         // Create a few different geometries.
         geoms[0] = entities.emplace_back(reg.create());
         auto& square = reg.emplace<MeshGeometry>(geoms[0]);
-        square.verts = { { -size, -size, 0.0 }, {size, -size, 0.0}, {size, size, 0.0}, {-size, size, 0.0} };
+        square.vertices = { { -size, -size, 0.0 }, {size, -size, 0.0}, {size, size, 0.0}, {-size, size, 0.0} };
         square.colors = { {1,1,1,1}, {1,1,1,1}, {1,1,1,1}, {1,1,1,1} };
         square.indices = { 0,1,2, 0,2,3 };
 
         geoms[1] = entities.emplace_back(reg.create());
         auto& triangle = reg.emplace<MeshGeometry>(geoms[1]);
-        triangle.verts = { {0, size, 0}, {size, -size, 0}, {-size, -size, 0} };
+        triangle.vertices = { {0, size, 0}, {size, -size, 0}, {-size, -size, 0} };
         triangle.uvs = { {0.5f, 1.0f}, {1.0f, 0.0f}, {0.0f, 0.0f} };
         triangle.indices = { 0, 2, 1 };
 
         geoms[2] = entities.emplace_back(reg.create());
         auto& circle = reg.emplace<MeshGeometry>(geoms[2]);
         const int circle_points = 32;
-        circle.verts.reserve(circle_points);
+        circle.vertices.reserve(circle_points);
         circle.uvs.reserve(circle_points);
         circle.indices.reserve((circle_points - 2) * 3);
         for (int i = 0; i <= circle_points; ++i) {
             double angle = (double)i / (double)circle_points * glm::two_pi<double>();
-            circle.verts.emplace_back(cos(angle) * size, sin(angle) * size, 0.0);
+            circle.vertices.emplace_back(cos(angle) * size, sin(angle) * size, 0.0);
             circle.uvs.emplace_back((float)(0.5 + 0.5 * cos(angle)), (float)(0.5 + 0.5 * sin(angle)));
             if (i >= 2) {
                 circle.indices.emplace_back(0);
@@ -434,7 +437,7 @@ auto Demo_Mesh_Blending = [](Application& app)
         // Attach the new mesh:
         auto& geom = reg.emplace<MeshGeometry>(entity);
 
-        geom.verts = {
+        geom.vertices = {
             { -200000.0, -200000.0, 200000.0 },
             {  300000.0, -200000.0, 200000.0 },
             {  300000.0,  300000.0, 200000.0 },
@@ -467,6 +470,7 @@ auto Demo_Mesh_Blending = [](Application& app)
         auto& style = reg.emplace<MeshStyle>(entity);
         style.twoPassAlpha = true;
         style.writeDepth = true;
+        style.useGeometryColors = true;
 
         auto& mesh = reg.emplace<Mesh>(entity, geom, style);
 
@@ -521,7 +525,7 @@ auto Demo_Mesh_Lighting = [](Application& app)
         // Createa a 3D geometry
         auto& geom = reg.emplace<MeshGeometry>(entity);
 
-        // Populate geom.verts, geom.normals, geom.indices to create a solid
+        // Populate geom.vertices, geom.normals, geom.indices to create a solid
         // ellipsoidal shape with CCW triangle winding:
         const unsigned rings = 16;
         const unsigned sectors = 32;
@@ -538,7 +542,7 @@ auto Demo_Mesh_Lighting = [](Application& app)
                 double cos_phi = cos(phi);
                 glm::dvec3 n{ cos_phi * sin_theta, cos_theta, sin_phi * sin_theta };
                 glm::dvec3 v{ a * n.x, b * n.y, c * n.z };
-                geom.verts.push_back(v);
+                geom.vertices.push_back(v);
                 geom.normals.push_back(n);
             }
         }

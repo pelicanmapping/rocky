@@ -17,29 +17,24 @@ layout(location = 3) in vec2 in_uv;
 struct MeshStyle {
     vec4 color;
     float depthOffset;
-    int hasTexture;
-    int hasLighting;
-    int padding[1];
+    uint featureMask; // see defines below
+    int padding[2];
 };
+#define MASK_HAS_TEXTURE 1
+#define MASK_HAS_LIGHTING 2
+#define MASK_HAS_PER_VERTEX_COLORS 4
 
 layout(set = 0, binding = 1) uniform MeshUniform {
     MeshStyle style;
 } mesh;
 
-//layout(location = 1) out vec2 uv;
-//layout(location = 2) out vec3 normal;
-//layout(location = 3) out vec3 vertexView;
-//layout(location = 4) flat out vec4 color;
-//layout(location = 5) flat out int hasTexture;
-//layout(location = 6) flat out int hasLighting;
-
 layout(location = 1) out Varyings {
+    vec4 color;
     vec2 uv;
     vec3 normal;
     vec3 vertexView;
-    flat vec4 color;
-    flat int hasTexture;
-    flat int hasLighting;
+    float applyTexture;
+    float applyLighting;
 } vary;
 
 // GL built-ins
@@ -61,9 +56,13 @@ vec3 apply_depth_offset(in vec3 vertex, in float offset)
 
 void main()
 {    
-    vary.color = mesh.style.color.a > 0.0 ? mesh.style.color : in_color;
-    vary.hasTexture = mesh.style.hasTexture;
-    vary.hasLighting = mesh.style.hasLighting;
+    bool hasPerVertexColors = (MASK_HAS_PER_VERTEX_COLORS & mesh.style.featureMask) != 0;
+    bool hasTexture = (MASK_HAS_TEXTURE & mesh.style.featureMask) != 0;
+    bool hasLighting = (MASK_HAS_LIGHTING & mesh.style.featureMask) != 0;
+
+    vary.color = hasPerVertexColors ? in_color : mesh.style.color;
+    vary.applyTexture = hasTexture ? 1.0 : 0.0;
+    vary.applyLighting = hasLighting ? 1.0 : 0.0;
 
     vec4 vv = pc.modelview * vec4(in_vertex, 1.0);
     vary.vertexView = vv.xyz / vv.w;

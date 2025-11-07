@@ -45,17 +45,19 @@ namespace ROCKY_NAMESPACE
         // "mesh.style" in the shader
         struct MeshStyleRecord
         {
-            Color color = Color(1, 1, 1, 0);
-            float depthOffset = 0.0f;
-            int hasTexture = 0;
-            int hasLighting = 0;
-            std::uint32_t padding[1]; // pad to 16 bytes
+            Color color;
+            float depthOffset;
+            // 1 = texture; 2 = lighting; 4 = per-vertex colors
+            std::uint32_t featureMask = 0;
+            std::uint32_t padding[2]; // pad to 16 bytes
 
             inline void populate(const MeshStyle& in) {
                 color = in.color;
                 depthOffset = in.depthOffset;
-                hasTexture = in.texture != entt::null ? 1 : 0;
-                hasLighting = in.lighting;
+                featureMask =
+                    (in.texture != entt::null ? 0x01 : 0) |
+                    (in.lighting ? 0x02 : 0) |
+                    (in.useGeometryColors ? 0x04 : 0);
             }
         };
         static_assert(sizeof(MeshStyleRecord) % 16 == 0, "MeshStyleRecord must be 16-byte aligned");

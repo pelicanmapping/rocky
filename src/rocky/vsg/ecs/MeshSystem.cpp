@@ -14,7 +14,6 @@ using namespace ROCKY_NAMESPACE::detail;
 #define MESH_FRAG_SHADER "shaders/rocky.mesh.frag"
 
 #define MESH_SET 0
-//#define MESH_BINDING_STYLE_LUT 0 // layout(set=0, binding=0) in the shader
 #define MESH_BINDING_UNIFORM   1 // layout(set=0, binding=1) in the shader
 #define MESH_BINDING_TEXTURE   2 // layout(set=0, binding=2) in the shader
 
@@ -382,33 +381,43 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
     vsg::ref_ptr<vsg::Node> root;
     vsg::dmat4 localizer_matrix;
 
-    if (geom.srs.valid())
-    {
-        if (geom.verts.size() > 0)
+    auto copyArrays = [&](auto& verts)
         {
-            GeoPoint anchor(geom.srs, geom.verts.front());
-            auto [xform, offset] = anchor.parseAsReferencePoint();
-
-            // transform and localize:
-            std::vector<glm::dvec3> verts(geom.verts); // copy
-            xform.transformRange(verts.begin(), verts.end());
-            for (auto& v : verts) v -= offset;
-
             auto& gn = geomDetail.geomNode;
 
             gn->_verts.resize(verts.size());
             std::transform(verts.begin(), verts.end(), gn->_verts.begin(),
                 [](const glm::dvec3& v) { return to_vsg(v); });
 
-            gn->_colors.resize(geom.colors.size());
+            gn->_colors.resize(std::max(geom.colors.size(), verts.size()));
             std::transform(geom.colors.begin(), geom.colors.end(), gn->_colors.begin(),
                 [](const glm::fvec4& c) { return to_vsg(c); });
 
-            gn->_uvs.resize(geom.uvs.size());
+            gn->_normals.resize(std::max(geom.normals.size(), verts.size()));
+            std::transform(geom.normals.begin(), geom.normals.end(), gn->_normals.begin(),
+                [](const glm::fvec3& n) { return to_vsg(n); });
+
+            gn->_uvs.resize(std::max(geom.uvs.size(), verts.size()));
             std::transform(geom.uvs.begin(), geom.uvs.end(), gn->_uvs.begin(),
                 [](const glm::fvec2& uv) { return to_vsg(uv); });
 
             gn->_indices = geom.indices;
+        };
+
+    if (geom.srs.valid())
+    {
+
+        if (geom.vertices.size() > 0)
+        {
+            GeoPoint anchor(geom.srs, geom.vertices.front());
+            auto [xform, offset] = anchor.parseAsReferencePoint();
+
+            // transform and localize:
+            std::vector<glm::dvec3> verts(geom.vertices); // copy
+            xform.transformRange(verts.begin(), verts.end());
+            for (auto& v : verts) v -= offset;
+
+            copyArrays(verts);
 
             auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
             localizer->addChild(geomDetail.geomNode);
@@ -443,27 +452,9 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
     }
     else
     {
-        if (geom.verts.size() > 0)
+        if (geom.vertices.size() > 0)
         {
-            auto& gn = geomDetail.geomNode;
-
-            gn->_verts.resize(geom.verts.size());
-            std::transform(geom.verts.begin(), geom.verts.end(), gn->_verts.begin(),
-                [](const glm::dvec3& v) { return to_vsg(v); });
-
-            gn->_normals.resize(geom.normals.size());
-            std::transform(geom.normals.begin(), geom.normals.end(), gn->_normals.begin(),
-                [](const glm::fvec3& n) { return to_vsg(n); });
-
-            gn->_colors.resize(geom.colors.size());
-            std::transform(geom.colors.begin(), geom.colors.end(), gn->_colors.begin(),
-                [](const glm::fvec4& c) { return to_vsg(c); });
-
-            gn->_uvs.resize(geom.uvs.size());
-            std::transform(geom.uvs.begin(), geom.uvs.end(), gn->_uvs.begin(),
-                [](const glm::fvec2& uv) { return to_vsg(uv); });
-
-            gn->_indices = geom.indices;
+            copyArrays(geom.vertices);
         }
 
         else if (geom.triangles.size() > 0)
@@ -565,7 +556,7 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
             }
 
             styleDetail.styleTexture->imageInfoList = vsg::ImageInfoList{ tex->imageInfo };
-            uniforms.style.hasTexture = 1;
+            //uniforms.style.hasTexture = 1;
             needsCompile = true;
         }
     }

@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
     struct MeshGeometry : public ComponentBase2<MeshGeometry>
     {
         //! Separate arrays containing verts, colors, UVs, and indices.
-        std::vector<glm::dvec3> verts;
+        std::vector<glm::dvec3> vertices;
         std::vector<glm::fvec4> colors;
         std::vector<glm::fvec3> normals;
         std::vector<glm::fvec2> uvs;
@@ -43,8 +43,11 @@ namespace ROCKY_NAMESPACE
     //! Mesh style component
     struct MeshStyle : public ComponentBase2<MeshStyle>
     {
-        // if alpha is zero, use the line's per-vertex color insteade
-        Color color = { 1, 1, 1, 0 };
+        //! Default color for the mesh
+        Color color = { 1, 1, 1, 1 };
+
+        //! If true, use the per-vertex colors defined in the associated MeshGeometry
+        bool useGeometryColors = false;
 
         // vertex adjustment (in meters) to apply to the mesh verts
         // as a simple method or avoiding depth fighting

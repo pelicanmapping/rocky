@@ -55,7 +55,7 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
 
-void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
+vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
 {
     // temp:
     pbr.ao = 1.0;
@@ -181,4 +181,6 @@ void apply_lighting(inout vec4 color, in vec3 vertex_view, in vec3 normal)
         // default swapchain format. Ref:
         // https://github.com/vsg-dev/VulkanSceneGraph/discussions/1379
     }
+
+    return color;
 }

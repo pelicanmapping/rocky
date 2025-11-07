@@ -20,8 +20,7 @@ struct RockyVaryings {
 layout(location = 0) in RockyVaryings varyings;
 
 // uniforms (TerrainNode.h)
-layout(set = 0, binding = 9) uniform TerrainData
-{
+layout(set = 0, binding = 9) uniform TerrainData {
     vec4 backgroundColor;
     int wireOverlay;
     int lighting;
@@ -53,7 +52,7 @@ void main()
 
     if (settings.lighting > 0)
     {
-        apply_lighting(out_color, varyings.vertex_view, get_normal());
+        out_color = apply_lighting(out_color, varyings.vertex_view, get_normal());
     }
 
 #if defined(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION) && defined(GL_EXT_fragment_shader_barycentric)

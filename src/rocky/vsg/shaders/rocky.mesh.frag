@@ -1,20 +1,12 @@
 #version 450
 
-
-//layout(location = 1) in vec2 uv;
-//layout(location = 2) in vec3 normal;
-//layout(location = 3) in vec3 vertexView;
-//layout(location = 4) flat in vec4 color;
-//layout(location = 5) flat in int hasTexture;
-//layout(location = 6) flat in int hasLighting;
-
 layout(location = 1) in Varyings {
+    vec4 color;
     vec2 uv;
     vec3 normal;
     vec3 vertexView;
-    flat vec4 color;
-    flat int hasTexture;
-    flat int hasLighting;
+    float applyTexture;
+    float applyLighting;
 } vary;
 
 // outputs
@@ -40,13 +32,7 @@ void main()
 {
     outColor = vary.color;
 
-    if (vary.hasTexture > 0)
-    {
-        outColor.rgb *= texture(meshTexture, vary.uv).rgb;
-    }
+    outColor = mix(outColor, outColor * texture(meshTexture, vary.uv), vary.applyTexture);
 
-    if (vary.hasLighting > 0)
-    {
-        apply_lighting(outColor, vary.vertexView, vary.normal); //get_normal());
-    }
+    outColor = mix(outColor, apply_lighting(outColor, vary.vertexView, vary.normal), vary.applyLighting);
 }
