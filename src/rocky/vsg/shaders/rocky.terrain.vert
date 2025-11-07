@@ -3,15 +3,13 @@
 
 layout(set = 0, binding = 10) uniform sampler2D elevation_tex;
 
-layout(push_constant) uniform PushConstants
-{
+layout(push_constant) uniform PushConstants {
     mat4 projection;
     mat4 modelview;
 } pc;
 
 // see rocky::TerrainTileDescriptors
-layout(set = 0, binding = 13) uniform TileData
-{
+layout(set = 0, binding = 13) uniform TileData {
     mat4 elevation_matrix;
     mat4 color_matrix;
     mat4 model_matrix;
@@ -26,14 +24,11 @@ layout(location = 1) in vec3 in_normal;
 layout(location = 2) in vec3 in_uvw;
 
 // inter-stage interface block
-struct RockyVaryings {
+layout(location = 0) out Varyings {
     vec2 uv;
-    vec3 up_view;
-    vec3 vertex_view;
-};
-
-// output varyings
-layout(location = 0) out RockyVaryings varyings;
+    vec3 upView;
+    vec3 vertexView;
+} vary;
 
 #if defined(ROCKY_ATMOSPHERE)
 #include "rocky.atmo.ground.vert.glsl"
@@ -76,10 +71,10 @@ void main()
 #endif
 
     mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
-    varyings.up_view = normal_matrix * in_normal;
+    vary.upView = normal_matrix * in_normal;
     
-    varyings.uv = (tile.color_matrix * vec4(in_uvw.st, 0, 1)).st;
-    varyings.vertex_view = position_view.xyz / position_view.w;
+    vary.uv = (tile.color_matrix * vec4(in_uvw.st, 0, 1)).st;
+    vary.vertexView = position_view.xyz / position_view.w;
     
     gl_Position = pc.projection * position_view;
 }

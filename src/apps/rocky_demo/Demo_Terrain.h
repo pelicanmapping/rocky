@@ -99,7 +99,7 @@ auto Demo_Terrain = [](Application& app)
 
         if (app.vsgcontext->device()->getPhysicalDevice()->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
         {
-            ImGuiLTable::Checkbox("Show triangles", &app.mapNode->terrainNode->wireOverlay.mutable_value());
+            ImGuiLTable::Checkbox("Triangles", &app.mapNode->terrainNode->wireOverlay.mutable_value());
         }
 
         if (ImGuiLTable::Checkbox("Wireframe", &wireframe))

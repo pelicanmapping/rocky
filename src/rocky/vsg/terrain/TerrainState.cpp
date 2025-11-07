@@ -398,15 +398,15 @@ TerrainState::updateSettings(const TerrainSettings& settings)
         _terrainDescriptors.data->dirty();
     }
 
-    if (settings.wireOverlay.value() != (uniforms.wireOverlay? 1 : 0))
+    if (uniforms.applyWireOverlay != (settings.wireOverlay.value() ? 1.0f : 0.0f))
     {
-        uniforms.wireOverlay = settings.wireOverlay.value() ? 1 : 0;
+        uniforms.applyWireOverlay = settings.wireOverlay.value() ? 1.0f : 0.0f;
         _terrainDescriptors.data->dirty();
     }
 
-    if (settings.lighting.value() != (uniforms.lighting? 1 : 0))
+    if (uniforms.applyLighting != (settings.lighting.value() ? 1.0f : 0.0f))
     {
-        uniforms.lighting = settings.lighting.value() ? 1 : 0;
+        uniforms.applyLighting = settings.lighting.value() ? 1.0f : 0.0f;
         _terrainDescriptors.data->dirty();
     }
 }

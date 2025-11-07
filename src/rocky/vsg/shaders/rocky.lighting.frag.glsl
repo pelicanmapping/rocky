@@ -61,7 +61,6 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
     pbr.ao = 1.0;
     pbr.roughness = 0.75;
     pbr.metal = 0.0;
-    const float exposure = 3.3;
 
     vec3 albedo = color.rgb;
 
@@ -161,26 +160,28 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
     }
 #endif
 
-    if (total_light_count > 0)
-    {
-        color.rgb = Lo + (clamp(ambient, vec3(0.0), vec3(1.0)) * albedo * pbr.ao);
+
+    vec3 new_color = Lo + (clamp(ambient, vec3(0.0), vec3(1.0)) * albedo * pbr.ao);
 
 //#if defined(ROCKY_ATMOSPHERE)
-//        color.rgb += atmos_color; // add in the atmospheric haze
-//        //color.rgb *= (atmos_color + vec3(1.0));
+//        new_color += atmos_color; // add in the atmospheric haze
+//        //new_color *= (atmos_color + vec3(1.0));
 //#endif
 
-        // option 1 - exposure mapping
-        const float exposure = 3.3;
-        color.rgb = 1.0 - exp(-exposure * color.rgb);
+    // option 1 - exposure mapping
+    const float exposure = 3.3;
+    new_color = 1.0 - exp(-exposure * new_color);
 
-        // option 2 - reinhard tone mapping
-        //color.rgb = color.rgb / (color.rgb + vec3(1.0)); // tone map
+    // option 2 - reinhard tone mapping
+    //new_color = new_color / (new_color + vec3(1.0)); // tone map
 
-        // NOTE: no gamma correction needed, since VSG uses SRGB as the
-        // default swapchain format. Ref:
-        // https://github.com/vsg-dev/VulkanSceneGraph/discussions/1379
-    }
+    // NOTE: no gamma correction needed, since VSG uses SRGB as the
+    // default swapchain format. Ref:
+    // https://github.com/vsg-dev/VulkanSceneGraph/discussions/1379
+
+    float apply = min(1.0, float(total_light_count));
+
+    color.rgb = mix(color.rgb, new_color, apply);
 
     return color;
 }
