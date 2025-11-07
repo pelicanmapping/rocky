@@ -22,7 +22,9 @@ auto Demo_Geocoder = [](Application& app)
         app.registry.write([&](entt::registry& registry)
             {
                 outline = registry.create();
-                registry.emplace<Line>(outline);
+                auto& geom = registry.emplace<LineGeometry>(outline);
+                auto& style = registry.emplace<LineStyle>(outline);
+                registry.emplace<Line>(outline, geom, style);
 
                 // Make an entity to host our icon:
                 placemark = registry.create();               
@@ -48,10 +50,11 @@ auto Demo_Geocoder = [](Application& app)
             if (ImGuiLTable::InputText("Location:", input_buf, 256, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
             {
                 // disable the placemark:
-                app.registry.read([&](entt::registry& registry)
+                app.registry.read([&](entt::registry& reg)
                     {
-                        // hide the placemark:
-                        registry.get<Visibility>(placemark).visible.fill(false);
+                        // hide the graphics
+                        reg.get<Visibility>(placemark).visible.fill(false);
+                        reg.get<Visibility>(outline).visible.fill(false);
                     });
 
                 std::string input(input_buf);
@@ -123,15 +126,21 @@ auto Demo_Geocoder = [](Application& app)
                                     fgen.features = { myfeature };
                                     auto primitives = fgen.generate(app.mapNode->srs());
 
-                                    app.registry.write([&](entt::registry& registry)
+                                    app.registry.write([&](entt::registry& reg)
                                         {
-                                            registry.emplace_or_replace<Line>(outline, primitives.line);
+                                            auto& style = reg.get<LineStyle>(outline);
+                                            style = primitives.lineStyle;                                            
+                                            style.dirty(reg);
 
-                                            registry.get<Visibility>(outline).visible.fill(true);
-                                            registry.get<Visibility>(placemark).visible.fill(true);
+                                            auto& geom = reg.get<LineGeometry>(outline);
+                                            geom = primitives.lineGeom;
+                                            geom.dirty(reg);
+
+                                            reg.get<Visibility>(outline).visible.fill(true);
+                                            reg.get<Visibility>(placemark).visible.fill(true);
 
                                             // update the label and the transform:
-                                            auto&& [xform, widget] = registry.get<Transform, Widget>(placemark);
+                                            auto&& [xform, widget] = reg.get<Transform, Widget>(placemark);
 
                                             auto text = display_name;
                                             util::replaceInPlace(text, ", ", "\n");

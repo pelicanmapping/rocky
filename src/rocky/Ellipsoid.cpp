@@ -373,27 +373,23 @@ Ellipsoid::calculateHorizonPoint(const std::vector<glm::dvec3>& points) const
 glm::dvec3
 Ellipsoid::rotationAxis(const glm::dvec3& geocStart, double initialBearing_deg) const
 {
-    // convert to unit sphere
-    auto distance_unit = 1.0 / semiMajorAxis();
-    auto start_unit = glm::normalize(geocStart * _ellipsoidToUnitSphere);
+    const glm::dvec3 northPole(0, 0, 1);
 
-    glm::dvec3 geodStart = geocentricToGeodetic(geocStart);
+    auto posUnit = glm::normalize(geocStart * _ellipsoidToUnitSphere);
+    auto east = glm::normalize(glm::cross(northPole, posUnit));
+    auto north = glm::normalize(glm::cross(posUnit, east));
 
-    // find the destination lat/long:
-    double bearing_rad = deg2rad(initialBearing_deg);
-    double lat1_rad = deg2rad(geodStart.y), lon1_rad = deg2rad(geodStart.x);
-    double dR = distance_unit; // 1.0; // distance / radius;
-    double lat2_rad = asin(sin(lat1_rad) * cos(dR) + cos(lat1_rad) * sin(dR) * cos(bearing_rad));
-    double lon2_rad = lon1_rad + atan2(sin(bearing_rad) * sin(dR) * cos(lat1_rad),
-        cos(dR) - sin(lat1_rad) * sin(lat2_rad));
+    if (glm::length(east) < 1e-10)
+    {
+        east = glm::dvec3(1, 0, 0);
+        north = glm::normalize(glm::cross(posUnit, east));
+    }
 
-    // get a quaternion that rotates one onto the other:
-    auto end_geocentric = geodeticToGeocentric(glm::dvec3(rad2deg(lon2_rad), rad2deg(lat2_rad), 0.0));
-    auto end_unit = glm::normalize(end_geocentric * _ellipsoidToUnitSphere);
+    auto bearing_rad = deg2rad(initialBearing_deg);
+    auto tangent = glm::normalize(north * cos(bearing_rad) + east * sin(bearing_rad));
 
-    auto rotation_axis_unit = glm::cross(start_unit, end_unit);
-    
-    return glm::normalize(rotation_axis_unit * _unitSphereToEllipsoid);
+    auto axisUnit = glm::normalize(glm::cross(posUnit, tangent));
+    return glm::normalize(axisUnit * _unitSphereToEllipsoid);
 }
 
 glm::dvec3

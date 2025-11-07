@@ -66,6 +66,7 @@ auto Demo_PolygonFeatures = [](Application& app)
             std::uniform_real_distribution<float> frand(0.15f, 1.0f);
 
             feature_view.styles.mesh.depthOffset = 9000.0f;
+            feature_view.styles.mesh.useGeometryColors = true;
 
             feature_view.styles.meshColorFunction = [&frand](const Feature& f)
                 {

@@ -72,34 +72,35 @@ std::vector<Demo> demos =
     Demo{ "Map", Demo_Map },
     Demo{ "Basics", {},
     {
-        Demo{ "Line -   absolute", Demo_Line_Absolute },
-        Demo{ "  Line - per-vertex colors", Demo_Line_Per_Vertex_Colors },
-        Demo{ "  Line - relative", Demo_Line_Relative },
-        Demo{ "  Line - shared", Demo_Line_Shared },
-        Demo{ "  Line - dynamic allocation test", Demo_Line_Dynamic_Allocation_Test },
-        Demo{ "Mesh -   absolute", Demo_Mesh_Absolute },
-        Demo{ "  Mesh - relative", Demo_Mesh_Relative },
-        Demo{ "  Mesh - textured", Demo_Mesh_Textured },
-        Demo{ "  Mesh - shared", Demo_Mesh_Shared },
-        Demo{ "  Mesh - blending", Demo_Mesh_Blending },
-        Demo{ "  Mesh - lighting", Demo_Mesh_Lighting },
+        Demo{ "Line", {}, {
+            Demo{ "Line - Absolute position", Demo_Line_Absolute },
+            Demo{ "Line - Relative position", Demo_Line_Relative },
+            Demo{ "Line - Per-vertex colors", Demo_Line_Per_Vertex_Colors },
+            Demo{ "Line - Sharing", Demo_Line_Shared },
+            Demo{ "Line - Dynamic allocation", Demo_Line_Dynamic_Allocation_Test }
+        } },
+        Demo{ "Mesh", {}, {
+            Demo{ "Mesh - Absolute position", Demo_Mesh_Absolute },
+            Demo{ "Mesh - Relative position", Demo_Mesh_Relative },
+            Demo{ "Mesh - Texturing", Demo_Mesh_Textured },
+            Demo{ "Mesh - Sharing", Demo_Mesh_Shared },
+            Demo{ "Mesh - Blending", Demo_Mesh_Blending },
+            Demo{ "Mesh - Lighting", Demo_Mesh_Lighting }
+        } },
         Demo{ "Point", Demo_Point },
         Demo{ "Icon", Demo_Icon },
         Demo{ "Model", Demo_Model },
         Demo{ "Widget", Demo_Widget },
         Demo{ "Label (old)", Demo_Label },
-        Demo{ "Drawing", Demo_Draw },
-        Demo{ "Node Pager", Demo_NodePager },
-        Demo{ "RTT", Demo_RTT }
-        //Demo{ "Screenshot", Demo_Screenshot }
+        Demo{ "Node Pager", Demo_NodePager }
     } },
-    Demo{ "GIS Data", {},
+    Demo{ "GIS", {},
     {
-        Demo{ "FeatureView", Demo_FeatureView },
         Demo{ "Polygon features", Demo_PolygonFeatures },
         Demo{ "Line features", Demo_LineFeatures },
         Demo{ "Labels from features", Demo_LabelFeatures },
-        Demo{ "Vector tiles", Demo_MVTFeatures }
+        Demo{ "Vector tiles", Demo_MVTFeatures },
+        Demo{ "FeatureView", Demo_FeatureView }
     } },
     Demo{ "Simulation", {},
     {
@@ -107,14 +108,20 @@ std::vector<Demo> demos =
         Demo{ "Track histories", Demo_TrackHistory }
     } },
     Demo{ "Decluttering", Demo_Decluttering },
-    Demo{ "Elevation Query", Demo_ElevationSampler },
+    Demo{ "Elevation query", Demo_ElevationSampler },
     Demo{ "Intersection", Demo_Intersect },
-    Demo{ "Geocoding", Demo_Geocoder },
     Demo{ "Camera", Demo_MapManipulator },
     Demo{ "Views", Demo_Views },
-    Demo{ "Environment", Demo_Environment },
-    Demo{ "Serialization", Demo_Serialization },
     Demo{ "Terrain", Demo_Terrain },
+    Demo{ "Miscellany", {},
+    {
+        Demo{ "Drawing", Demo_Draw },
+        Demo{ "Geocoding", Demo_Geocoder },
+        Demo{ "Render to texture", Demo_RTT },
+        Demo{ "Serialization", Demo_Serialization },
+        Demo{ "Screenshot", Demo_Screenshot },
+        Demo{ "Sky", Demo_Environment }
+    } },
     Demo{ "Stats", Demo_Stats },
     Demo{ "About", Demo_About }
 };

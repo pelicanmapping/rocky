@@ -279,7 +279,14 @@ auto Demo_Screenshot = [](Application& app)
 
         offscreenRenderGraph = vsg::RenderGraph::create();
         offscreenRenderGraph->framebuffer = createFramebuffer(device, extent);
-        offscreenRenderGraph->addChild(main_view);
+        offscreenRenderGraph->renderArea.extent = offscreenRenderGraph->framebuffer->extent2D();
+		offscreenRenderGraph->setClearValues(
+			VkClearColorValue{ {0.0f, 0.0f, 0.0f, 1.0f} },
+			VkClearDepthStencilValue{ 0.0f, 0 });
+
+        //offscreenRenderGraph->addChild(main_view);
+		auto viewRG = app.display.renderGraph(main_view);
+		offscreenRenderGraph->children = viewRG->children;
 
         auto install = [&app, main_window]()
             {
@@ -298,7 +305,7 @@ auto Demo_Screenshot = [](Application& app)
         return;
     }
 
-	static char filenameBuffer[512] = "D:/screenshot.png";
+	static char filenameBuffer[512] = "screenshot.jpg";
 	ImGui::Text("Save Path:");
 	ImGui::SameLine();
 	ImGui::InputText("##Save Path", filenameBuffer, sizeof(filenameBuffer));
