@@ -413,6 +413,7 @@ PointSystemNode::createOrUpdateStyle(const PointStyle& style, PointStyleDetail& 
     // update the uniform for this style:
     auto& uniforms = *static_cast<PointStyleUniform*>(styleDetail.styleData->dataPointer());
     uniforms.style.populate(style);
+    uniforms.style.devicePixelRatio = _devicePixelRatio;
     needsUpload = !needsCompile;
 
     if (needsCompile)
@@ -565,6 +566,18 @@ PointSystemNode::update(VSGContext& vsgcontext)
         s_toDispose = vsg::Objects::create();
     }
 
+    if (vsgcontext->devicePixelRatio() != _devicePixelRatio)
+    {
+        _devicePixelRatio = vsgcontext->devicePixelRatio();
+
+        // If the DPR changed, dirty all styles so the new dpr will get applied
+        _registry.read([&](entt::registry& reg)
+            {
+                for (auto&& [e, style] : reg.view<PointStyle>().each())
+                    style.dirty(reg);
+            });
+    }
+
     _registry.read([&](entt::registry& reg)
         {
             PointStyle::eachDirty(reg, [&](entt::entity e)
@@ -577,14 +590,7 @@ PointSystemNode::update(VSGContext& vsgcontext)
                 {
                     const auto& [geom, geomDetail] = reg.get<PointGeometry, PointGeometryDetail>(e);
                     createOrUpdateGeometry(geom, geomDetail, vsgcontext);
-                });
-
-            //Point::eachDirty(reg, [&](entt::entity e)
-            //    {
-            //        const auto& [c, pointDetail] = reg.get<Point, PointDetail>(e);
-            //        auto* geomDetail = c.geometry != entt::null ? reg.try_get<PointGeometryDetail>(c.geometry) : nullptr;
-            //        createOrUpdateComponent(c, pointDetail, geomDetail);
-            //    });                    
+                });                   
         });
 
     Inherit::update(vsgcontext);

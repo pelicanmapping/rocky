@@ -351,6 +351,7 @@ LabelSystemNode::createOrUpdateNode(const Label& label, detail::BuildInfo& data,
             textNode->shaderSet = {};
 
             auto ssg = ScreenSpaceGroup::create();
+            ssg->vsgcontext = vsgcontext;
             ssg->scale = label.style.pointSize / (double)nativeSize;
             ssg->addChild(textNode);
             data.new_node = ssg;

@@ -19,6 +19,8 @@ struct PointStyle {
     float antialias;
     float depthOffset;
     uint perVertexMask; // 0x1 = color, 0x2 = width
+    float devicePixelRatio;
+    uint padding[3];
 };
 
 #define PER_VERTEX_COLOR 0x1
@@ -66,6 +68,6 @@ void main()
     view.xyz = apply_depth_offset(view.xyz, depthOffset);
     vec4 clip = pc.projection * view;
 
-    gl_PointSize = perVertexWidth ? in_width : point.style.width;
+    gl_PointSize = (perVertexWidth ? in_width : point.style.width) * point.style.devicePixelRatio;
     gl_Position = clip;
 }

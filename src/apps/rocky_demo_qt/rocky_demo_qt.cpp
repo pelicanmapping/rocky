@@ -14,7 +14,6 @@
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QVBoxLayout>
-#include <QtWidgets/QPushButton>
 
 #include <vsgQt/Window.h>
 
@@ -157,6 +156,8 @@ int main(int argc, char** argv)
 
     // Finally add it to the Rocky display manager.
     app.display.addWindow(rocky_window->windowAdapter);
+
+    app.vsgcontext->devicePixelRatio = [&]() { return rocky_window->devicePixelRatio(); };
 
     // Add some data to the map if necessary.
     if (app.mapNode->map->layers().empty())

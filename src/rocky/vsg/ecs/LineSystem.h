@@ -59,7 +59,8 @@ namespace ROCKY_NAMESPACE
             std::int32_t stippleFactor;
             float depthOffset;
             std::uint32_t perVertexMask = 0; // 0x01 = colors
-            std::uint32_t padding[3]; // pad to 16 bytes
+            float devicePixelRatio = 1.0f;
+            std::uint32_t padding[2]; // pad to 16 bytes
 
             inline void populate(const LineStyle& in) {
                 color = in.color;
@@ -151,6 +152,7 @@ namespace ROCKY_NAMESPACE
     private:
         mutable detail::LineStyleDetail _defaultStyleDetail;
         mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
+        mutable float _devicePixelRatio = 1.0f;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Line& line) {
             return _pipelines[0].config->layout;

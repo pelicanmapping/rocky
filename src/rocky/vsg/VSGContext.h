@@ -70,6 +70,8 @@ namespace ROCKY_NAMESPACE
         //! Polyfill Vulkan Extension functions (not supplied by VSG yet)
         VulkanExtensions* ext();
 
+        std::function<float()> devicePixelRatio = []() { return 1.0f; };
+
     public:
 
         //! Queue a function to run during the update pass

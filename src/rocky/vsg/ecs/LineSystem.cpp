@@ -423,6 +423,7 @@ LineSystemNode::createOrUpdateStyle(const LineStyle& style, LineStyleDetail& sty
     // update the uniform for this style:
     auto& uniforms = *static_cast<LineStyleUniform*>(styleDetail.styleData->dataPointer());
     uniforms.style.populate(style);
+    uniforms.style.devicePixelRatio = _devicePixelRatio;
     needsUpload = !needsCompile;
 
     if (needsCompile)
@@ -574,6 +575,18 @@ LineSystemNode::update(VSGContext& vsgcontext)
         s_toDispose = vsg::Objects::create();
     }
 
+    if (vsgcontext->devicePixelRatio() != _devicePixelRatio)
+    {
+        _devicePixelRatio = vsgcontext->devicePixelRatio();
+
+        // If the DPR changed, dirty all styles so the new dpr will get applied
+        _registry.read([&](entt::registry& reg)
+            {
+                for (auto&& [e, style] : reg.view<LineStyle>().each())
+                    style.dirty(reg);
+            });
+    }
+
     _registry.read([&](entt::registry& reg)
         {
             LineStyle::eachDirty(reg, [&](entt::entity e)
@@ -586,14 +599,7 @@ LineSystemNode::update(VSGContext& vsgcontext)
                 {
                     const auto& [geom, geomDetail] = reg.get<LineGeometry, LineGeometryDetail>(e);
                     createOrUpdateGeometry(geom, geomDetail, vsgcontext);
-                });
-
-            //Line::eachDirty(reg, [&](entt::entity e)
-            //    {
-            //        const auto& [line, lineDetail] = reg.get<Line, LineDetail>(e);
-            //        auto* geomDetail = line.geometry != entt::null ? reg.try_get<LineGeometryDetail>(line.geometry) : nullptr;
-            //        createOrUpdateComponent(line, lineDetail, geomDetail);
-            //    });                    
+                });                  
         });
 
     Inherit::update(vsgcontext);

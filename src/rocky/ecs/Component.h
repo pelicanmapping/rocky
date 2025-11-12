@@ -44,7 +44,9 @@ namespace ROCKY_NAMESPACE
 
         inline void dirty(entt::registry& r)
         {
-            ROCKY_SOFT_ASSERT_AND_RETURN(owner != entt::null, void());
+            ROCKY_SOFT_ASSERT_AND_RETURN(owner != entt::null, void(),
+                "ComponentBase2::dirty() called on unowned component - on_construct() was probably not installed for this type; "
+                "you might need to call Application::realize() before creating ECS components");
 
             r.view<Dirty>().each([&](auto& dirtyList)
                 {

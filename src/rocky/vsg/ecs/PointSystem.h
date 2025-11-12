@@ -43,6 +43,8 @@ namespace ROCKY_NAMESPACE
             float antialias;
             float depthOffset;
             std::uint32_t perVertexMask = 0; // bit 0 = color, bit 1 = width
+            float devicePixelRatio = 1.0f;
+            std::uint32_t padding[3];
 
             inline void populate(const PointStyle& in) {
                 color = in.color;
@@ -129,6 +131,7 @@ namespace ROCKY_NAMESPACE
     private:
         mutable detail::PointStyleDetail _defaultStyleDetail;
         mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
+        mutable float _devicePixelRatio;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Point&) {
             return _pipelines[0].config->layout;

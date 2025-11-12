@@ -85,6 +85,7 @@ namespace ROCKY_NAMESPACE
         //! This will effectively billboard the geometry.
         bool snap = true;
         double scale = 1.0;
+        VSGContext vsgcontext;
 
         void traverse(vsg::RecordTraversal& rt) const override
         {
@@ -103,7 +104,8 @@ namespace ROCKY_NAMESPACE
             modelview[3][0] = snap ? std::floor(x) : x;
             modelview[3][1] = snap ? std::floor(viewport[3] - y) : viewport[3] - y;
 
-            modelview[0][0] = modelview[1][1] = scale;
+            double dpr = vsgcontext ? (double)vsgcontext->devicePixelRatio() : 1.0;
+            modelview[0][0] = modelview[1][1] = scale * dpr;
 
             state.projectionMatrixStack.push(ortho);
             state.modelviewMatrixStack.push(modelview);

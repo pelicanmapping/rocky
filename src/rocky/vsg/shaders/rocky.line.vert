@@ -20,7 +20,8 @@ struct LineStyle {
     int stippleFactor;
     float depthOffset;
     uint perVertexMask; // 0x1 = color
-    uint padding[3];
+    float devicePixelRatio;
+    uint padding[2];
 };
 
 // rocky::detail::LineStyleUniform
@@ -68,7 +69,7 @@ void main()
     vary.stipplePattern = line.style.stipplePattern;
     vary.stippleFactor = line.style.stippleFactor;
 
-    float thickness = max(0.5, floor(line.style.width));
+    float thickness = max(0.5, floor(line.style.width * line.style.devicePixelRatio));
     float len = thickness;
     int code = (gl_VertexIndex + 2) & 3;
     bool is_start = code <= 1;
