@@ -17,7 +17,9 @@
         { "name" : "spdlog" },
         { "name" : "sqlite3" },
         { "name" : "vsg", "features" : [ "windowing" ] },
+        { "name" : "vsgqt" },
         { "name" : "vsgxchange", "features": [ "assimp", "freetype" ] },
-        { "name" : "zlib" }
+        { "name" : "zlib" },
+        { "name" : "qtbase", "default-features" : false, "features" : [ "widgets" ] }
     ]
 }
