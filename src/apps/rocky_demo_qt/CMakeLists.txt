@@ -6,20 +6,13 @@ find_package(vsgQt CONFIG REQUIRED)
 
 # Find Qt, if vsgQt didn't already find it
 if(NOT TARGET Qt::Widgets)
-    find_package(Qt6 QUIET COMPONENTS Widgets CONFIG)
-    if(Qt6_FOUND)
-        message(STATUS "Found Qt6: ${Qt6_DIR}")
-    else()
-        find_package(Qt5 QUIET COMPONENTS Widgets CONFIG)
-        if(Qt5_FOUND)
-            message(STATUS "Found Qt5: ${Qt5_DIR}")
-            include_directories(${Qt5_DIR}/qt5)
-        else()
-            # Provide a warning if neither is found, but don't stop the configuration.
-            message(WARNING "Neither Qt5 nor Qt6 was found. rocky_demo_qt will not build.")
-            return()
-        endif()
+    # Figure out what version of Qt vsgQt linked against by inspecting dependencies. Match vsgQt.
+    get_target_property(_VSGQT_INTERFACE_LINK_LIBRARIES vsgQt::vsgQt INTERFACE_LINK_LIBRARIES)
+    set(_ROCKY_QT_VERSION 6)
+    if("${_VSGQT_INTERFACE_LINK_LIBRARIES}" MATCHES "Qt5::")
+        set(_ROCKY_QT_VERSION 5)
     endif()
+    find_package(Qt${_ROCKY_QT_VERSION} REQUIRED COMPONENTS Widgets CONFIG)
 endif()
 
 file(GLOB SOURCES *.cpp)
