@@ -7,7 +7,6 @@
 
 #include <rocky/vsg/ecs/MotionSystem.h>
 #include <rocky/vsg/imgui/ImGuiImage.h>
-#include <set>
 #include <random>
 #include "helpers.h"
 
@@ -75,11 +74,7 @@ namespace
                         if (ImGui::BeginTable("asset", 2))
                         {
                             ImGui::TableNextColumn();
-#if IMGUI_VERSION_NUM >= 19200
-                            ImGui::Image(ImTextureRef(image.id(context->device()->deviceID)), image.size());
-#else
-                            ImGui::Image(image.id(context->device()->deviceID), image.size());
-#endif
+                            ImGui::Image(image.handle(), image.size());
 
                             ImGui::TableNextColumn();
                             ImGui::Text("ID: %s", i.widget.text.c_str());

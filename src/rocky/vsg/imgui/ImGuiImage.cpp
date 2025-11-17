@@ -41,8 +41,8 @@ ImGuiImage::ImGuiImage(Image::Ptr image, VSGContext vsg)
         delete _internal;
 
     _internal = new Internal();
-
     _image = image;
+    _deviceID = vsg->device()->deviceID;
 
     auto data = util::wrapImageData(image);
 
@@ -64,12 +64,18 @@ ImGuiImage::ImGuiImage(Image::Ptr image, VSGContext vsg)
     vsg->compile(_internal->compilable);
 }
 
-ImTextureID
-ImGuiImage::id(std::uint32_t deviceID) const
+ImGuiTextureHandle
+ImGuiImage::handle() const
 {
-    return _internal ?
-        reinterpret_cast<ImTextureID>(_internal->compilable->descriptorSet->vk(deviceID)) :
+    auto id = _internal ?
+        reinterpret_cast<ImTextureID>(_internal->compilable->descriptorSet->vk(_deviceID)) :
         ImTextureID{};
+
+#if IMGUI_VERSION_NUM >= 19200
+    return ImTextureRef(id);
+#else
+    return (ImTextureID)id;
+#endif
 }
 
 
