@@ -79,5 +79,15 @@ ImGuiImage::handle() const
 #endif
 }
 
+ImTextureID
+ImGuiImage::id() const
+{
+#if IMGUI_VERSION_NUM >= 19200
+    return handle().GetTexID();
+#else
+    return handle();
+#endif
+}
+
 
 #endif

@@ -37,6 +37,9 @@ namespace ROCKY_NAMESPACE
         //! the device ID this image was created with
         ImGuiTextureHandle handle() const;
 
+        //! Opaque image im to padd to ImGui::AddImageQuad() if necessary
+        ImTextureID id() const;
+
         //! Render this image at the specified size and with the specified rotation.
         inline void render(ImVec2 size, float rotationDegrees = 0.0f) const;
 
@@ -103,7 +106,7 @@ namespace ROCKY_NAMESPACE
         if (!ImGui::ItemAdd(bb, 0))
             return;
 
-        window->DrawList->AddImageQuad(handle().GetTexID(), corners[0], corners[1], corners[2], corners[3]);
+        window->DrawList->AddImageQuad(id(), corners[0], corners[1], corners[2], corners[3]);
     }
 };
 
