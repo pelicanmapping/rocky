@@ -19,7 +19,7 @@
 #include <filesystem>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::GDAL;
+using namespace ROCKY_NAMESPACE::detail;
 using namespace ROCKY_NAMESPACE::util;
 
 #undef LC
@@ -239,9 +239,8 @@ namespace ROCKY_NAMESPACE
         }
     }
 
-    namespace GDAL
+    namespace GDAL_detail
     {
-
         Result<std::shared_ptr<Image>> readImage(unsigned char* data, std::size_t length, const std::string& name)
         {
             std::shared_ptr<Image> result;
@@ -368,7 +367,7 @@ namespace ROCKY_NAMESPACE
 
 //...................................................................
 
-GDAL::Driver::~Driver()
+GDAL_detail::Driver::~Driver()
 {
     //Log()->info("GDAL::Driver::~Driver, _warped={}, _src={}", (std::uintptr_t)_warpedDS, (std::uintptr_t)_srcDS);
 
@@ -380,9 +379,9 @@ GDAL::Driver::~Driver()
 
 // Open the data source and prepare it for reading
 Result<>
-GDAL::Driver::open(
+GDAL_detail::Driver::open(
     const std::string& name,
-    const GDAL::Options* layer,
+    const GDAL_detail::Options* layer,
     unsigned tileSize,
     DataExtentList* layerDataExtents,
     const IOOptions& io)
@@ -715,7 +714,7 @@ GDAL::Driver::open(
 }
 
 bool
-GDAL::Driver::isValidValue(float v, GDALRasterBand* band)
+GDAL_detail::Driver::isValidValue(float v, GDALRasterBand* band)
 {
     float bandNoData = -32767.0f;
     int success;
@@ -744,7 +743,7 @@ GDAL::Driver::isValidValue(float v, GDALRasterBand* band)
 }
 
 bool
-GDAL::Driver::isValidValue(float v, float noDataValue) const
+GDAL_detail::Driver::isValidValue(float v, float noDataValue) const
 {
     //Check to see if the value is equal to the bands specified no data
     if (noDataValue == v)
@@ -761,7 +760,7 @@ GDAL::Driver::isValidValue(float v, float noDataValue) const
 }
 
 float
-GDAL::Driver::getValidElevationValue(float v, float noDataValueFromBand, float replacement)
+GDAL_detail::Driver::getValidElevationValue(float v, float noDataValueFromBand, float replacement)
 {
     if (noDataValue.has_value(v) || noDataValueFromBand == v)
         return replacement;
@@ -777,13 +776,13 @@ GDAL::Driver::getValidElevationValue(float v, float noDataValueFromBand, float r
 }
 
 bool
-GDAL::Driver::intersects(const TileKey& key)
+GDAL_detail::Driver::intersects(const TileKey& key)
 {
     return key.extent().intersects(_extents);
 }
 
 Result<std::shared_ptr<Image>>
-GDAL::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions& io)
+GDAL_detail::Driver::createImage(const TileKey& key, unsigned tileSize, const IOOptions& io)
 {
     if (maxDataLevel.has_value() && key.level > maxDataLevel)
     {
@@ -1204,7 +1203,7 @@ namespace
 
 
 float
-GDAL::Driver::getInterpolatedDEMValue(GDALRasterBand* band, double x, double y)
+GDAL_detail::Driver::getInterpolatedDEMValue(GDALRasterBand* band, double x, double y)
 {
     double r, c;
     GEO_TO_PIXEL(x, y, c, r);
@@ -1321,7 +1320,7 @@ GDAL::Driver::getInterpolatedDEMValue(GDALRasterBand* band, double x, double y)
 }
 
 Result<std::shared_ptr<Image>>
-GDAL::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOOptions& io)
+GDAL_detail::Driver::createHeightfield(const TileKey& key, unsigned tileSize, const IOOptions& io)
 {
     if (maxDataLevel.has_value() && key.level > maxDataLevel)
     {

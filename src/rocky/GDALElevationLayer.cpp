@@ -10,7 +10,7 @@
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::GDAL;
+using namespace ROCKY_NAMESPACE::GDAL_detail;
 
 ROCKY_ADD_OBJECT_FACTORY(GDALElevation,
     [](std::string_view JSON, const IOOptions& io) {
@@ -19,7 +19,7 @@ ROCKY_ADD_OBJECT_FACTORY(GDALElevation,
 namespace
 {
     template<typename T>
-    Result<> openOnThisThread(const T* layer, GDAL::Driver& driver, Profile* profile,
+    Result<> openOnThisThread(const T* layer, GDAL_detail::Driver& driver, Profile* profile,
         DataExtentList* out_dataExtents, const IOOptions& io)
     {
         if (layer->maxDataLevel.has_value())

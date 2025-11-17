@@ -152,7 +152,7 @@ namespace
                 options->extensionHint.string() == ".png" ? "png" :
                 "";
 
-            auto result = GDAL::readImage((unsigned char*)data.c_str(), data.length(), gdal_driver);
+            auto result = GDAL_detail::readImage((unsigned char*)data.c_str(), data.length(), gdal_driver);
 
             if (result.ok())
                 return util::moveImageToVSG(result.value());

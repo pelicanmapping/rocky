@@ -15,7 +15,7 @@ namespace ROCKY_NAMESPACE
      * Elevation layer connected to a GDAL raster dataset
      */
     class ROCKY_EXPORT GDALElevationLayer : public Inherit<ElevationLayer, GDALElevationLayer>,
-        public GDAL::Options
+        public GDAL_detail::Options
     {
     public:
         //! Construct a GDAL image layer
@@ -43,8 +43,8 @@ namespace ROCKY_NAMESPACE
         //! Called by the constructors
         void construct(std::string_view JSON, const IOOptions& io);
 
-        mutable util::ThreadLocal<GDAL::Driver> _drivers;
-        friend class GDAL::Driver;
+        mutable util::ThreadLocal<GDAL_detail::Driver> _drivers;
+        friend class GDAL_detail::Driver;
     };
 
 } // namespace ROCKY_NAMESPACE

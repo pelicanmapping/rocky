@@ -18,7 +18,7 @@ class GDALRasterBand;
 
 namespace ROCKY_NAMESPACE
 {
-    namespace GDAL
+    namespace GDAL_detail
     {
         /**
          * Encapsulates a user-supplied GDALDataset
