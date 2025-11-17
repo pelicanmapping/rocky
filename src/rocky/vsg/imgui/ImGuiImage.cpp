@@ -24,6 +24,7 @@ struct ImGuiImage::Internal
     };
 
     vsg::ref_ptr<Holder> compilable;
+    std::uint32_t _deviceID = 0;
 
     Internal() {
         compilable = Holder::create();
@@ -42,7 +43,6 @@ ImGuiImage::ImGuiImage(Image::Ptr image, VSGContext vsg)
 
     _internal = new Internal();
     _image = image;
-    _deviceID = vsg->device()->deviceID;
 
     auto data = util::wrapImageData(image);
 
@@ -60,6 +60,7 @@ ImGuiImage::ImGuiImage(Image::Ptr image, VSGContext vsg)
     auto texture = vsg::DescriptorImage::create(sampler, data, 0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
     _internal->compilable->descriptorSet = vsg::DescriptorSet::create(dsl, vsg::Descriptors{ texture });
+    _internal->_deviceID = vsg->device()->deviceID;
 
     vsg->compile(_internal->compilable);
 }
@@ -68,7 +69,7 @@ ImGuiTextureHandle
 ImGuiImage::handle() const
 {
     auto id = _internal ?
-        reinterpret_cast<ImTextureID>(_internal->compilable->descriptorSet->vk(_deviceID)) :
+        reinterpret_cast<ImTextureID>(_internal->compilable->descriptorSet->vk(_internal->_deviceID)) :
         ImTextureID{};
 
 #if IMGUI_VERSION_NUM >= 19200
@@ -77,7 +78,6 @@ ImGuiImage::handle() const
     return (ImTextureID)id;
 #endif
 }
-
 
 
 #endif

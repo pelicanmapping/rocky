@@ -501,12 +501,22 @@ widget.render = [](WidgetInstance& i)
 };
 ```
 
+Rendering images or icons with ImGui is easy too. Use the `rocky::ImGuiImage` class to wrap a Rocky `Image` for use with ImGUi:
+```c++
+rocky::Image image;
+...
+ImGuiImage imguiImage(image, vsgcontext);
+...
+// later, to render...
+ImGui::Image(imguiImage.handle(), imguiImage.size());
+```
+
 **IMPORTANT!!** Anything you do with ImGui-based Widgets is *context-sensitive* so you must activate the current context explicitly when rendering by calling
 ```c++
 ImGui::SetCurrentContext(...);
 ```
 
-[Demo_Widget.h](src/apps/rocky_demo/Demo_Widget.h) and [Demo_LabelFeatures](src/apps/rocky_demo/Demo_LabelFeatures.h) have more examples.
+[Demo_Widget.h](src/apps/rocky_demo/Demo_Widget.h) and [Demo_LabelFeatures](src/apps/rocky_demo/Demo_LabelFeatures.h) and [Demo_Simulation](src/apps/rocky_demo/Demo_Simulation.h) have more examples.
 
 ### Creating an Application GUI
 Rocky has an `ImGuiIntegration` API that makes it easy to render a GUI atop your map display.

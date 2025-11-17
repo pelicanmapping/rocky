@@ -59,7 +59,7 @@ namespace
             {
                 Transform& t = i.registry.get<Transform>(i.entity);
 
-                auto point = t.position.transform(SRS::WGS84);
+                auto pointECEF = t.position.transform(SRS::ECEF);
 
                 i.position.x += (i.size.x / 2) - (image.size().y / 2);
                 i.position.y += (i.size.y / 2) - (image.size().y / 2);
@@ -71,22 +71,27 @@ namespace
 
                 i.renderWindow([&]()
                     {
+                        // calculate the bearing for our icon:
+                        auto& motion = i.registry.get<MotionGreatCircle>(i.entity);
+                        auto course = pointECEF.srs.ellipsoid().course(pointECEF, motion.normalAxis);
+
                         if (ImGui::BeginTable("asset", 2))
                         {
                             ImGui::TableNextColumn();
-                            ImGui::Image(image.handle(), image.size());
+                            image.render(image.size(), course);
 
                             ImGui::TableNextColumn();
                             ImGui::Text("ID: %s", i.widget.text.c_str());
 
                             if (showPosition)
                             {
+                                auto pointWGS84 = pointECEF.transform(SRS::WGS84);
                                 ImGui::Separator();
-                                ImGui::Text("Lat: %.2f", point.y);
+                                ImGui::Text("Pos: %.2f, %.2f", pointWGS84.y, pointWGS84.x);
                                 ImGui::Separator();
-                                ImGui::Text("Lon: %.2f", point.x);
+                                ImGui::Text("Alt: %.0f m", pointWGS84.z);
                                 ImGui::Separator();
-                                ImGui::Text("Alt: %.0f", point.z);
+                                ImGui::Text("Crs: %.1f", course);
                             }
 
                             ImGui::EndTable();

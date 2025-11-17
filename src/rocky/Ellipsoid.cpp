@@ -371,7 +371,7 @@ Ellipsoid::calculateHorizonPoint(const std::vector<glm::dvec3>& points) const
 }
 
 glm::dvec3
-Ellipsoid::rotationAxis(const glm::dvec3& geocStart, double initialBearing_deg) const
+Ellipsoid::rotationAxis(const glm::dvec3& geocStart, double initialCourse_deg) const
 {
     const glm::dvec3 northPole(0, 0, 1);
 
@@ -385,12 +385,35 @@ Ellipsoid::rotationAxis(const glm::dvec3& geocStart, double initialBearing_deg) 
         north = glm::normalize(glm::cross(posUnit, east));
     }
 
-    auto bearing_rad = deg2rad(initialBearing_deg);
-    auto tangent = glm::normalize(north * cos(bearing_rad) + east * sin(bearing_rad));
+    auto course_rad = deg2rad(initialCourse_deg);
+    auto tangent = glm::normalize(north * cos(course_rad) + east * sin(course_rad));
 
     auto axisUnit = glm::normalize(glm::cross(posUnit, tangent));
     return glm::normalize(axisUnit * _unitSphereToEllipsoid);
 }
+
+double
+Ellipsoid::course(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis) const
+{
+    const glm::dvec3 northPole(0, 0, 1);
+    auto posUnit = glm::normalize(geocPoint * _ellipsoidToUnitSphere);
+
+    auto east = glm::normalize(glm::cross(northPole, posUnit));
+    auto north = glm::normalize(glm::cross(posUnit, east));
+
+    if (glm::length(east) < 1e-10) {
+        east = glm::dvec3(1, 0, 0);
+        north = glm::normalize(glm::cross(posUnit, east));
+    }
+
+    auto axisUnit = glm::normalize(geocAxis * _ellipsoidToUnitSphere);
+    auto tangent = glm::normalize(glm::cross(axisUnit, posUnit));
+    double n = glm::dot(tangent, north);
+    double e = glm::dot(tangent, east);
+    double heading_rad = atan2(e, n);
+    return glm::degrees(heading_rad);
+}
+
 
 glm::dvec3
 Ellipsoid::rotate(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis, double angle_deg) const
