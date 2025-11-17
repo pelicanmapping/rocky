@@ -275,7 +275,7 @@ auto Demo_Screenshot = [](Application& app)
         auto vp = main_view->camera->getViewport();
 
         auto device = main_window->getDevice();
-		VkExtent2D extent{ vp.width, vp.height };
+		VkExtent2D extent{ (std::uint32_t)vp.width, (std::uint32_t)vp.height };
 
         offscreenRenderGraph = vsg::RenderGraph::create();
         offscreenRenderGraph->framebuffer = createFramebuffer(device, extent);
@@ -284,7 +284,6 @@ auto Demo_Screenshot = [](Application& app)
 			VkClearColorValue{ {0.0f, 0.0f, 0.0f, 1.0f} },
 			VkClearDepthStencilValue{ 0.0f, 0 });
 
-        //offscreenRenderGraph->addChild(main_view);
 		auto viewRG = app.display.renderGraph(main_view);
 		offscreenRenderGraph->children = viewRG->children;
 
