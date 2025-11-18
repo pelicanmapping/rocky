@@ -10,13 +10,11 @@ using namespace ROCKY_NAMESPACE;
 auto ElevationSampler::fetch(const TileKey& key, const IOOptions& io) const -> Result<GeoImage>
 {
     // check the cache first.
-    if (preFetch)
+    if (cache)
     {
-        auto r = preFetch(key, io);
-        if (r.ok())
-        {
-            return r;
-        }
+        auto r = cache->get(key);
+        if (r.has_value())
+            return r.value();
     }
 
     // failing that, check the layer, and fall back to parent tiles if necessary.
@@ -24,7 +22,11 @@ auto ElevationSampler::fetch(const TileKey& key, const IOOptions& io) const -> R
     {
         auto r = layer->createTile(k, io);
         if (r.ok())
+        {
+            if (cache)
+                cache->put(key, r);
             return r;
+        }
     }
 
     return Failure{};

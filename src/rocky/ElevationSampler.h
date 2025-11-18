@@ -42,8 +42,8 @@ namespace ROCKY_NAMESPACE
         //! Value to return when no data is available at the requested coordinates
         float failValue = NO_DATA_VALUE;
 
-        //! Source of heightfields (like a cache) to check before querying the layer (optional).
-        std::function<Result<GeoImage>(const TileKey&, const IOOptions&)> preFetch;
+        //! Optional cache for fetching elevation tiles
+        std::shared_ptr<Cache<TileKey, Result<GeoImage>>> cache;
 
     public:
 
