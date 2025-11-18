@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE
     public:
         using Ptr = std::shared_ptr<TerrainTilePager>;
 
-        using Tracker = util::SentryTracker<TerrainTileNode*>;
+        using Tracker = detail::SentryTracker<TerrainTileNode*>;
 
         struct TileInfo
         {

@@ -71,7 +71,7 @@ namespace ROCKY_NAMESPACE
         WriteImageStreamService writeImageToStream;
 
         //! Serializes reads from identical URIs
-        util::Gate<std::string> uriGate;
+        detail::Gate<std::string> uriGate;
 
         //! Caches raw context coming from a URI (like a browser cache)
         std::shared_ptr<ContentCache> contentCache;

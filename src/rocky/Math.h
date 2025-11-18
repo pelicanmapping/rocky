@@ -8,6 +8,7 @@
 #include <rocky/Common.h>
 #include <glm/ext.hpp>
 #include <tuple>
+#include <algorithm>
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
@@ -70,7 +71,6 @@ namespace ROCKY_NAMESPACE
 
     struct ROCKY_EXPORT Sphere
     {
-    public:
         glm::dvec3 center = { 0, 0, 0 };
         double radius = -1;
 
@@ -81,7 +81,7 @@ namespace ROCKY_NAMESPACE
             center(a.x, a.y, a.z), radius(r) { }
 
         template<class VEC3>
-        void expandBy(const VEC3& v) {
+        inline void expandBy(const VEC3& v) {
             if (valid()) {
                 auto dv = glm::dvec3(v.x, v.y, v.z) - center;
                 double r = glm::length(dv);
@@ -97,7 +97,7 @@ namespace ROCKY_NAMESPACE
             }
         }
 
-        bool valid() const {
+        inline bool valid() const {
             return radius >= 0.0;
         }
     };
@@ -204,14 +204,12 @@ namespace ROCKY_NAMESPACE
                 (i & 0x4) ? zmax : zmin);
         }
 
-#if 1
         void expandBy(const Sphere& rhs) {
             expandBy(Box(
                 rhs.center.x - rhs.radius, rhs.center.x + rhs.radius,
                 rhs.center.y - rhs.radius, rhs.center.y + rhs.radius,
                 rhs.center.z - rhs.radius, rhs.center.z + rhs.radius));
         }
-#endif
 
         bool valid() const {
             return
@@ -252,526 +250,167 @@ namespace ROCKY_NAMESPACE
             xmax(x1), ymax(y1), zmax(0.0) { }
     };
 
-    namespace util
+    //! Test a glm matrix for identity.
+    template<int C, int R, typename T, glm::qualifier Q>
+    inline bool is_identity(const glm::mat<C, R, T, Q>& m) {
+        for (int c = 0; c < C; ++c) {
+            for (int r = 0; r < R; ++r) {
+                if ((c == r && !glm::epsilonEqual(m[c][r], static_cast<T>(1), static_cast<T>(1e-6))) ||
+                    (c != r && !glm::epsilonEqual(m[c][r], static_cast<T>(0), static_cast<T>(1e-6)))) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    //! Convert Euler angles, in radians, to a quaternion.
+    //! https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    template<typename Q = glm::dquat>
+    inline Q quaternion_from_euler_radians(double xaxis, double yaxis, double zaxis)
     {
-        template<typename T>
-        inline double lengthSquared(const T& v) {
-            return glm::dot(v, v);
-        }
+        Q q;
 
-        template<typename T>
-        inline T deg2rad(T v) {
-            return v * static_cast<T>(M_PI) / static_cast<T>(180.0);
-        }
+        // x-axis rotation:
+        double cx = cos(xaxis * 0.5);
+        double sx = sin(xaxis * 0.5);
+        // y-axis rotation:
+        double cy = cos(yaxis * 0.5);
+        double sy = sin(yaxis * 0.5);
+        // z-axis rotation:
+        double cz = cos(zaxis * 0.5);
+        double sz = sin(zaxis * 0.5);
 
-        template<typename T>
-        inline T rad2deg(T v) {
-            return v * static_cast<T>(180.0) / static_cast<T>(M_PI);
-        }
+        q.w = cx * cy * cz + sx * sy * sz;
+        q.x = sx * cy * cz - cx * sy * sz;
+        q.y = cx * sy * cz + sx * cy * sz;
+        q.z = cx * cy * sz - sx * sy * cz;
 
-        template<typename T>
-        inline T step(const T& edge, const T& x)
+        return q;
+    }
+
+    //! Convert Euler angles, in degrees, to a quaternion.
+    template<typename Q = glm::dquat>
+    inline Q quaternion_from_euler_degrees(double xaxis, double yaxis, double zaxis)
+    {
+        return quaternion_from_euler_radians<Q>(glm::radians(xaxis), glm::radians(yaxis), glm::radians(zaxis));
+    }
+
+    //! Convert a quat to Euler angles in radians.
+    //! https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
+    template<typename Q = glm::dquat>
+    inline std::tuple<double, double, double> euler_radians_from_quaternion(const Q& q)
+    {
+        // x-axis rotation
+        double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
+        double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
+        double xaxis = std::atan2(sinr_cosp, cosr_cosp);
+        // y-axis rotation
+        double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
+        double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
+        double yaxis = (2 * std::atan2(sinp, cosp) - M_PI / 2);
+        // z-axis rotation
+        double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
+        double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
+        double zaxis = std::atan2(siny_cosp, cosy_cosp);
+
+        return std::make_tuple(xaxis, yaxis, zaxis);
+    }
+
+    //! Convert a quat to Euler angles in degrees.
+    template<typename Q>
+    inline std::tuple<double, double, double> euler_degrees_from_quaternion(const Q& q)
+    {
+        auto a = euler_radians_from_quaternion(q);
+        return std::make_tuple(glm::degrees(std::get<0>(a)), glm::degrees(std::get<1>(a)), glm::degrees(std::get<2>(a)));
+    }
+
+    //! Extract the rotation component from a 4x4 matrix as a quaternion, assuming the
+    //! matrix has a unit scale (i.e., unscaled). If you are unsure whether the matrix
+    //! is scaled or not, use quaternion_from_matrix() instead.
+    //! 
+    //! @param mat The input unscaled matrix.
+    //! @return The rotation component of the unscaled matrix.
+    template<typename Q, typename M>
+    inline Q quaternion_from_unscaled_matrix(const M& _mat)
+    {
+        Q q;
+
+        // from OpenSceneGraph:
+        double s;
+        double tq[4];
+        int i, j;
+
+        // Use tq to store the largest trace
+        tq[0] = 1 + _mat[0][0] + _mat[1][1] + _mat[2][2];
+        tq[1] = 1 + _mat[0][0] - _mat[1][1] - _mat[2][2];
+        tq[2] = 1 - _mat[0][0] + _mat[1][1] - _mat[2][2];
+        tq[3] = 1 - _mat[0][0] - _mat[1][1] + _mat[2][2];
+
+        // Find the maximum (could also use stacked if's later)
+        j = 0;
+        for (i = 1; i < 4; i++) j = (tq[i] > tq[j]) ? i : j;
+
+        // check the diagonal
+        if (j == 0)
         {
-            return x < edge ? static_cast<T>(0.0) : static_cast<T>(1.0);
+            /* perform instant calculation */
+            q.w = tq[0];
+            q.x = _mat[1][2] - _mat[2][1];
+            q.y = _mat[2][0] - _mat[0][2];
+            q.z = _mat[0][1] - _mat[1][0];
         }
-
-        template<typename T>
-        inline T clamp(const T& x, const T& lo, const T& hi)
+        else if (j == 1)
         {
-            return x<lo ? lo : x>hi ? hi : x;
+            q.w = _mat[1][2] - _mat[2][1];
+            q.x = tq[1];
+            q.y = _mat[0][1] + _mat[1][0];
+            q.z = _mat[2][0] + _mat[0][2];
         }
-
-        template<typename T>
-        inline T lerpstep(T lo, T hi, T x)
+        else if (j == 2)
         {
-            if (x <= lo) return static_cast<T>(0.0);
-            else if (x >= hi) return static_cast<T>(1.0);
-            else return (x - lo) / (hi - lo);
+            q.w = _mat[2][0] - _mat[0][2];
+            q.x = _mat[0][1] + _mat[1][0];
+            q.y = tq[2];
+            q.z = _mat[1][2] + _mat[2][1];
         }
-
-        template<typename T>
-        inline T smoothstep(T lo, T hi, T x)
+        else /* if (j==3) */
         {
-            T t = clamp((x - lo) / (hi - lo), static_cast<T>(0.0), static_cast<T>(1.0));
-            return t * t * (static_cast<T>(3.0) - static_cast<T>(2.0) * t);
+            q.w = _mat[0][1] - _mat[1][0];
+            q.x = _mat[2][0] + _mat[0][2];
+            q.y = _mat[1][2] + _mat[2][1];
+            q.z = tq[3];
         }
 
-        // move closer to one
-        template<typename T>
-        inline T decel(T x)
-        {
-            return static_cast<T>(1.0) - (static_cast<T>(1.0) - x) * (static_cast<T>(1.0) - x);
-        }
+        s = sqrt(0.25 / tq[j]);
+        q.w *= s;
+        q.x *= s;
+        q.y *= s;
+        q.z *= s;
 
-        // move closer to zero
-        template<typename T>
-        inline T accel(T x)
-        {
-            return soften(x * x);
-        }
+        return q;
+    }
 
-        template<typename T>
-        inline T threshold(T x, T thresh, T buf)
-        {
-            if (x < thresh - buf) return static_cast<T>(0.0);
-            else if (x > thresh + buf) return static_cast<T>(1.0);
-            else return clamp((x - (thresh - buf)) / (buf * static_cast<T>(2.0)), static_cast<T>(0.0), static_cast<T>(1.0));
-        }
+    //! Extract the rotation component from a 4x4 matrix as a quaternion.
+    //! This method will normalize any scaling factor found in the matrix. If you know your matrix
+    //! is unscaled, call quaternion_from_unscaled_matrix() instead for better performance.
+    //! @param mat The input matrix.
+    //! @return The rotation component of the matrix.
+    template<typename Q, typename M>
+    inline Q quaternion_from_matrix(const M& mat)
+    {
+        M _mat = mat;
 
-        template<typename T>
-        inline T fract(T x)
-        {
-            return x - floor(x);
-        }
+        // Remove the scaling from the matrix by normalizing each axis
+        double scaleX = sqrt(_mat[0][0] * _mat[0][0] + _mat[0][1] * _mat[0][1] + _mat[0][2] * _mat[0][2]);
+        double scaleY = sqrt(_mat[1][0] * _mat[1][0] + _mat[1][1] * _mat[1][1] + _mat[1][2] * _mat[1][2]);
+        double scaleZ = sqrt(_mat[2][0] * _mat[2][0] + _mat[2][1] * _mat[2][1] + _mat[2][2] * _mat[2][2]);
 
-        template<typename T>
-        inline double unitremap(T a, T lo, T hi)
-        {
-            return clamp((a - lo) / (hi - lo), static_cast<T>(0.0), static_cast<T>(1.0));
-        }
+        _mat[0][0] /= scaleX; _mat[0][1] /= scaleX; _mat[0][2] /= scaleX;
+        _mat[1][0] /= scaleY; _mat[1][1] /= scaleY; _mat[1][2] /= scaleY;
+        _mat[2][0] /= scaleZ; _mat[2][1] /= scaleZ; _mat[2][2] /= scaleZ;
 
-        template<typename T>
-        inline T mix(const T& a, const T& b, float c)
-        {
-            return a * (1.0 - c) + b * c;
-        }
-
-        template<typename T>
-        inline double dot2D(const T& a, const T& b)
-        {
-            return a.x * b.x + a.y * b.y;
-        }
-
-        template<typename T>
-        inline double dot3D(const T& a, const T& b)
-        {
-            return a.x * b.x + a.y * b.y + a.z * b.z;
-        }
-
-        template<typename T>
-        inline double distanceSquared2D(const T& a, const T& b)
-        {
-            return
-                (b.x - a.x) * (b.x - a.x) +
-                (b.y - a.y) * (b.y - a.y);
-        }
-
-        template<typename T>
-        inline double distanceSquared3D(const T& a, const T& b)
-        {
-            return
-                (b.x - a.x) * (b.x - a.x) +
-                (b.y - a.y) * (b.y - a.y) +
-                (b.z - a.z) * (b.z - a.z);
-        }
-
-        template<typename T>
-        inline double distance2D(const T& a, const T& b)
-        {
-            return sqrt(distanceSquared2D(a, b));
-        }
-
-        template<typename T>
-        inline double distance3D(const T& a, const T& b)
-        {
-            return sqrt(distanceSquared3D(a, b));
-        }
-
-        template<typename T>
-        inline T square(const T& a)
-        {
-            return (a) * (a);
-        }
-
-        template<typename T>
-        inline T normalize(const T& a)
-        {
-            T temp = a;
-            temp.normalize();
-            return temp;
-        }
-
-        // Round integral x to the nearest multiple of "multiple" greater than or equal to x
-        template<typename T>
-        inline T align(T x, T multiple)
-        {
-            T isPositive = (T)(x >= 0);
-            return ((x + isPositive * (multiple - 1)) / multiple) * multiple;
-        }
-
-        // equal within a threshold
-        template<typename A, typename B>
-        inline bool equiv(A x, B y, double epsilon)
-        {
-            double delta = x - y;
-            return delta < 0.0 ? delta >= -epsilon : delta <= epsilon;
-        }
-
-        // equal within a default threshold
-        template<typename A, typename B>
-        inline bool equiv(A x, B y)
-        {
-            return equiv(x, y, 1e-6);
-        }
-
-        // equal within a default threshold
-        template<>
-        inline bool equiv<glm::dvec3>(glm::dvec3 a, glm::dvec3 b, double E)
-        {
-            return equiv(a.x, b.x, E) && equiv(a.y, b.y, E) && equiv(a.z, b.z, E);
-        }
-
-        // equal within a default threshold
-        template<>
-        inline bool equiv<glm::dvec3>(glm::dvec3 a, glm::dvec3 b)
-        {
-            return equiv(a.x, b.x) && equiv(a.y, b.y) && equiv(a.z, b.z);
-        }
-
-        inline int nextPowerOf2(int x)
-        {
-            --x;
-            x |= x >> 1;
-            x |= x >> 2;
-            x |= x >> 4;
-            x |= x >> 8;
-            x |= x >> 16;
-            return x + 1;
-        }
-
-        template<typename... Args>
-        inline double smallest(Args... a) {
-            double r = DBL_MAX;
-            for (auto v : std::initializer_list<double>({ a... })) {
-                r = std::min(r, v);
-            }
-            return r;
-        }
-
-        template<typename... Args>
-        inline double largest(Args... a) {
-            double r = -DBL_MAX;
-            for (auto v : std::initializer_list<double>({ a... })) {
-                r = std::max(r, v);
-            }
-            return r;
-        }
-
-        template<int C, int R, typename T, glm::qualifier Q>
-        bool is_identity(const glm::mat<C, R, T, Q>& m) {
-            for (int c = 0; c < C; ++c)
-                for (int r = 0; r < R; ++r)
-                    if ((c == r && !equiv(m[c][r], static_cast<T>(1))) ||
-                        (c != r && !equiv(m[c][r], static_cast<T>(0))))
-                        return false;
-            return true;
-        }
-
-        template<typename M>
-        M pre_mult(const M& a, const M& b) {
-            return a * b;
-        }
-
-        //! Convert Euler angles, in radians, to a quaternion.
-        //! https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-        template<typename Q = glm::dquat>
-        inline Q quaternion_from_euler_radians(double xaxis, double yaxis, double zaxis)
-        {
-            Q q;
-
-            // x-axis rotation:
-            double cx = cos(xaxis * 0.5);
-            double sx = sin(xaxis * 0.5);
-            // y-axis rotation:
-            double cy = cos(yaxis * 0.5);
-            double sy = sin(yaxis * 0.5);
-            // z-axis rotation:
-            double cz = cos(zaxis * 0.5);
-            double sz = sin(zaxis * 0.5);
-
-            q.w = cx * cy * cz + sx * sy * sz;
-            q.x = sx * cy * cz - cx * sy * sz;
-            q.y = cx * sy * cz + sx * cy * sz;
-            q.z = cx * cy * sz - sx * sy * cz;
-
-            return q;
-        }
-
-        //! Convert Euler angles, in degrees, to a quaternion.
-        template<typename Q = glm::dquat>
-        inline Q quaternion_from_euler_degrees(double xaxis, double yaxis, double zaxis)
-        {
-            return quaternion_from_euler_radians<Q>(deg2rad(xaxis), deg2rad(yaxis), deg2rad(zaxis));
-        }
-
-        //! Convert a quat to Euler angles in radians.
-        //! https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles
-        template<typename Q = glm::dquat>
-        inline std::tuple<double, double, double> euler_radians_from_quaternion(const Q& q)
-        {
-            // x-axis rotation
-            double sinr_cosp = 2 * (q.w * q.x + q.y * q.z);
-            double cosr_cosp = 1 - 2 * (q.x * q.x + q.y * q.y);
-            double xaxis = std::atan2(sinr_cosp, cosr_cosp);
-            // y-axis rotation
-            double sinp = std::sqrt(1 + 2 * (q.w * q.y - q.x * q.z));
-            double cosp = std::sqrt(1 - 2 * (q.w * q.y - q.x * q.z));
-            double yaxis = (2 * std::atan2(sinp, cosp) - M_PI / 2);
-            // z-axis rotation
-            double siny_cosp = 2 * (q.w * q.z + q.x * q.y);
-            double cosy_cosp = 1 - 2 * (q.y * q.y + q.z * q.z);
-            double zaxis = std::atan2(siny_cosp, cosy_cosp);
-
-            return std::make_tuple(xaxis, yaxis, zaxis);
-        }
-
-        //! Convert a quat to Euler angles in degrees.
-        template<typename Q>
-        inline std::tuple<double, double, double> euler_degrees_from_quaternion(const Q& q)
-        {
-            auto a = euler_radians_from_quaternion(q);
-            return std::make_tuple(rad2deg(std::get<0>(a)), rad2deg(std::get<1>(a)), rad2deg(std::get<2>(a)));
-        }
-
-        //! Extract the rotation component from a 4x4 matrix as a quaternion, assuming the
-        //! matrix has a unit scale (i.e., unscaled). If you are unsure whether the matrix
-        //! is scaled or not, use quaternion_from_matrix() instead.
-        //! 
-        //! @param mat The input unscaled matrix.
-        //! @return The rotation component of the unscaled matrix.
-        template<typename Q, typename M>
-        inline Q quaternion_from_unscaled_matrix(const M& _mat)
-        {
-            Q q;
-
-            // from OpenSceneGraph:
-            double s;
-            double tq[4];
-            int i, j;
-
-            // Use tq to store the largest trace
-            tq[0] = 1 + _mat[0][0] + _mat[1][1] + _mat[2][2];
-            tq[1] = 1 + _mat[0][0] - _mat[1][1] - _mat[2][2];
-            tq[2] = 1 - _mat[0][0] + _mat[1][1] - _mat[2][2];
-            tq[3] = 1 - _mat[0][0] - _mat[1][1] + _mat[2][2];
-
-            // Find the maximum (could also use stacked if's later)
-            j = 0;
-            for (i = 1; i < 4; i++) j = (tq[i] > tq[j]) ? i : j;
-
-            // check the diagonal
-            if (j == 0)
-            {
-                /* perform instant calculation */
-                q.w = tq[0];
-                q.x = _mat[1][2] - _mat[2][1];
-                q.y = _mat[2][0] - _mat[0][2];
-                q.z = _mat[0][1] - _mat[1][0];
-            }
-            else if (j == 1)
-            {
-                q.w = _mat[1][2] - _mat[2][1];
-                q.x = tq[1];
-                q.y = _mat[0][1] + _mat[1][0];
-                q.z = _mat[2][0] + _mat[0][2];
-            }
-            else if (j == 2)
-            {
-                q.w = _mat[2][0] - _mat[0][2];
-                q.x = _mat[0][1] + _mat[1][0];
-                q.y = tq[2];
-                q.z = _mat[1][2] + _mat[2][1];
-            }
-            else /* if (j==3) */
-            {
-                q.w = _mat[0][1] - _mat[1][0];
-                q.x = _mat[2][0] + _mat[0][2];
-                q.y = _mat[1][2] + _mat[2][1];
-                q.z = tq[3];
-            }
-
-            s = sqrt(0.25 / tq[j]);
-            q.w *= s;
-            q.x *= s;
-            q.y *= s;
-            q.z *= s;
-
-            return q;
-        }
-
-        //! Extract the rotation component from a 4x4 matrix as a quaternion.
-        //! This method will normalize any scaling factor found in the matrix. If you know your matrix
-        //! is unscaled, call quaternion_from_unscaled_matrix() instead for better performance.
-        //! @param mat The input matrix.
-        //! @return The rotation component of the matrix.
-        template<typename Q, typename M>
-        inline Q quaternion_from_matrix(const M& mat)
-        {
-            M _mat = mat;
-
-            // Remove the scaling from the matrix by normalizing each axis
-            double scaleX = sqrt(_mat[0][0] * _mat[0][0] + _mat[0][1] * _mat[0][1] + _mat[0][2] * _mat[0][2]);
-            double scaleY = sqrt(_mat[1][0] * _mat[1][0] + _mat[1][1] * _mat[1][1] + _mat[1][2] * _mat[1][2]);
-            double scaleZ = sqrt(_mat[2][0] * _mat[2][0] + _mat[2][1] * _mat[2][1] + _mat[2][2] * _mat[2][2]);
-
-            _mat[0][0] /= scaleX; _mat[0][1] /= scaleX; _mat[0][2] /= scaleX;
-            _mat[1][0] /= scaleY; _mat[1][1] /= scaleY; _mat[1][2] /= scaleY;
-            _mat[2][0] /= scaleZ; _mat[2][1] /= scaleZ; _mat[2][2] /= scaleZ;
-
-            return quaternion_from_unscaled_matrix<Q>(_mat);
-        }
-
-
-        template<typename VEC3>
-        static inline double cross2D(const VEC3& a, const VEC3& b, const VEC3& c) {
-            const double abx = b.x - a.x, aby = b.y - a.y;
-            const double acx = c.x - a.x, acy = c.y - a.y;
-            return abx * acy - aby * acx;
-        }
-
-        static inline int sgn(double v, double eps) {
-            return (v > eps) - (v < -eps);
-        }
-
-        static inline bool onSegment2D(const glm::dvec3& a, const glm::dvec3& b,
-            const glm::dvec3& p, double eps)
-        {
-            if (std::abs(cross2D(a, b, p)) > eps) return false;
-            const double minx = std::min(a.x, b.x) - eps, maxx = std::max(a.x, b.x) + eps;
-            const double miny = std::min(a.y, b.y) - eps, maxy = std::max(a.y, b.y) + eps;
-            return (p.x >= minx && p.x <= maxx && p.y >= miny && p.y <= maxy);
-        }
-
-        static inline bool segmentsIntersect2D(const glm::dvec3& a, const glm::dvec3& b,
-            const glm::dvec3& c, const glm::dvec3& d,
-            double eps)
-        {
-            const int s1 = sgn(cross2D(a, b, c), eps);
-            const int s2 = sgn(cross2D(a, b, d), eps);
-            const int s3 = sgn(cross2D(c, d, a), eps);
-            const int s4 = sgn(cross2D(c, d, b), eps);
-
-            if (s1 * s2 < 0 && s3 * s4 < 0) return true;
-            if (s1 == 0 && onSegment2D(a, b, c, eps)) return true;
-            if (s2 == 0 && onSegment2D(a, b, d, eps)) return true;
-            if (s3 == 0 && onSegment2D(c, d, a, eps)) return true;
-            if (s4 == 0 && onSegment2D(c, d, b, eps)) return true;
-            return false;
-        }
-
-        template<class It, class DVEC>
-        static inline bool pointInPolygon2D(It begin, It end, const DVEC& p, double eps)
-        {
-            // On-edge => inside
-            if (begin == end) return false;
-            auto it = begin; auto prev = *it; glm::dvec3 first = prev; ++it;
-            for (; it != end; ++it) {
-                if (onSegment2D(prev, *it, glm::dvec3(p, 0.0), eps)) return true;
-                prev = *it;
-            }
-            if (onSegment2D(prev, first, glm::dvec3(p, 0.0), eps)) return true;
-
-            // Ray cast to +x
-            bool inside = false;
-            it = begin; prev = *it; first = prev; ++it;
-            for (; it != end; ++it) {
-                const glm::dvec3& a = prev;
-                const glm::dvec3& b = *it;
-                const bool cond = ((a.y > p.y) != (b.y > p.y)) &&
-                    (p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x);
-                if (cond) inside = !inside;
-                prev = *it;
-            }
-            // close last edge
-            {
-                const glm::dvec3& a = prev;
-                const glm::dvec3& b = first;
-                const bool cond = ((a.y > p.y) != (b.y > p.y)) &&
-                    (p.x < (b.x - a.x) * (p.y - a.y) / (b.y - a.y) + a.x);
-                if (cond) inside = !inside;
-            }
-            return inside;
-        }
-
-        template<class It>
-        static inline void bounds2D(It begin, It end,
-            double& xmin, double& ymin,
-            double& xmax, double& ymax)
-        {
-            auto it = begin;
-            const glm::dvec3 p0 = *it++;
-            xmin = xmax = p0.x; ymin = ymax = p0.y;
-            for (; it != end; ++it) {
-                xmin = std::min(xmin, it->x); xmax = std::max(xmax, it->x);
-                ymin = std::min(ymin, it->y); ymax = std::max(ymax, it->y);
-            }
-        }
-
-        template<class ItA, class ItB>
-        bool polygonsIntersect2D(ItA a_begin, ItA a_end,
-            ItB b_begin, ItB b_end,
-            double eps = 1e-12)
-        {
-            // Need at least triangles
-            if (std::distance(a_begin, a_end) < 3) return false;
-            if (std::distance(b_begin, b_end) < 3) return false;
-
-            // 0) bbox reject
-            double axmin, aymin, axmax, aymax;
-            double bxmin, bymin, bxmax, bymax;
-            bounds2D(a_begin, a_end, axmin, aymin, axmax, aymax);
-            bounds2D(b_begin, b_end, bxmin, bymin, bxmax, bymax);
-            if (axmax < bxmin - eps || axmin > bxmax + eps ||
-                aymax < bymin - eps || aymin > bymax + eps) {
-                return false;
-            }
-
-            // 1) any edge crossing?
-            // Iterate edges of A
-            {
-                auto ai = a_begin;
-                glm::dvec3 a_first = *ai, a_prev = a_first;
-                ++ai;
-                for (; ai != a_end; ++ai) {
-                    const glm::dvec3 a_curr = *ai;
-
-                    // iterate edges of B for this A edge
-                    auto bi = b_begin;
-                    glm::dvec3 b_first = *bi, b_prev = b_first;
-                    ++bi;
-                    for (; bi != b_end; ++bi) {
-                        const glm::dvec3 b_curr = *bi;
-                        if (segmentsIntersect2D(a_prev, a_curr, b_prev, b_curr, eps)) return true;
-                        b_prev = b_curr;
-                    }
-                    // close B ring
-                    if (segmentsIntersect2D(a_prev, a_curr, b_prev, b_first, eps)) return true;
-
-                    a_prev = a_curr;
-                }
-                // close A edge against all B edges
-                auto bi = b_begin;
-                glm::dvec3 b_first = *bi, b_prev = b_first;
-                ++bi;
-                for (; bi != b_end; ++bi) {
-                    const glm::dvec3 b_curr = *bi;
-                    if (segmentsIntersect2D(a_prev, a_first, b_prev, b_curr, eps)) return true;
-                    b_prev = b_curr;
-                }
-                if (segmentsIntersect2D(a_prev, a_first, b_prev, b_first, eps)) return true;
-            }
-
-            // 2) containment: one polygon wholly inside the other
-            // pick any vertex from A; test inside B
-            const glm::dvec3 a0 = *a_begin;
-            if (pointInPolygon2D(b_begin, b_end, glm::dvec2(a0.x, a0.y), eps)) return true;
-
-            // pick any vertex from B; test inside A
-            const glm::dvec3 b0 = *b_begin;
-            if (pointInPolygon2D(a_begin, a_end, glm::dvec2(b0.x, b0.y), eps)) return true;
-
-            return false; // disjoint
-        }
+        return quaternion_from_unscaled_matrix<Q>(_mat);
     }
 
     //! Multiplies two 4x4 matrices together, storing the result in OUT.

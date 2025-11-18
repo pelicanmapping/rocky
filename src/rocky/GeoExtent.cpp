@@ -14,6 +14,9 @@ using namespace ROCKY_NAMESPACE::util;
 #undef  LC
 #define LC "[GeoExtent] "
 
+#undef EPSILON
+#define EPSILON 1e-6
+
 namespace {
     inline bool is_valid(double n) {
         return
@@ -175,10 +178,10 @@ GeoExtent::operator == ( const GeoExtent& rhs ) const
 
     // note, ignore the vertical datum since extent is a 2D concept
     return
-        equiv(west(), rhs.west()) &&
-        equiv(south(), rhs.south()) &&
-        equiv(width(), rhs.width()) &&
-        equiv(height(), rhs.height()) &&
+        glm::epsilonEqual(west(), rhs.west(), EPSILON) &&
+        glm::epsilonEqual(south(), rhs.south(), EPSILON) &&
+        glm::epsilonEqual(width(), rhs.width(), EPSILON) &&
+        glm::epsilonEqual(height(), rhs.height(), EPSILON) &&
         _srs.horizontallyEquivalentTo(rhs._srs);
 }
 
@@ -538,6 +541,9 @@ GeoExtent::computeBoundingGeoCircle() const
             
             srs().to(SRS::ECEF).transformRange(p.begin(), p.end());
             
+            const auto lengthSquared = [](const glm::dvec3& v) {
+                return glm::dot(v, v); };
+
             double radius2 = lengthSquared(p[0] - p[1]);
             radius2 = std::max(radius2, lengthSquared(p[0] - p[2]));
             radius2 = std::max(radius2, lengthSquared(p[0] - p[3]));
@@ -821,29 +827,29 @@ GeoExtent::expand(const Distance& x, const Distance& y)
 void
 GeoExtent::clamp()
 {
-    if (equiv(_west, floor(_west)))
+    if (glm::epsilonEqual(_west, floor(_west), EPSILON))
         _west = floor(_west);
-    else if (equiv(_west, ceil(_west)))
+    else if (glm::epsilonEqual(_west, ceil(_west), EPSILON))
         _west = ceil(_west);
 
-    if (equiv(_south, floor(_south)))
+    if (glm::epsilonEqual(_south, floor(_south), EPSILON))
         _south = floor(_south);
-    else if (equiv(_south, ceil(_south)))
+    else if (glm::epsilonEqual(_south, ceil(_south), EPSILON))
         _south = ceil(_south);
 
-    if (equiv(_width, floor(_width)))
+    if (glm::epsilonEqual(_width, floor(_width), EPSILON))
         _width = floor(_width);
-    else if (equiv(_width, ceil(_width)))
+    else if (glm::epsilonEqual(_width, ceil(_width), EPSILON))
         _width = ceil(_width);
 
-    if (equiv(_height, floor(_height)))
+    if (glm::epsilonEqual(_height, floor(_height), EPSILON))
         _height = floor(_height);
-    else if (equiv(_height, ceil(_height)))
+    else if (glm::epsilonEqual(_height, ceil(_height), EPSILON))
         _height = ceil(_height);
 
     if (_srs.isGeodetic())
     {
-        _width = rocky::util::clamp(_width, 0.0, 360.0);
+        _width = std::clamp(_width, 0.0, 360.0);
 
         if (south() < -90.0)
         {
@@ -855,7 +861,7 @@ GeoExtent::clamp()
             _height -= (north()-90.0);
         }
 
-        _height = rocky::util::clamp(_height, 0.0, 180.0);
+        _height = std::clamp(_height, 0.0, 180.0);
     }
 }
 
@@ -979,11 +985,6 @@ GeoExtent::createWorldBoundingSphere(double minElev, double maxElev) const
                 
                 samplePoints.emplace_back(x, y, minElev);
                 samplePoints.emplace_back(x, y, maxElev);
-                //dvec3 world;
-                //GeoPoint(srs(), x, y, minElev, ALTMODE_ABSOLUTE).toWorld(world);
-                //samplePoints.push_back(world);               
-                //GeoPoint(srs(), x, y, maxElev, ALTMODE_ABSOLUTE).toWorld(world);
-                //samplePoints.push_back(world);
             }
         }
 

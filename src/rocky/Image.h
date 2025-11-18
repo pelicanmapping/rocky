@@ -259,8 +259,8 @@ namespace ROCKY_NAMESPACE
 
     inline Image::Pixel Image::read_bilinear(float u, float v, unsigned layer) const
     {
-        u = util::clamp(u, 0.0f, 1.0f);
-        v = util::clamp(v, 0.0f, 1.0f);
+        u = std::clamp(u, 0.0f, 1.0f);
+        v = std::clamp(v, 0.0f, 1.0f);
 
         float sizeS = (float)(width() - 1);
         float s = u * sizeS;
@@ -364,7 +364,7 @@ namespace ROCKY_NAMESPACE
     }
 
 
-    namespace util
+    namespace detail
     {
         inline constexpr float linear_to_sRGB(float c)
         {

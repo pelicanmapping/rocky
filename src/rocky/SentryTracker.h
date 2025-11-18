@@ -8,7 +8,7 @@
 
 namespace ROCKY_NAMESPACE
 {
-    namespace util
+    namespace detail
     {
         /**
          * Tracks usage data by maintaining a sentry-blocked linked list.

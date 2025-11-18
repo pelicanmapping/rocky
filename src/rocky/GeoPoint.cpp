@@ -84,7 +84,7 @@ GeoPoint::geodesicDistanceTo(const GeoPoint& rhs) const
 GeoPoint
 GeoPoint::interpolateTo(const GeoPoint& rhs, double t) const
 {
-    t = clamp(t, 0.0, 1.0);
+    t = std::clamp(t, 0.0, 1.0);
     
     if (srs.isGeodetic())
     {

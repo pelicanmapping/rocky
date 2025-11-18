@@ -13,7 +13,7 @@ namespace ROCKY_NAMESPACE
 {
     using Cancelable = WEEJOBS_NAMESPACE::cancelable;
 
-    namespace util
+    namespace detail
     {
         //! Sets the name of the current thread
         extern ROCKY_EXPORT void setThreadName(const std::string& name);

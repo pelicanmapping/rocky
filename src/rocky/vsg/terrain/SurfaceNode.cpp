@@ -11,6 +11,9 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::util;
 
+#undef EPSILON
+#define EPSILON 1e-6
+
 #define LC "[SurfaceNode] "
 
 
@@ -77,15 +80,16 @@ SurfaceNode::recomputeBound()
             biasU = _elevationMatrix[3][0],
             biasV = _elevationMatrix[3][1];
 
-        ROCKY_SOFT_ASSERT_AND_RETURN(!equiv(scaleU, 0.0) && !equiv(scaleV, 0.0), worldBoundingSphere);
+        ROCKY_SOFT_ASSERT_AND_RETURN(!glm::epsilonEqual(scaleU, 0.0, EPSILON) && !glm::epsilonEqual(scaleV, 0.0, EPSILON),
+            worldBoundingSphere);
 
         for (int i = 0; i < geom->verts->size(); ++i)
         {
             if (((int)geom->uvs->at(i).z & VERTEX_HAS_ELEVATION) == 0)
             {
                 float h = hf.heightAtUV(
-                    clamp(geom->uvs->at(i).x * scaleU + biasU, 0.0, 1.0),
-                    clamp(geom->uvs->at(i).y * scaleV + biasV, 0.0, 1.0));
+                    std::clamp(geom->uvs->at(i).x * scaleU + biasU, 0.0, 1.0),
+                    std::clamp(geom->uvs->at(i).y * scaleV + biasV, 0.0, 1.0));
 
                 auto& vert = geom->verts->at(i);
                 auto& norm = geom->normals->at(i);

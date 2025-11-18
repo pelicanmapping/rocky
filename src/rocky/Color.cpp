@@ -358,6 +358,7 @@ Color::as(Format format) const
 glm::fvec4
 Color::asHSL() const
 {
+    static const auto step = [](float a, float b) { return a < b ? 0.0f : 1.0f; };
     static const glm::fvec4 K(0.0f, -1.0f / 3.0f, 2.0f / 3.0f, -1.0f);
     glm::fvec4 A(b, g, K.w, K.z);
     glm::fvec4 B(g, b, K.x, K.y);

@@ -265,6 +265,8 @@ TileMap::createProfile() const
     static const Profile SPHERICAL_MERCATOR("spherical-mercator");
 
     Profile profile;
+    const double eps = 1e-6;
+
 
     std::string def = srsString;
     if (!vsrsString.empty())
@@ -287,12 +289,11 @@ TileMap::createProfile() const
         //HACK:  Some TMS sources, most notably TileCache, use a global mercator extent that is very slightly different than
         //       the automatically computed mercator bounds which can cause rendering issues due to the some texture coordinates
         //       crossing the dateline.  If the incoming bounds are nearly the same as our definion of global mercator, just use our definition.
-        double eps = 1.0;
         if (numTilesWide == 1 && numTilesHigh == 1 &&
-            equiv(SPHERICAL_MERCATOR.extent().xmin(), minX, eps) &&
-            equiv(SPHERICAL_MERCATOR.extent().ymin(), minY, eps) &&
-            equiv(SPHERICAL_MERCATOR.extent().xmax(), maxX, eps) &&
-            equiv(SPHERICAL_MERCATOR.extent().ymax(), maxY, eps))
+            glm::epsilonEqual(SPHERICAL_MERCATOR.extent().xmin(), minX, eps) &&
+            glm::epsilonEqual(SPHERICAL_MERCATOR.extent().ymin(), minY, eps) &&
+            glm::epsilonEqual(SPHERICAL_MERCATOR.extent().xmax(), maxX, eps) &&
+            glm::epsilonEqual(SPHERICAL_MERCATOR.extent().ymax(), maxY, eps))
         {
             profile = SPHERICAL_MERCATOR;
         }
@@ -300,10 +301,10 @@ TileMap::createProfile() const
 
     else if (
         new_srs.isGeodetic() &&
-        equiv(minX, -180.) &&
-        equiv(maxX, 180.) &&
-        equiv(minY, -90.) &&
-        equiv(maxY, 90.))
+        glm::epsilonEqual(minX, -180., eps) &&
+        glm::epsilonEqual(maxX, 180., eps) &&
+        glm::epsilonEqual(minY, -90., eps) &&
+        glm::epsilonEqual(maxY, 90., eps))
     {
         profile = GLOBAL_GEODETIC;
     }

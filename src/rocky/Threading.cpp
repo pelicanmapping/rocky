@@ -15,7 +15,7 @@
 #endif
 
 void
-rocky::util::setThreadName(const std::string& name)
+ROCKY_NAMESPACE::detail::setThreadName(const std::string& name)
 {
 #if (defined _WIN32 && defined _WIN32_WINNT_WIN10 && defined _WIN32_WINNT && _WIN32_WINNT >= _WIN32_WINNT_WIN10) || (defined __CYGWIN__)
     size_t bufsize = 0;

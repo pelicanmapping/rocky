@@ -214,10 +214,10 @@ TEST_CASE("Image")
     image->fill(Color::Orange);
     Image::Pixel value = image->read(17, 17);
     //std::cout << value.r << ", " << value.g << ", " << value.b << ", " << value.a << std::endl;
-    CHECK(equiv(value.r, 1.0f, 0.01f));
-    CHECK(equiv(value.g, 0.65f, 0.01f));
-    CHECK(equiv(value.b, 0.0f, 0.01f));
-    CHECK(equiv(value.a, 1.0f, 0.01f));
+    CHECK(glm::epsilonEqual(value.r, 1.0f, 0.01f));
+    CHECK(glm::epsilonEqual(value.g, 0.65f, 0.01f));
+    CHECK(glm::epsilonEqual(value.b, 0.0f, 0.01f));
+    CHECK(glm::epsilonEqual(value.a, 1.0f, 0.01f));
 }
 
 TEST_CASE("Heightfield")
@@ -305,7 +305,7 @@ TEST_CASE("SRS")
 
         glm::dvec3 out;
         REQUIRE(xform(glm::dvec3(-20037508.342789248, 0, 0), out));
-        CHECK(equiv(out, glm::dvec3(-180, 0, 0), E));
+        CHECK(glm::all(glm::epsilonEqual(out, glm::dvec3(-180, 0, 0), E)));
         
         // NB: succeeds despite the 90 degrees N being out of bounds for Mercator.
         CHECK(xform.inverse(glm::dvec3(0, 90, 0), out));
@@ -345,10 +345,10 @@ TEST_CASE("SRS")
         REQUIRE(xform_wgs84_to_ecef.valid());
 
         REQUIRE(xform_wgs84_to_ecef(glm::dvec3(0, 0, 0), out));
-        CHECK(equiv(out, glm::dvec3(6378137, 0, 0)));
+        CHECK(glm::all(glm::epsilonEqual(out, glm::dvec3(6378137, 0, 0), 1e-6)));
 
         REQUIRE(xform_wgs84_to_ecef.inverse(out, out));
-        CHECK(equiv(out, glm::dvec3(0, 0, 0)));
+        CHECK(glm::all(glm::epsilonEqual(out, glm::dvec3(0, 0, 0), 1e-6)));
     }
 
     SECTION("Plate Carree SRS")
@@ -360,8 +360,8 @@ TEST_CASE("SRS")
         CHECK(pc.isGeocentric() == false);
         auto b = pc.bounds();
         CHECK((b.valid() &&
-            equiv(b.xmin, -20037508.342, E) && equiv(b.xmax, 20037508.342, E) &&
-            equiv(b.ymin, -10018754.171, E) && equiv(b.ymax, 10018754.171, E)));
+            glm::epsilonEqual(b.xmin, -20037508.342, E) && glm::epsilonEqual(b.xmax, 20037508.342, E) &&
+            glm::epsilonEqual(b.ymin, -10018754.171, E) && glm::epsilonEqual(b.ymax, 10018754.171, E)));
     }
 
     SECTION("UTM SRS")
@@ -402,28 +402,28 @@ TEST_CASE("SRS")
 
         glm::dvec3 c;
         REQUIRE(xform(glm::dvec3(0, 0, 0), c));
-        CHECK(equiv(c, glm::dvec3(0, 0, 0), E));
+        CHECK(glm::all(glm::epsilonEqual(c, glm::dvec3(0, 0, 0), E)));
         // long and lat are out of range for face 0, but doesn't fail
         //CHECK(xform(dvec3(90, 46, 0), c) == false);
 
         REQUIRE(xform(glm::dvec3(45, 0, 0), c));
-        CHECK(equiv(c, glm::dvec3(semi_major, 0, 0), E));
+        CHECK(glm::all(glm::epsilonEqual(c, glm::dvec3(semi_major, 0, 0), E)));
 
         REQUIRE(xform.inverse(glm::dvec3(semi_major, 0, 0), c));
-        CHECK(equiv(c, glm::dvec3(45, 0, 0), E));
+        CHECK(glm::all(glm::epsilonEqual(c, glm::dvec3(45, 0, 0), E)));
 
         REQUIRE(xform(glm::dvec3(0, 45, 0), c));
         // FAILS - not sure what is up here:
         // 45 degrees transforms to 6352271.2440m
         // but the semi-minor axis is 6356752.3142m
-        //CHECK(equiv(c, dvec3(0, semi_minor, 0), E));
+        //CHECK(glm::epsilonEqual(c, dvec3(0, semi_minor, 0), E));
 
         // other way
         xform = qsc_face_0.to(wgs84);
         REQUIRE(xform.valid());
 
         REQUIRE(xform(glm::dvec3(semi_major, 0, 0), c));
-        CHECK(equiv(c, glm::dvec3(45, 0, 0), E));
+        CHECK(glm::all(glm::epsilonEqual(c, glm::dvec3(45, 0, 0), E)));
     }
 
     SECTION("Invalid SRS")
@@ -490,23 +490,23 @@ TEST_CASE("SRS")
             REQUIRE(xform.valid());
 
             REQUIRE(xform(glm::dvec3(0, 0, 17.16), out));
-            CHECK(equiv(out.z, 0.0, E));
+            CHECK(glm::epsilonEqual(out.z, 0.0, E));
             REQUIRE(xform(glm::dvec3(90, 0, -63.24), out));
-            CHECK(equiv(out.z, 0.0, E));
+            CHECK(glm::epsilonEqual(out.z, 0.0, E));
             REQUIRE(xform(glm::dvec3(180, 0, 21.15), out));
-            CHECK(equiv(out.z, 0.0, E));
+            CHECK(glm::epsilonEqual(out.z, 0.0, E));
             REQUIRE(xform(glm::dvec3(-90, 0, -4.29), out));
-            CHECK(equiv(out.z, 0.0, E));
+            CHECK(glm::epsilonEqual(out.z, 0.0, E));
 
             // inverse
             REQUIRE(xform.inverse(glm::dvec3(0, 0, 0), out));
-            CHECK(equiv(out.z, 17.16, E));
+            CHECK(glm::epsilonEqual(out.z, 17.16, E));
             REQUIRE(xform.inverse(glm::dvec3(90, 0, 0), out));
-            CHECK(equiv(out.z, -63.24, E));
+            CHECK(glm::epsilonEqual(out.z, -63.24, E));
             REQUIRE(xform.inverse(glm::dvec3(180, 0, 0), out));
-            CHECK(equiv(out.z, 21.15, E));
+            CHECK(glm::epsilonEqual(out.z, 21.15, E));
             REQUIRE(xform.inverse(glm::dvec3(-90, 0, 0), out));
-            CHECK(equiv(out.z, -4.29, E));
+            CHECK(glm::epsilonEqual(out.z, -4.29, E));
 
             SRS::projMessageCallback = nullptr;
         }
@@ -517,23 +517,23 @@ TEST_CASE("SRS")
             REQUIRE(xform.valid());
 
             REQUIRE(xform(glm::dvec3(0, 0, 0), out));
-            CHECK(equiv(out.z, 17.16, E));
+            CHECK(glm::epsilonEqual(out.z, 17.16, E));
             REQUIRE(xform(glm::dvec3(90, 0, 0), out));
-            CHECK(equiv(out.z, -63.24, E));
+            CHECK(glm::epsilonEqual(out.z, -63.24, E));
             REQUIRE(xform(glm::dvec3(180, 0, 0), out));
-            CHECK(equiv(out.z, 21.15, E));
+            CHECK(glm::epsilonEqual(out.z, 21.15, E));
             REQUIRE(xform(glm::dvec3(-90, 0, 0), out));
-            CHECK(equiv(out.z, -4.29, E));
+            CHECK(glm::epsilonEqual(out.z, -4.29, E));
 
             // inverse
             REQUIRE(xform.inverse(glm::dvec3(0, 0, 17.16), out));
-            CHECK(equiv(out.z, 0.0, E));
+            CHECK(glm::epsilonEqual(out.z, 0.0, E));
             REQUIRE(xform.inverse(glm::dvec3(90, 0, -63.24), out));
-            CHECK(equiv(out.z, 0.0, E));
+            CHECK(glm::epsilonEqual(out.z, 0.0, E));
             REQUIRE(xform.inverse(glm::dvec3(180, 0, 21.15), out));
-            CHECK(equiv(out.z, 0.0, E));
+            CHECK(glm::epsilonEqual(out.z, 0.0, E));
             REQUIRE(xform.inverse(glm::dvec3(-90, 0, -4.29), out));
-            CHECK(equiv(out.z, 0.0, E));
+            CHECK(glm::epsilonEqual(out.z, 0.0, E));
         }
 
         // vdatum to vdatum (noop)
@@ -543,23 +543,23 @@ TEST_CASE("SRS")
 
             glm::dvec3 out;
             REQUIRE(xform(glm::dvec3(0, 0, 17.16), out));
-            CHECK(equiv(out.z, 17.16, E));
+            CHECK(glm::epsilonEqual(out.z, 17.16, E));
         }
     }
 
     SECTION("SRS Metadata")
     {
         Box a = SRS::WGS84.bounds();
-        CHECK(equiv(a.xmin, -180.0));
-        CHECK(equiv(a.xmax, 180.0));
-        CHECK(equiv(a.ymin, -90.0));
-        CHECK(equiv(a.ymax, 90.0));
+        CHECK(glm::epsilonEqual(a.xmin, -180.0, E));
+        CHECK(glm::epsilonEqual(a.xmax, 180.0, E));
+        CHECK(glm::epsilonEqual(a.ymin, -90.0, E));
+        CHECK(glm::epsilonEqual(a.ymax, 90.0, E));
 
         Box bb = SRS::SPHERICAL_MERCATOR.bounds();
-        CHECK(equiv(bb.xmin, -20037508.342789248, E));
-        CHECK(equiv(bb.xmax, 20037508.342789248, E));
-        CHECK(equiv(bb.ymin, -20037508.342789248, E));
-        CHECK(equiv(bb.ymax, 20037508.342789248, E));
+        CHECK(glm::epsilonEqual(bb.xmin, -20037508.342789248, E));
+        CHECK(glm::epsilonEqual(bb.xmax, 20037508.342789248, E));
+        CHECK(glm::epsilonEqual(bb.ymin, -20037508.342789248, E));
+        CHECK(glm::epsilonEqual(bb.ymax, 20037508.342789248, E));
 
         auto ellipsoid = SRS::WGS84.ellipsoid();
         REQUIRE(ellipsoid.semiMajorAxis() == 6378137.0);
@@ -581,7 +581,7 @@ TEST_CASE("SRS")
             auto xform = a.to(b);
             glm::dvec3 out;
             REQUIRE(xform(glm::dvec3(-180, 0, 0), out));
-            CHECK(equiv(out, glm::dvec3(-20037508.34278925, 0, 0)));
+            CHECK(glm::all(glm::epsilonEqual(out, glm::dvec3(-20037508.34278925, 0, 0), 1e-6)));
         };
 
         std::vector<std::thread> threads;
@@ -775,7 +775,7 @@ TEST_CASE("MapManipulator NaN fix")
     vsg::dvec3 target(-2248544.6095093964, 5050313.7806744399, 3170373.6297455574);
     
     // Calculate distance between the vectors
-    double dist = distance3D(center, target);
+    double dist = vsg::length(center - target);
     double centerMag = vsg::length(center);
     double relativeDist = centerMag > 0 ? dist / centerMag : 0;
     

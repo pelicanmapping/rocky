@@ -17,6 +17,9 @@ using namespace ROCKY_NAMESPACE::util;
 #define TEST_OUT if(true) Log::info()
 #define NOT_YET_IMPLEMENTED(X) ROCKY_TODO(X)
 
+#undef EPSILON
+#define EPSILON 1e-6
+
 namespace
 {
     // a reasonable approximation of cosine interpolation
@@ -442,8 +445,8 @@ MapManipulator::dirty()
     double old_pitch_rad;
     getEulerAngles(_state.localRotation, nullptr, &old_pitch_rad);
 
-    double old_pitch_deg = rad2deg(old_pitch_rad);
-    double new_pitch_deg = clamp(old_pitch_deg, settings.minPitch, settings.maxPitch);
+    double old_pitch_deg = glm::degrees(old_pitch_rad);
+    double new_pitch_deg = std::clamp(old_pitch_deg, settings.minPitch, settings.maxPitch);
 
     setDistance(_state.distance);
 }
@@ -517,7 +520,7 @@ MapManipulator::getWorldLookAtMatrix(const vsg::dvec3& point) const
     vsg::dvec3 worldUp(0,0,1);
 
     double ca = fabs(vsg::dot(worldUp, lookVector));
-    if (equiv(ca, 1.0))
+    if (glm::epsilonEqual(ca, 1.0, EPSILON))
     {
         //We are looking nearly straight down the up vector, so use the Y vector for world up instead
         worldUp = vsg::dvec3(0, 1, 0);
@@ -1316,7 +1319,7 @@ MapManipulator::recalculateCenterFromLookVector()
         vsg::dvec3 L = look; // unit direction of the line
         vsg::dvec3 L0 = lookat.eye; // point on the line
         auto LdotN = vsg::dot(L, N);
-        if (equiv(LdotN, 0)) return false; // parallel
+        if (glm::epsilonEqual(LdotN, 0.0, EPSILON)) return false; // parallel
         auto D = vsg::dot((P0 - L0), N) / LdotN;
         if (D < 0) return false; // behind the camera
         intersection = L0 + L * D;
@@ -1384,7 +1387,7 @@ MapManipulator::recalculateCenterAndDistanceFromLookVector()
         vsg::dvec3 L = look; // unit direction of the line
         vsg::dvec3 L0 = lookat.eye; // point on the line
         auto LdotN = vsg::dot(L, N);
-        if (equiv(LdotN, 0)) return false; // parallel
+        if (glm::epsilonEqual(LdotN, 0.0, EPSILON)) return false; // parallel
         auto D = vsg::dot((P0 - L0), N) / LdotN;
         if (D < 0) return false; // behind the camera
         intersection = L0 + L * D;
@@ -1485,8 +1488,8 @@ void
 MapManipulator::rotate(double dx, double dy)
 {
     // clamp the local pitch delta; never allow the pitch to hit -90.
-    double minp = deg2rad(std::min(settings.minPitch, -89.9));
-    double maxp = deg2rad(std::max(settings.maxPitch, -0.1));
+    double minp = glm::radians(std::min(settings.minPitch, -89.9));
+    double maxp = glm::radians(std::max(settings.maxPitch, -0.1));
 
     // clamp pitch range:
     double oldPitch;
@@ -1578,7 +1581,7 @@ MapManipulator::zoom(double dx, double dy)
             // Calcuate a rotation that we'll use to interpolate from our center point to the target
             vsg::dquat rotCenterToTarget;
             // Check if the vectors are too close to avoid NaN in quaternion calculation
-            double dist = distance3D(_state.center, target);
+            double dist = vsg::length(_state.center - target);
             double centerMag = vsg::length(_state.center);
             double relativeDist = centerMag > 0 ? dist / centerMag : 0;
             if (relativeDist < 1e-6) {
@@ -1649,7 +1652,7 @@ MapManipulator::viewportToWorld(float x, float y, vsg::dvec3& out_world) const
 void
 MapManipulator::setDistance(double distance)
 {
-    _state.distance = clamp(distance, settings.minDistance, settings.maxDistance);
+    _state.distance = std::clamp(distance, settings.minDistance, settings.maxDistance);
 }
 
 void

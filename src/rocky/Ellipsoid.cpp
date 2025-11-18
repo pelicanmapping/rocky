@@ -7,7 +7,6 @@
 #include "Math.h"
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 // https://en.wikipedia.org/wiki/World_Geodetic_System
 #define WGS84_RADIUS_EQUATOR 6378137.0
@@ -60,8 +59,8 @@ Ellipsoid::topocentricToGeocentricMatrix(const glm::dvec3& geoc) const
 
     // Apply a rotation to create a local tangent plane at thiat point:
     glm::dvec3 lla = geocentricToGeodetic(geoc);
-    double latitude = deg2rad(lla.y);
-    double longitude = deg2rad(lla.x);
+    double latitude = glm::radians(lla.y);
+    double longitude = glm::radians(lla.x);
 
     // calculate the E/N/U vectors:
     glm::dvec3 up(cos(longitude) * cos(latitude), sin(longitude) * cos(latitude), sin(latitude));
@@ -87,8 +86,8 @@ Ellipsoid::topocentricToGeocentricMatrix(const glm::dvec3& geoc) const
 glm::dvec3
 Ellipsoid::geodeticToGeocentric(const glm::dvec3& lla) const
 {
-    double latitude = deg2rad(lla.y);
-    double longitude = deg2rad(lla.x);
+    double latitude = glm::radians(lla.y);
+    double longitude = glm::radians(lla.x);
  
     double sin_latitude = sin(latitude);
     double cos_latitude = cos(latitude);
@@ -141,7 +140,7 @@ Ellipsoid::geocentricToGeodetic(const glm::dvec3& geoc) const
                 height = -_rp;
             }
 
-            return glm::dvec3(rad2deg(longitude), rad2deg(latitude), height);
+            return glm::dvec3(glm::degrees(longitude), glm::degrees(latitude), height);
         }
     }
 
@@ -161,7 +160,7 @@ Ellipsoid::geocentricToGeodetic(const glm::dvec3& geoc) const
 
     height = p / cos(latitude) - N;
 
-    glm::dvec3 out(rad2deg(longitude), rad2deg(latitude), height);
+    glm::dvec3 out(glm::degrees(longitude), glm::degrees(latitude), height);
 
     for (int i = 0; i < 3; ++i)
         if (std::isnan(out[i]))
@@ -187,7 +186,7 @@ Ellipsoid::set(double re, double rp)
 double
 Ellipsoid::longitudinalDegreesToMeters(double value, double lat_deg) const
 {
-    return value * (2.0 * M_PI * semiMajorAxis() / 360.0) * cos(deg2rad(lat_deg));
+    return value * (2.0 * M_PI * semiMajorAxis() / 360.0) * cos(glm::radians(lat_deg));
 }
 
 double
@@ -258,10 +257,10 @@ double
 Ellipsoid::geodesicGroundDistance(const glm::dvec3& p1, const glm::dvec3& p2) const
 {
     double
-        lat1 = deg2rad(p1.y),
-        lon1 = deg2rad(p1.x),
-        lat2 = deg2rad(p2.y),
-        lon2 = deg2rad(p2.x);
+        lat1 = glm::radians(p1.y),
+        lon1 = glm::radians(p1.x),
+        lat2 = glm::radians(p2.y),
+        lon2 = glm::radians(p2.x);
 
     double Re = semiMajorAxis();
     double Rp = semiMinorAxis();
@@ -348,7 +347,7 @@ Ellipsoid::calculateHorizonPoint(const std::vector<glm::dvec3>& points) const
 
     for (auto& unit_point : unit_points)
     {
-        auto mag2 = util::lengthSquared(unit_point);
+        auto mag2 = glm::dot(unit_point, unit_point); // length squared
         auto mag = sqrt(mag2);
         auto point_dir = unit_point / mag;
 
@@ -385,7 +384,7 @@ Ellipsoid::rotationAxis(const glm::dvec3& geocStart, double initialCourse_deg) c
         north = glm::normalize(glm::cross(posUnit, east));
     }
 
-    auto course_rad = deg2rad(initialCourse_deg);
+    auto course_rad = glm::radians(initialCourse_deg);
     auto tangent = glm::normalize(north * cos(course_rad) + east * sin(course_rad));
 
     auto axisUnit = glm::normalize(glm::cross(posUnit, tangent));
@@ -423,7 +422,7 @@ Ellipsoid::rotate(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis, doubl
     auto axis_unit = glm::normalize(geocAxis * _ellipsoidToUnitSphere);
     
     // rotate the point around the axis:
-    glm::dquat rot = glm::angleAxis(util::deg2rad(angle_deg), axis_unit);
+    glm::dquat rot = glm::angleAxis(glm::radians(angle_deg), axis_unit);
     auto output = rot * point_unit;
     return output * _unitSphereToEllipsoid;
 }

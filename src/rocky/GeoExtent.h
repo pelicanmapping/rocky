@@ -237,16 +237,16 @@ namespace ROCKY_NAMESPACE
     template<typename VEC>
     inline VEC GeoExtent::clamp(const VEC& input) const {
         VEC output = input;
-        output.x = util::clamp(input.x, xmin(), xmax());
-        output.y = util::clamp(input.y, ymin(), ymax());
+        output.x = std::clamp(input.x, xmin(), xmax());
+        output.y = std::clamp(input.y, ymin(), ymax());
         return output;
     }
 
     template<typename ITER>
     inline void GeoExtent::clamp(ITER begin, ITER end) const {
         for (auto it = begin; it != end; ++it) {
-            it->x = util::clamp(it->x, xmin(), xmax());
-            it->y = util::clamp(it->y, ymin(), ymax());
+            it->x = std::clamp(it->x, xmin(), xmax());
+            it->y = std::clamp(it->y, ymin(), ymax());
         }
     }
 

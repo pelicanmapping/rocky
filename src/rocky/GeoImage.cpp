@@ -18,7 +18,6 @@
 #endif
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 GeoImage::GeoImage() :
     _image(nullptr),
@@ -216,7 +215,7 @@ GeoImage::read_clamped(double x, double y, int layer) const
     double u = (x - _extent.xmin()) / _extent.width();
     double v = (y - _extent.ymin()) / _extent.height();
 
-    return _image->read_bilinear((float)clamp(u, 0.0, 1.0), (float)clamp(v, 0.0, 1.0), layer);
+    return _image->read_bilinear((float)std::clamp(u, 0.0, 1.0), (float)std::clamp(v, 0.0, 1.0), layer);
 }
 
 GeoImage::ReadResult

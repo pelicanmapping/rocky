@@ -37,7 +37,7 @@ namespace
         static Image::Pixel read(unsigned char* ptr, int n) {
             Image::Pixel pixel;
             for (int i = 0; i < std::min(n, 3); ++i)
-                pixel[i] = util::sRGB_to_linear((float)(*ptr++) * denorm_u8);
+                pixel[i] = detail::sRGB_to_linear((float)(*ptr++) * denorm_u8);
             for (int i = std::min(n, 3); i < n; ++i)
                 pixel[i] = (float)(*ptr++) * denorm_u8;
             for (int i = n; i < 4; ++i)
@@ -46,7 +46,7 @@ namespace
         }
         static void write(const Image::Pixel& pixel, unsigned char* ptr, int n) {
             for (int i = 0; i < std::min(n, 3); ++i)
-                *ptr++ = (T)(util::linear_to_sRGB(pixel[i]) * norm_u8);
+                *ptr++ = (T)(detail::linear_to_sRGB(pixel[i]) * norm_u8);
             for (int i = std::min(n, 3); i < n; ++i)
                 *ptr++ = (T)(pixel[i] * norm_u8);
         }

@@ -1,16 +1,13 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "TileKey.h"
 #include "Math.h"
 #include "GeoPoint.h"
-#include <array>
-#include <sstream>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 // Scale and bias matrices, one for each TileKey quadrant.
 const glm::dmat4 scaleBias[4] =
@@ -302,8 +299,8 @@ TileKey::intersectingKeys(const Profile& targetProfile) const
                 geo_to_target(glm::dvec3{ source_geo_c.x - dlon / 2.0, source_geo_c.y, 0 }));
 
             auto dyb = glm::length(
-                geo_to_target(glm::dvec3{ source_geo_c.x, clamp(source_geo_c.y + dlat / 2.0, -90.0, 90.0), 0 }) -
-                geo_to_target(glm::dvec3{ source_geo_c.x, clamp(source_geo_c.y - dlat / 2.0, -90.0, 90.0), 0 }));
+                geo_to_target(glm::dvec3{ source_geo_c.x, std::clamp(source_geo_c.y + dlat / 2.0, -90.0, 90.0), 0 }) -
+                geo_to_target(glm::dvec3{ source_geo_c.x, std::clamp(source_geo_c.y - dlat / 2.0, -90.0, 90.0), 0 }));
 
             // Find the level of detail with the smallest error relative to our span size:
             auto dims0 = targetProfile.tileDimensions(0);
@@ -332,10 +329,10 @@ TileKey::intersectingKeys(const Profile& targetProfile) const
         auto dims = targetProfile.tileDimensions(target_lod);
         auto tiles = targetProfile.numTiles(target_lod);
 
-        int colmin = clamp((int)std::floor((target_ex.xmin() - target_profile_ex.xmin()) / dims.x), 0, (int)tiles.x - 1);
-        int colmax = clamp((int)std::floor((target_ex.xmax() - target_profile_ex.xmin()) / dims.x), 0, (int)tiles.x - 1);
-        int rowmin = clamp((int)std::floor((target_profile_ex.ymax() - target_ex.ymax()) / dims.y), 0, (int)tiles.y - 1);
-        int rowmax = clamp((int)std::floor((target_profile_ex.ymax() - target_ex.ymin()) / dims.y), 0, (int)tiles.y - 1);
+        int colmin = std::clamp((int)std::floor((target_ex.xmin() - target_profile_ex.xmin()) / dims.x), 0, (int)tiles.x - 1);
+        int colmax = std::clamp((int)std::floor((target_ex.xmax() - target_profile_ex.xmin()) / dims.x), 0, (int)tiles.x - 1);
+        int rowmin = std::clamp((int)std::floor((target_profile_ex.ymax() - target_ex.ymax()) / dims.y), 0, (int)tiles.y - 1);
+        int rowmax = std::clamp((int)std::floor((target_profile_ex.ymax() - target_ex.ymin()) / dims.y), 0, (int)tiles.y - 1);
 
         candidateTiles = (colmax - colmin + 1) * (rowmax - rowmin + 1);
 
@@ -356,12 +353,6 @@ TileKey::intersectingKeys(const Profile& targetProfile) const
                 }
             }
         }
-
-        //if (!output.empty()) {
-        //    std::stringstream buf;
-        //    for (auto& k : output) buf << k.str() << ' ';
-        //    Log()->info("  {}/{} tiles: {}", output.size(), candidateTiles, buf.str());
-        //}
     }
 
     s_previous.key = *this;

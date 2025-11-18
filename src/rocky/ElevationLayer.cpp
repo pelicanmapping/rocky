@@ -113,7 +113,7 @@ ElevationLayer::normalizeNoDataValues(Image* hf) const
         {
             float h = *pixel;
             if (std::isnan(h) ||
-                equiv(h, noDataValue.value()) ||
+                glm::epsilonEqual(h, noDataValue.value(), 1e-6f) ||
                 h < minValidValue ||
                 h > maxValidValue)
             {

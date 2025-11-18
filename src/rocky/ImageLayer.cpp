@@ -141,10 +141,10 @@ ImageLayer::createTileInKeyProfile(const TileKey& key, const IOOptions& io) cons
                 int s0, t0, s1, t1;
                 result.value().getPixel(cropIntersection.xmin(), cropIntersection.ymin(), s0, t0);
                 result.value().getPixel(cropIntersection.xmax(), cropIntersection.ymax(), s1, t1);
-                s0 = clamp(s0, 0, (int)result.value().image()->width() - 1);
-                s1 = clamp(s1, 0, (int)result.value().image()->width() - 1);
-                t0 = clamp(t0, 0, (int)result.value().image()->height() - 1);
-                t1 = clamp(t1, 0, (int)result.value().image()->height() - 1);
+                s0 = std::clamp(s0, 0, (int)result.value().image()->width() - 1);
+                s1 = std::clamp(s1, 0, (int)result.value().image()->width() - 1);
+                t0 = std::clamp(t0, 0, (int)result.value().image()->height() - 1);
+                t1 = std::clamp(t1, 0, (int)result.value().image()->height() - 1);
 
                 auto image = result.value().image();
 

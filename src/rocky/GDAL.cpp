@@ -17,6 +17,7 @@
 #include <ogr_spatialref.h>
 
 #include <filesystem>
+#include <algorithm>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -33,12 +34,12 @@ using namespace ROCKY_NAMESPACE::util;
 #define GEO_TO_PIXEL(GEOX, GEOY, OUTX, OUTY) \
     OUTX = _igt[0] + _igt[1] * (GEOX) + _igt[2] * (GEOY); \
     OUTY = _igt[3] + _igt[4] * (GEOX) + _igt[5] * (GEOY); \
-    if (equiv(OUTX, 0.0, 0.0001)) OUTX = 0; \
-    if (equiv(OUTY, 0.0, 0.0001)) OUTY = 0; \
-    if (equiv(OUTX, (double)_warpedDS->GetRasterXSize(), 0.0001)) OUTX = _warpedDS->GetRasterXSize(); \
-    if (equiv(OUTY, (double)_warpedDS->GetRasterYSize(), 0.0001)) OUTY = _warpedDS->GetRasterYSize(); \
-    OUTX = clamp(OUTX, 0.0, (double)_warpedDS->GetRasterXSize() - 1.0); \
-    OUTY = clamp(OUTY, 0.0, (double)_warpedDS->GetRasterYSize() - 1.0);
+    if (glm::epsilonEqual(OUTX, 0.0, 0.0001)) OUTX = 0; \
+    if (glm::epsilonEqual(OUTY, 0.0, 0.0001)) OUTY = 0; \
+    if (glm::epsilonEqual(OUTX, (double)_warpedDS->GetRasterXSize(), 0.0001)) OUTX = _warpedDS->GetRasterXSize(); \
+    if (glm::epsilonEqual(OUTY, (double)_warpedDS->GetRasterYSize(), 0.0001)) OUTY = _warpedDS->GetRasterYSize(); \
+    OUTX = std::clamp(OUTX, 0.0, (double)_warpedDS->GetRasterXSize() - 1.0); \
+    OUTY = std::clamp(OUTY, 0.0, (double)_warpedDS->GetRasterYSize() - 1.0);
 
 
 namespace ROCKY_NAMESPACE
@@ -1381,12 +1382,12 @@ GDAL_detail::Driver::createHeightfield(const TileKey& key, unsigned tileSize, co
         {
             px = _igt[0] + _igt[1] * (x)+_igt[2] * (y);
             py = _igt[3] + _igt[4] * (x)+_igt[5] * (y);
-            if (equiv(px, 0.0, 0.0001)) px = 0.0;
-            if (equiv(py, 0.0, 0.0001)) py = 0.0;
-            if (equiv(px, xsize, 0.0001)) px = xsize;
-            if (equiv(py, ysize, 0.0001)) py = ysize;
-            px = clamp(px, 0.0, xsize - 1.0);
-            py = clamp(py, 0.0, ysize - 1.0);
+            if (glm::epsilonEqual(px, 0.0, 0.0001)) px = 0.0;
+            if (glm::epsilonEqual(py, 0.0, 0.0001)) py = 0.0;
+            if (glm::epsilonEqual(px, xsize, 0.0001)) px = xsize;
+            if (glm::epsilonEqual(py, ysize, 0.0001)) py = ysize;
+            px = std::clamp(px, 0.0, xsize - 1.0);
+            py = std::clamp(py, 0.0, ysize - 1.0);
         };
 
     if (_layer->precise == true)
@@ -1458,13 +1459,13 @@ GDAL_detail::Driver::createHeightfield(const TileKey& key, unsigned tileSize, co
     float bandNoData = (float)band->GetNoDataValue(&success);
     if (success)
     {
-        const double epsilon = 1e-6;
+        const float epsilon = 1e-6f;
         for (unsigned r = 0; r < tileSize; ++r)
         {
             for (unsigned c = 0; c < tileSize; ++c)
             {
                 auto& value = hf.heightAt(c, r);
-                if (equiv(value, bandNoData, epsilon)) {
+                if (glm::epsilonEqual(value, bandNoData, epsilon)) {
                     value = NO_DATA_VALUE;
                 }
             }

@@ -24,6 +24,7 @@ namespace ROCKY_NAMESPACE
     public:
         virtual std::optional<V> get(const K& k) = 0;
         virtual void put(const K& k, const V& v) = 0;
+        virtual void clear() = 0;
         virtual std::size_t capacity() const { return 0LL; }
         virtual std::size_t size() const { return 0LL; }
         virtual std::uint32_t hits() const { return 0LL; }

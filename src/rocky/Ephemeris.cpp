@@ -8,7 +8,6 @@
 #include "Ellipsoid.h"
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {
@@ -53,23 +52,23 @@ namespace
             double oblecl = 23.4393 - 3.563E-7 * d;
             double L = rev(w + rev(M));
 
-            double E = rev(M + rad2deg(e * sin(deg2rad(M)) * (1.0 + e * cos(deg2rad(M)))));
-            double x = a * cos(deg2rad(E)) - e;
-            double y = a * sin(deg2rad(rev(E))) * sqrt(1.0 - e * e);
+            double E = rev(M + glm::degrees(e * sin(glm::radians(M)) * (1.0 + e * cos(glm::radians(M)))));
+            double x = a * cos(glm::radians(E)) - e;
+            double y = a * sin(glm::radians(rev(E))) * sqrt(1.0 - e * e);
             double r = sqrt(x * x + y * y);
-            double v = rad2deg(atan2(y, x));
+            double v = glm::degrees(atan2(y, x));
             double sunlon = rev(v + w);
 
-            x = r * cos(deg2rad(sunlon));
-            y = r * sin(deg2rad(sunlon));
+            x = r * cos(glm::radians(sunlon));
+            y = r * sin(glm::radians(sunlon));
             double z = 0;
 
             double xequat = x;
-            double yequat = y * cos(deg2rad(oblecl)) + z * sin(deg2rad(oblecl));
-            double zequat = y * sin(deg2rad(oblecl)) + z * cos(deg2rad(oblecl));
+            double yequat = y * cos(glm::radians(oblecl)) + z * sin(glm::radians(oblecl));
+            double zequat = y * sin(glm::radians(oblecl)) + z * cos(glm::radians(oblecl));
 
-            double RA_deg = rev(rad2deg(atan2(yequat, xequat)));
-            double DECL_deg = rad2deg(atan2(zequat, sqrt(xequat * xequat + yequat * yequat)));
+            double RA_deg = rev(glm::degrees(atan2(yequat, xequat)));
+            double DECL_deg = glm::degrees(atan2(zequat, sqrt(xequat * xequat + yequat * yequat)));
 
             double GMST0_deg = rev(L + 180);
             double UT = d - floor(d);
@@ -149,12 +148,12 @@ namespace
             // Reference to 1999Dec31.0TDT
             const double JD_REFTIME = DateTime(1999, 12, 31, 0.0).getJulianDay();
             double d = dt.getJulianDay() - JD_REFTIME;
-            double N = deg2rad(125.1228 - 0.0529538083 * d);  nrad(N);
-            double i = deg2rad(5.1454);
-            double w = deg2rad(318.0634 + 0.1643573223 * d);  nrad(w);
+            double N = glm::radians(125.1228 - 0.0529538083 * d);  nrad(N);
+            double i = glm::radians(5.1454);
+            double w = glm::radians(318.0634 + 0.1643573223 * d);  nrad(w);
             double a = 60.2666;//  (Earth radii)
             double e = 0.054900;
-            double M = deg2rad(115.3654 + 13.0649929509 * d); nrad(M);
+            double M = glm::radians(115.3654 + 13.0649929509 * d); nrad(M);
 
             double E = M + e * sin(M) * (1.0 + e * cos(M));
             nrad(E);
@@ -189,8 +188,8 @@ namespace
             double latEcl = atan2(zeclip, sqrt(xeclip * xeclip + yeclip * yeclip));
 
             // add in the perturbations.
-            double Ms = deg2rad(356.0470 + 0.9856002585 * d); //nrad(Ms); // sun mean anomaly
-            double ws = deg2rad(282.9404 + 4.70935E-5 * d); //nrad(ws); // sun longitude of perihelion
+            double Ms = glm::radians(356.0470 + 0.9856002585 * d); //nrad(Ms); // sun mean anomaly
+            double ws = glm::radians(282.9404 + 4.70935E-5 * d); //nrad(ws); // sun longitude of perihelion
             double Ls = ws + Ms;    nrad(Ls);  // sun mean longitude
 
             double Mm = M;                     // moon mean anomaly
@@ -198,7 +197,7 @@ namespace
             double D = Lm - Ls;     nrad(D);   // moon mean elongation
             double F = Lm - N;      //nrad(F); // moon argument of latitude
 
-            lonEcl = lonEcl + deg2rad(
+            lonEcl = lonEcl + glm::radians(
                 +(-1.274) * sin(Mm - 2 * D)    // (Evection)
                 + (+0.658) * sin(2 * D)         // (Variation)
                 + (-0.186) * sin(Ms)          // (Yearly equation)
@@ -213,7 +212,7 @@ namespace
                 + (+0.011) * sin(Mm - 4 * D)
             );
 
-            latEcl = latEcl + deg2rad(
+            latEcl = latEcl + glm::radians(
                 +(-0.173) * sin(F - 2 * D)
                 + (-0.055) * sin(Mm - F - 2 * D)
                 + (-0.046) * sin(Mm + F - 2 * D)
@@ -231,7 +230,7 @@ namespace
             double zh = r * sin(latEcl);
 
             // and then to rectangular equatorial (unit)
-            double ecl = deg2rad(23.4393 - 3.563E-7 * d); // obliquity of elliptic (tilt of earth)
+            double ecl = glm::radians(23.4393 - 3.563E-7 * d); // obliquity of elliptic (tilt of earth)
             double xe = xh;
             double ye = yh * cos(ecl) - zh * sin(ecl);
             double ze = yh * sin(ecl) + zh * cos(ecl);
@@ -243,7 +242,7 @@ namespace
             // finally, adjust for the time of day (rotation of the earth).
             double UT = 2.0 * M_PI * (d - floor(d));
             //double UT = d - floor(d); // 0..1
-            double GMST0 = Ls + deg2rad(180.0); nrad(GMST0);
+            double GMST0 = Ls + glm::radians(180.0); nrad(GMST0);
 
             // Note. The paper creates a "correction" called called "topographic RA/DECL"
             // based on an observer location. We're not using that here which is why the

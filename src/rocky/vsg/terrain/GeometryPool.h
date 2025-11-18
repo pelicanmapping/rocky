@@ -154,7 +154,7 @@ namespace ROCKY_NAMESPACE
     private:
 
         SRS _renderingSRS;
-        mutable util::Gate<GeometryKey> _keygate;
+        mutable detail::Gate<GeometryKey> _keygate;
         mutable std::mutex _mutex;
         mutable SharedGeometries _sharedGeometries;
         mutable vsg::ref_ptr<vsg::ushortArray> _defaultIndices;

@@ -17,13 +17,13 @@ namespace
     template<class T, class ITER>
     void geo_to_gnomonic(ITER begin, ITER end, const T& centroid, double scale = 1.0)
     {
-        double lon0 = deg2rad(centroid.x);
-        double lat0 = deg2rad(centroid.y);
+        double lon0 = glm::radians(centroid.x);
+        double lat0 = glm::radians(centroid.y);
 
         for (ITER p = begin; p != end; ++p)
         {
-            double lon = deg2rad(p->x);
-            double lat = deg2rad(p->y);
+            double lon = glm::radians(p->x);
+            double lat = glm::radians(p->y);
             double d = sin(lat0) * sin(lat) + cos(lat0) * cos(lat) * cos(lon - lon0);
             p->x = scale * (cos(lat) * sin(lon - lon0)) / d;
             p->y = scale * (cos(lat0) * sin(lat) - sin(lat0) * cos(lat) * cos(lon - lon0)) / d;
@@ -35,8 +35,8 @@ namespace
     template<class T, class ITER>
     void gnomonic_to_geo(ITER begin, ITER end, const T& centroid, double scale = 1.0)
     {
-        double lon0 = deg2rad(centroid.x);
-        double lat0 = deg2rad(centroid.y);
+        double lon0 = glm::radians(centroid.x);
+        double lat0 = glm::radians(centroid.y);
 
         for (ITER p = begin; p != end; ++p)
         {
@@ -47,8 +47,8 @@ namespace
             double lat = asin(cos(c) * sin(lat0) + (y * sin(c) * cos(lat0) / rho));
             double lon = lon0 + atan((x * sin(c)) / (rho * cos(lat0) * cos(c) - y * sin(lat0) * sin(c)));
 
-            p->x = rad2deg(lon);
-            p->y = rad2deg(lat);
+            p->x = glm::degrees(lon);
+            p->y = glm::degrees(lat);
         }
     }
 

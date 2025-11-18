@@ -47,6 +47,7 @@ auto Demo_ElevationSampler = [](Application& app)
     static ElevationSampler sampler;
     static jobs::future<Result<ElevationSample>> sample;
     static GeoPoint mouse;
+    static std::shared_ptr<util::LRUCache<TileKey, Result<GeoImage>>> tileCache;
 
     frame = app.viewer->getFrameStamp()->frameCount;
 

@@ -102,7 +102,7 @@ namespace ROCKY_NAMESPACE
     protected:
 
         VSGContext _vsgcontext;
-        mutable util::SentryTracker<vsg::ref_ptr<vsg::Node>> _sentry;
+        mutable detail::SentryTracker<vsg::ref_ptr<vsg::Node>> _sentry;
         mutable std::mutex _sentry_mutex;
         CallbackSub _sentryUpdate;
         std::uint64_t _lastUpdateFrame = 0u;

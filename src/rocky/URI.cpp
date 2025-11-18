@@ -674,7 +674,7 @@ URI::findRotation()
 auto URI::read(const IOOptions& io) const -> Result<URIResponse>
 {
     // protect against multiple threads trying to read the same URI at the same time
-    util::ScopedGate<std::string> gate(io.services().uriGate, full());
+    detail::ScopedGate<std::string> gate(io.services().uriGate, full());
 
     if (io.services().contentCache)
     {

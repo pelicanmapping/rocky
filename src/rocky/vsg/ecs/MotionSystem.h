@@ -84,7 +84,7 @@ namespace ROCKY_NAMESPACE
                             double angle = 360.0 * distance / circ;
 
                             // bailout if the time delta was too small to cause any motion
-                            if (util::equiv(distance, 0.0) || util::equiv(angle, 0.0))
+                            if (glm::epsilonEqual(distance, 0.0, 1e-6) || glm::epsilonEqual(angle, 0.0, 1e-6))
                                 return;
 
                             // move the point:

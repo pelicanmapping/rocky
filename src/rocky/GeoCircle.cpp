@@ -2,9 +2,11 @@
 #include "Math.h"
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[GeoCircle] "
+
+#undef EPSILON
+#define EPSILON 1e-6
 
 GeoCircle GeoCircle::INVALID = GeoCircle();
 
@@ -36,7 +38,7 @@ GeoCircle::operator == ( const GeoCircle& rhs ) const
 {
     return
         _center == rhs._center &&
-        equiv(_radius, rhs._radius);
+        glm::epsilonEqual(_radius, rhs._radius, EPSILON);
 }
 
 GeoCircle
@@ -63,7 +65,7 @@ GeoCircle::intersects( const GeoCircle& rhs ) const
         if ( srs().isProjected() )
         {
             auto vec = glm::dvec2(center().x, center().y) - glm::dvec2(rhs.center().x, rhs.center().y);
-            return lengthSquared(vec) <= (radius() + rhs.radius())*(radius() + rhs.radius());
+            return glm::dot(vec, vec) <= (radius() + rhs.radius())*(radius() + rhs.radius());
         }
         else // if ( isGeodetic() )
         {

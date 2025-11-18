@@ -52,7 +52,7 @@ GeometryPool::getPooledGeometry(const TileKey& tileKey, const Settings& settings
     {
         // Protect access on a per key basis to prevent the same key from being created twice.  
         // This was causing crashes with multiple windows opening and closing.
-        util::ScopedGate<GeometryKey> gatelock(_keygate, geomKey);
+        detail::ScopedGate<GeometryKey> gatelock(_keygate, geomKey);
 
         // first check the sharing cache:
         //if (!meshEditor.hasEdits())
