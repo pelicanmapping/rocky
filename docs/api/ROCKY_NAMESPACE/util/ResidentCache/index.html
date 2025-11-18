@@ -432,7 +432,7 @@
 
 
 <h1 id="class-residentcache">class ResidentCache</h1>
-<p><em>Defined at src/rocky/Cache.h#40</em></p>
+<p><em>Defined at src/rocky/Cache.h#44</em></p>
 <p>ResidentCache cached std::weak_ptr's to shared objects. If the shared object is resideny anywhere in memory, the ResidentCache will be able to return it. K = KEY. Any object that can be hashed for an unordered_map. V = VALUE. Any object that is stored in a shared_ptr.</p>
 <h2 id="members">Members</h2>
 <p>public int _lut</p>
@@ -443,22 +443,22 @@
 <h2 id="functions">Functions</h2>
 <h3 id="get">get</h3>
 <p><em>public int get(const K &amp; key)</em></p>
-<p><em>Defined at src/rocky/Cache.h#52</em></p>
+<p><em>Defined at src/rocky/Cache.h#56</em></p>
 <h3 id="put">put</h3>
 <p><em>public void put(const K &amp; key, const int &amp; value, const METADATA &amp; m)</em></p>
-<p><em>Defined at src/rocky/Cache.h#69</em></p>
+<p><em>Defined at src/rocky/Cache.h#73</em></p>
 <h3 id="capacity">capacity</h3>
 <p><em>public int capacity()</em></p>
-<p><em>Defined at src/rocky/Cache.h#87</em></p>
+<p><em>Defined at src/rocky/Cache.h#91</em></p>
 <h3 id="size">size</h3>
 <p><em>public int size()</em></p>
-<p><em>Defined at src/rocky/Cache.h#92</em></p>
+<p><em>Defined at src/rocky/Cache.h#96</em></p>
 <h3 id="hits">hits</h3>
 <p><em>public int hits()</em></p>
-<p><em>Defined at src/rocky/Cache.h#98</em></p>
+<p><em>Defined at src/rocky/Cache.h#102</em></p>
 <h3 id="misses">misses</h3>
 <p><em>public int misses()</em></p>
-<p><em>Defined at src/rocky/Cache.h#103</em></p>
+<p><em>Defined at src/rocky/Cache.h#107</em></p>
 
 
 

@@ -432,6 +432,83 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#is_identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quaternion_from_euler_radians" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        quaternion_from_euler_radians
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quaternion_from_euler_degrees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        quaternion_from_euler_degrees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#euler_radians_from_quaternion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        euler_radians_from_quaternion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#euler_degrees_from_quaternion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        euler_degrees_from_quaternion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quaternion_from_unscaled_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        quaternion_from_unscaled_matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quaternion_from_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        quaternion_from_matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#visible" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -513,8 +590,8 @@
 <p>Classes here are extensions of the vsgImGui classes to support multi-context ImGui rendering. This is neccessary when crossing DLL boundaries and the like.</p>
 <h2 id="namespaces">Namespaces</h2>
 <ul>
-<li><a href="util/">util</a></li>
 <li><a href="detail/">detail</a></li>
+<li><a href="util/">util</a></li>
 <li><a href="TMS/">TMS</a></li>
 </ul>
 <h2 id="records">Records</h2>
@@ -638,12 +715,44 @@
 <p>Expands an existing sphere to include a point.</p>
 <h3 id="operator">operator*</h3>
 <p><em>int operator</em>(const int &amp; a, const int &amp; b)*</p>
-<p><em>Defined at src/rocky/Math.h#30</em></p>
+<p><em>Defined at src/rocky/Math.h#31</em></p>
 <p>Convenience function to transform a 3D vector using a 4D matrix</p>
 <p>mult a vec3 x mat4</p>
 <h3 id="expandby_1">expandBy</h3>
 <p><em>SPHERE &amp; expandBy(SPHERE &amp; s, typename SPHERE::vec_type p)</em></p>
-<p><em>Defined at src/rocky/Math.h#50</em></p>
+<p><em>Defined at src/rocky/Math.h#51</em></p>
+<h3 id="is_identity">is_identity</h3>
+<p><em>_Bool is_identity(const int &amp; m)</em></p>
+<p><em>Defined at src/rocky/Math.h#255</em></p>
+<p>Test a glm matrix for identity.</p>
+<h3 id="quaternion_from_euler_radians">quaternion_from_euler_radians</h3>
+<p><em>Q quaternion_from_euler_radians(double xaxis, double yaxis, double zaxis)</em></p>
+<p><em>Defined at src/rocky/Math.h#270</em></p>
+<p>Convert Euler angles, in radians, to a quaternion. https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles</p>
+<h3 id="quaternion_from_euler_degrees">quaternion_from_euler_degrees</h3>
+<p><em>Q quaternion_from_euler_degrees(double xaxis, double yaxis, double zaxis)</em></p>
+<p><em>Defined at src/rocky/Math.h#294</em></p>
+<p>Convert Euler angles, in degrees, to a quaternion.</p>
+<h3 id="euler_radians_from_quaternion">euler_radians_from_quaternion</h3>
+<p><em>int euler_radians_from_quaternion(const Q &amp; q)</em></p>
+<p><em>Defined at src/rocky/Math.h#302</em></p>
+<p>Convert a quat to Euler angles in radians. https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles</p>
+<h3 id="euler_degrees_from_quaternion">euler_degrees_from_quaternion</h3>
+<p><em>int euler_degrees_from_quaternion(const Q &amp; q)</em></p>
+<p><em>Defined at src/rocky/Math.h#322</em></p>
+<p>Convert a quat to Euler angles in degrees.</p>
+<h3 id="quaternion_from_unscaled_matrix">quaternion_from_unscaled_matrix</h3>
+<p><em>Q quaternion_from_unscaled_matrix(const M &amp; _mat)</em></p>
+<p><em>Defined at src/rocky/Math.h#335</em></p>
+<p>Extract the rotation component from a 4x4 matrix as a quaternion, assuming the matrix has a unit scale (i.e., unscaled). If you are unsure whether the matrix is scaled or not, use quaternion_from_matrix() instead.</p>
+<p><strong>mat</strong> The input unscaled matrix.</p>
+<p><strong>return</strong> The rotation component of the unscaled matrix.</p>
+<h3 id="quaternion_from_matrix">quaternion_from_matrix</h3>
+<p><em>Q quaternion_from_matrix(const M &amp; mat)</em></p>
+<p><em>Defined at src/rocky/Math.h#400</em></p>
+<p>Extract the rotation component from a 4x4 matrix as a quaternion. This method will normalize any scaling factor found in the matrix. If you know your matrix is unscaled, call quaternion_from_unscaled_matrix() instead for better performance.</p>
+<p><strong>mat</strong> The input matrix.</p>
+<p><strong>return</strong> The rotation component of the matrix.</p>
 <h3 id="visible">visible</h3>
 <p><em>_Bool visible(const Visibility &amp; vis, int &amp; rs)</em></p>
 <p><em>Defined at src/rocky/ecs/Visibility.h#45</em></p>
@@ -671,7 +780,7 @@
 | Triangulate |
 | Cubic |
 | CubicSpline |</p>
-<p><em>Defined at src/rocky/Math.h#19</em></p>
+<p><em>Defined at src/rocky/Math.h#20</em></p>
 <p>Raster interpolation methods</p>
 <p>| enum class GeodeticInterpolation |</p>
 <p>--</p>

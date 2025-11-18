@@ -344,6 +344,28 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#linear_to_srgb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        linear_to_sRGB
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#srgb_to_linear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sRGB_to_linear
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#systemnode_on_construct" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -409,6 +431,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#setthreadname" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setThreadName
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -462,8 +495,18 @@
 <li><a href="MeshGeometryDetail/">MeshGeometryDetail</a></li>
 <li><a href="MeshTextureDetail/">MeshTextureDetail</a></li>
 <li><a href="qualified_double/">qualified_double</a></li>
+<li><a href="ThreadLocal/">ThreadLocal</a></li>
+<li><a href="Gate/">Gate</a></li>
+<li><a href="ScopedGate/">ScopedGate</a></li>
+<li><a href="SentryTracker/">SentryTracker</a></li>
 </ul>
 <h2 id="functions">Functions</h2>
+<h3 id="linear_to_srgb">linear_to_sRGB</h3>
+<p><em>float linear_to_sRGB(float c)</em></p>
+<p><em>Defined at src/rocky/Image.h#369</em></p>
+<h3 id="srgb_to_linear">sRGB_to_linear</h3>
+<p><em>float sRGB_to_linear(float c)</em></p>
+<p><em>Defined at src/rocky/Image.h#381</em></p>
 <h3 id="systemnode_on_construct">SystemNode_on_construct</h3>
 <p><em>void SystemNode_on_construct(int &amp; r, int e)</em></p>
 <p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#296</em></p>
@@ -487,6 +530,9 @@
 <p><em>void SystemNode_on_destroy_shared(int &amp; r, int e)</em></p>
 <p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#389</em></p>
 <p>invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)</p>
+<h3 id="setthreadname">setThreadName</h3>
+<p><em>int setThreadName(const int &amp; name)</em></p>
+<p>Sets the name of the current thread</p>
 
 
 
