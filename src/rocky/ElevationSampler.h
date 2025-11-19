@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/ElevationLayer.h>
+#include <array>
 
 namespace ROCKY_NAMESPACE
 {
@@ -13,7 +14,10 @@ namespace ROCKY_NAMESPACE
     /**
     * A sample of elevation data.
     */
-    using ElevationSample = float;
+    struct ElevationSample
+    {
+        float height = rocky::NO_DATA_VALUE;
+    };
 
     /**
     * Queries an ElevationLayer for elevation values
@@ -52,7 +56,7 @@ namespace ROCKY_NAMESPACE
             return layer && layer->status().ok();
         }
 
-        //! Compute the height and resolution at the given coordinates
+        //! Compute the height at the given coordinates
         inline Result<ElevationSample> sample(const GeoPoint& p, const IOOptions& io) const;
 
         //! Clamps the incoming point to the elevation data.
@@ -103,21 +107,9 @@ namespace ROCKY_NAMESPACE
         //! Reference latitude for resolution calculations (optional).
         Angle referenceLatitude = {};
 
-        //! Clamps the incoming point to the elevation data.
-        bool transformAndClamp(double& x, double& y, double& z) const;
-
-        //! Samples the incoming point and returns the height.
-        //! Failure will return the failValue.
-        inline float sample(double x, double y, double z) const;
-
         //! Clamps a range of points. All points are expected to be in the "srs" SRS.
         template<class VEC3_ITER>
         inline bool clampRange(VEC3_ITER begin, VEC3_ITER end) const;
-
-        //! Given a range of points, clamps each one for which the predicate returns true.
-        //! All points expected to be in the "srs" SRS.
-        template<class VEC3_ITER, class PREDICATE>
-        inline bool clampRange(VEC3_ITER begin, VEC3_ITER end, PREDICATE&& pred) const;
 
         //! Force a cache purge if you changed the lod or resolution.
         inline void dirty() {
@@ -157,6 +149,9 @@ namespace ROCKY_NAMESPACE
             auto out_ty = std::min((unsigned)((1.0 - ry) * (double)_numtiles.y), _numtiles.y - 1u);
             return { out_tx, out_ty };
         }
+
+        template<typename VEC3_ITER>
+        inline bool clampTransformedRange(VEC3_ITER begin, VEC3_ITER end) const;
     };
 
 
@@ -179,28 +174,24 @@ namespace ROCKY_NAMESPACE
 
         auto sesh = session(io);
         sesh.srs = p.srs;
+        std::array<glm::dvec3, 1> range = { { p } };
+        if (sesh.clampRange(range.begin(), range.end()))
+        {
+            if (!p.srs.isGeodetic())
+                p.srs.to(p.srs.geodeticSRS()).transform(range[0].x, range[0].y, range[0].z);
 
-        glm::dvec3 t(p);
-        if (sesh.transformAndClamp(t.x, t.y, t.z))
-            return t.z;
+            return ElevationSample{ (float)range[0].z };
+        }
         else
+        {
             return Failure{};
+        }
     }
 
     auto ElevationSampler::clamp(const GeoPoint& p, const IOOptions& io) const
         -> Result<GeoPoint>
     {
-        if (!layer || !layer->status().ok())
-            return NoLayer;
-
-        auto sesh = session(io);
-        sesh.srs = p.srs;
-
-        GeoPoint out(p);
-        if (sesh.transformAndClamp(out.x, out.y, out.z))
-            return out;
-        else
-            return Failure{};
+        return clamp(p, Distance{}, io);
     }
 
     auto ElevationSampler::clamp(const GeoPoint& p, const Distance& resolution, const IOOptions& io) const
@@ -213,12 +204,9 @@ namespace ROCKY_NAMESPACE
         sesh.srs = p.srs;
         sesh.resolution = resolution;
 
-        GeoPoint out(p);
-        if (sesh.transformAndClamp(out.x, out.y, out.z))
-        {
-            sesh._xform.inverse(out.x, out.y, out.z);
-            return out;
-        }
+        std::array<glm::dvec3, 1> range = { { p } };
+        if (sesh.clampRange(range.begin(), range.end()))
+            return GeoPoint(p.srs, range[0]);
         else
             return Failure{};
     }
@@ -238,20 +226,6 @@ namespace ROCKY_NAMESPACE
         return sesh.clampRange(begin, end);
     }
 
-    float ElevationSession::sample(double x, double y, double z) const
-    {
-        double a = x, b = y, c = z;
-        if (transformAndClamp(a, b, c))
-        {
-            _xform.inverse(a, b, c);
-            return static_cast<float>(c);
-        }
-        else
-        {
-            return _sampler->failValue;
-        }
-    }
-
     template<class VEC3_ITER>
     bool ElevationSession::clampRange(VEC3_ITER begin, VEC3_ITER end) const
     {
@@ -261,44 +235,90 @@ namespace ROCKY_NAMESPACE
         if (begin == end)
             return true;
 
-        bool result = true;
-
-        for (auto iter = begin; iter != end; ++iter)
+        if (_xform.from() != srs)
         {
-            if (transformAndClamp(iter->x, iter->y, iter->z))
-                _xform.inverse(iter->x, iter->y, iter->z);
-            else
-                result = false;
+            _xform = srs.to(_sampler->layer->profile.srs());
         }
+
+        _xform.transformRange(begin, end);
+
+        bool result = clampTransformedRange(begin, end);
+
+        if (result)
+            _xform.inverseRange(begin, end);
 
         return result;
     }
 
-    template<class VEC3_ITER, class PREDICATE>
-    bool ElevationSession::clampRange(VEC3_ITER begin, VEC3_ITER end, PREDICATE&& predicate) const
+    template<class VEC3_ITER>
+    bool ElevationSession::clampTransformedRange(VEC3_ITER begin, VEC3_ITER end) const
     {
-        static_assert(std::is_invocable_r_v<bool, PREDICATE, decltype(*begin)>,
-            "ElevationSession::clampRange() requires a predicate matching the signature bool(vec3)");
-
-        if (!_sampler->layer || !_sampler->layer->status().ok())
-            return false;
-
-        if (begin == end)
-            return true;
-
-        bool result = true;
-
         for (auto iter = begin; iter != end; ++iter)
         {
-            if (predicate(*iter))
+            if (_pw <= 0.0)
             {
-                if (transformAndClamp(iter->x, iter->y, iter->z))
-                    _xform.inverse(iter->x, iter->y, iter->z);
+                auto& profile = _sampler->layer->profile;
+
+                if (level == UINT_MAX)
+                {
+                    double r = profile.srs().transformDistance(resolution, profile.srs().units(), referenceLatitude);
+                    const_cast<ElevationSession*>(this)->level = profile.levelOfDetailForHorizResolution(r, _sampler->layer->tileSize);
+                }
+
+                _pw = profile.extent().width();
+                _ph = profile.extent().height();
+                _pxmin = profile.extent().xmin();
+                _pymin = profile.extent().ymin();
+                _numtiles = profile.numTiles(level);
+                _cache.tx = UINT_MAX;
+                _cache.ty = UINT_MAX;
+                _cache.status = Failure{};
+            }
+
+            auto& x = iter->x;
+            auto& y = iter->y;
+            auto& z = iter->z;
+
+            // simple ONE TILE caching internally.
+            auto [new_tx, new_ty] = tile(x, y);
+
+            if (new_tx != _cache.tx || _cache.ty != new_ty)
+            {
+                _cache.status.clear();
+
+                _cache.key = _sampler->layer->bestAvailableTileKey(TileKey(level, new_tx, new_ty, _sampler->layer->profile));
+                if (_cache.key.valid())
+                {
+                    auto r = _sampler->fetch(_cache.key, *_io);
+                    if (r.ok())
+                        _cache.hf = std::move(r.value());
+                    else
+                        _cache.status = r.error();
+
+                    _cache.tx = new_tx, _cache.ty = new_ty;
+                }
                 else
-                    result = false;
+                {
+                    // invalid data
+                    _cache.tx = UINT_MAX, _cache.ty = UINT_MAX;
+                    _cache.status = Failure{};
+                }
+            }
+
+            if (_cache.status.ok())
+            {
+                auto r = GeoHeightfield(_cache.hf).read(x, y);
+                if (r.ok())
+                    z = r.value();
+                else
+                    return false;
+            }
+            else
+            {
+                return false;
             }
         }
 
-        return result;
+        return true;
     }
 }

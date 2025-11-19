@@ -73,9 +73,9 @@ namespace ROCKY_NAMESPACE
             void put(const K& key, const std::shared_ptr<V>& value, const METADATA& m)
             {
                 std::unique_lock lock(_mutex);
-                _lut.emplace(key, entry_t{ value, m });
+                _lut[key] = entry_t{ value, m };
                 ++_puts;
-                if (_puts % 256 == 0) {
+                if (_puts % 64 == 0) {
                     // Clean up expired entries every N puts
                     for (auto it = _lut.begin(); it != _lut.end();) {
                         if (it->second.first.expired()) {

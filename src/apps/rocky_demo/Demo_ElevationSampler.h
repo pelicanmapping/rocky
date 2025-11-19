@@ -138,8 +138,8 @@ auto Demo_ElevationSampler = [](Application& app)
 
             if (sample.available() && sample.value().ok())
             {
-                ImGuiLTable::Text("Elevation sampler:", "%.2f m", sample->value());
-                ImGuiLTable::Text("Geometric error:", "%.2f m", std::abs(sample->value() - i.z));
+                ImGuiLTable::Text("Elevation sampler:", "%.2f m", sample->value().height);
+                ImGuiLTable::Text("Geometric error:", "%.2f m", std::abs(sample->value().height - i.z));
             }
             else if (sample.working())
             {

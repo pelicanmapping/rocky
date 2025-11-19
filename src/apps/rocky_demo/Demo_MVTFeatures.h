@@ -46,7 +46,9 @@ auto Demo_MVTFeatures = [](Application& app)
                     auto resolutionX = elevationSampler.layer->resolution(key.level).first;
                     if (auto p = elevationSampler.clamp(ex.centroid(), resolutionX, io))
                     {
-                        return vsg::dsphere(to_vsg(p->transform(app.mapNode->srs())), bs.radius);
+                        auto n = glm::normalize(bs.center);
+                        bs.center += n * p.value().transform(ex.srs().geodeticSRS()).z;
+                        return vsg::dsphere(to_vsg(bs.center), bs.radius * 1.01);
                     }
                 }
 

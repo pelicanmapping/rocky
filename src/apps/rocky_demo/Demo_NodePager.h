@@ -4,9 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/ecs/Registry.h>
 #include <rocky/vsg/NodePager.h>
-#include <rocky/vsg/ecs/EntityNode.h>
 #include <rocky/ElevationSampler.h>
 #include "helpers.h"
 
@@ -54,7 +52,9 @@ auto Demo_NodePager = [](Application& app)
                     auto resolutionX = clamper.layer->resolution(key.level).first;
                     if (auto p = clamper.clamp(ex.centroid(), resolutionX, io))
                     {
-                        return vsg::dsphere(to_vsg(p->transform(app.mapNode->srs())), bs.radius);
+                        auto n = glm::normalize(bs.center);
+                        bs.center += n * p.value().transform(ex.srs().geodeticSRS()).z;
+                        return vsg::dsphere(to_vsg(bs.center), bs.radius * 1.01);
                     }
                 }
 
