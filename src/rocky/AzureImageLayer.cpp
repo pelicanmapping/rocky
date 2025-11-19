@@ -43,11 +43,11 @@ AzureImageLayer::construct(std::string_view JSON, const IOOptions& io)
 
     // environment variable key overrides a key set in code
     auto key = util::getEnvVar("AZURE_KEY");
-    if (!key.empty())
+    if (key.has_value())
     {
         Log()->info(LC "Loading subscription key from an environment variable");
         subscriptionKey.clear();
-        subscriptionKey.set_default(key);
+        subscriptionKey.set_default(key.value());
     }
 }
 

@@ -17,6 +17,7 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
+#include <optional>
 
 
 namespace ROCKY_NAMESPACE
@@ -26,7 +27,7 @@ namespace ROCKY_NAMESPACE
         const std::string EMPTY_STRING = {};
 
         //! Gets the value of an environment variable (safely)
-        extern ROCKY_EXPORT std::string getEnvVar(const char* name);
+        extern ROCKY_EXPORT std::optional<std::string> getEnvVar(std::string_view name);
 
         //! Whther and environment variable is set at all
         extern ROCKY_EXPORT bool isEnvVarSet(const char* name);
@@ -298,11 +299,9 @@ namespace ROCKY_NAMESPACE
             }
 
         private:
-            using DelimiterMap = vector_map<std::string, bool>; // std::map<std::string, bool>; // string, keep?
-            using QuoteMap = vector_map<char, std::pair<char, bool>>; // std::map<char, std::pair<char, bool>>; // open, close, keep?
+            using DelimiterMap = vector_map<std::string, bool>; // string, keep?
+            using QuoteMap = vector_map<char, std::pair<char, bool>>; // open, close, keep?
 
-            //DelimiterMap _delims;
-            //QuoteMap _quotes;
             vector_map<std::string, bool> _delims;
             vector_map<char, std::pair<char, bool>> _quotes;
             bool _allowEmpties = true;

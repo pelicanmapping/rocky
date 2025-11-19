@@ -25,15 +25,16 @@ Logger rocky::Log()
                 auto logger = spdlog::stdout_color_mt("rocky");
                 logger->set_pattern("%^[%n %l]%$ %v");
 
-                std::string log_level = util::getEnvVar("ROCKY_LOG_LEVEL");
-                if (log_level.empty()) log_level = util::getEnvVar("ROCKY_NOTIFY_LEVEL");
-                if (util::ciEquals(log_level, "trace")) logger->set_level(spdlog::level::trace);
-                else if (util::ciEquals(log_level, "info")) logger->set_level(spdlog::level::info);
-                else if (util::ciEquals(log_level, "debug")) logger->set_level(spdlog::level::debug);
-                else if (util::ciEquals(log_level, "warn")) logger->set_level(spdlog::level::warn);
-                else if (util::ciEquals(log_level, "error")) logger->set_level(spdlog::level::err);
-                else if (util::ciEquals(log_level, "critical")) logger->set_level(spdlog::level::critical);
-                else if (util::ciEquals(log_level, "off")) logger->set_level(spdlog::level::off);
+                auto log_level = util::getEnvVar("ROCKY_LOG_LEVEL");
+                if (!log_level.has_value()) log_level = util::getEnvVar("ROCKY_NOTIFY_LEVEL");
+                if (!log_level.has_value()) logger->set_level(default_level);
+                else if (util::ciEquals(log_level.value(), "trace")) logger->set_level(spdlog::level::trace);
+                else if (util::ciEquals(log_level.value(), "info")) logger->set_level(spdlog::level::info);
+                else if (util::ciEquals(log_level.value(), "debug")) logger->set_level(spdlog::level::debug);
+                else if (util::ciEquals(log_level.value(), "warn")) logger->set_level(spdlog::level::warn);
+                else if (util::ciEquals(log_level.value(), "error")) logger->set_level(spdlog::level::err);
+                else if (util::ciEquals(log_level.value(), "critical")) logger->set_level(spdlog::level::critical);
+                else if (util::ciEquals(log_level.value(), "off")) logger->set_level(spdlog::level::off);
                 else logger->set_level(default_level);
             }
             catch (spdlog::spdlog_ex ex)

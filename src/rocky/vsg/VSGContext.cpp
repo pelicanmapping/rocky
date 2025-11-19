@@ -341,7 +341,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
 #if 1
     // Load a default font if there is one
     auto font_file = util::getEnvVar("ROCKY_DEFAULT_FONT");
-    if (font_file.empty())
+    if (!font_file.has_value())
     {
 #ifdef WIN32
         font_file = "calibri.ttf";
@@ -350,10 +350,10 @@ VSGContextImpl::ctor(int& argc, char** argv)
 #endif
     }
 
-    defaultFont = vsg::read_cast<vsg::Font>(font_file, readerWriterOptions);
+    defaultFont = vsg::read_cast<vsg::Font>(font_file.value(), readerWriterOptions);
     if (!defaultFont)
     {
-        Log()->warn("Cannot load font \"" + font_file + "\"");
+        Log()->warn("Cannot load font \"" + font_file.value() + "\"");
     }
 #endif
 

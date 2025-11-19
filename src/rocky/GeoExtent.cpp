@@ -1003,15 +1003,15 @@ GeoExtent::createWorldBoundingSphere(double minElev, double maxElev) const
         bs.center = bb.center();
 
         // Compute the max radius based on the distance from the bounding boxes center.
-        double maxRadius = -DBL_MAX;
+        double maxRadius2 = -DBL_MAX;
 
         for (auto& p : samplePoints)
         {
-            double r = glm::distance(p, bs.center);
-            if (r > maxRadius) maxRadius = r;
+            double r2 = glm::dot(p - bs.center, p - bs.center); // glm::distance(p, bs.center);
+            if (r2 > maxRadius2) maxRadius2 = r2;
         }
 
-        bs.radius = maxRadius;
+        bs.radius = sqrt(maxRadius2);
     }
 
     return bs;

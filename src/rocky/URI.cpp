@@ -103,7 +103,7 @@ URI::inferContentType(const std::string& buffer)
 
 namespace
 {
-    static bool httpDebug = !ROCKY_NAMESPACE::util::getEnvVar("HTTP_DEBUG").empty();
+    static bool httpDebug = ROCKY_NAMESPACE::util::isEnvVarSet("HTTP_DEBUG");
 
     std::string inferContentTypeFromFileExtension(const std::string& filename)
     {

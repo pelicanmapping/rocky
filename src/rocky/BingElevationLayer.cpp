@@ -42,11 +42,11 @@ BingElevationLayer::construct(std::string_view JSON, const IOOptions& io)
 
     // environment variable key overrides a key set in code
     auto key = util::getEnvVar("BING_KEY");
-    if (!key.empty())
+    if (key.has_value())
     {
         Log()->info(LC "Overriding API key from environment variable");
         apiKey.clear();
-        apiKey.set_default(key);
+        apiKey.set_default(key.value());
     }
 }
 

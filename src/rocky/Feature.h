@@ -192,8 +192,8 @@ namespace ROCKY_NAMESPACE
         {
             String,
             Double,
-            Int,
-            Bool
+            Integer,
+            Boolean
         };
 
         using Fields = util::vector_map<std::string, FieldValue>;

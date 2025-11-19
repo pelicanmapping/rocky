@@ -266,18 +266,29 @@ rocky::util::getExecutableLocation()
 
 namespace
 {
-    inline std::string _getEnvVar(const std::string& name)
-    {
-        const char* value = std::getenv(name.c_str());
-        return value ? std::string(value) : std::string();
+    inline std::optional<std::string> _getEnvVar(std::string_view name) {
+#if defined(_WIN32)
+        char* buffer = nullptr;
+        size_t size = 0;
+
+        if (_dupenv_s(&buffer, &size, name.data()) == 0 && buffer) {
+            std::string value(buffer);
+            ::free(buffer);  // must free
+            return value;
+        }
+#else
+        if (const char* v = std::getenv(name))
+            return std::string(v);
+#endif
+        return std::nullopt;
     }
 }
 
-std::string
-rocky::util::getEnvVar(const char* name)
+std::optional<std::string>
+rocky::util::getEnvVar(std::string_view name)
 {
     auto result = _getEnvVar(name);
-    if (result.empty())
+    if (!result.has_value())
     {
         result = _getEnvVar("ROCKY_" + std::string(name));
     }
@@ -287,7 +298,7 @@ rocky::util::getEnvVar(const char* name)
 bool
 rocky::util::isEnvVarSet(const char* name)
 {
-    return !getEnvVar(name).empty();
+    return getEnvVar(name).has_value();
 }
 
 
@@ -296,7 +307,10 @@ rocky::util::setThreadName(const char* name)
 {
 #if (defined _WIN32 && defined _WIN32_WINNT_WIN10 && defined _WIN32_WINNT && _WIN32_WINNT >= _WIN32_WINNT_WIN10) || (defined __CYGWIN__)
     wchar_t buf[256];
-    mbstowcs(buf, name, 256);
+    size_t converted = 0;
+    auto err = mbstowcs_s(&converted, buf, 256, name, _TRUNCATE);
+    if (err != 0)
+        return;
 
     // Look up the address of the SetThreadDescription function rather than using it directly.
     typedef ::HRESULT(WINAPI* SetThreadDescription)(::HANDLE hThread, ::PCWSTR lpThreadDescription);
