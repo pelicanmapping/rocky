@@ -277,7 +277,8 @@ namespace
             return value;
         }
 #else
-        if (const char* v = std::getenv(name))
+        std::string nameStr(name);
+        if (const char* v = std::getenv(nameStr.c_str()))
             return std::string(v);
 #endif
         return std::nullopt;
