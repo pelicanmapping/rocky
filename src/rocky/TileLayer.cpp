@@ -235,11 +235,11 @@ TileLayer::bestAvailableTileKey(const TileKey& key) const
 
     auto findBestLocalLevel = [&](const DataExtent& de)
         {
-            auto minLevel = de.minLevel.has_value() ? de.minLevel.value() : 0;
-            auto maxLevel = de.maxLevel.has_value() ? std::min(de.maxLevel.value(), localLevel) : localLevel;
+            auto localMinLevel = de.minLevel.has_value() ? de.minLevel.value() : 0;
+            auto localMaxLevel = de.maxLevel.has_value() ? std::min(de.maxLevel.value(), localLevel) : localLevel;
 
-            if (localLevel >= minLevel)
-                bestLocalLevel = std::max(bestLocalLevel, maxLevel);
+            if (localLevel >= localMinLevel)
+                bestLocalLevel = std::max(bestLocalLevel, localMaxLevel);
 
             return bestLocalLevel < localLevel ? RTREE_KEEP_SEARCHING : RTREE_STOP_SEARCHING;
         };

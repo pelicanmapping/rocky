@@ -63,9 +63,6 @@ ElevationLayer::construct(std::string_view JSON, const IOOptions& io)
         else if (encoding_value == "terrarium")
             encoding = Encoding::TerrariumRGB;
     }
-
-    // Disable max-level support for elevation data because it makes no sense.
-    maxLevel.clear();
 }
 
 std::string
