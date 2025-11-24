@@ -51,6 +51,8 @@ That will download and build all the dependencies (takes a while) and generate y
 
 If you would rather not use vcpkg, you can build and install the [dependencies](#acknowledgements) yourself, or use your favorite package manager (like `apt` on Linux).
 
+*Please note: Rocky requires Vulkan SDK 1.3.268 or newer.*
+
 ## Run the Demo
 Rocky is pretty good at finding its data files, but if you run into trouble, you might need to set a couple environment variables to help:
 ```bat
@@ -318,9 +320,8 @@ Rocky has a set of built-in primitives for displaying objects on the map.
 * Line - a string of 2D line segments
 * Mesh - a collection of triangles
 * Point - a collection of points
-* Icon - a 2D image facing the viewer
 * Model - a VSG scene graph representing an object
-* Widget - an interactive ImGui panel (or a simple text label)
+* Widget - an interactive ImGui panel (for labels, icons, or custom UIs)
 
 To create and manage these elements, Rocky uses an [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system) (ECS) driven by the popular [EnTT](https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. Suffice it to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
 
@@ -366,8 +367,8 @@ void function_that_creates_or_destroys_things(Application& app)
    
    // ALL registry operations are safe here, including:
    auto e = registry.create();                // creating a new entity
-   auto& label = registry.emplace<Label>(e);  // attaching a new component
-   registry.remove<Label>(e);                 // removing a component
+   auto& comp = registry.emplace<Line>(e);    // attaching a new component
+   registry.remove<Line>(e);                  // removing a component
    registry.destroy(e);                       // destroying an entity (and all its attachments)
 }
 
@@ -376,9 +377,9 @@ void function_that_only_reads_or_edits_things(Application& app)
    auto& [lock, registry] = app.registry.read();
 
    // ONLY actions that read data or modify data in-place are safe here, including:
-   auto& label = registry.get<Label>(e);    // look up an existing component
-   label.text = "New text";                 // modify a component in-place
-   for(auto&&[label, xform] : registry.view<Label, Transform>().each()) { ... }  // iterate data
+   auto& comp = registry.get<LineGeometry>(e);         // look up an existing component
+   line.points.emplace_back(glm::dvec3(-72, 34, 0));   // modify a component in-place
+   for(auto&& [line, xform] : registry.view<Line, Transform>().each()) { ... }  // iterate data
 
    // NOT safe!!
    // create(), emplace(), emplace_or_replace(), remove(), destroy();
@@ -705,5 +706,6 @@ Thanks to these excellent open source projects that help make Rocky possible!
 * [spdlog](https://github.com/gabime/spdlog)
 * [sqlite3](https://github.com/sqlite/sqlite) (optional)
 * [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)
+* [Vulkan SDK](https://vulkan.lunarg.com/sdk/home)
 * [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph)
 * [weejobs](https://github.com/pelicanmapping/weejobs) (embedded)

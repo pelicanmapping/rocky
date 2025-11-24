@@ -186,6 +186,10 @@ endif()
 
 # VSG - rendering implementation
 if(ROCKY_RENDERER_VSG)
+
+    # Validate minimum required Vulkan SDK header version
+    find_package(Vulkan 1.3.261 REQUIRED)
+
     file(GLOB HEADERS_VSG vsg/*.h)
     file(GLOB SOURCES_VSG vsg/*.cpp)
     
