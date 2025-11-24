@@ -33,13 +33,6 @@ jobs:
           core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
-    - name: Install Vulkan SDK
-      uses: pelicanmapping/setup-vulkan-sdk@v1.2.1
-      with:
-        vulkan-query-version: 1.3.261.1
-        vulkan-components: Vulkan-Headers, Vulkan-Loader
-        vulkan-use-cache: true
-
     - name: Installing vcpkg (windows)
       shell: 'bash'
       run: |
@@ -55,12 +48,18 @@ jobs:
 
     - name: Configure GitHub binary cache
       run: |
-        dotnet nuget add source \
+        dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
           --name github-cache \
-          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
           --username "${{ github.repository_owner }}" \
           --password "${{ secrets.GITHUB_TOKEN }}" \
           --store-password-in-clear-text
+
+    - name: Install Vulkan SDK
+      uses: pelicanmapping/setup-vulkan-sdk@v1.2.1
+      with:
+        vulkan-query-version: 1.3.261.1
+        vulkan-components: Vulkan-Headers, Vulkan-Loader
+        vulkan-use-cache: true
 
     - name: Create Build Environment
       run: |
