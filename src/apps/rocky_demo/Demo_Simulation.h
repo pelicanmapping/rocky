@@ -73,12 +73,12 @@ namespace
                     {
                         // calculate the bearing for our icon:
                         auto& motion = i.registry.get<MotionGreatCircle>(i.entity);
-                        auto course = pointECEF.srs.ellipsoid().course(pointECEF, motion.normalAxis);
+                        auto heading = pointECEF.srs.ellipsoid().heading(pointECEF, motion.normalAxis);
 
                         if (ImGui::BeginTable("asset", 2))
                         {
                             ImGui::TableNextColumn();
-                            image.render(image.size(), course);
+                            image.render(image.size(), heading);
 
                             ImGui::TableNextColumn();
                             ImGui::Text("ID: %s", i.widget.text.c_str());
@@ -91,7 +91,7 @@ namespace
                                 ImGui::Separator();
                                 ImGui::Text("Alt: %.0f m", pointWGS84.z);
                                 ImGui::Separator();
-                                ImGui::Text("Crs: %.1f", course);
+                                ImGui::Text("Hdg: %.1f", heading);
                             }
 
                             ImGui::EndTable();

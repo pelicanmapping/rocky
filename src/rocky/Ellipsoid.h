@@ -101,16 +101,16 @@ namespace ROCKY_NAMESPACE
         //! Calculates the rotation axis that will rotate a point along an ellipsoidal
         //! path at a provided initial course.
         //! @param geocPoint Geocentric start point (x, y, z in meters)
-        //! @param initialCourse_deg Initial course in degrees relative to the local tangent place at geocPoint
+        //! @param initialHeading_deg Initial course in degrees relative to the local tangent place at geocPoint
         //! @return Rotation axis in geocentric coordinates (x, y, z in meters)
-        glm::dvec3 rotationAxis(const glm::dvec3& geocPoint, double initialCourse_deg) const;
+        glm::dvec3 rotationAxis(const glm::dvec3& geocPoint, double initialHeading_deg) const;
 
         //! Given a geocentric point and a rotation axis (possibly returned from a call to rotationAxis),
-        //! return the current course in degrees of the point relative to the local tangent plane.
+        //! return the heading in degrees of the point relative to the local tangent plane.
         //! @param geocPoint Geocentric point (x, y, z in meters)
         //! @param geocAxis Normalized rotation axis (x, y, z in meters)
-        //! @return Current course in degrees
-        double course(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis) const;
+        //! @return Heading in degrees
+        double heading(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis) const;
 
         //! Rotates the geocentric point along the a great ellipse.
         //! @param geocPoint Geocentric point to rotate

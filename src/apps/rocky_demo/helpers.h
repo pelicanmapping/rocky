@@ -259,6 +259,30 @@ namespace ImGuiLTable
         return ImGui::Button(label);
     }
 
+    static bool Bitfield(const char* label, int step, std::uint16_t* value)
+    {
+        bool changed = false;
+        ImGui::TableNextColumn();
+        ImGui::Text("%s", label);
+        ImGui::TableNextColumn();
+        bool bits[16];
+        for(int i=0; i<16/step; ++i) {
+            bits[i * step] = (*value & (1 << (i*step))) != 0;
+            static const std::string invisible = "##";
+            if (ImGui::Checkbox((invisible + std::to_string(i) + std::string(label)).c_str(), &bits[i * step])) {
+                for (int s = 0; s < step; ++s) {
+                    if (bits[i * step])
+                        *value |= (1 << (i*step + s));
+                    else
+                        *value &= ~(1 << (i*step + s));
+                }
+                changed = true;
+            }
+            ImGui::SameLine();
+        }
+        return changed;
+    }
+
     static void End()
     {
         ImGui::EndTable();

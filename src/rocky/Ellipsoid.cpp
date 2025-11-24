@@ -392,7 +392,7 @@ Ellipsoid::rotationAxis(const glm::dvec3& geocStart, double initialCourse_deg) c
 }
 
 double
-Ellipsoid::course(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis) const
+Ellipsoid::heading(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis) const
 {
     const glm::dvec3 northPole(0, 0, 1);
     auto posUnit = glm::normalize(geocPoint * _ellipsoidToUnitSphere);

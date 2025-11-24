@@ -9,7 +9,6 @@
 #include <string>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 namespace
 {
@@ -31,7 +30,7 @@ namespace
             return false;
         }
 
-        std::string unitsStr = trim(input.substr(pos));
+        std::string unitsStr = util::trim(input.substr(pos));
 
         if (unitsStr.empty())
         {
@@ -59,24 +58,24 @@ namespace
 
 
 
-Units::Units( const std::string& name, const std::string& abbr, const Units::Type& type, double toBase ) :
-_name  ( name ),
-_abbr  ( abbr ),
-_type  ( type ),
-_toBase( toBase ),
-_distance(0L),
-_time(0L)
+Units::Units(const std::string& name, const std::string& abbr, const Units::Type& type, double toBase) :
+    _name(name),
+    _abbr(abbr),
+    _type(type),
+    _toBase(toBase),
+    _distance(0L),
+    _time(0L)
 {
     //nop
 }
 
-Units::Units( const std::string& name, const std::string& abbr, const Units& distance, const Units& time ) :
-_name    ( name ),
-_abbr    ( abbr ),
-_type    ( TYPE_SPEED ),
-_toBase  ( 1.0 ),
-_distance( &distance ),
-_time    ( &time )
+Units::Units(const std::string& name, const std::string& abbr, const Units& distance, const Units& time) :
+    _name(name),
+    _abbr(abbr),
+    _type(TYPE_SPEED),
+    _toBase(1.0),
+    _distance(&distance),
+    _time(&time)
 {
     //nop
 }

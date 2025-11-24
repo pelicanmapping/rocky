@@ -62,10 +62,10 @@ auto Demo_Line_Absolute = [](Application& app)
         if (ImGuiLTable::SliderFloat("Width", &style.width, 1.0f, 15.0f, "%.0f"))
             style.dirty(r);
 
-        if (ImGuiLTable::SliderInt("Stipple pattern", &style.stipplePattern, 0x0001, 0xffff, "%04x", ImGuiSliderFlags_Logarithmic))
+        if (ImGuiLTable::Bitfield("Stipple", 2, &style.stipplePattern))
             style.dirty(r);
 
-        if (ImGuiLTable::SliderInt("Stipple factor", &style.stippleFactor, 1, 4))
+        if (ImGuiLTable::SliderInt("Factor", &style.stippleFactor, 1, 4))
             style.dirty(r);
 
 
