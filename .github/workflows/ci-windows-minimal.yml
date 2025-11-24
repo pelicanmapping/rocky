@@ -30,7 +30,6 @@ jobs:
       uses: actions/github-script@v7
       with:
         script: |
-          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
           core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
 
     - name: Installing vcpkg (windows)
@@ -50,13 +49,6 @@ jobs:
       run: |
         dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name github-cache --username "${{ github.repository_owner }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
-    - name: Install Vulkan SDK
-      uses: pelicanmapping/setup-vulkan-sdk@v1.2.1
-      with:
-        vulkan-query-version: 1.3.261.1
-        vulkan-components: Vulkan-Headers, Vulkan-Loader
-        vulkan-use-cache: true
-
     - name: Create Build Environment
       run: |
         cmake -E make_directory ${{runner.workspace}}/build
@@ -65,14 +57,6 @@ jobs:
       shell: bash
       working-directory: ${{ runner.workspace }}/build
       run: cmake $GITHUB_WORKSPACE -DWIN32_USE_MP=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DROCKY_SUPPORTS_GDAL=ON -DROCKY_SUPPORT_QT=OFF -DROCKY_SUPPORTS_MBTILES=OFF -DROCKY_SUPPORTS_AZURE=OFF -DROCKY_SUPPORTS_BING=OFF -DCMAKE_TOOLCHAIN_FILE=${{ matrix.VCPKG_WORKSPACE }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_BUILD_TYPE=$BUILD_TYPE -DVCPKG_MANIFEST_DIR=$GITHUB_WORKSPACE
-
-    - name: 'Upload cmake configure log artifact'
-      uses: actions/upload-artifact@v4
-      if: ${{ failure() }}
-      with:
-        name: cmake-log
-        path: ${{ runner.workspace }}/build/CMakeCache.txt
-        retention-days: 1
 
     - name: Build
       working-directory: ${{ runner.workspace }}/build
