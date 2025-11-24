@@ -48,11 +48,7 @@ jobs:
 
     - name: Configure GitHub binary cache
       run: |
-        dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
-          --name github-cache \
-          --username "${{ github.repository_owner }}" \
-          --password "${{ secrets.GITHUB_TOKEN }}" \
-          --store-password-in-clear-text
+        dotnet nuget add source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" --name github-cache --username "${{ github.repository_owner }}" --password "${{ secrets.GITHUB_TOKEN }}" --store-password-in-clear-text
 
     - name: Install Vulkan SDK
       uses: pelicanmapping/setup-vulkan-sdk@v1.2.1
