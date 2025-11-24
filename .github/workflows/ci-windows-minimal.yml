@@ -3,7 +3,6 @@ name: windows-x64-Release-minimal
 on: [push, pull_request, workflow_dispatch]
 
 env:
-  VCPKG_BINARY_SOURCES : 'clear;x-gha,readwrite'
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
   VCPKG_VERSION: 'master'
@@ -37,7 +36,7 @@ jobs:
     - name: Install Vulkan SDK
       uses: pelicanmapping/setup-vulkan-sdk@v1.2.1
       with:
-        vulkan-query-version: 1.3.231.1
+        vulkan-query-version: 1.3.261.1
         vulkan-components: Vulkan-Headers, Vulkan-Loader
         vulkan-use-cache: true
 
@@ -54,22 +53,14 @@ jobs:
         echo "set(VCPKG_BUILD_TYPE release)" >> ./vcpkg/triplets/x64-windows.cmake
         ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/vcpkg version
 
-    - name: Get vcpkg commit hash
-      id: vcpkg-commit
-      shell: bash
+    - name: Configure GitHub binary cache
       run: |
-        cd ${{ matrix.VCPKG_WORKSPACE }}/vcpkg
-        echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
-
-    - name: Cache vcpkg dependencies
-      uses: actions/cache@v4
-      with:
-        path: ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/installed
-        key: ${{ runner.os }}-vcpkg-${{ steps.vcpkg-commit.outputs.hash }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg/vcpkg.json') }}
-        restore-keys: |
-          ${{ runner.os }}-vcpkg-${{ steps.vcpkg-commit.outputs.hash }}-${{ matrix.triplet }}-
-          ${{ runner.os }}-vcpkg-${{ steps.vcpkg-commit.outputs.hash }}-
-          ${{ runner.os }}-vcpkg-
+        dotnet nuget add source \
+          --name github-cache \
+          --source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
+          --username "${{ github.repository_owner }}" \
+          --password "${{ secrets.GITHUB_TOKEN }}" \
+          --store-password-in-clear-text
 
     - name: Create Build Environment
       run: |

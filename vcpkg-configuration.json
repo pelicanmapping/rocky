@@ -1,0 +1,11 @@
+{
+  "binarySources": [
+    "clear",
+    {
+      "kind": "nuget",
+      "repository": "https://nuget.pkg.github.com/pelicanmapping/index.json",
+      "name": "github-cache",
+      "mode": "readwrite"
+    }
+  ]
+}
