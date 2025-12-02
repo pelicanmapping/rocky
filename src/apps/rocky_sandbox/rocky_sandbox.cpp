@@ -45,9 +45,9 @@ using AttachmentTable = std::unordered_map<std::string, Attachment>;
 class Channel : public vsg::Inherit<vsg::Group, Channel>
 {
 public:
-    Channel() = default;
-    Channel(vsg::Window* in_window, vsg::View* in_view) : 
-        window(in_window), view(in_view) {}
+    Channel(vsg::Window* in_window, vsg::View* in_view) :
+        Inherit(), window(in_window), view(in_view) {
+    }
 
     vsg::ref_ptr<vsg::Window> window;
     vsg::ref_ptr<vsg::View> view;
@@ -64,37 +64,42 @@ public:
     // output attachments created by this stage
     AttachmentVector outputAttachments;
 
-    virtual AttachmentVector createAttachments(Channel* channel, vsg::Context& cx) {
+    virtual AttachmentVector createAttachments(Channel* channel) {
         return {};
     }
 
-    //virtual void initialize(Channel* channel, vsg::Context& cx) = 0;
-
     virtual vsg::ref_ptr<vsg::Node> createNode(
-        Channel* channel, const AttachmentTable& attachments, vsg::Context& cx) = 0;
+        Channel* channel, const AttachmentTable& attachments) = 0;
 };
 
 
 // A "chain" of work stages that assemble a renderable frame.
 // Each stage can render, compute, or set a barrier.
-class Workflow : public vsg::Inherit<vsg::Group, Workflow>
+class ViewWorkflow : public vsg::Inherit<vsg::Group, ViewWorkflow>
 {
 public:
-    Workflow(vsg::Window* in_window, vsg::View* in_view) : window(in_window), view(in_view) {}
+    ViewWorkflow(vsg::Window* in_window, vsg::View* in_view) :
+        window(in_window), view(in_view) {}
     
     vsg::ref_ptr<vsg::Window> window;
     vsg::ref_ptr<vsg::View> view;
+    std::vector<vsg::ref_ptr<Stage>> stages;
+    
+    AttachmentTable attachments; // all attachments used in this workflow, keyed by name
+
 
     //! Generates the graph to render this view to the swapchain.
-    void build(vsg::Context& cx)
+    void build()
     {
-        auto channel = Channel::create(view);
+        vsg::Context cx(window->getOrCreateDevice());
+
+        auto channel = Channel::create(window, view);
 
         // collect the attachments from each stage
         attachments.clear();
         for (auto& stage : stages)
         {
-            auto stageAttachments = stage->createAttachments(channel, cx);
+            auto stageAttachments = stage->createAttachments(channel);
 
             for (auto& a : stageAttachments)
             {
@@ -105,18 +110,13 @@ public:
         // build the actual node graph for each stage and add it
         for (auto& stage : stages)
         {
-            auto node = stage->createNode(channel, attachments, cx);
+            auto node = stage->createNode(channel, attachments);
             if (node)
             {
                 this->addChild(node);
             }
         }
     }
-
-    std::vector<vsg::ref_ptr<Stage>> stages;
-
-    // all attachments used in this workflow, keyed by name
-    AttachmentTable attachments;
 };
 
 
@@ -124,12 +124,13 @@ public:
 
 class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
 {
-    auto createAttachments(Channel* channel, vsg::Context& cx)
-        -> AttachmentVector override
+    auto createAttachments(Channel* channel) -> AttachmentVector override
     {
         AttachmentVector output;
 
         auto extent = channel->view->camera->getRenderArea().extent;
+
+        vsg::Context cx(channel->window->getOrCreateDevice());
 
         // Albedo attachment:
         {
@@ -202,7 +203,7 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
         return output;
     }
 
-    auto createNode(Channel* channel, const AttachmentTable& attachments, vsg::Context& cx)
+    auto createNode(Channel* channel, const AttachmentTable& attachments)
         -> vsg::ref_ptr<vsg::Node> override
     { 
         // build RenderPass from attachments
@@ -211,12 +212,15 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
         vsg::RenderPass::Dependencies dependencies;
         vsg::ImageViews imageViews;
 
+        vsg::Context cx(channel->window->getOrCreateDevice());
+
         // color attachment
+        std::uint32_t index = 0;
         {
             const auto& albedoAttachment = attachments.at("albedo");
             renderPassAttachments.push_back(albedoAttachment.description);
             vsg::AttachmentReference colorReference{ 
-                0, //albedoAttachment.index,
+                index++, //albedoAttachment.index,
                 albedoAttachment.layout };
             subpassDescriptions[0].colorAttachments.push_back(colorReference);
             imageViews.emplace_back(albedoAttachment.imageView);
@@ -227,7 +231,7 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
             const auto& depthAttachment = attachments.at("depth");
             renderPassAttachments.push_back(depthAttachment.description);
             vsg::AttachmentReference depthReference{
-                1, // depthAttachment.index,
+                index++, // depthAttachment.index,
                 depthAttachment.layout };
             subpassDescriptions[0].depthStencilAttachments.push_back(depthReference);
             imageViews.emplace_back(depthAttachment.imageView);
@@ -240,7 +244,8 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
         auto framebuffer = vsg::Framebuffer::create(renderPass, imageViews, extent.width, extent.height, 1);
 
         // Build the actual RenderGraph to render the scene to our framebuffer
-        auto renderGraph = vsg::RenderGraph::create(framebuffer);
+        auto renderGraph = vsg::RenderGraph::create();
+        renderGraph->framebuffer = framebuffer;
         renderGraph->clearValues.resize(2);
         renderGraph->clearValues[0].color = vsg::vec4(0.0f, 0.0f, 0.0f, 1.0f);
         renderGraph->clearValues[1].depthStencil = VkClearDepthStencilValue{ 0.0f, 0 };
@@ -249,10 +254,10 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
     }
 };
 
-class BlitGBufferToWindow : public Stage
+class BlitGBufferToSwapChain : public vsg::Inherit<Stage, BlitGBufferToSwapChain>
 {
 public:
-    auto createNode(Channel* channel, const AttachmentTable& attachments, vsg::Context& cx)
+    auto createNode(Channel* channel, const AttachmentTable& attachments)
         -> vsg::ref_ptr<vsg::Node> override
     {
         auto renderGraph = vsg::RenderGraph::create(channel->window);
@@ -295,13 +300,12 @@ int main(int argc, char** argv)
 
     // the view that uses this camera
     auto view = vsg::View::create(camera);
-    vsg::Context cx(window->getOrCreateDevice());
 
-    // build the workflow graphi for our view:
-    auto workflow = Workflow::create(view);
+    // build the workflow graph for our view:
+    auto workflow = ViewWorkflow::create(window, view);
     workflow->stages.emplace_back(RenderToGBuffer::create());
-    workflow->stages.emplace_back(BlitGBufferToWindow::create());
-    workflow->build(cx);
+    workflow->stages.emplace_back(BlitGBufferToSwapChain::create());
+    workflow->build();
 
     // install the view workflow on the command graph:
     auto cg = vsg::CommandGraph::create(window);
