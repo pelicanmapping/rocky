@@ -5,7 +5,6 @@
  */
 
 #include <rocky/rocky.h>
-#include <vsg/all.h>
 
 int simple(int argc, char** argv);
 int custom_window(int argc, char** argv);

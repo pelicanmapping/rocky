@@ -8,4 +8,8 @@ if(ROCKY_RENDERER_VSG)
     if(ROCKY_SUPPORTS_QT)
         add_subdirectory(rocky_demo_qt)
     endif()
+    
+    if(ROCKY_BUILD_SANDBOX)
+        add_subdirectory(rocky_sandbox)
+    endif()        
 endif()

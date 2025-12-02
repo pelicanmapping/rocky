@@ -121,6 +121,8 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
     }
 
 
+    vsg::RenderPass::Dependencies dependencies;
+#if 0
     vsg::RenderPass::Dependencies dependencies(2);
 
     // XXX This dependency is copied from the offscreenrender.cpp
@@ -146,6 +148,7 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
     dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
     dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
     dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+#endif
 
     auto renderPass = vsg::RenderPass::create(device, attachments, subpassDescription, dependencies);
 
