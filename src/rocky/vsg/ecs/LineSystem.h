@@ -95,16 +95,28 @@ namespace ROCKY_NAMESPACE
         struct LineStyleDetail
         {
             LineDrawList drawList;
-
             vsg::ref_ptr<vsg::BindDescriptorSet> bind;
             vsg::ref_ptr<vsg::Data> styleData;
             vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
+
+            inline void recycle() {
+                drawList.clear();
+                bind = nullptr;
+                styleData = nullptr;
+                styleUBO = nullptr;
+            }
+
         };
 
         struct LineGeometryDetail
         {
             vsg::ref_ptr<vsg::Node> root;
             vsg::ref_ptr<LineGeometryNode> geomNode;
+
+            inline void recycle() {
+                root = nullptr;
+                geomNode = nullptr;
+            }
         };
 
         //struct LineDetail

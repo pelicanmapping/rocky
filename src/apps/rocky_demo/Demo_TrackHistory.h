@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 
 namespace
 {
-    const int track_chunk_size = 16;
+    const int track_chunk_size = 8;
 
     // ECS Component
     struct TrackHistory
@@ -27,7 +27,7 @@ namespace
         };
 
         entt::entity style = entt::null;
-        unsigned maxPoints = 48;
+        unsigned maxPoints = 75;
 
     private:
         std::deque<Chunk> chunks;
@@ -55,7 +55,7 @@ namespace
             r.write([&](entt::registry& reg)
                 {
                     // destruction of a TrackHistory requries some extra work:
-                    reg.on_destroy<TrackHistory>().connect<&TrackHistorySystem::on_destroy>(this);
+                    reg.on_destroy<TrackHistory>().connect<&TrackHistorySystem::on_destroy_TrackHistory>(this);
 
                     // default track style
                     trackStyles[0] = reg.create();
@@ -75,32 +75,32 @@ namespace
             auto now = std::chrono::steady_clock::now();
             auto freq = 1s / update_hertz;
             auto elapsed = (now - last_update);
-            std::vector<entt::entity> chunks_to_add;
-            std::vector<entt::entity> chunks_to_deactivate;
 
             if (elapsed >= freq)
             {
-                auto [lock, registry] = _registry.write();
+                auto [lock, reg] = _registry.write();
 
-                auto view = registry.view<TrackHistory, Transform>();
+                auto view = reg.view<TrackHistory, Transform>();
                 for (auto&& [entity, track, transform] : view.each())
                 {
                     if (transform.position.valid())
                     {
                         if (track.chunks.empty() || track.chunks.back().numPoints >= track_chunk_size)
                         {
-                            chunks_to_add.emplace_back(entity);
+                            auto& track = reg.get<TrackHistory>(entity);
+                            auto& transform = reg.get<Transform>(entity);
+                            addChunk(reg, entity, track, transform);
+                            updateChunk(reg, entity, track, transform, track.chunks.back());
                         }
                         else
                         {
-                            updateChunk(registry, entity, track, transform, track.chunks.back());
+                            updateChunk(reg, entity, track, transform, track.chunks.back());
 
                             // approximation for now.
                             auto maxChunks = track.maxPoints / track_chunk_size;
                             if (track.chunks.size() > 1u && track.chunks.size() > maxChunks)
                             {
-                                chunks_to_deactivate.emplace_back(track.chunks.front().attach_point);
-                                add_to_freelist(registry, std::move(track.chunks.front()));
+                                releaseChunk(reg, std::move(track.chunks.front()));
                                 track.chunks.pop_front();
                             }
                         }
@@ -110,76 +110,23 @@ namespace
                 last_update = now;
             }
 
-            if (!chunks_to_add.empty())
-            {
-                _registry.write([&](entt::registry& reg)
-                    {
-                        for (auto entity : chunks_to_add)
-                        {
-                            auto& track = reg.get<TrackHistory>(entity);
-                            auto& transform = reg.get<Transform>(entity);
-                            createNewChunk(reg, entity, track, transform);
-                            updateChunk(reg, entity, track, transform, track.chunks.back());
-                        }
-                    });
-            }
-
-            if (!chunks_to_deactivate.empty())
-            {
-                _registry.write([&](entt::registry& reg)
-                    {
-                        for (auto entity : chunks_to_deactivate)
-                        {
-                            reg.remove<ActiveState>(entity);
-                        }
-                    });
-            }
-
             _registry.read([&](entt::registry& registry)
                 {
                     updateVisibility(registry);
                 });
         };
 
-        void createNewChunk(entt::registry& registry, entt::entity host_entity, TrackHistory& track, Transform& transform)
+        void addChunk(entt::registry& registry, entt::entity host_entity, TrackHistory& track, Transform& transform)
         {
             auto style = trackStyles[track.chunks.size() % 2];
 
-            // Check the freelist first
-            if (!freelist.empty())
-            {
-                auto& c = track.chunks.emplace_back(std::move(take_from_freelist()));
-
-                auto& geom = registry.get<LineGeometry>(c.attach_point);
-                geom.points.clear(), c.numPoints = 0;
-                geom.dirty(registry);
-
-                auto& line = registry.get<Line>(c.attach_point);
-                if (line.style != style)
-                {
-                    line.style = style;
-                    line.dirty(registry);
-                }
-            }
-            else
-            {
-                auto& c = track.chunks.emplace_back();
-                c.attach_point = registry.create();
-
-                // Each chunk get a line primitive.
-                auto& geom = registry.emplace<LineGeometry>(c.attach_point);
-                geom.points.reserve(track_chunk_size);
-
-                registry.emplace<Line>(c.attach_point, geom, registry.get<LineStyle>(style));
-
-                // Tie track visibility to host visibility:
-                updateVisibility(registry, host_entity, c);
-            }
+            auto& chunk = createChunk(registry, style);
             
-            // Make a new chunk and set its reference point
-            auto& new_chunk = track.chunks.back();
+            track.chunks.emplace_back(chunk);
 
-            auto& geom = registry.get<LineGeometry>(new_chunk.attach_point);
+            updateVisibility(registry, host_entity, chunk);
+            
+            auto& geom = registry.get<LineGeometry>(chunk.attach_point);
             geom.srs = transform.position.srs;
 
             // If this is not the first chunk, connect it to the previous one
@@ -188,14 +135,13 @@ namespace
                 auto prev_chunk = std::prev(std::prev(track.chunks.end()));
                 auto& prev_geom = registry.get<LineGeometry>(prev_chunk->attach_point);
 
-                auto& geom = registry.get<LineGeometry>(new_chunk.attach_point);
                 geom.points.emplace_back(prev_geom.points.back());
                 geom.dirty(registry);
-                new_chunk.numPoints++;
+                chunk.numPoints++;
             }          
             
-            // activate (if necessary).
-            registry.emplace_or_replace<ActiveState>(new_chunk.attach_point);
+            // activate
+            (void) registry.get_or_emplace<ActiveState>(chunk.attach_point);
         }
 
         void updateChunk(entt::registry& registry, entt::entity host_entity, TrackHistory& track, Transform& transform, TrackHistory::Chunk& chunk)
@@ -257,32 +203,59 @@ namespace
         std::chrono::steady_clock::time_point last_update = std::chrono::steady_clock::now();
 
         // called by EnTT when a TrackHistory component is destroyed.
-        void on_destroy(entt::registry& registry, entt::entity entity)
+        void on_destroy_TrackHistory(entt::registry& registry, entt::entity entity)
         {
             auto& track = registry.get<TrackHistory>(entity);
             for (auto& chunk : track.chunks)
             {
-                registry.remove<ActiveState>(chunk.attach_point);
-                add_to_freelist(registry, std::move(chunk));
+                releaseChunk(registry, std::move(chunk));
             }
             track.chunks.clear();
         }
 
-        void add_to_freelist(entt::registry& reg, TrackHistory::Chunk&& chunk)
+        void releaseChunk(entt::registry& reg, TrackHistory::Chunk&& chunk)
         {
-            // prep the graphic for possible recycling:
-            auto& geom = reg.get<LineGeometry>(chunk.attach_point);
-            
+#if 0
+            reg.destroy(chunk.attach_point);
+#else
+            reg.remove<ActiveState>(chunk.attach_point);
+            auto& geom = reg.get<LineGeometry>(chunk.attach_point);            
             geom.recycle(reg);
-
             freelist.emplace_back(std::move(chunk));
+#endif
         }
 
-        TrackHistory::Chunk take_from_freelist()
+        TrackHistory::Chunk createChunk(entt::registry& reg, entt::entity styleEntity)
         {
-            auto chunk = std::move(freelist.back());
-            freelist.pop_back();
-            return chunk;
+            if (freelist.empty())
+            {
+                TrackHistory::Chunk chunk;
+                chunk.attach_point = reg.create();
+                auto& geom = reg.emplace<LineGeometry>(chunk.attach_point);
+                auto& style = reg.get<LineStyle>(styleEntity);
+                reg.emplace<Line>(chunk.attach_point, geom, style);
+                return chunk;
+            }
+
+            else
+            {
+                auto chunk = std::move(freelist.back());
+                freelist.pop_back();
+
+                auto& geom = reg.get<LineGeometry>(chunk.attach_point);
+                geom.points.clear();
+                chunk.numPoints = 0;
+                geom.dirty(reg);
+
+                auto& line = reg.get<Line>(chunk.attach_point);
+                if (line.style != styleEntity)
+                {
+                    line.style = styleEntity;
+                    line.dirty(reg);
+                }
+
+                return chunk;
+            }
         }
     };
 }

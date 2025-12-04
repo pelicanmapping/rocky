@@ -179,7 +179,7 @@ auto Demo_Simulation = [](Application& app)
     static Status status;
     static Simulator sim(app);
     static ImGuiImage widgetImage;
-    static unsigned num_platforms = 1500;
+    static unsigned num_platforms = 1; // 1500;
     static bool showPosition = false;
 
     if (status.failed())

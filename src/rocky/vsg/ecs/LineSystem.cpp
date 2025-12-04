@@ -106,13 +106,8 @@ namespace
 
     void on_construct_Line(entt::registry& r, entt::entity e)
     {
-        //r.emplace<LineDetail>(e);
-
-        // TODO: put this in a utility function somewhere
-        // common components that may already exist on this entity:
         (void) r.get_or_emplace<ActiveState>(e);
         (void) r.get_or_emplace<Visibility>(e);
-
         r.get<Line>(e).owner = e;
         r.get<Line>(e).dirty(r);
     }
@@ -129,37 +124,37 @@ namespace
         r.get<LineGeometry>(e).dirty(r);
     }
 
-    //void on_destroy_LineDetail(entt::registry& r, entt::entity e)
-    //{
-    //    auto& d = r.get<LineDetail>(e);
-    //    d = LineDetail();
-    //}
+    void on_destroy_LineStyle(entt::registry& r, entt::entity e)
+    {
+        r.remove<LineStyleDetail>(e);
+    }
     void on_destroy_LineStyleDetail(entt::registry& r, entt::entity e)
     {
-        auto& d = r.get<LineStyleDetail>(e);
-        dispose(d.bind);
-        d = LineStyleDetail();
+        dispose(r.get<LineStyleDetail>(e).bind);
+    }
+    void on_destroy_LineGeometry(entt::registry& r, entt::entity e)
+    {
+        r.remove<LineGeometryDetail>(e);
     }
     void on_destroy_LineGeometryDetail(entt::registry& r, entt::entity e)
     {
-        auto& d = r.get<LineGeometryDetail>(e);
-        dispose(d.root);
-        d = LineGeometryDetail();
+        dispose(r.get<LineGeometryDetail>(e).root);
     }
 
     void on_update_Line(entt::registry& r, entt::entity e)
     {
-        //on_destroy_LineDetail(r, e); // reset
         r.get<Line>(e).dirty(r);
     }
     void on_update_LineStyle(entt::registry& r, entt::entity e)
     {
-        on_destroy_LineStyleDetail(r, e);
+        dispose(r.get<LineStyleDetail>(e).bind);
+        r.get<LineStyleDetail>(e).recycle();
         r.get<LineStyle>(e).dirty(r);
     }
     void on_update_LineGeometry(entt::registry& r, entt::entity e)
     {
-        on_destroy_LineGeometryDetail(r, e);
+        dispose(r.get<LineGeometryDetail>(e).root);
+        r.get<LineGeometryDetail>(e).recycle();
         r.get<LineGeometry>(e).dirty(r);
     }
 }
@@ -253,8 +248,9 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
             r.on_update<LineStyle>().connect<&on_update_LineStyle>();
             r.on_update<LineGeometry>().connect<&on_update_LineGeometry>();
 
-            //r.on_destroy<LineDetail>().connect<&on_destroy_LineDetail>();
+            r.on_destroy<LineStyle>().connect<&on_destroy_LineStyle>();
             r.on_destroy<LineStyleDetail>().connect<&on_destroy_LineStyleDetail>();
+            r.on_destroy<LineGeometry>().connect<&on_destroy_LineGeometry>();
             r.on_destroy<LineGeometryDetail>().connect<&on_destroy_LineGeometryDetail>();
 
             // Set up the dirty tracking.
@@ -591,14 +587,16 @@ LineSystemNode::update(VSGContext& vsgcontext)
         {
             LineStyle::eachDirty(reg, [&](entt::entity e)
                 {
-                    const auto& [style, styleDetail] = reg.get<LineStyle, LineStyleDetail>(e);
-                    createOrUpdateStyle(style, styleDetail);
+                    const auto [style, styleDetail] = reg.try_get<LineStyle, LineStyleDetail>(e);
+                    if (style && styleDetail)
+                        createOrUpdateStyle(*style, *styleDetail);
                 });
 
             LineGeometry::eachDirty(reg, [&](entt::entity e)
                 {
-                    const auto& [geom, geomDetail] = reg.get<LineGeometry, LineGeometryDetail>(e);
-                    createOrUpdateGeometry(geom, geomDetail, vsgcontext);
+                    const auto [geom, geomDetail] = reg.try_get<LineGeometry, LineGeometryDetail>(e);
+                    if (geom && geomDetail)
+                        createOrUpdateGeometry(*geom, *geomDetail, vsgcontext);
                 });                  
         });
 

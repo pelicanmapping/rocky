@@ -79,10 +79,16 @@ namespace ROCKY_NAMESPACE
         struct PointStyleDetail
         {
             DrawList drawList;
-
             vsg::ref_ptr<vsg::BindDescriptorSet> bind;
             vsg::ref_ptr<vsg::Data> styleData;
             vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
+
+            inline void recycle() {
+                drawList.clear();
+                bind = nullptr;
+                styleData = nullptr;
+                styleUBO = nullptr;
+            }
         };
 
         struct PointGeometryDetail
@@ -90,6 +96,12 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Node> rootNode;
             vsg::ref_ptr<PointGeometryNode> geomNode;
             std::size_t capacity = 0;
+
+            inline void recycle() {
+                rootNode = nullptr;
+                geomNode = nullptr;
+                capacity = 0;
+            }
         };
     }
 

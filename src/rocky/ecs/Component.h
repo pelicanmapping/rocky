@@ -77,14 +77,6 @@ namespace ROCKY_NAMESPACE
                 }
             }
         }
-
-        // Prevents an assignment from overwriting the component's owning entity.
-        ComponentBase2& operator = (const ComponentBase2& rhs)
-        {
-            if (owner == entt::null)
-                owner = rhs.owner;
-            return *this;
-        }
     };
 
     /**

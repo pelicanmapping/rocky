@@ -105,13 +105,8 @@ namespace
 
     void on_construct_Point(entt::registry& r, entt::entity e)
     {
-        //r.emplace<PointDetail>(e);
-
-        // TODO: put this in a utility function somewhere
-        // common components that may already exist on this entity:
         (void) r.get_or_emplace<ActiveState>(e);
         (void) r.get_or_emplace<Visibility>(e);
-
         r.get<Point>(e).owner = e;
         r.get<Point>(e).dirty(r);
     }
@@ -128,37 +123,37 @@ namespace
         r.get<PointGeometry>(e).dirty(r);
     }
 
-    //void on_destroy_PointDetail(entt::registry& r, entt::entity e)
-    //{
-    //    auto& d = r.get<PointDetail>(e);
-    //    d = PointDetail();
-    //}
+    void on_destroy_PointStyle(entt::registry& r, entt::entity e)
+    {
+        r.remove<PointStyleDetail>(e);
+    }
     void on_destroy_PointStyleDetail(entt::registry& r, entt::entity e)
     {
-        auto& d = r.get<PointStyleDetail>(e);
-        dispose(d.bind);
-        d = PointStyleDetail();
+        dispose(r.get<PointStyleDetail>(e).bind);
+    }
+    void on_destroy_PointGeometry(entt::registry& r, entt::entity e)
+    {
+        r.remove<PointGeometryDetail>(e);
     }
     void on_destroy_PointGeometryDetail(entt::registry& r, entt::entity e)
     {
-        auto& d = r.get<PointGeometryDetail>(e);
-        dispose(d.geomNode);
-        d = PointGeometryDetail();
+        dispose(r.get<PointGeometryDetail>(e).rootNode);
     }
 
     void on_update_Point(entt::registry& r, entt::entity e)
     {
-        //on_destroy_PointDetail(r, e); // reset
         r.get<Point>(e).dirty(r);
     }
     void on_update_PointStyle(entt::registry& r, entt::entity e)
     {
-        on_destroy_PointStyleDetail(r, e);
+        dispose(r.get<PointStyleDetail>(e).bind);
+        r.get<PointStyleDetail>(e).recycle();
         r.get<PointStyle>(e).dirty(r);
     }
     void on_update_PointGeometry(entt::registry& r, entt::entity e)
     {
-        on_destroy_PointGeometryDetail(r, e);
+        dispose(r.get<PointGeometryDetail>(e).rootNode);
+        r.get<PointGeometryDetail>(e).recycle();
         r.get<PointGeometry>(e).dirty(r);
     }
 }
