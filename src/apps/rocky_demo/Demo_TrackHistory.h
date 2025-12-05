@@ -118,12 +118,14 @@ namespace
 
         void addChunk(entt::registry& registry, entt::entity host_entity, TrackHistory& track, Transform& transform)
         {
+            // toggle back and forth between 2 styles
             auto style = trackStyles[track.chunks.size() % 2];
 
-            auto& chunk = createChunk(registry, style);
-            
+            // generate a new chunk
+            auto chunk = createChunk(registry, style);            
             track.chunks.emplace_back(chunk);
 
+            // and tie its visibility to that of the host entity (the platform itself)
             updateVisibility(registry, host_entity, chunk);
             
             auto& geom = registry.get<LineGeometry>(chunk.attach_point);
@@ -140,7 +142,8 @@ namespace
                 chunk.numPoints++;
             }          
             
-            // activate
+            // We don't know whether the new chunk is brand new, or
+            // came from a freelist, so just ensure it is active:
             (void) registry.get_or_emplace<ActiveState>(chunk.attach_point);
         }
 
@@ -216,6 +219,7 @@ namespace
         void releaseChunk(entt::registry& reg, TrackHistory::Chunk&& chunk)
         {
 #if 0
+            // uncomment this to completely destroy the chunk instead of recycling it
             reg.destroy(chunk.attach_point);
 #else
             reg.remove<ActiveState>(chunk.attach_point);
@@ -229,6 +233,8 @@ namespace
         {
             if (freelist.empty())
             {
+                // creates a brand new chunk and associates a new Line/LineGeometry with it;
+                // the style is passed in and shared.
                 TrackHistory::Chunk chunk;
                 chunk.attach_point = reg.create();
                 auto& geom = reg.emplace<LineGeometry>(chunk.attach_point);

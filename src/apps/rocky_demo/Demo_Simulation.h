@@ -179,8 +179,9 @@ auto Demo_Simulation = [](Application& app)
     static Status status;
     static Simulator sim(app);
     static ImGuiImage widgetImage;
-    static unsigned num_platforms = 1; // 1500;
+    static unsigned num_platforms = 1500;
     static bool showPosition = false;
+    static bool tethering = false;
 
     if (status.failed())
     {
@@ -238,6 +239,13 @@ auto Demo_Simulation = [](Application& app)
         ImGuiLTable::SliderInt("Entities", (int*)&num_platforms, 1, 5000);
         if (ImGuiLTable::Button("Refresh"))
         {
+            if (tethering)
+            {
+                auto view = app.display.views(app.display.mainWindow()).front();
+                auto manip = MapManipulator::get(view);
+                manip->home();
+            }
+
             app.registry.write([&](entt::registry& r)
                 {
                     r.destroy(entityNode->entities.begin(), entityNode->entities.end());
@@ -250,7 +258,6 @@ auto Demo_Simulation = [](Application& app)
 
         ImGuiLTable::Checkbox("Show position", &showPosition);
 
-        static bool tethering = false;
         if (ImGuiLTable::Checkbox("Tethering", &tethering))
         {
             auto view = app.display.views(app.display.mainWindow()).front();
