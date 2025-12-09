@@ -38,7 +38,7 @@ namespace ROCKY_NAMESPACE
         option<float> pixelError = 128.0f;
 
         //! The maximum level of detail to which the terrain should subdivide.
-        option<unsigned> maxLevel = 19;
+        option<unsigned> maxLevel = 23;
 
         //! The level of detail at which the terrain should begin.
         option<unsigned> minLevel = 0;

@@ -144,7 +144,7 @@ auto Demo_Terrain = [](Application& app)
         }
 
         int maxLevel = app.mapNode->terrainSettings().maxLevel.value();
-        if (ImGuiLTable::SliderInt("Max level", &maxLevel, 0, 20))
+        if (ImGuiLTable::SliderInt("Max level", &maxLevel, 0, 23))
         {
             app.mapNode->terrainSettings().maxLevel = maxLevel;
         }

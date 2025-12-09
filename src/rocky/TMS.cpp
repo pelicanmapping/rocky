@@ -551,7 +551,7 @@ TileMap::TileMap(
         maxY = bounds.ymax();
     }
 
-    generateTileSets(20u);
+    generateTileSets(23u);
     computeMinMaxLevel();
 }
 
