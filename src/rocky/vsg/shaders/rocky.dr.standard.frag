@@ -87,8 +87,7 @@ void main()
 #endif
 
     // output to G-buffer:
-
-    gAlbedo = vertexColor; //vec4(1,0,0,1); //diffuseColor;
+    gAlbedo = vertexColor;
     gNormal = vec4(normalize(normalDir) * 0.5 + 0.5, 1.0);
 
     // Depth is automatically written to the depth buffer from gl_FragCoord.z

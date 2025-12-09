@@ -2,12 +2,15 @@
 
 layout(location = 0) in vec2 uv;
 
+// g-buffer descriptors:
 layout(set = 0, binding = 0) uniform sampler2D gAlbedo;
 layout(set = 0, binding = 1) uniform sampler2D gNormal;
 layout(set = 0, binding = 2) uniform sampler2D gDepth;
 
+// final output fragment:
 layout(location = 0) out vec4 outColor;
 
+// renders a full-screen color gradiant. For testing.
 vec4 gradientColor(vec2 in_uv)
 {
     const vec4 colors[4] = {
@@ -26,6 +29,7 @@ vec4 sampleAlbedo(vec2 in_uv)
     return texture(gAlbedo, in_uv);
 }
 
+// samples the gNormal channel to apply a very simple headlight shading (returns 0..1)
 float lighting(vec2 in_uv)
 {
     vec3 N = normalize((texture(gNormal, in_uv).xyz * 2.0) - 1.0);
@@ -34,7 +38,9 @@ float lighting(vec2 in_uv)
     return NdotL;
 }
 
-vec4 sobel(in vec2 in_uv)
+// applies a Sobel edge-detection filter at the UV coordinates, returning
+// edge intensity [0..1]
+float sobel(in vec2 in_uv)
 {
     float gx[9] = float[9](
         -1, 0, 1,
@@ -60,18 +66,20 @@ vec4 sobel(in vec2 in_uv)
         }
     }
     float edgeIntensity = length(vec2(sumX, sumY));
-    return vec4(vec3(edgeIntensity), 1.0);
+    return edgeIntensity;
 }
 
+// FSAA calls this to sample a single pixel with lighting and edge detection.
 vec4 samplePixel(in vec2 in_uv)
 {
     vec4 c = texture(gAlbedo, in_uv);
     c.rgb *= lighting(in_uv);
-    c.rgb = mix(c.rgb, vec3(1,1,1), sobel(in_uv).r);
+    c.rgb = mix(c.rgb, vec3(1,1,1), sobel(in_uv));
     return c;
 }
 
-vec4 fsaa()
+// applies simple anti-aliasing (AA) using a 3x3 Gaussian kernel
+vec4 aa()
 {
     const float kernel[9] = {
         1.0/16, 2.0/16, 1.0/16,
@@ -92,14 +100,13 @@ vec4 fsaa()
     return vec4(result, 1.0);
 }
 
+// entry point
 void main()
 {
     //outColor = texture(gAlbedo, uv);
     //outColor.rgb *= lighting(uv);
-    //outColor.rgb = mix(outColor.rgb, vec3(1,1,1), sobel().r);
+    //outColor.rgb = mix(outColor.rgb, vec3(1,1,1), sobel(uv));
 
     // combines all of the above
-    outColor = fsaa();
-
-    //if (texture(gDepth, uv).r > 0.0) outColor = vec4(1,1,0,1); else outColor = vec4(0,0,0,1);
+    outColor = aa();
 }

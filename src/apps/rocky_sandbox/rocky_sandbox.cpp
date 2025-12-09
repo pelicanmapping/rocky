@@ -8,25 +8,51 @@
 #include <rocky/vsg/PipelineState.h>
 #include <unordered_map>
 
-// Basic design for a deferred rendering pipeline in VSG and Rocky.
+// Deferred rendering sandbox for VSG.
 //
-// Objects:
-//   Window
-//     CommandGraph
-//        Channel
-//        Channel (inset)
-//        ...
-//   Window
-//      CommandGraph
-//        Channel
-//        ...
+// ViewWorkflow is the top-level scene graph object, which will live under a 
+// CommandGraph. As the name implies you will need one workflow for each unique
+// vsg::View in the application.
+//
+// How to do it:
+//  - create a ViewWorkflow object
+//  - create various Stage objects and add each one to the ViewWorkflow
+//  - call ViewWorkflow::build to assemble the scene graph
+//  - add your ViewWorkflow to a command graph.
+//
+// Creating a Stage:
+//  - the Stage subclass implements createAttachments() to declare what attachments it
+//    actually creates and outputs. Each one can be used in a later stage as a descriptor.
+//  - the Stage subclass implements createNode() to assemble the actual rendering graph
+//    that VSG will record for the stage.
+//  - a Stage doesn't have to render; it could also record a Barrier or a Compute Dispatch.
+//  - you are responsible for barriers and making sure attachment indices line up
+//  - you are resonsible for making sure descriptor bindings are correctly reflected in shaders.
+//
+// There are 2 example Stages here:
+//  - RenderToGBuffer: renders the scene to a G-Buffer (albedo + normal + depth)
+//  - RenderToFullScreenQuad: reads from the G-Buffer and renders a full-screen quad with some
+//      single lighting and post-processing effects
+//
+// Notes:
+//  - the stock VSG shaders don't support g-buffer outputs, so we copied them and added those
+//    outputs. In the future it would be nice to include them in VSG proper and activate them
+//    with a pragma import preprocessor define like VSG_DEFERRED_OUTPUTS or whatever
+//  - the shaders are in the src/rocky/vsg/shaders folder, and begin with the "rocky.dr." prefix.
+//
+// TODOs:
+//  - Clean up validation errors. It's not clear whether many of them are from Builder versus this code.
+//  - Resize the g-buffer when the user resizes the window. Optionally.
+//  - Consider a tighter format for the normal buffer, R8G8B8 is probably overkill
+//  - Add more g-buffer channels like material, objectid, and viewposition
+
 
 using namespace ROCKY_NAMESPACE;
 
 
-#if 1
-// A single attachment -- a raster source/target in the workflow.
-class Attachment
+// An Channel is a single g-buffer component. It may be used as an Attachment
+// when rendering to the g-buffer, or as a descriptor when reading from it later.
+class Channel
 {
 public:
     std::string name;
@@ -34,23 +60,23 @@ public:
     vsg::AttachmentDescription description;
     VkImageLayout layout;
 
-    vsg::ref_ptr<vsg::Descriptor> createDescriptor(std::uint32_t binding, VkDescriptorType type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER) const
+    //! Creates a descriptor for this attachment, which will let you access it in a shader
+    vsg::ref_ptr<vsg::Descriptor> createDescriptor(std::uint32_t binding) const
     {
-        return vsg::DescriptorImage::create(imageInfo, binding, 0, type);
+        return vsg::DescriptorImage::create(imageInfo, binding, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     }
 };
 
-using AttachmentVector = std::vector<Attachment>;
+// name-keyed channel dictionary
+using Channels = std::unordered_map<std::string, Channel>;
 
-using AttachmentTable = std::unordered_map<std::string, Attachment>;
 
-
-// A "channel" represents a workflow applied to a viewport within a window.
-class Channel : public vsg::Inherit<vsg::Group, Channel>
+// "ViewInfo" just lumps together information relevant to a particular vsg::View
+// that will be rendered by a ViewWorkflow.
+struct ViewInfo
 {
-public:
-    Channel(VSGContext in_vsgcontext, vsg::Window* in_window, vsg::View* in_view) :
-        Inherit(), vsgcontext(in_vsgcontext), window(in_window), view(in_view) {
+    ViewInfo(vsg::Window* in_window, vsg::View* in_view, VSGContext in_vsgcontext) :
+        window(in_window), view(in_view), vsgcontext(in_vsgcontext) {
     }
 
     vsg::ref_ptr<vsg::Window> window;
@@ -67,14 +93,13 @@ public:
     std::string name;
 
     // output attachments created by this stage
-    AttachmentVector outputAttachments;
+    std::vector<Channel> outputChannels;
 
-    virtual AttachmentVector createAttachments(Channel* channel) {
+    virtual std::vector<Channel> createChannels(ViewInfo& viewInfo) {
         return {};
     }
 
-    virtual vsg::ref_ptr<vsg::Node> createNode(
-        Channel* channel, const AttachmentTable& attachments) = 0;
+    virtual vsg::ref_ptr<vsg::Node> createNode(ViewInfo& viewInfo, const Channels& channels) = 0;
 };
 
 
@@ -91,7 +116,7 @@ public:
     vsg::ref_ptr<vsg::View> view;
     std::vector<vsg::ref_ptr<Stage>> stages;
     
-    AttachmentTable attachments; // all attachments used in this workflow, keyed by name
+    Channels channels; // all attachments used in this workflow, keyed by name
 
 
     //! Generates the graph to render this view to the swapchain.
@@ -99,24 +124,24 @@ public:
     {
         vsg::Context cx(window->getOrCreateDevice());
 
-        auto channel = Channel::create(vsgcontext, window, view);
+        ViewInfo viewInfo(window, view, vsgcontext);
 
-        // collect the attachments from each stage
-        attachments.clear();
+        // collect the channels from each stage
+        channels.clear();
         for (auto& stage : stages)
         {
-            auto stageAttachments = stage->createAttachments(channel);
+            auto stageChannels = stage->createChannels(viewInfo);
 
-            for (auto& a : stageAttachments)
+            for (auto& a : stageChannels)
             {
-                attachments[a.name] = a;
+                channels[a.name] = a;
             }
         }
 
         // build the actual node graph for each stage and add it
         for (auto& stage : stages)
         {
-            auto node = stage->createNode(channel, attachments);
+            auto node = stage->createNode(viewInfo, channels);
             if (node)
             {
                 this->addChild(node);
@@ -125,15 +150,17 @@ public:
     }
 };
 
-
-vsg::ref_ptr<vsg::ShaderSet> createGBufferShaderSet(VSGContext& vsg)
+//! Creates a ShaderSet that we can pass to vsg::Builder to create a deferred rendering pipeline.
+vsg::ref_ptr<vsg::ShaderSet>
+createGBufferShaderSet(VSGContext& vsg)
 {
-    // load shaders
+    // the OSG flat shader (no changes)
     auto vertexShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_VERTEX_BIT, "main",
         vsg::findFile("shaders/rocky.dr.standard.vert", vsg->searchPaths),
         vsg->readerWriterOptions);
 
+    // the OSG flat fragment shader adapted for deferred rendering
     auto fragmentShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_FRAGMENT_BIT, "main",
         vsg::findFile("shaders/rocky.dr.standard.frag", vsg->searchPaths),
@@ -145,6 +172,7 @@ vsg::ref_ptr<vsg::ShaderSet> createGBufferShaderSet(VSGContext& vsg)
     auto shaderSet = vsg::ShaderSet::create(
         vsg::ShaderStages{ vertexShader, fragmentShader });
 
+    // attrs in the "standard" shader.
     shaderSet->addAttributeBinding("vsg_Vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, { });
     shaderSet->addAttributeBinding("vsg_Normal", "", 1, VK_FORMAT_R32G32B32_SFLOAT, {});
     shaderSet->addAttributeBinding("vsg_TexCoord0", "VSG_TEXTURECOORD_0", 2, VK_FORMAT_R32G32_SFLOAT, {});
@@ -156,9 +184,10 @@ vsg::ref_ptr<vsg::ShaderSet> createGBufferShaderSet(VSGContext& vsg)
     shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
 
     // We need VSG's view-dependent data for lighting support
-    PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
+    //PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     // Configure ColorBlendState for 2 color attachments (albedo + normal)
+    // and assign it as the "default" state for a piepline.
     auto colorBlendState = vsg::ColorBlendState::create();
     colorBlendState->attachments = {
         // albedo attachment
@@ -175,26 +204,30 @@ vsg::ref_ptr<vsg::ShaderSet> createGBufferShaderSet(VSGContext& vsg)
             VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
     };
     shaderSet->defaultGraphicsPipelineStates.push_back(colorBlendState);
+    shaderSet->defaultGraphicsPipelineStates.push_back(vsg::DepthStencilState::create());
 
     return shaderSet;
 }
 
 
 
-// NOTE: This is NOT USED in this demo BUT will be helpful later!
-vsg::ref_ptr<vsg::Node> createGBufferPipeline(vsg::ShaderSet* shaderSet, VSGContext vsg)
+// NOTE: This is NOT USED in this demo BUT will be helpful later when rendering non-vsg models.
+vsg::ref_ptr<vsg::Node>
+createGBufferPipeline(vsg::ShaderSet* shaderSet, vsg::ShaderCompileSettings* compileSettings)
 {
     auto gc = vsg::GraphicsPipelineConfigurator::create(vsg::ref_ptr<vsg::ShaderSet>(shaderSet));
 
-    gc->shaderHints = vsg->shaderCompileSettings ?
-        vsg::ShaderCompileSettings::create(*vsg->shaderCompileSettings) :
+    gc->shaderHints = compileSettings ?
+        vsg::ShaderCompileSettings::create(*compileSettings) :
         vsg::ShaderCompileSettings::create();
 
     gc->enableArray("vsg_Vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
     gc->enableArray("vsg_Normal", VK_VERTEX_INPUT_RATE_VERTEX, 12);
     gc->enableArray("vsg_TexCoord0", VK_VERTEX_INPUT_RATE_VERTEX, 8);
 
-    PipelineUtils::enableViewDependentData(gc);
+    // or whatever your ViewDependentData descriptors are called:
+    gc->enableDescriptor("vsg_lights");
+    gc->enableDescriptor("vsg_viewports");
 
     gc->init();
 
@@ -213,15 +246,17 @@ vsg::ref_ptr<vsg::Node> createGBufferPipeline(vsg::ShaderSet* shaderSet, VSGCont
 
 // then we can design various stages.
 
+//! Workflow stage to render a scene to the G-Buffer.
 class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
 {
-    auto createAttachments(Channel* channel) -> AttachmentVector override
+    // creates all the outputs this stage will write to
+    std::vector<Channel> createChannels(ViewInfo& viewInfo) override
     {
-        AttachmentVector output;
+        std::vector<Channel> output;
 
-        auto extent = channel->view->camera->getRenderArea().extent;
+        auto extent = viewInfo.view->camera->getRenderArea().extent;
 
-        vsg::Context cx(channel->window->getOrCreateDevice());
+        vsg::Context cx(viewInfo.window->getOrCreateDevice());
 
         // Albedo attachment:
         {
@@ -269,7 +304,7 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
             description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            output.emplace_back(Attachment{
+            output.emplace_back(Channel{
                 "albedo", 
                 imageInfo,
                 std::move(description),
@@ -321,7 +356,7 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
             description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-            output.emplace_back(Attachment{
+            output.emplace_back(Channel{
                 "normal",
                 imageInfo,
                 std::move(description),
@@ -373,7 +408,7 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
             description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-            output.emplace_back(Attachment{
+            output.emplace_back(Channel{
                 "depth",
                 imageInfo,
                 std::move(description),
@@ -383,8 +418,8 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
         return output;
     }
 
-    auto createNode(Channel* channel, const AttachmentTable& attachments)
-        -> vsg::ref_ptr<vsg::Node> override
+    // assembles the RenderGraph for g-buffer rendering
+    vsg::ref_ptr<vsg::Node> createNode(ViewInfo& viewInfo, const Channels& channels) override
     { 
         // build RenderPass from attachments
         vsg::RenderPass::Attachments renderPassAttachments;
@@ -392,11 +427,11 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
         vsg::RenderPass::Subpasses subpassDescriptions(1);
         vsg::ImageViews imageViews;
 
-        vsg::Context cx(channel->window->getOrCreateDevice());
+        vsg::Context cx(viewInfo.window->getOrCreateDevice());
 
-        auto& albedo = attachments.at("albedo");
-        auto& normal = attachments.at("normal");
-        auto& depth = attachments.at("depth");
+        auto& albedo = channels.at("albedo");
+        auto& normal = channels.at("normal");
+        auto& depth = channels.at("depth");
 
         renderPassAttachments = {
             albedo.description,
@@ -422,37 +457,37 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
         auto renderPass = vsg::RenderPass::create(cx.device, renderPassAttachments, subpassDescriptions, dependencies);
 
         // Framebuffer
-        auto extent = channel->view->camera->getRenderArea().extent;
+        auto extent = viewInfo.view->camera->getRenderArea().extent;
         auto framebuffer = vsg::Framebuffer::create(renderPass, imageViews, extent.width, extent.height, 1);
 
-        // Build the actual RenderGraph to render the scene to our framebuffer
+        // Build the actual RenderGraph to render the scene to our framebuffer (instead of the swapchain)
         auto renderGraph = vsg::RenderGraph::create();
         renderGraph->framebuffer = framebuffer;
         renderGraph->renderArea.offset = VkOffset2D{ 0, 0 };
         renderGraph->renderArea.extent = extent;
 
         renderGraph->clearValues.resize(3);
-        renderGraph->clearValues[0].color = vsg::vec4(0.3f, 0.05f, 0.1f, 1.0f); // pink
-        renderGraph->clearValues[1].color = vsg::vec4(0.5f, 0.5f, 1.0f, 1.0f); // pointing at camera
+        renderGraph->clearValues[0].color = vsg::vec4(0.3f, 0.05f, 0.1f, 1.0f); // as you like it
+        renderGraph->clearValues[1].color = vsg::vec4(0.5f, 0.5f, 1.0f, 1.0f); // default normal = pointing at camera
         renderGraph->clearValues[2].depthStencil = VkClearDepthStencilValue{ 0.0f, 0 };
 
         // Set the render pass on the render graph so pipelines can be compiled against it
         renderGraph->renderPass = renderPass;
 
-        renderGraph->addChild(channel->view);
+        renderGraph->addChild(viewInfo.view);
         return renderGraph;
     }
 };
 
 
-
+//! Workflow stage to read from the g-buffer and render to a full-screen quad
+//! This is typically where you will apply lighting and optional post-processing
 class RenderToFullScreenQuad : public vsg::Inherit<Stage, RenderToFullScreenQuad>
 {
 public:
-    auto createNode(Channel* channel, const AttachmentTable& attachments)
-        -> vsg::ref_ptr<vsg::Node> override
+    vsg::ref_ptr<vsg::Node> createNode(ViewInfo& viewInfo, const Channels& channels) override
     {
-        auto vsg = channel->vsgcontext;
+        auto vsg = viewInfo.vsgcontext;
 
         // load shaders
         auto vertexShader = vsg::ShaderStage::read(
@@ -476,16 +511,19 @@ public:
 
         auto vertexInputState = vsg::VertexInputState::create();
 
+        // Tri-strip to render out full screen quad:
         auto inputAssemblyState = vsg::InputAssemblyState::create();
         inputAssemblyState->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
 
+        // No culling:
         auto rasterizationState = vsg::RasterizationState::create();
         rasterizationState->cullMode = VK_CULL_MODE_NONE;
 
+        // No depth testing:
         auto depthStencilState = vsg::DepthStencilState::create();
         depthStencilState->depthTestEnable = VK_FALSE;
 
-        auto viewportState = vsg::ViewportState::create(channel->window->extent2D());
+        auto viewportState = vsg::ViewportState::create(viewInfo.window->extent2D());
 
         auto multisampleState = vsg::MultisampleState::create();
 
@@ -499,15 +537,17 @@ public:
 
         auto pipelineLayout = vsg::PipelineLayout::create();
 
+        // Bindings for each channel descriptor from the G-Buffer that we want to access.
         vsg::DescriptorSetLayoutBindings bindings{
             { 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}, // albedo
             { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}, // normal
             { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}  // depth
         };
-        auto dsetLayout = vsg::DescriptorSetLayout::create(bindings);
 
+        auto dsetLayout = vsg::DescriptorSetLayout::create(bindings);
         pipelineLayout->setLayouts.emplace_back(dsetLayout);
 
+        // Create our pipeline
         auto pipeline = vsg::GraphicsPipeline::create(
             pipelineLayout,
             vsg::ShaderStages{ vertexShader, fragmentShader },
@@ -519,50 +559,56 @@ public:
                 colorBlendState,
                 viewportState });
 
+        // And a command to bind it:
         auto bindPipeline = vsg::BindGraphicsPipeline::create(pipeline);
 
-        auto commands = vsg::Group::create();
-        commands->addChild(bindPipeline);
 
-
-        // add the descriptors, specifiying each one's binding.
+        // Create a descriptor set for our channel uniforms.
         auto dset = vsg::DescriptorSet::create(dsetLayout, vsg::Descriptors{
-            attachments.at("albedo").createDescriptor(0),
-            attachments.at("normal").createDescriptor(1),
-            attachments.at("depth").createDescriptor(2)
+            channels.at("albedo").createDescriptor(0),
+            channels.at("normal").createDescriptor(1),
+            channels.at("depth").createDescriptor(2)
             });
 
-        commands->addChild(vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, dset));
+        // ..and a command to bind it:
+        auto bindDescriptors = vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, dset);
 
-        // draw the fsq.
-        commands->addChild(vsg::Draw::create(4, 1, 0, 0)); // full-screen quad tristrip
-        commands->addChild(vsg::createHeadlight()); // won't render without one
+        // draw the FSQ - just a single tristrip created in the shader
+        auto drawFSQ = vsg::Draw::create(4, 1, 0, 0);
 
-        auto view = vsg::View::create(vsg::Camera::create(), commands);
-        auto renderGraph = vsg::RenderGraph::create(channel->window, view);
+        // TODO: later when we have actual inset viewports, we might need
+        // to create an actual vsg::View/Camera/Viewport combo.
+        //auto view = vsg::View::create(vsg::Camera::create(), commands);
+        //auto renderGraph = vsg::RenderGraph::create(channel->window, view);
+
+        auto renderGraph = vsg::RenderGraph::create(viewInfo.window);
+        renderGraph->addChild(bindPipeline);
+        renderGraph->addChild(bindDescriptors);
+        renderGraph->addChild(drawFSQ);
 
         return renderGraph;
     }
 };
-#endif
 
 
-int fail(std::string_view msg) {
+
+void fail(std::string_view msg) {
     rocky::Log()->critical(msg);
     exit(-1);
-    return -1;
 }
 
-void install_debug_layer(vsg::ref_ptr<vsg::Window>);
 
-
+//! Loads up a simple scene for rendering
 vsg::ref_ptr<vsg::Node> loadScene(VSGContext vsg)
 {
+    // You can configure the builder to use a custom shaderset. This lets us inject
+    // our own G-buffer-capable shaders and pipeline states into the resulting model.
     vsg::Builder builder;
     builder.shaderSet = createGBufferShaderSet(vsg);
     if (!builder.shaderSet)
         fail("createGBufferShaderSet returned null shader set");
 
+    // Make a pretty cube
     vsg::GeometryInfo gi(vsg::box(vsg::vec3(-1, -1, -1), vsg::vec3(1, 1, 1)));
     gi.color = to_vsg(Color::Lime);
     vsg::StateInfo si;
@@ -572,6 +618,7 @@ vsg::ref_ptr<vsg::Node> loadScene(VSGContext vsg)
     return scene;
 }
 
+//! Convenience function to make a camera that focuses on a node
 vsg::ref_ptr<vsg::Camera> createCameraForScene(vsg::Node* node, vsg::Window* window)
 {
     vsg::ComputeBounds computeBounds;
@@ -580,7 +627,7 @@ vsg::ref_ptr<vsg::Camera> createCameraForScene(vsg::Node* node, vsg::Window* win
     double radius = vsg::length(computeBounds.bounds.max - computeBounds.bounds.min) * 0.6;
 
     // set up the camera
-    double nearFarRatio = 0.0001;
+    double nearFarRatio = 0.00001;
     double nearPlane = nearFarRatio * radius;
     double farPlane = radius * 10.0;
     auto lookAt = vsg::LookAt::create(centre + vsg::dvec3(0.0, -radius * 3.5, 0.0), centre, vsg::dvec3(0.0, 0.0, 1.0));
@@ -591,31 +638,39 @@ vsg::ref_ptr<vsg::Camera> createCameraForScene(vsg::Node* node, vsg::Window* win
 
 
 
+
 int main(int argc, char** argv)
 {
     vsg::CommandLine args(&argc, argv);
 
+    // make a viewer with a window:
     auto windowTraits = vsg::WindowTraits::create(1920, 1080, argv[0]);
     windowTraits->instanceExtensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-
     if (args.read("--api"))
         windowTraits->apiDumpLayer = true;
-
+    if (args.read("--debug"))
+        windowTraits->debugLayer = true;
     auto window = vsg::Window::create(windowTraits);
-
     auto viewer = vsg::Viewer::create();
     viewer->addWindow(window);
 
+    // this just holds context information, like where to find our shaders.
     auto vsgcontext = VSGContextFactory::create(viewer, argc, argv);
 
+    // load up a model to render:
     auto scene = loadScene(vsgcontext);
+
+    // and a camera to look at it:
     auto camera = createCameraForScene(scene, window);
 
-    // the view that uses this camera
+    // and a view that uses this camera
     auto view = vsg::View::create(camera);
-    view->addChild(scene);
-    view->addChild(vsg::createHeadlight()); // won't work without it :/
 
+    view->addChild(scene);
+
+    // we don't strictly need a light until our shaders do actual lighting
+    // but for now let's keep it around
+    view->addChild(vsg::createHeadlight());
 
 
     // build the workflow graph for our view:
@@ -623,28 +678,25 @@ int main(int argc, char** argv)
 
     auto renderToGBuffer = RenderToGBuffer::create();
     if (!renderToGBuffer)
-        return fail("RenderToGBuffer::create() returned null");
+        fail("RenderToGBuffer::create() returned null");
     workflow->stages.emplace_back(renderToGBuffer);
 
     auto renderToFSQ = RenderToFullScreenQuad::create();
     if (!renderToFSQ)
-        return fail("RenderToFullScreenQuad::create() returned null");
+        fail("RenderToFullScreenQuad::create() returned null");
     workflow->stages.emplace_back(renderToFSQ);
 
     // builds the scene graph for each render stage
     workflow->build();
 
-    // install the view workflow on the command graph:
-    auto cg = vsg::CommandGraph::create(window);
-    cg->children.emplace_back(workflow);
+    // install the view workflow on the window's command graph:
+    auto commandGraph = vsg::CommandGraph::create(window);
+    commandGraph->children.emplace_back(workflow);
 
 
-    //auto cg = vsg::createCommandGraphForView(window, camera, scene);
-    viewer->assignRecordAndSubmitTaskAndPresentation({ cg });
+    // From here on out, normal VSG setup and frame loop.
+    viewer->assignRecordAndSubmitTaskAndPresentation({ commandGraph });
     viewer->compile({});
-
-    if (args.read("--debug"))
-        install_debug_layer(window);
 
     // add close handler to respond to the close window button and pressing escape
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
@@ -659,51 +711,4 @@ int main(int argc, char** argv)
     }
 
     return 0;
-}
-
-
-
-
-// https://github.com/KhronosGroup/Vulkan-Samples/tree/main/samples/extensions/debug_utils
-VKAPI_ATTR VkBool32 VKAPI_CALL debug_utils_messenger_callback(
-    VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-    VkDebugUtilsMessageTypeFlagsEXT message_type,
-    const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
-    void* user_data)
-{
-    rocky::Log()->warn(std::string_view(callback_data->pMessage));
-    //if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-    //{
-    //    rocky::Log()->warn(std::string_view(callback_data->pMessage));
-    //}
-    //else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-    //{
-    //    rocky::Log()->error(std::string_view(callback_data->pMessage));
-    //}
-    return VK_FALSE;
-}
-
-
-void install_debug_layer(vsg::ref_ptr<vsg::Window> window)
-{
-    VkDebugUtilsMessengerCreateInfoEXT debug_utils_create_info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
-    debug_utils_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
-    debug_utils_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
-    debug_utils_create_info.pfnUserCallback = debug_utils_messenger_callback;
-
-    static VkDebugUtilsMessengerEXT debug_utils_messenger;
-
-    auto vki = window->getOrCreateDevice()->getInstance();
-
-    using PFN_vkCreateDebugUtilsMessengerEXT = VkResult(VKAPI_PTR*)(VkInstance, const VkDebugUtilsMessengerCreateInfoEXT*, const VkAllocationCallbacks*, VkDebugUtilsMessengerEXT*);
-
-    auto vkCreateDebugUtilsMessengerEXT =
-        reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-            vkGetInstanceProcAddr(vki->vk(), "vkCreateDebugUtilsMessengerEXT"));
-
-    if (vkCreateDebugUtilsMessengerEXT)
-    {
-        Log()->info("Installed Vulkan debug callback messenger.");
-        vkCreateDebugUtilsMessengerEXT(vki->vk(), &debug_utils_create_info, nullptr, &debug_utils_messenger);
-    }
 }

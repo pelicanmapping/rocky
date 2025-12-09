@@ -2,9 +2,10 @@
 
 layout(location = 0) out vec2 uv;
 
+// call with vkCmdDraw(cmd, 4, 1, 0, 0) and a TRIPSTRIP IA topology
+// to render a full-screen quad.
 void main()
 {
-    // hard coded full screen quad (tristrip topology)
     const vec2 positions[4] = {
         vec2(-1.0, -1.0),
         vec2( 1.0, -1.0),
