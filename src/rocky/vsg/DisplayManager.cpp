@@ -486,8 +486,8 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
             viewdata.guiIdleEventProcessor = std::make_shared<std::function<void()>>(func);
             _app->idleFunctions.emplace_front(viewdata.guiIdleEventProcessor);
-#endif
         }
+#endif
     }
 }
 
