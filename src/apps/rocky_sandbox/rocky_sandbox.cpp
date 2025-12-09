@@ -158,9 +158,30 @@ vsg::ref_ptr<vsg::ShaderSet> createGBufferShaderSet(VSGContext& vsg)
     // We need VSG's view-dependent data for lighting support
     PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
 
+    // Configure ColorBlendState for 2 color attachments (albedo + normal)
+    auto colorBlendState = vsg::ColorBlendState::create();
+    colorBlendState->attachments = {
+        // albedo attachment
+        {
+            false,
+            VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+            VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT },
+        // normal attachment
+        {
+            false,
+            VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+            VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ZERO, VK_BLEND_OP_ADD,
+            VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
+    };
+    shaderSet->defaultGraphicsPipelineStates.push_back(colorBlendState);
+
     return shaderSet;
 }
 
+
+
+// NOTE: This is NOT USED in this demo BUT will be helpful later!
 vsg::ref_ptr<vsg::Node> createGBufferPipeline(vsg::ShaderSet* shaderSet, VSGContext vsg)
 {
     auto gc = vsg::GraphicsPipelineConfigurator::create(vsg::ref_ptr<vsg::ShaderSet>(shaderSet));
@@ -175,28 +196,6 @@ vsg::ref_ptr<vsg::Node> createGBufferPipeline(vsg::ShaderSet* shaderSet, VSGCont
 
     PipelineUtils::enableViewDependentData(gc);
 
-    struct SetPipelineStates : public vsg::Visitor
-    {
-        void apply(vsg::Object& object) override {
-            object.traverse(*this);
-        }
-        void apply(vsg::RasterizationState& state) override {
-            state.cullMode = VK_CULL_MODE_BACK_BIT;
-        }
-        void apply(vsg::DepthStencilState& state) override {
-        }
-        void apply(vsg::ColorBlendState& state) override {
-            state.attachments = vsg::ColorBlendState::ColorBlendAttachments{
-                { true,
-                  VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-                  VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-                  VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
-            };
-        }
-    };
-
-    SetPipelineStates visitor;
-    gc->accept(visitor);
     gc->init();
 
     auto commands = vsg::Commands::create();
@@ -261,8 +260,8 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
             imageInfo->sampler = sampler;
 
             vsg::AttachmentDescription description;
-            description.format = VK_FORMAT_R8G8B8A8_UNORM;
-            description.samples = VK_SAMPLE_COUNT_1_BIT;
+            description.format = image->format;
+            description.samples = image->samples;
             description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -272,6 +271,58 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
 
             output.emplace_back(Attachment{
                 "albedo", 
+                imageInfo,
+                std::move(description),
+                VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
+        }
+
+        // Normal attachment:
+        {
+            auto image = vsg::Image::create();
+            image->imageType = VK_IMAGE_TYPE_2D;
+            image->format = VK_FORMAT_R8G8B8A8_UNORM;
+            image->extent = VkExtent3D{ extent.width, extent.height, 1U };
+            image->mipLevels = 1;
+            image->arrayLayers = 1;
+            image->samples = VK_SAMPLE_COUNT_1_BIT;
+            image->tiling = VK_IMAGE_TILING_OPTIMAL;
+            image->usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+            image->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            image->flags = 0;
+            image->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+            auto imageView = vsg::createImageView(cx, image, VK_IMAGE_ASPECT_COLOR_BIT);
+
+            auto sampler = vsg::Sampler::create();
+            sampler->flags = 0;
+            sampler->magFilter = VK_FILTER_LINEAR;
+            sampler->minFilter = VK_FILTER_LINEAR;
+            sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+            sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            sampler->addressModeV = sampler->addressModeU;
+            sampler->addressModeW = sampler->addressModeU;
+            sampler->mipLodBias = 0.0f;
+            sampler->maxAnisotropy = 1.0f;
+            sampler->minLod = 0.0f;
+            sampler->maxLod = 1.0f;
+
+            auto imageInfo = vsg::ImageInfo::create();
+            imageInfo->imageView = imageView;
+            imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            imageInfo->sampler = sampler;
+
+            vsg::AttachmentDescription description;
+            description.format = image->format;
+            description.samples = image->samples;
+            description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+            description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+            output.emplace_back(Attachment{
+                "normal",
                 imageInfo,
                 std::move(description),
                 VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL });
@@ -313,8 +364,8 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
             imageInfo->sampler = sampler;
 
             vsg::AttachmentDescription description;
-            description.format = VK_FORMAT_D32_SFLOAT;
-            description.samples = VK_SAMPLE_COUNT_1_BIT;
+            description.format = image->format;
+            description.samples = image->samples;
             description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
             description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
             description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -337,30 +388,36 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
     { 
         // build RenderPass from attachments
         vsg::RenderPass::Attachments renderPassAttachments;
-        vsg::RenderPass::Subpasses subpassDescriptions(1);
         vsg::RenderPass::Dependencies dependencies;
+        vsg::RenderPass::Subpasses subpassDescriptions(1);
         vsg::ImageViews imageViews;
 
         vsg::Context cx(channel->window->getOrCreateDevice());
 
-        // color attachment
-        std::uint32_t index = 0;
-        {
-            const auto& albedoAttachment = attachments.at("albedo");
-            renderPassAttachments.push_back(albedoAttachment.description);
-            vsg::AttachmentReference attref{ 0, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL };
-            subpassDescriptions[0].colorAttachments.push_back(attref);
-            imageViews.emplace_back(albedoAttachment.imageInfo->imageView);
-        }
+        auto& albedo = attachments.at("albedo");
+        auto& normal = attachments.at("normal");
+        auto& depth = attachments.at("depth");
 
-        // depth attachment
-        {
-            const auto& depthAttachment = attachments.at("depth");
-            renderPassAttachments.push_back(depthAttachment.description);
-            vsg::AttachmentReference attref{ 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
-            subpassDescriptions[0].depthStencilAttachments.push_back(attref);
-            imageViews.emplace_back(depthAttachment.imageInfo->imageView);
-        }
+        renderPassAttachments = {
+            albedo.description,
+            normal.description,
+            depth.description
+        };
+
+        subpassDescriptions[0].colorAttachments = {
+            vsg::AttachmentReference{ 0, albedo.layout },
+            vsg::AttachmentReference{ 1, normal.layout }
+        };
+
+        subpassDescriptions[0].depthStencilAttachments = {
+            vsg::AttachmentReference{ 2, depth.layout }
+        };
+
+        imageViews = {
+            albedo.imageInfo->imageView,
+            normal.imageInfo->imageView,
+            depth.imageInfo->imageView
+        };
 
         auto renderPass = vsg::RenderPass::create(cx.device, renderPassAttachments, subpassDescriptions, dependencies);
 
@@ -374,12 +431,15 @@ class RenderToGBuffer : public vsg::Inherit<Stage, RenderToGBuffer>
         renderGraph->renderArea.offset = VkOffset2D{ 0, 0 };
         renderGraph->renderArea.extent = extent;
 
-        renderGraph->clearValues.resize(2);
-        renderGraph->clearValues[0].color = vsg::vec4(1.0f, 0.3f, 0.4f, 1.0f); // pink
-        renderGraph->clearValues[1].depthStencil = VkClearDepthStencilValue{ 0.0f, 0 };
+        renderGraph->clearValues.resize(3);
+        renderGraph->clearValues[0].color = vsg::vec4(0.3f, 0.05f, 0.1f, 1.0f); // pink
+        renderGraph->clearValues[1].color = vsg::vec4(0.5f, 0.5f, 1.0f, 1.0f); // pointing at camera
+        renderGraph->clearValues[2].depthStencil = VkClearDepthStencilValue{ 0.0f, 0 };
+
+        // Set the render pass on the render graph so pipelines can be compiled against it
+        renderGraph->renderPass = renderPass;
 
         renderGraph->addChild(channel->view);
-        return renderGraph;
         return renderGraph;
     }
 };
@@ -441,8 +501,8 @@ public:
 
         vsg::DescriptorSetLayoutBindings bindings{
             { 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}, // albedo
-            { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}, // depth
-            { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}  // normal
+            { 1, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}, // normal
+            { 2, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, nullptr}  // depth
         };
         auto dsetLayout = vsg::DescriptorSetLayout::create(bindings);
 
@@ -465,11 +525,13 @@ public:
         commands->addChild(bindPipeline);
 
 
-        // add the descriptors.
-        auto albedoDS = attachments.at("albedo").createDescriptor(0);
-        auto depthDS = attachments.at("depth").createDescriptor(1);
+        // add the descriptors, specifiying each one's binding.
+        auto dset = vsg::DescriptorSet::create(dsetLayout, vsg::Descriptors{
+            attachments.at("albedo").createDescriptor(0),
+            attachments.at("normal").createDescriptor(1),
+            attachments.at("depth").createDescriptor(2)
+            });
 
-        auto dset = vsg::DescriptorSet::create(dsetLayout, vsg::Descriptors{ albedoDS, depthDS });
         commands->addChild(vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, dset));
 
         // draw the fsq.
@@ -492,50 +554,6 @@ int fail(std::string_view msg) {
 }
 
 void install_debug_layer(vsg::ref_ptr<vsg::Window>);
-bool debugLayer = false;
-
-
-
-#if 0
-int simple(int argc, char** argv)
-{
-    vsg::CommandLine args(&argc, argv);
-
-    auto windowTraits = vsg::WindowTraits::create(1920, 1080, argv[0]);
-    auto window = vsg::Window::create(windowTraits);
-
-    auto viewer = vsg::Viewer::create();
-    viewer->addWindow(window);
-
-    VSGContext vsg = VSGContextFactory::create(viewer, argc, argv);
-
-    // Use the existing pipeline creation function
-    auto commands = createRenderToFSQPipeline(window, vsg);
-    if (!commands || commands->children.empty())
-        return -1;
-
-    commands->addChild(vsg::Draw::create(4, 1, 0, 0)); // full-screen quad tristrip
-    commands->addChild(vsg::createHeadlight()); // won't render without one
-
-    auto view = vsg::View::create(vsg::Camera::create(), commands);
-    auto rg = vsg::RenderGraph::create(window, view);
-    auto cg = vsg::CommandGraph::create(window, rg);
-
-    viewer->assignRecordAndSubmitTaskAndPresentation({ cg });
-    viewer->compile({});
-
-    while (viewer->advanceToNextFrame())
-    {
-        viewer->handleEvents();
-        viewer->update();
-        viewer->recordAndSubmit();
-        viewer->present();
-    }
-
-    return 0;
-}
-#endif
-
 
 
 vsg::ref_ptr<vsg::Node> loadScene(VSGContext vsg)
@@ -548,7 +566,7 @@ vsg::ref_ptr<vsg::Node> loadScene(VSGContext vsg)
     vsg::GeometryInfo gi(vsg::box(vsg::vec3(-1, -1, -1), vsg::vec3(1, 1, 1)));
     gi.color = to_vsg(Color::Lime);
     vsg::StateInfo si;
-    si.lighting = false, si.wireframe = true;
+    si.lighting = true, si.wireframe = false;
     auto scene = builder.createBox(gi, si);
 
     return scene;
@@ -578,13 +596,12 @@ int main(int argc, char** argv)
     vsg::CommandLine args(&argc, argv);
 
     auto windowTraits = vsg::WindowTraits::create(1920, 1080, argv[0]);
+    windowTraits->instanceExtensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+
     if (args.read("--api"))
         windowTraits->apiDumpLayer = true;
 
     auto window = vsg::Window::create(windowTraits);
-
-    if (args.read("--debug"))
-        install_debug_layer(window);
 
     auto viewer = vsg::Viewer::create();
     viewer->addWindow(window);
@@ -597,7 +614,7 @@ int main(int argc, char** argv)
     // the view that uses this camera
     auto view = vsg::View::create(camera);
     view->addChild(scene);
-    view->addChild(vsg::createHeadlight()); // won't work with it :/
+    view->addChild(vsg::createHeadlight()); // won't work without it :/
 
 
 
@@ -626,6 +643,9 @@ int main(int argc, char** argv)
     viewer->assignRecordAndSubmitTaskAndPresentation({ cg });
     viewer->compile({});
 
+    if (args.read("--debug"))
+        install_debug_layer(window);
+
     // add close handler to respond to the close window button and pressing escape
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
     viewer->addEventHandler(vsg::Trackball::create(camera));
@@ -651,14 +671,15 @@ VKAPI_ATTR VkBool32 VKAPI_CALL debug_utils_messenger_callback(
     const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
     void* user_data)
 {
-    if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-    {
-        rocky::Log()->warn(std::string_view(callback_data->pMessage));
-    }
-    else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-    {
-        rocky::Log()->error(std::string_view(callback_data->pMessage));
-    }
+    rocky::Log()->warn(std::string_view(callback_data->pMessage));
+    //if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+    //{
+    //    rocky::Log()->warn(std::string_view(callback_data->pMessage));
+    //}
+    //else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+    //{
+    //    rocky::Log()->error(std::string_view(callback_data->pMessage));
+    //}
     return VK_FALSE;
 }
 
@@ -675,9 +696,14 @@ void install_debug_layer(vsg::ref_ptr<vsg::Window> window)
     auto vki = window->getOrCreateDevice()->getInstance();
 
     using PFN_vkCreateDebugUtilsMessengerEXT = VkResult(VKAPI_PTR*)(VkInstance, const VkDebugUtilsMessengerCreateInfoEXT*, const VkAllocationCallbacks*, VkDebugUtilsMessengerEXT*);
-    PFN_vkCreateDebugUtilsMessengerEXT vkCreateDebugUtilsMessengerEXT = nullptr;
-    if (vki->getProcAddr(vkCreateDebugUtilsMessengerEXT, "vkCreateDebugUtilsMessenger", "vkCreateDebugUtilsMessengerEXT"))
+
+    auto vkCreateDebugUtilsMessengerEXT =
+        reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
+            vkGetInstanceProcAddr(vki->vk(), "vkCreateDebugUtilsMessengerEXT"));
+
+    if (vkCreateDebugUtilsMessengerEXT)
     {
+        Log()->info("Installed Vulkan debug callback messenger.");
         vkCreateDebugUtilsMessengerEXT(vki->vk(), &debug_utils_create_info, nullptr, &debug_utils_messenger);
     }
 }

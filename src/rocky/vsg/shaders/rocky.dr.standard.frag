@@ -55,8 +55,7 @@ layout(location = 2) in vec4 vertexColor;
 layout(location = 4) in vec2 texCoord[VSG_TEXCOORD_COUNT];
 
 layout(location = 0) out vec4 gAlbedo;
-layout(location = 1) out float gDepth;
-layout(location = 2) out vec3 gNormal;
+layout(location = 1) out vec4 gNormal;
 
 void main()
 {
@@ -89,7 +88,9 @@ void main()
 
     // output to G-buffer:
 
-    gAlbedo = diffuseColor;
-    gDepth = gl_FragCoord.z;
-    gNormal = normalize(normalDir);
+    gAlbedo = vertexColor; //vec4(1,0,0,1); //diffuseColor;
+    gNormal = vec4(normalize(normalDir) * 0.5 + 0.5, 1.0);
+
+    // Depth is automatically written to the depth buffer from gl_FragCoord.z
+    // No need to write it as a color output
 }
