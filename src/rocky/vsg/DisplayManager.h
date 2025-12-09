@@ -43,6 +43,7 @@ namespace ROCKY_NAMESPACE
     //! e.g.: Use this when running intersections on the scene to include ECS components!
     extern ROCKY_EXPORT void visit(vsg::ConstVisitor* visitor, vsg::View* view, vsg::Object* object = nullptr);
 
+
     /**
     * DisplayManager is a helper class that manages the creation and destruction of
     * windows and views. It also provides some utility methods for working with

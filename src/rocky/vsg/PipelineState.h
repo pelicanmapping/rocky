@@ -18,7 +18,7 @@ namespace ROCKY_NAMESPACE
     //! Utilities for helping to set up a graphics pipeline.
     struct PipelineUtils
     {
-        static void addViewDependentData(vsg::ref_ptr<vsg::ShaderSet> shaderSet, VkShaderStageFlags stageFlags)
+        static void addViewDependentData(vsg::ShaderSet* shaderSet, VkShaderStageFlags stageFlags)
         {
             // override it because we're getting weird VK errors -gw
             stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
