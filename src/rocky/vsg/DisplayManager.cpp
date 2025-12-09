@@ -209,7 +209,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::Vi
     if (!view && _app && _app->mapNode && _app->mainScene)
     {        
         // make a camera based on the mapNode's SRS
-        double nearFarRatio = 0.00001;
+        double nearFarRatio = 0.0000001;
         double R = _app->mapNode->srs().ellipsoid().semiMajorAxis();
         double ar = (double)window->extent2D().width / (double)window->extent2D().height;
 

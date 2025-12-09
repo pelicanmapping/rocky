@@ -861,11 +861,20 @@ MapManipulator::getMapNode() const
 }
 
 bool
-MapManipulator::intersect(const vsg::dvec3& start, const vsg::dvec3& end, vsg::dvec3& out_intersection) const
+MapManipulator::intersect(vsg::dvec3 start, vsg::dvec3 end, vsg::dvec3& out_intersection) const
 {
     auto mapNode = getMapNode();
     if (mapNode)
     {
+        if (mapNode->srs().isGeocentric())
+        {
+            // clamp the end point to a plane centered on the Earth with the normal vector
+            // pointing along the start->end direction.
+            vsg::dvec3 N = vsg::normalize(end - start);
+            vsg::dvec3 Q(0, 0, 0);
+            end = end - (N * vsg::dot((end - Q), N));
+        }
+
         vsg::LineSegmentIntersector lsi(start, end);
 
         mapNode->terrainNode->accept(lsi);
@@ -1576,6 +1585,14 @@ MapManipulator::zoom(double dx, double dy)
 
         if (viewportToWorld(x, y, target))
         {
+            if (getMapNode()->srs().isGeocentric())
+            {
+                vsg::LookAt lookat;
+                lookat.set(_viewMatrix);
+                if (vsg::dot(lookat.eye, target) < 0)
+                    return; // don't zoom if the target is behind the camera
+            }
+            
             //recalculateCenterFromLookVector();
 
             // Calcuate a rotation that we'll use to interpolate from our center point to the target

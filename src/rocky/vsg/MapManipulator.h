@@ -396,7 +396,7 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        bool intersect(const vsg::dvec3& start, const vsg::dvec3& end, vsg::dvec3& intersection) const;
+        bool intersect(vsg::dvec3 start, vsg::dvec3 end, vsg::dvec3& intersection) const;
 
         bool intersectAlongLookVector(vsg::dvec3& out_world) const;
 
