@@ -92,13 +92,12 @@ class Stage : public vsg::Inherit<vsg::Object, Stage>
 public:
     std::string name;
 
-    // output attachments created by this stage
-    std::vector<Channel> outputChannels;
-
+    //! Creates a collection of channels that this stage will output. Optional.
     virtual std::vector<Channel> createChannels(ViewInfo& viewInfo) {
         return {};
     }
 
+    //! Creates the node that will render this stage.
     virtual vsg::ref_ptr<vsg::Node> createNode(ViewInfo& viewInfo, const Channels& channels) = 0;
 };
 
