@@ -9,6 +9,12 @@
 
 // Deferred rendering sandbox for VSG.
 //
+// A deferred rendering pipeline consists of multiple Stages organized into
+// a workflow. The first stage typically writes to a g-buffer, which is just
+// a set of render target attachments; one for color, one for normals, one for
+// depth.. etc. Subsequent stages can then read from these channels to perform
+// post-processing before outputing the final result to the swapchain.
+//
 // ViewWorkflow is the top-level scene graph object, which will live under a 
 // CommandGraph. As the name implies you will need one workflow for each unique
 // vsg::View in the application.
@@ -20,12 +26,12 @@
 //  - add your ViewWorkflow to a command graph.
 //
 // Creating a Stage:
-//  - the Stage subclass implements createAttachments() to declare what attachments it
-//    actually creates and outputs. Each one can be used in a later stage as a descriptor.
+//  - the Stage subclass implements createChannels() to declare what g-buffer channel it
+//    actually creates and writes to. Each one can be used in a later stage as a descriptor.
 //  - the Stage subclass implements createNode() to assemble the actual rendering graph
 //    that VSG will record for the stage.
 //  - a Stage doesn't have to render; it could also record a Barrier or a Compute Dispatch.
-//  - you are responsible for barriers and making sure attachment indices line up
+//  - you are responsible for barriers and making sure channel/attachment indices line up
 //  - you are resonsible for making sure descriptor bindings are correctly reflected in shaders.
 //
 // There are 2 example Stages here:
@@ -36,18 +42,18 @@
 // Notes:
 //  - the stock VSG shaders don't support g-buffer outputs, so we copied them and added those
 //    outputs. In the future it would be nice to include them in VSG proper and activate them
-//    with a pragma import preprocessor define like VSG_DEFERRED_OUTPUTS or whatever
-//  - the shaders are in the src/rocky/vsg/shaders folder, and begin with the "rocky.dr." prefix.
+//    with a pragma import preprocessor define like VSG_GBUFFER (what we used here).
 //
 // TODOs:
-//  - Clean up validation errors. It's not clear whether many of them are from Builder versus this code.
-//  - Resize the g-buffer when the user resizes the window. Optionally.
+//  - Clean up validation errors
+//  - Resize the g-buffer when the user resizes the window (optionally)
 //  - Consider a tighter format for the normal buffer, R8G8B8 is probably overkill
-//  - Add more g-buffer channels like material, objectid, and viewposition
+//  - Support more g-buffer channels like material, objectid, and position
+//  - Implement more post-processing examples, like SSAO
 
 
 
-// An Channel is a single g-buffer component. It may be used as an Attachment
+// An Channel is a single g-buffer component. It may be used as an attachment
 // when rendering to the g-buffer, or as a descriptor when reading from it later.
 class Channel
 {
@@ -83,7 +89,7 @@ struct ViewInfo
 
 
 // One step in a render workflow.
-// This will usually be a rendergraph for drawing or compute, or a barrier.
+// This will usually be a rendergraph for drawing, a compute dispatch, or a barrier.
 class Stage : public vsg::Inherit<vsg::Object, Stage>
 {
 public:
@@ -100,7 +106,6 @@ public:
 
 
 // A "chain" of work stages that assemble a renderable frame.
-// Each stage can render, compute, or set a barrier.
 class ViewWorkflow : public vsg::Inherit<vsg::Group, ViewWorkflow>
 {
 public:
