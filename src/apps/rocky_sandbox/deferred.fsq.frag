@@ -19,9 +19,9 @@ vec4 gradientColor(vec2 in_uv)
         vec4(0,0,1,1),
         vec4(1,1,0,1)
     };
-    vec4 topcolor = mix(colors[0], colors[1], uv.x);
-    vec4 botcolor = mix(colors[2], colors[3], uv.x);
-    return mix(topcolor, botcolor, uv.y);
+    vec4 topcolor = mix(colors[0], colors[1], in_uv.x);
+    vec4 botcolor = mix(colors[2], colors[3], in_uv.x);
+    return mix(topcolor, botcolor, in_uv.y);
 }
 
 vec4 sampleAlbedo(vec2 in_uv)
