@@ -5,7 +5,9 @@ file(GLOB SHADERS *.vert *.frag)
 
 add_executable(${APP_NAME} ${SOURCES} ${SHADERS})
 
-target_link_libraries(${APP_NAME} rocky)
+find_package(vsg CONFIG REQUIRED)
+
+target_link_libraries(${APP_NAME} vsg::vsg)
 
 install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 install(FILES ${SHADERS} DESTINATION share/rocky/shaders)

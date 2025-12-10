@@ -589,18 +589,14 @@ void fail(std::string_view msg)
 //! Loads up a simple scene for rendering
 vsg::ref_ptr<vsg::Node> loadScene(vsg::Options* options)
 {
-    // You can configure the builder to use a custom shaderset. This lets us inject
-    // our own G-buffer-capable shaders and pipeline states into the resulting model.
     vsg::Builder builder;
-    builder.shaderSet = createGBufferShaderSet(options);
-    if (!builder.shaderSet)
-        fail("createGBufferShaderSet returned null shader set - make sure VSG_FILE_PATH points to the deferred shaders!");
+    builder.options = options; // options contains the new shaders!
 
     // Make a pretty cube
     vsg::GeometryInfo gi(vsg::box(vsg::vec3(-1, -1, -1), vsg::vec3(1, 1, 1)));
     gi.color = vsg::vec4(0.5f, 1.0f, 0.5f, 1.0f);
     vsg::StateInfo si;
-    si.lighting = true, si.wireframe = false;
+    si.lighting = true; // selects the "phong" shader, which we replaced
     auto scene = builder.createBox(gi, si);
 
     return scene;
@@ -644,6 +640,7 @@ int main(int argc, char** argv)
 
     auto options = vsg::Options::create();
     options->paths = vsg::getEnvPaths("VSG_FILE_PATH");
+    options->shaderSets["phong"] = createGBufferShaderSet(options);
 
     // load up a model to render:
     auto scene = loadScene(options);
