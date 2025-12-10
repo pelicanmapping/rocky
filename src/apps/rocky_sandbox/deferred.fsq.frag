@@ -29,7 +29,7 @@ vec4 sampleAlbedo(vec2 in_uv)
     return texture(gAlbedo, in_uv);
 }
 
-// samples the gNormal channel to apply a very simple headlight shading (returns 0..1)
+// samples the gNormal channel to return very simple headlight shading [0..1]
 float lighting(vec2 in_uv)
 {
     vec3 N = normalize((texture(gNormal, in_uv).xyz * 2.0) - 1.0);
@@ -69,10 +69,10 @@ float sobel(in vec2 in_uv)
     return edgeIntensity;
 }
 
-// FSAA calls this to sample a single pixel with lighting and edge detection.
+// aa() calls this to sample a single pixel with lighting and edge detection.
 vec4 samplePixel(in vec2 in_uv)
 {
-    vec4 c = texture(gAlbedo, in_uv);
+    vec4 c = sampleAlbedo(in_uv);
     c.rgb *= lighting(in_uv);
     c.rgb = mix(c.rgb, vec3(1,1,1), sobel(in_uv));
     return c;

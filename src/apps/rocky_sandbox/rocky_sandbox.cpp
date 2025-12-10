@@ -1,12 +1,11 @@
 /**
- * rocky c++
  * Copyright 2025 Pelican Mapping
  * MIT License
  */
 
-#include <rocky/rocky.h>
-#include <rocky/vsg/PipelineState.h>
+#include <vsg/all.h>
 #include <unordered_map>
+#include <iostream>
 
 // Deferred rendering sandbox for VSG.
 //
@@ -47,8 +46,6 @@
 //  - Add more g-buffer channels like material, objectid, and viewposition
 
 
-using namespace ROCKY_NAMESPACE;
-
 
 // An Channel is a single g-buffer component. It may be used as an Attachment
 // when rendering to the g-buffer, or as a descriptor when reading from it later.
@@ -75,13 +72,13 @@ using Channels = std::unordered_map<std::string, Channel>;
 // that will be rendered by a ViewWorkflow.
 struct ViewInfo
 {
-    ViewInfo(vsg::Window* in_window, vsg::View* in_view, VSGContext in_vsgcontext) :
-        window(in_window), view(in_view), vsgcontext(in_vsgcontext) {
+    ViewInfo(vsg::Window* in_window, vsg::View* in_view, vsg::Options* in_options) :
+        window(in_window), view(in_view), options(in_options) {
     }
 
     vsg::ref_ptr<vsg::Window> window;
     vsg::ref_ptr<vsg::View> view;
-    VSGContext vsgcontext;
+    vsg::ref_ptr<vsg::Options> options;
 };
 
 
@@ -107,12 +104,11 @@ public:
 class ViewWorkflow : public vsg::Inherit<vsg::Group, ViewWorkflow>
 {
 public:
-    ViewWorkflow(VSGContext in_vsgcontext, vsg::Window* in_window, vsg::View* in_view) :
-        vsgcontext(in_vsgcontext), window(in_window), view(in_view) {}
+    ViewWorkflow(vsg::Window* in_window, vsg::View* in_view, vsg::Options* in_options) :
+        viewInfo(in_window, in_view, in_options) {
+    }
     
-    VSGContext vsgcontext;
-    vsg::ref_ptr<vsg::Window> window;
-    vsg::ref_ptr<vsg::View> view;
+    ViewInfo viewInfo;
     std::vector<vsg::ref_ptr<Stage>> stages;
     
     Channels channels; // all attachments used in this workflow, keyed by name
@@ -121,9 +117,7 @@ public:
     //! Generates the graph to render this view to the swapchain.
     void build()
     {
-        vsg::Context cx(window->getOrCreateDevice());
-
-        ViewInfo viewInfo(window, view, vsgcontext);
+        vsg::Context cx(viewInfo.window->getOrCreateDevice());
 
         // collect the channels from each stage
         channels.clear();
@@ -151,19 +145,21 @@ public:
 
 //! Creates a ShaderSet that we can pass to vsg::Builder to create a deferred rendering pipeline.
 vsg::ref_ptr<vsg::ShaderSet>
-createGBufferShaderSet(VSGContext& vsg)
+createGBufferShaderSet(vsg::Options* options)
 {
+    vsg::ref_ptr<vsg::Options> refOptions(options);
+
     // the OSG flat shader (no changes)
     auto vertexShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_VERTEX_BIT, "main",
-        vsg::findFile("shaders/rocky.dr.standard.vert", vsg->searchPaths),
-        vsg->readerWriterOptions);
+        vsg::findFile("deferred.standard.vert", refOptions),
+        refOptions);
 
     // the OSG flat fragment shader adapted for deferred rendering
     auto fragmentShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_FRAGMENT_BIT, "main",
-        vsg::findFile("shaders/rocky.dr.standard.frag", vsg->searchPaths),
-        vsg->readerWriterOptions);
+        vsg::findFile("deferred.standard.frag", refOptions),
+        refOptions);
 
     if (!vertexShader || !fragmentShader)
         return { };
@@ -182,8 +178,9 @@ createGBufferShaderSet(VSGContext& vsg)
 
     shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
 
-    // We need VSG's view-dependent data for lighting support
-    //PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
+    //shaderSet->optionalDefines.emplace("VSG_GBUFFER");
+    shaderSet->defaultShaderHints = vsg::ShaderCompileSettings::create();
+    shaderSet->defaultShaderHints->defines.emplace("VSG_GBUFFER");
 
     // Configure ColorBlendState for 2 color attachments (albedo + normal)
     // and assign it as the "default" state for a piepline.
@@ -211,8 +208,7 @@ createGBufferShaderSet(VSGContext& vsg)
 
 
 // NOTE: This is NOT USED in this demo BUT will be helpful later when rendering non-vsg models.
-vsg::ref_ptr<vsg::Node>
-createGBufferPipeline(vsg::ShaderSet* shaderSet, vsg::ShaderCompileSettings* compileSettings)
+vsg::ref_ptr<vsg::Node> createGBufferPipeline(vsg::ShaderSet* shaderSet, vsg::ShaderCompileSettings* compileSettings)
 {
     auto gc = vsg::GraphicsPipelineConfigurator::create(vsg::ref_ptr<vsg::ShaderSet>(shaderSet));
 
@@ -233,10 +229,10 @@ createGBufferPipeline(vsg::ShaderSet* shaderSet, vsg::ShaderCompileSettings* com
     auto commands = vsg::Commands::create();
     commands->addChild(gc->bindGraphicsPipeline);
 
-    commands->addChild(vsg::BindViewDescriptorSets::create(
-        VK_PIPELINE_BIND_POINT_GRAPHICS,
-        gc->layout,
-        VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
+    //commands->addChild(vsg::BindViewDescriptorSets::create(
+    //    VK_PIPELINE_BIND_POINT_GRAPHICS,
+    //    gc->layout,
+    //    VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
 
     return commands;
 }
@@ -486,27 +482,19 @@ class RenderToFullScreenQuad : public vsg::Inherit<Stage, RenderToFullScreenQuad
 public:
     vsg::ref_ptr<vsg::Node> createNode(ViewInfo& viewInfo, const Channels& channels) override
     {
-        auto vsg = viewInfo.vsgcontext;
-
         // load shaders
         auto vertexShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_VERTEX_BIT, "main",
-            vsg::findFile("shaders/rocky.dr.fsq.vert", vsg->searchPaths),
-            vsg->readerWriterOptions);
+            vsg::findFile("deferred.fsq.vert", viewInfo.options),
+            viewInfo.options);
 
         auto fragmentShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_FRAGMENT_BIT, "main",
-            vsg::findFile("shaders/rocky.dr.fsq.frag", vsg->searchPaths),
-            vsg->readerWriterOptions);
+            vsg::findFile("deferred.fsq.frag", viewInfo.options),
+            viewInfo.options);
 
         if (!vertexShader || !fragmentShader)
             return { };
-
-        // We need VSG's view-dependent data for lighting support
-        //PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
-
-        // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
-        //shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
 
         auto vertexInputState = vsg::VertexInputState::create();
 
@@ -591,25 +579,26 @@ public:
 
 
 
-void fail(std::string_view msg) {
-    rocky::Log()->critical(msg);
+void fail(std::string_view msg)
+{
+    std::cout << msg << std::endl;
     exit(-1);
 }
 
 
 //! Loads up a simple scene for rendering
-vsg::ref_ptr<vsg::Node> loadScene(VSGContext vsg)
+vsg::ref_ptr<vsg::Node> loadScene(vsg::Options* options)
 {
     // You can configure the builder to use a custom shaderset. This lets us inject
     // our own G-buffer-capable shaders and pipeline states into the resulting model.
     vsg::Builder builder;
-    builder.shaderSet = createGBufferShaderSet(vsg);
+    builder.shaderSet = createGBufferShaderSet(options);
     if (!builder.shaderSet)
-        fail("createGBufferShaderSet returned null shader set");
+        fail("createGBufferShaderSet returned null shader set - make sure VSG_FILE_PATH points to the deferred shaders!");
 
     // Make a pretty cube
     vsg::GeometryInfo gi(vsg::box(vsg::vec3(-1, -1, -1), vsg::vec3(1, 1, 1)));
-    gi.color = to_vsg(Color::Lime);
+    gi.color = vsg::vec4(0.5f, 1.0f, 0.5f, 1.0f);
     vsg::StateInfo si;
     si.lighting = true, si.wireframe = false;
     auto scene = builder.createBox(gi, si);
@@ -653,11 +642,11 @@ int main(int argc, char** argv)
     auto viewer = vsg::Viewer::create();
     viewer->addWindow(window);
 
-    // this just holds context information, like where to find our shaders.
-    auto vsgcontext = VSGContextFactory::create(viewer, argc, argv);
+    auto options = vsg::Options::create();
+    options->paths = vsg::getEnvPaths("VSG_FILE_PATH");
 
     // load up a model to render:
-    auto scene = loadScene(vsgcontext);
+    auto scene = loadScene(options);
 
     // and a camera to look at it:
     auto camera = createCameraForScene(scene, window);
@@ -673,16 +662,16 @@ int main(int argc, char** argv)
 
 
     // build the workflow graph for our view:
-    auto workflow = ViewWorkflow::create(vsgcontext, window, view);
+    auto workflow = ViewWorkflow::create(window, view, options);
 
     auto renderToGBuffer = RenderToGBuffer::create();
     if (!renderToGBuffer)
-        fail("RenderToGBuffer::create() returned null");
+        fail("RenderToGBuffer::create() returned null - check your VSG_FILE_PATH");
     workflow->stages.emplace_back(renderToGBuffer);
 
     auto renderToFSQ = RenderToFullScreenQuad::create();
     if (!renderToFSQ)
-        fail("RenderToFullScreenQuad::create() returned null");
+        fail("RenderToFullScreenQuad::create() returned null - check your VSG_FILE_PATH");
     workflow->stages.emplace_back(renderToFSQ);
 
     // builds the scene graph for each render stage

@@ -1,6 +1,7 @@
 #version 450
 #extension GL_ARB_separate_shader_objects : enable
 #pragma import_defines (VSG_TEXTURECOORD_0, VSG_TEXTURECOORD_1, VSG_TEXTURECOORD_2, VSG_TEXTURECOORD_3, VSG_POINT_SPRITE, VSG_DIFFUSE_MAP, VSG_NORMAL_MAP, VSG_GREYSCALE_DIFFUSE_MAP, VSG_DETAIL_MAP, VSG_ALPHA_TEST)
+#pragma import_defines (VSG_GBUFFER)
 
 #define VIEW_DESCRIPTOR_SET 0
 #define MATERIAL_DESCRIPTOR_SET 1
@@ -54,8 +55,12 @@ layout(location = 1) in vec3 normalDir;
 layout(location = 2) in vec4 vertexColor;
 layout(location = 4) in vec2 texCoord[VSG_TEXCOORD_COUNT];
 
+#ifdef VSG_GBUFFER
 layout(location = 0) out vec4 gAlbedo;
 layout(location = 1) out vec4 gNormal;
+#else
+layout(location = 0) out vec4 outColor;
+#endif
 
 void main()
 {
@@ -86,10 +91,10 @@ void main()
     if (material.alphaMask == 1.0f && diffuseColor.a < material.alphaMaskCutoff) discard;
 #endif
 
-    // output to G-buffer:
+#ifdef VSG_GBUFFER
     gAlbedo = vertexColor;
     gNormal = vec4(normalize(normalDir) * 0.5 + 0.5, 1.0);
-
-    // Depth is automatically written to the depth buffer from gl_FragCoord.z
-    // No need to write it as a color output
+#else
+    outColor = diffuseColor;
+#endif
 }
