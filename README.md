@@ -29,7 +29,7 @@ Rocky will render an accurate 3D or 2D map with real geospatial imagery and elev
 - [Integrations](#integrations)
    * [Rocky and ImGui](#rocky-and-dear-imgui)
    * [Rocky and VulkanSceneGraph](#rocky-and-vulkanscenegraph)
-   * [Rocky and Qt5](#rocky-and-qt5)
+   * [Rocky and Qt](#rocky-and-qt)
 - [Acknowledgements](#acknowledgements)
 
 <!-- TOC end -->
@@ -683,11 +683,11 @@ vsg::dvec3 vsg_value = to_vsg(glm_value); // convert from GLM to VSG
 
 <br/><br/>
 
-# Rocky and Qt5
+# Rocky and Qt
 
-You can embed Rocky in a Qt5 widget. See the `rocky_demo_qt` example for details.
+You can embed Rocky in a Qt widget. See the `rocky_demo_qt` example for details.
 
-Look for Qt6 support in the future.
+Both Qt5 and Qt6 are supported, based on the underlying support in [vsgQt](https://github.com/vsg-dev/vsgQt).
 
 <img width="100%" alt="image" src="https://github.com/user-attachments/assets/84cda604-f617-4562-b208-6d049f8b5ee1">
 
