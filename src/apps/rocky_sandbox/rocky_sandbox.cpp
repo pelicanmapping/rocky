@@ -645,7 +645,10 @@ int main(int argc, char** argv)
 
     auto options = vsg::Options::create();
     options->paths = vsg::getEnvPaths("VSG_FILE_PATH");
-    options->shaderSets["phong"] = createGBufferShaderSet(options);
+    auto gbufferShaderSet = createGBufferShaderSet(options);
+    if (!gbufferShaderSet)
+        fail("Failed to create GBuffer shaders - check your VSG_FILE_PATH");
+    options->shaderSets["phong"] = gbufferShaderSet;
 
     // load up a model to render:
     auto scene = loadScene(options);
