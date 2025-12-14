@@ -228,11 +228,12 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
             void apply(vsg::RasterizationState& state) override {
                 state.cullMode = VK_CULL_MODE_NONE;
             }
-            //void apply(vsg::DepthStencilState& state) override {
-            //    if ((feature_mask & WRITE_DEPTH) == 0) {
-            //        state.depthWriteEnable = (feature_mask & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
-            //    }
-            //}
+            void apply(vsg::DepthStencilState& state) override {
+                state.depthTestEnable = VK_TRUE;
+                //if ((feature_mask & WRITE_DEPTH) == 0) {
+                //    state.depthWriteEnable = (feature_mask & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
+                //}
+            }
             void apply(vsg::ColorBlendState& state) override {
                 state.attachments = vsg::ColorBlendState::ColorBlendAttachments {
                     { true,

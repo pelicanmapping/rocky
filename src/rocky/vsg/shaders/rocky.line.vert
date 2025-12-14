@@ -187,9 +187,5 @@ void main()
         vary.stippleDir = vec2(cos(qangle), sin(qangle));
     }
 
-    // apply a static clip-space offset for z-flight mitigation.
-    const float clip_offset = 1e-7;
-    curr_clip.z += clip_offset * curr_clip.w;
-
     gl_Position = curr_clip;
 }

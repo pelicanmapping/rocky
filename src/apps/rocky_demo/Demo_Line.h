@@ -36,7 +36,7 @@ auto Demo_Line_Absolute = [](Application& app)
                 auto& style = r.emplace<LineStyle>(entity);
                 style.color = Color::Yellow;
                 style.width = 3.0f;
-                style.depthOffset = 1000.0f;
+                style.depthOffset = 10000.0f;
 
                 // A "Line" renders the given geometry with the given style.
                 auto& line = r.emplace<Line>(entity, geometry, style);
