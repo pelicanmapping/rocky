@@ -240,6 +240,8 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
         pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME) &&
         pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))
     {
+        supported = true;
+#if 0
         auto supportedDS3 = pd->getFeatures<
             VkPhysicalDeviceExtendedDynamicState3FeaturesEXT,
             VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
@@ -249,6 +251,7 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
         {
             supported = true;
         }
+#endif
     }
 
     if (!supported)
@@ -259,7 +262,6 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
         Log()->warn("MeshSystem not availabe! {}", status.error().message);
         return;
     }
-
 
     auto shaderSet = createShaderSet(vsgcontext);
 
