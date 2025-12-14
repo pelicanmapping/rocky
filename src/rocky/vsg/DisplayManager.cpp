@@ -8,6 +8,8 @@
 #include "MapManipulator.h"
 #include "terrain/TerrainEngine.h"
 
+#include <vsg/vk/Instance.h>
+
 #ifdef ROCKY_HAS_IMGUI
 #include "imgui/ImGuiIntegration.h"
 #endif
@@ -301,9 +303,58 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     auto& ds2 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState2FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT>();
     ds2.extendedDynamicState2 = VK_TRUE;
 
+    // Query which extended_dynamic_state_3 features are actually supported.
+    // Some Vulkan implementations (e.g., MoltenVK on macOS) don't support all features
+    // of an extension even when the extension itself is reported as supported.
     auto& ds3 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState3FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
-    ds3.extendedDynamicState3PolygonMode = VK_TRUE;
-    ds3.extendedDynamicState3ColorWriteMask = VK_TRUE;
+    if (traits->device)
+    {
+        // Query features from existing device's physical device
+        auto physicalDevice = traits->device->getPhysicalDevice();
+        if (physicalDevice)
+        {
+            auto supportedDS3 = physicalDevice->getFeatures<
+                VkPhysicalDeviceExtendedDynamicState3FeaturesEXT,
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
+
+            if (supportedDS3.extendedDynamicState3PolygonMode)
+                ds3.extendedDynamicState3PolygonMode = VK_TRUE;
+            if (supportedDS3.extendedDynamicState3ColorWriteMask)
+                ds3.extendedDynamicState3ColorWriteMask = VK_TRUE;
+        }
+        else
+        {
+            // Fallback: enable commonly supported feature only
+            ds3.extendedDynamicState3PolygonMode = VK_TRUE;
+        }
+    }
+    else
+    {
+        // First window - no device exists yet. Create a temporary instance to probe features.
+        traits->validate();
+        auto instance = vsg::Instance::create(
+            traits->instanceExtensionNames,
+            traits->requestedLayers,
+            traits->vulkanVersion);
+
+        auto physicalDevice = instance->getPhysicalDevice(traits->queueFlags, traits->deviceTypePreferences);
+        if (physicalDevice && physicalDevice->vk() != VK_NULL_HANDLE)
+        {
+            auto supportedDS3 = physicalDevice->getFeatures<
+                VkPhysicalDeviceExtendedDynamicState3FeaturesEXT,
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
+
+            if (supportedDS3.extendedDynamicState3PolygonMode)
+                ds3.extendedDynamicState3PolygonMode = VK_TRUE;
+            if (supportedDS3.extendedDynamicState3ColorWriteMask)
+                ds3.extendedDynamicState3ColorWriteMask = VK_TRUE;
+        }
+        else
+        {
+            // Fallback: enable commonly supported feature only
+            ds3.extendedDynamicState3PolygonMode = VK_TRUE;
+        }
+    }
 
     //auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
     //bary.fragmentShaderBarycentric = VK_TRUE;
