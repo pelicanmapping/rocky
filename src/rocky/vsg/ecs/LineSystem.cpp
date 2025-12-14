@@ -82,18 +82,7 @@ namespace
         auto& uniforms = *static_cast<LineStyleUniform*>(styleDetail.styleData->dataPointer());
         uniforms.style = LineStyleRecord(); // default style
     }
-}
 
-LineSystemNode::LineSystemNode(Registry& registry) :
-    Inherit(registry)
-{
-    // temporary transform used by the visitor traversal(s)
-    _tempMT = vsg::MatrixTransform::create();
-    _tempMT->children.resize(1);
-}
-
-namespace
-{
     // disposal vector processed by the system
     static std::mutex s_cleanupMutex;
     static vsg::ref_ptr<vsg::Objects> s_toDispose = vsg::Objects::create();
@@ -159,6 +148,37 @@ namespace
     }
 }
 
+LineSystemNode::LineSystemNode(Registry& registry) :
+    Inherit(registry)
+{
+    // temporary transform used by the visitor traversal(s)
+    _tempMT = vsg::MatrixTransform::create();
+    _tempMT->children.resize(1);
+
+    _registry.write([&](entt::registry& r)
+        {
+            // install the ecs callbacks for Lines
+            r.on_construct<Line>().connect<&on_construct_Line>();
+            r.on_construct<LineStyle>().connect<&on_construct_LineStyle>();
+            r.on_construct<LineGeometry>().connect<&on_construct_LineGeometry>();
+
+            r.on_update<Line>().connect<&on_update_Line>();
+            r.on_update<LineStyle>().connect<&on_update_LineStyle>();
+            r.on_update<LineGeometry>().connect<&on_update_LineGeometry>();
+
+            r.on_destroy<LineStyle>().connect<&on_destroy_LineStyle>();
+            r.on_destroy<LineStyleDetail>().connect<&on_destroy_LineStyleDetail>();
+            r.on_destroy<LineGeometry>().connect<&on_destroy_LineGeometry>();
+            r.on_destroy<LineGeometryDetail>().connect<&on_destroy_LineGeometryDetail>();
+
+            // Set up the dirty tracking.
+            auto e = r.create();
+            r.emplace<Line::Dirty>(e);
+            r.emplace<LineStyle::Dirty>(e);
+            r.emplace<LineGeometry::Dirty>(e);
+        });
+}
+
 void
 LineSystemNode::initialize(VSGContext& vsgcontext)
 {
@@ -208,11 +228,11 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
             void apply(vsg::RasterizationState& state) override {
                 state.cullMode = VK_CULL_MODE_NONE;
             }
-            void apply(vsg::DepthStencilState& state) override {
-                if ((feature_mask & WRITE_DEPTH) == 0) {
-                    state.depthWriteEnable = (feature_mask & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
-                }
-            }
+            //void apply(vsg::DepthStencilState& state) override {
+            //    if ((feature_mask & WRITE_DEPTH) == 0) {
+            //        state.depthWriteEnable = (feature_mask & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
+            //    }
+            //}
             void apply(vsg::ColorBlendState& state) override {
                 state.attachments = vsg::ColorBlendState::ColorBlendAttachments {
                     { true,
@@ -236,29 +256,6 @@ LineSystemNode::initialize(VSGContext& vsgcontext)
     // Set up our default style detail, which is used when a MeshStyle is missing.
     initializeStyleDetail(getPipelineLayout(Line()), _defaultStyleDetail);
     requestCompile(_defaultStyleDetail.bind);
-
-    _registry.write([&](entt::registry& r)
-        {
-            // install the ecs callbacks for Lines
-            r.on_construct<Line>().connect<&on_construct_Line>();
-            r.on_construct<LineStyle>().connect<&on_construct_LineStyle>();
-            r.on_construct<LineGeometry>().connect<&on_construct_LineGeometry>();
-
-            r.on_update<Line>().connect<&on_update_Line>();
-            r.on_update<LineStyle>().connect<&on_update_LineStyle>();
-            r.on_update<LineGeometry>().connect<&on_update_LineGeometry>();
-
-            r.on_destroy<LineStyle>().connect<&on_destroy_LineStyle>();
-            r.on_destroy<LineStyleDetail>().connect<&on_destroy_LineStyleDetail>();
-            r.on_destroy<LineGeometry>().connect<&on_destroy_LineGeometry>();
-            r.on_destroy<LineGeometryDetail>().connect<&on_destroy_LineGeometryDetail>();
-
-            // Set up the dirty tracking.
-            auto e = r.create();
-            r.emplace<Line::Dirty>(e);
-            r.emplace<LineStyle::Dirty>(e);
-            r.emplace<LineGeometry::Dirty>(e);
-        });
 }
 
 void
@@ -282,16 +279,6 @@ LineSystemNode::compile(vsg::Context& compileContext)
 
     Inherit::compile(compileContext);
 }
-
-//void
-//LineSystemNode::createOrUpdateComponent(const Line& line, LineDetail& lineDetail, LineGeometryDetail* geomDetail)
-//{
-//    // NB: registry is read-locked
-//    if (geomDetail)
-//    {
-//        lineDetail.node = geomDetail->root;
-//    }
-//}
 
 void
 LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDetail& geomDetail, VSGContext& vsgcontext)

@@ -199,6 +199,32 @@ MeshSystemNode::MeshSystemNode(Registry& registry) :
     // temporary transform used by the visitor traversal(s)
     _tempMT = vsg::MatrixTransform::create();
     _tempMT->children.resize(1);
+
+    registry.write([&](entt::registry& r)
+        {
+            // install the ENTT callbacks for managing internal data:
+            r.on_construct<Mesh>().connect<&on_construct_Mesh>();
+            r.on_construct<MeshStyle>().connect<&on_construct_MeshStyle>();
+            r.on_construct<MeshGeometry>().connect<&on_construct_MeshGeometry>();
+            r.on_construct<MeshTexture>().connect<&on_construct_Texture>();
+
+            r.on_update<Mesh>().connect<&on_update_Mesh>();
+            r.on_update<MeshStyle>().connect<&on_update_MeshStyle>();
+            r.on_update<MeshGeometry>().connect<&on_update_MeshGeometry>();
+            r.on_update<MeshTexture>().connect<&on_update_Texture>();
+
+            //r.on_destroy<MeshDetail>().connect<&on_destroy_MeshDetail>();
+            r.on_destroy<MeshStyleDetail>().connect<&on_destroy_MeshStyleDetail>();
+            r.on_destroy<MeshGeometryDetail>().connect<&on_destroy_MeshGeometryDetail>();
+            r.on_destroy<MeshTextureDetail>().connect<&on_destroy_MeshTextureDetail>();
+
+            // Set up the dirty tracking.
+            auto e = r.create();
+            r.emplace<Mesh::Dirty>(e);
+            r.emplace<MeshStyle::Dirty>(e);
+            r.emplace<MeshGeometry::Dirty>(e);
+            r.emplace<MeshTexture::Dirty>(e);
+        });
 }
 
 
@@ -206,18 +232,34 @@ void
 MeshSystemNode::initialize(VSGContext& vsgcontext)
 {
     // make sure all required vulkan features are available:
+    bool supported = false;
+
     auto pd = vsgcontext->device()->getPhysicalDevice();
 
-    if (!pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) ||
-        !pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME) ||
-        !pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))
+    if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME) &&
+        pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME) &&
+        pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))
+    {
+        auto supportedDS3 = pd->getFeatures<
+            VkPhysicalDeviceExtendedDynamicState3FeaturesEXT,
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
+
+        if (supportedDS3.extendedDynamicState3PolygonMode &&
+            supportedDS3.extendedDynamicState3ColorWriteMask)
+        {
+            supported = true;
+        }
+    }
+
+    if (!supported)
     {
         status = Failure(Failure::ResourceUnavailable,
-            "MeshSystem requires the Vulkan extended dynamic state extensions. "
-            "These are not supported by the current Vulkan device.");
+            "MeshSystem requires the Vulkan extended dynamic state extension features "
+            "that not supported by the current Vulkan device.");
         Log()->warn("MeshSystem not availabe! {}", status.error().message);
         return;
     }
+
 
     auto shaderSet = createShaderSet(vsgcontext);
 
@@ -304,37 +346,13 @@ MeshSystemNode::initialize(VSGContext& vsgcontext)
     // Set up our default style detail, which is used when a MeshStyle is missing.
     initializeStyleDetail(getPipelineLayout(Mesh()), _defaultMeshStyleDetail);
     requestCompile(_defaultMeshStyleDetail.bind);
-
-    _registry.write([&](entt::registry& r)
-        {
-            // install the ENTT callbacks for managing internal data:
-            r.on_construct<Mesh>().connect<&on_construct_Mesh>();
-            r.on_construct<MeshStyle>().connect<&on_construct_MeshStyle>();
-            r.on_construct<MeshGeometry>().connect<&on_construct_MeshGeometry>();
-            r.on_construct<MeshTexture>().connect<&on_construct_Texture>();
-
-            r.on_update<Mesh>().connect<&on_update_Mesh>();
-            r.on_update<MeshStyle>().connect<&on_update_MeshStyle>();
-            r.on_update<MeshGeometry>().connect<&on_update_MeshGeometry>();
-            r.on_update<MeshTexture>().connect<&on_update_Texture>();
-
-            //r.on_destroy<MeshDetail>().connect<&on_destroy_MeshDetail>();
-            r.on_destroy<MeshStyleDetail>().connect<&on_destroy_MeshStyleDetail>();
-            r.on_destroy<MeshGeometryDetail>().connect<&on_destroy_MeshGeometryDetail>();
-            r.on_destroy<MeshTextureDetail>().connect<&on_destroy_MeshTextureDetail>();
-
-            // Set up the dirty tracking.
-            auto e = r.create();
-            r.emplace<Mesh::Dirty>(e);
-            r.emplace<MeshStyle::Dirty>(e);
-            r.emplace<MeshGeometry::Dirty>(e);
-            r.emplace<MeshTexture::Dirty>(e);
-        });
 }
 
 void
 MeshSystemNode::compile(vsg::Context& compileContext)
 {
+    if (status.failed()) return;
+
     // called during a compile traversal .. e.g., then adding a new View/RenderGraph.
     _registry.read([&](entt::registry& reg)
         {
@@ -353,18 +371,6 @@ MeshSystemNode::compile(vsg::Context& compileContext)
 
     Inherit::compile(compileContext);
 }
-
-//void
-//MeshSystemNode::createOrUpdateComponent(const Mesh& mesh, MeshDetail& meshDetail,
-//    MeshStyleDetail* styleDetail, MeshGeometryDetail* geomDetail, VSGContext& vsgcontext)
-//{
-//    // NB: registry is read-locked
-//    if (geomDetail)
-//    {
-//        // Point this mesh at a (possibly shared) geometry node.
-//        meshDetail.node = geomDetail->geomNode;
-//    }
-//}
 
 void
 MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDetail& geomDetail, VSGContext& vsgcontext)
@@ -491,10 +497,10 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
         needsCompile = true;
     }
 
-#ifdef USE_DYNAMIC_STATE
     for (auto& pass : styleDetail.passes)
         dispose(pass);
 
+#ifdef USE_DYNAMIC_STATE // TODO: query ACTUAL support and deal with it properly.
     styleDetail.passes.clear();
     styleDetail.passes.emplace_back(vsg::Commands::create());
     styleDetail.passes[0]->addChild(styleDetail.bind);
@@ -695,6 +701,8 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 void
 MeshSystemNode::traverse(vsg::ConstVisitor& v) const
 {
+    if (status.failed()) return;
+
     for (auto& pipeline : _pipelines)
     {
         pipeline.commands->accept(v);

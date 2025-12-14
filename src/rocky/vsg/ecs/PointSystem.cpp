@@ -81,18 +81,6 @@ namespace
         auto& uniforms = *static_cast<PointStyleUniform*>(styleDetail.styleData->dataPointer());
         uniforms.style = PointStyleRecord(); // default style
     }
-}
-
-PointSystemNode::PointSystemNode(Registry& registry) :
-    Inherit(registry)
-{
-    // temporary transform used by the visitor traversal(s)
-    _tempMT = vsg::MatrixTransform::create();
-    _tempMT->children.resize(1);
-}
-
-namespace
-{
     // disposal vector processed by the system
     static std::mutex s_cleanupMutex;
     static vsg::ref_ptr<vsg::Objects> s_toDispose = vsg::Objects::create();
@@ -105,8 +93,8 @@ namespace
 
     void on_construct_Point(entt::registry& r, entt::entity e)
     {
-        (void) r.get_or_emplace<ActiveState>(e);
-        (void) r.get_or_emplace<Visibility>(e);
+        (void)r.get_or_emplace<ActiveState>(e);
+        (void)r.get_or_emplace<Visibility>(e);
         r.get<Point>(e).owner = e;
         r.get<Point>(e).dirty(r);
     }
@@ -156,6 +144,36 @@ namespace
         r.get<PointGeometryDetail>(e).recycle();
         r.get<PointGeometry>(e).dirty(r);
     }
+}
+
+PointSystemNode::PointSystemNode(Registry& registry) :
+    Inherit(registry)
+{
+    // temporary transform used by the visitor traversal(s)
+    _tempMT = vsg::MatrixTransform::create();
+    _tempMT->children.resize(1);
+
+    _registry.write([&](entt::registry& r)
+        {
+            // install the ecs callbacks for Points
+            r.on_construct<Point>().connect<&on_construct_Point>();
+            r.on_construct<PointStyle>().connect<&on_construct_PointStyle>();
+            r.on_construct<PointGeometry>().connect<&on_construct_PointGeometry>();
+
+            r.on_update<Point>().connect<&on_update_Point>();
+            r.on_update<PointStyle>().connect<&on_update_PointStyle>();
+            r.on_update<PointGeometry>().connect<&on_update_PointGeometry>();
+
+            //r.on_destroy<PointDetail>().connect<&on_destroy_PointDetail>();
+            r.on_destroy<PointStyleDetail>().connect<&on_destroy_PointStyleDetail>();
+            r.on_destroy<PointGeometryDetail>().connect<&on_destroy_PointGeometryDetail>();
+
+            // Set up the dirty tracking.
+            auto e = r.create();
+            r.emplace<Point::Dirty>(e);
+            r.emplace<PointStyle::Dirty>(e);
+            r.emplace<PointGeometry::Dirty>(e);
+        });
 }
 
 void
@@ -238,28 +256,6 @@ PointSystemNode::initialize(VSGContext& vsgcontext)
     // Set up our default style detail, which is used when a style is missing.
     initializeStyleDetail(getPipelineLayout(Point()), _defaultStyleDetail);
     requestCompile(_defaultStyleDetail.bind);
-
-    _registry.write([&](entt::registry& r)
-        {
-            // install the ecs callbacks for Points
-            r.on_construct<Point>().connect<&on_construct_Point>();
-            r.on_construct<PointStyle>().connect<&on_construct_PointStyle>();
-            r.on_construct<PointGeometry>().connect<&on_construct_PointGeometry>();
-
-            r.on_update<Point>().connect<&on_update_Point>();
-            r.on_update<PointStyle>().connect<&on_update_PointStyle>();
-            r.on_update<PointGeometry>().connect<&on_update_PointGeometry>();
-
-            //r.on_destroy<PointDetail>().connect<&on_destroy_PointDetail>();
-            r.on_destroy<PointStyleDetail>().connect<&on_destroy_PointStyleDetail>();
-            r.on_destroy<PointGeometryDetail>().connect<&on_destroy_PointGeometryDetail>();
-
-            // Set up the dirty tracking.
-            auto e = r.create();
-            r.emplace<Point::Dirty>(e);
-            r.emplace<PointStyle::Dirty>(e);
-            r.emplace<PointGeometry::Dirty>(e);
-        });
 }
 
 void
@@ -283,16 +279,6 @@ PointSystemNode::compile(vsg::Context& compileContext)
 
     Inherit::compile(compileContext);
 }
-
-//void
-//PointSystemNode::createOrUpdateComponent(const Point& c, PointDetail& pointDetail, PointGeometryDetail* geomDetail)
-//{
-//    // NB: registry is read-locked
-//    if (geomDetail)
-//    {
-//        pointDetail.node = geomDetail->rootNode;
-//    }
-//}
 
 void
 PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometryDetail& geomDetail, VSGContext& vsgcontext)
