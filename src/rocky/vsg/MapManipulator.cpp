@@ -458,11 +458,47 @@ MapManipulator::reinitialize()
     _thrown = false;
     _delta.set(0.0, 0.0);
     _throwDelta.set(0.0, 0.0);
+    _zoomInertia = ZoomVelocityState();
     _continuousDelta.set(0.0, 0.0);
     _continuous = 0;
     _lastAction = ACTION_NULL;
     _previousMove.clear();
     clearEvents();
+}
+
+void
+MapManipulator::cancelZoomInertia()
+{
+    _zoomInertia.velocity = 0.0;
+    _zoomInertia.isActive = false;
+}
+
+bool
+MapManipulator::serviceZoomInertia(vsg::time_point now)
+{
+    if (!_zoomInertia.isActive)
+        return false;
+
+    double dt = to_seconds(now - _previousTime);
+    if (dt <= 0.0)
+        return _zoomInertia.isActive;
+
+    // Apply velocity as zoom delta
+    double frameDelta = _zoomInertia.velocity * dt;
+    zoom(0.0, frameDelta);
+
+    // Frame-rate independent exponential decay
+    double decayFactor = std::pow(settings.scrollZoomFriction, dt * 60.0);
+    _zoomInertia.velocity *= decayFactor;
+
+    // Stop when below threshold
+    if (std::abs(_zoomInertia.velocity) < settings.scrollZoomThreshold)
+    {
+        _zoomInertia.velocity = 0.0;
+        _zoomInertia.isActive = false;
+    }
+
+    return _zoomInertia.isActive;
 }
 
 bool
@@ -999,6 +1035,9 @@ MapManipulator::apply(vsg::ButtonPressEvent& buttonPress)
 
     //std::cout << "ButtonPressEvent" << std::endl;
 
+    // Cancel any active zoom inertia
+    cancelZoomInertia();
+
     // simply record the button press event.
     clearEvents();
 
@@ -1154,6 +1193,15 @@ MapManipulator::apply(vsg::FrameEvent& frame)
     }
 
     serviceTask(frame.time);
+
+    // Service zoom inertia
+    if (_zoomInertia.isActive)
+    {
+        if (serviceZoomInertia(frame.time))
+        {
+            _dirty = true;
+        }
+    }
 
     if (isSettingViewpoint())
     {
@@ -1884,7 +1932,28 @@ MapManipulator::handleAction(
     case ACTION_ZOOM:
     case ACTION_ZOOM_IN:
     case ACTION_ZOOM_OUT:
-        _task.set(TASK_ZOOM, d, duration, time);
+        if (settings.scrollZoomEnabled)
+        {
+            // Velocity-based zoom
+            double direction = (action._dir == DIR_UP) ? -1.0 : 1.0;
+            _zoomInertia.velocity += direction * settings.scrollZoomAcceleration * settings.scrollSensitivity;
+
+            // Clamp to max velocity
+            if (std::abs(_zoomInertia.velocity) > settings.maxScrollZoomVelocity)
+            {
+                _zoomInertia.velocity = ((_zoomInertia.velocity > 0) ? 1.0 : -1.0) * settings.maxScrollZoomVelocity;
+            }
+
+            _zoomInertia.isActive = true;
+            _dirty = true;
+            if (_context)
+                _context->requestFrame();
+        }
+        else
+        {
+            // Legacy task-based zoom
+            _task.set(TASK_ZOOM, d, duration, time);
+        }
         break;
 
     default:
