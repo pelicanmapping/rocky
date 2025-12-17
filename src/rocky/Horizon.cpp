@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "Horizon.h"
+#include <cmath>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -123,9 +124,21 @@ Horizon::isVisible(double x, double y, double z, double radius) const
     VT = target - _eye;
     double a = glm::dot(VT, -_eyeUnit);
     double b = a * _coneTan;
-    double c = sqrt(glm::dot(VT, VT) - a * a);
+    double VTdotVT = glm::dot(VT, VT);
+    double cSquared = VTdotVT - a * a;
+
+    // Guard against numerical precision issues that could produce negative value
+    if (cSquared < 0.0)
+        cSquared = 0.0;
+
+    double c = sqrt(cSquared);
     double d = c - b;
     double e = d * _coneCos;
+
+    // Check for NaN in the calculation (indicates numerical instability)
+    if (std::isnan(e))
+        return true; // Default to visible if we can't determine
+
     if (e > -radius)
         return true;
 

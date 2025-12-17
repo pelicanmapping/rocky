@@ -113,16 +113,19 @@ namespace ROCKY_NAMESPACE
             auto viewID = rv.getCommandBuffer()->viewID;
             auto& horizon = (*_horizon)[viewID];
 
+            // Use the bounding sphere radius as margin for more conservative culling
+            double cullRadius = worldBoundingSphere.radius;
+
             if (_horizonCullingPoint_valid)
             {
-                return horizon.isVisible(_horizonCullingPoint);
+                return horizon.isVisible(_horizonCullingPoint, cullRadius);
             }
             else
             {
                 for (int p = 0; p < 4; ++p)
                 {
                     auto& wp = _worldPoints[p];
-                    if (horizon.isVisible(wp.x, wp.y, wp.z))
+                    if (horizon.isVisible(wp.x, wp.y, wp.z, cullRadius))
                         return true;
                 }
                 return false;
