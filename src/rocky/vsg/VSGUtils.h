@@ -242,7 +242,11 @@ namespace ROCKY_NAMESPACE
 
             auto data = wrapImageData(image);
             data->properties.origin = vsg::TOP_LEFT;
+#if VSG_API_VERSION_LESS(1,1,12)
             data->properties.maxNumMipmaps = 1;
+#else
+            data->properties.mipLevels = 1;
+#endif
 
             return data;
         }
@@ -341,7 +345,11 @@ namespace ROCKY_NAMESPACE
 
             auto data = moveImageData(image);
             data->properties.origin = vsg::TOP_LEFT;
+#if VSG_API_VERSION_LESS(1,1,12)
             data->properties.maxNumMipmaps = 1;
+#else
+            data->properties.mipLevels = 1;
+#endif
 
             return data;
         }
