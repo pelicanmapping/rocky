@@ -13,6 +13,18 @@ auto Demo_Icon = [](Application& app)
     static entt::entity entity = entt::null;
     static Status status;
 
+    // Custom component that holds icon properties.
+    struct MyIcon
+    {
+        ImGuiImage iconImage;
+        float sizePixels = 256.0f;
+        float rotationDegrees = 0.0f;
+
+        inline void render() {
+            iconImage.render(ImVec2{ sizePixels, sizePixels }, rotationDegrees);
+        }
+    };
+
     if (status.failed())
     {
         ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", "Image load failed");
@@ -22,7 +34,7 @@ auto Demo_Icon = [](Application& app)
 
     if (entity == entt::null)
     {
-        auto [lock, registry] = app.registry.write();
+        auto [lock, reg] = app.registry.write();
 
         // Load an icon image
         auto io = app.vsgcontext->io;
@@ -32,17 +44,27 @@ auto Demo_Icon = [](Application& app)
             status = image.error();
             return;
         }
+        image.value()->flipVerticalInPlace();
+
+        auto renderSimpleIcon = [&](WidgetInstance& i)
+            {
+                WidgetStyleEmpty withStyle(i);
+                auto& icon = i.registry.get<MyIcon>(i.entity);
+                icon.render();
+            };
 
         // Make an entity to host our icon:
-        entity = registry.create();
+        entity = reg.create();
 
         // Attach the new Icon and set up its properties:
-        auto& icon = registry.emplace<Icon>(entity);
-        icon.image = image.value();
-        icon.style = IconStyle{ 75, 0.0f }; // pixel size, rotation(radians)
+        auto& widget = reg.emplace<Widget>(entity);
+        widget.render = renderSimpleIcon;
+
+        auto& icon = reg.emplace<MyIcon>(entity);
+        icon.iconImage = ImGuiImage(image.value(), app.vsgcontext);
 
         // Transform to place the icon:
-        auto& transform = registry.emplace<Transform>(entity);
+        auto& transform = reg.emplace<Transform>(entity);
         transform.position = GeoPoint(SRS::WGS84, 0, 0, 50000);
 
         app.vsgcontext->requestFrame();
@@ -50,19 +72,15 @@ auto Demo_Icon = [](Application& app)
 
     if (ImGuiLTable::Begin("icon"))
     {
-        auto [lock, registry] = app.registry.read();
+        auto [lock, reg] = app.registry.read();
 
-        auto& v = registry.get<Visibility>(entity).visible[0];
+        auto& v = reg.get<Visibility>(entity).visible[0];
         if (ImGuiLTable::Checkbox("Show", &v))
-            setVisible(registry, entity, v);
+            setVisible(reg, entity, v);
 
-        auto& icon = registry.get<Icon>(entity);
-
-        if (ImGuiLTable::SliderFloat("Pixel size", &icon.style.size_pixels, 1.0f, 1024.0f))
-            icon.revision++;
-
-        if (ImGuiLTable::SliderFloat("Rotation", &icon.style.rotation_radians, 0.0f, 6.28f))
-            icon.revision++;
+        auto& icon = reg.get<MyIcon>(entity);
+        ImGuiLTable::SliderFloat("Pixel size", &icon.sizePixels, 1.0f, 1024.0f);
+        ImGuiLTable::SliderFloat("Rotation", &icon.rotationDegrees, 0.0f, 360.0f);
 
         ImGuiLTable::End();
     }

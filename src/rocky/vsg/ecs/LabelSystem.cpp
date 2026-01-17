@@ -1,369 +1,190 @@
 
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2025 Pelican Mapping
  * MIT License
  */
 #include "LabelSystem.h"
-#include "../PipelineState.h"
-#include "../VSGUtils.h"
-#include <rocky/vsg/PixelScaleTransform.h>
+
+#if IMGUI_VERSION_NUM >= 19200 && defined(_WIN32)
+#define USE_DYNAMIC_FONTS
+#endif
 
 using namespace ROCKY_NAMESPACE;
 
 
-#define LABEL_MAX_NUM_CHARS 255
-
-namespace ROCKY_NAMESPACE
-{
-    inline vsg::StandardLayout::Alignment to_vsg(rocky::LabelStyle::Align align)
-    {
-        return align == LabelStyle::Align::Left ? vsg::StandardLayout::LEFT_ALIGNMENT :
-            align == LabelStyle::Align::Center ? vsg::StandardLayout::CENTER_ALIGNMENT :
-            vsg::StandardLayout::RIGHT_ALIGNMENT;
-    }
-}
-
-namespace
-{
-    /**
-    * Custom layout technique that only issues the geometry drawing commands
-    * and skips the decriptor and pipeline binds. When grouping lots of text draws together
-    * we will do the pipeline/descriptor binding once per font elsewhere. This is a nice
-    * perfromance boost.
-    * 
-    * This is mostly copied from vsg::CpuLayoutTechnique
-    */
-    class RockysCpuLayoutTechnique : public vsg::Inherit<vsg::CpuLayoutTechnique, RockysCpuLayoutTechnique>
-    {
-    public:
-        vsg::ref_ptr<vsg::Node> createRenderingSubgraph(vsg::ref_ptr<vsg::ShaderSet> shaderSet, vsg::ref_ptr<vsg::Font> font, bool billboard, vsg::TextQuads& quads, uint32_t minimumAllocation) override
-        {
-            vsg::vec4 color = quads.front().colors[0];
-            vsg::vec4 outlineColor = quads.front().outlineColors[0];
-            float outlineWidth = quads.front().outlineWidths[0];
-            vsg::vec4 centerAndAutoScaleDistance = quads.front().centerAndAutoScaleDistance;
-            bool singleColor = true;
-            bool singleOutlineColor = true;
-            bool singleOutlineWidth = true;
-            bool singleCenterAutoScaleDistance = true;
-            for (auto& quad : quads)
-            {
-                for (int i = 0; i < 4; ++i)
-                {
-                    if (quad.colors[i] != color) singleColor = false;
-                    if (quad.outlineColors[i] != outlineColor) singleOutlineColor = false;
-                    if (quad.outlineWidths[i] != outlineWidth) singleOutlineWidth = false;
-                }
-                if (quad.centerAndAutoScaleDistance != centerAndAutoScaleDistance) singleCenterAutoScaleDistance = false;
-            }
-
-            uint32_t num_quads = std::max(static_cast<uint32_t>(quads.size()), minimumAllocation);
-            uint32_t num_vertices = num_quads * 4;
-            uint32_t num_colors = singleColor ? 1 : num_vertices;
-            uint32_t num_outlineColors = singleOutlineColor ? 1 : num_vertices;
-            uint32_t num_outlineWidths = singleOutlineWidth ? 1 : num_vertices;
-            //uint32_t num_centerAndAutoScaleDistances = billboard ? (singleCenterAutoScaleDistance ? 1 : num_vertices) : 0;
-
-            if (!vertices || num_vertices > vertices->size()) vertices = vsg::vec3Array::create(num_vertices);
-            if (!colors || num_colors > colors->size()) colors = vsg::vec4Array::create(num_colors);
-            if (!outlineColors || num_outlineColors > outlineColors->size()) outlineColors = vsg::vec4Array::create(num_outlineColors);
-            if (!outlineWidths || num_outlineWidths > outlineWidths->size()) outlineWidths = vsg::floatArray::create(num_outlineWidths);
-            if (!texcoords || num_vertices > texcoords->size()) texcoords = vsg::vec3Array::create(num_vertices);
-            //if (billboard && (!centerAndAutoScaleDistances || num_centerAndAutoScaleDistances > centerAndAutoScaleDistances->size())) centerAndAutoScaleDistances = vsg::vec4Array::create(num_centerAndAutoScaleDistances);
-
-            uint32_t vi = 0;
-
-            float leadingEdgeGradient = 0.1f;
-
-            if (singleColor) colors->set(0, color);
-            if (singleOutlineColor) outlineColors->set(0, outlineColor);
-            if (singleOutlineWidth) outlineWidths->set(0, outlineWidth);
-            //if (singleCenterAutoScaleDistance && centerAndAutoScaleDistances) centerAndAutoScaleDistances->set(0, centerAndAutoScaleDistance);
-
-            for (auto& quad : quads)
-            {
-                float leadingEdgeTilt = vsg::length(quad.vertices[0] - quad.vertices[1]) * leadingEdgeGradient;
-                float topEdgeTilt = leadingEdgeTilt;
-
-                vertices->set(vi, quad.vertices[0]);
-                vertices->set(vi + 1, quad.vertices[1]);
-                vertices->set(vi + 2, quad.vertices[2]);
-                vertices->set(vi + 3, quad.vertices[3]);
-
-                if (!singleColor)
-                {
-                    colors->set(vi, quad.colors[0]);
-                    colors->set(vi + 1, quad.colors[1]);
-                    colors->set(vi + 2, quad.colors[2]);
-                    colors->set(vi + 3, quad.colors[3]);
-                }
-
-                if (!singleOutlineColor)
-                {
-                    outlineColors->set(vi, quad.outlineColors[0]);
-                    outlineColors->set(vi + 1, quad.outlineColors[1]);
-                    outlineColors->set(vi + 2, quad.outlineColors[2]);
-                    outlineColors->set(vi + 3, quad.outlineColors[3]);
-                }
-
-                if (!singleOutlineWidth)
-                {
-                    outlineWidths->set(vi, quad.outlineWidths[0]);
-                    outlineWidths->set(vi + 1, quad.outlineWidths[1]);
-                    outlineWidths->set(vi + 2, quad.outlineWidths[2]);
-                    outlineWidths->set(vi + 3, quad.outlineWidths[3]);
-                }
-
-                texcoords->set(vi + 0, vsg::vec3(quad.texcoords[0].x, quad.texcoords[0].y, leadingEdgeTilt + topEdgeTilt));
-                texcoords->set(vi + 1, vsg::vec3(quad.texcoords[1].x, quad.texcoords[1].y, topEdgeTilt));
-                texcoords->set(vi + 2, vsg::vec3(quad.texcoords[2].x, quad.texcoords[2].y, 0.0f));
-                texcoords->set(vi + 3, vsg::vec3(quad.texcoords[3].x, quad.texcoords[3].y, leadingEdgeTilt));
-
-                if (!singleCenterAutoScaleDistance && centerAndAutoScaleDistances)
-                {
-                    centerAndAutoScaleDistances->set(vi, quad.centerAndAutoScaleDistance);
-                    centerAndAutoScaleDistances->set(vi + 1, quad.centerAndAutoScaleDistance);
-                    centerAndAutoScaleDistances->set(vi + 2, quad.centerAndAutoScaleDistance);
-                    centerAndAutoScaleDistances->set(vi + 3, quad.centerAndAutoScaleDistance);
-                }
-
-                vi += 4;
-            }
-
-            uint32_t num_indices = num_quads * 6;
-            if (!indices || num_indices > indices->valueCount())
-            {
-                if (num_vertices > 65536) // check if requires uint or ushort indices
-                {
-                    auto ui_indices = vsg::uintArray::create(num_indices);
-                    indices = ui_indices;
-
-                    auto itr = ui_indices->begin();
-                    vi = 0;
-                    for (uint32_t i = 0; i < num_quads; ++i)
-                    {
-                        (*itr++) = vi;
-                        (*itr++) = vi + 1;
-                        (*itr++) = vi + 2;
-                        (*itr++) = vi + 2;
-                        (*itr++) = vi + 3;
-                        (*itr++) = vi;
-
-                        vi += 4;
-                    }
-                }
-                else
-                {
-                    auto us_indices = vsg::ushortArray::create(num_indices);
-                    indices = us_indices;
-
-                    auto itr = us_indices->begin();
-                    vi = 0;
-                    for (uint32_t i = 0; i < num_quads; ++i)
-                    {
-                        (*itr++) = vi;
-                        (*itr++) = vi + 1;
-                        (*itr++) = vi + 2;
-                        (*itr++) = vi + 2;
-                        (*itr++) = vi + 3;
-                        (*itr++) = vi;
-
-                        vi += 4;
-                    }
-                }
-            }
-
-            if (!drawIndexed)
-                drawIndexed = vsg::DrawIndexed::create(static_cast<uint32_t>(quads.size() * 6), 1, 0, 0, 0);
-            else
-                drawIndexed->indexCount = static_cast<uint32_t>(quads.size() * 6);
-
-            vsg::DataList arrays = { vertices, colors, outlineColors, outlineWidths, texcoords };
-            bindVertexBuffers = vsg::BindVertexBuffers::create(0, arrays);
-            bindIndexBuffer = vsg::BindIndexBuffer::create(indices);
-
-            // setup geometry
-            auto drawCommands = vsg::Commands::create();
-            drawCommands->addChild(bindVertexBuffers);
-            drawCommands->addChild(bindIndexBuffer);
-            drawCommands->addChild(drawIndexed);
-            
-            return drawCommands;
-        }
-    };
-}
-
-
-LabelSystemNode::LabelSystemNode(Registry& registry) :
+LabelSystem::LabelSystem(Registry& registry) :
     Inherit(registry)
+{
+    // configure EnTT to automatically add the necessary components when a Widget is constructed
+    registry.write([&](entt::registry& reg)
+        {
+            reg.on_construct<Label>().connect<&LabelSystem::on_construct_Label>(*this);
+            reg.on_destroy<Label>().connect<&LabelSystem::on_destroy_Label>(*this);
+
+            reg.on_construct<LabelStyle>().connect<&LabelSystem::on_construct_LabelStyle>(*this);
+            reg.on_destroy<LabelStyle>().connect<&LabelSystem::on_destroy_LabelStyle>(*this);
+
+            auto e = reg.create();
+            reg.emplace<Label::Dirty>(e);
+            reg.emplace<LabelStyle::Dirty>(e);
+
+            // a default style for labels that don't have one
+            _defaultStyleEntity = reg.create();
+            reg.emplace<LabelStyle>(_defaultStyleEntity);
+        });
+
+    _renderFunction = [&](WidgetInstance& i)
+        {
+            auto& label = i.registry.get<Label>(i.entity);
+
+            auto&& [style, styleDetail] = i.registry.get<LabelStyle, detail::LabelStyleDetail>(
+                label.style != entt::null ? label.style : _defaultStyleEntity);
+
+            ImGui::SetCurrentContext(i.context);
+
+
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, style.borderSize);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ style.padding.x, style.padding.y });
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(style.borderColor[0], style.borderColor[1], style.borderColor[2], style.borderColor[3]));
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(style.backgroundColor[0], style.backgroundColor[1], style.backgroundColor[2], style.backgroundColor[3]));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(style.textColor[0], style.textColor[1], style.textColor[2], style.textColor[3]));
+            ImGui::SetNextWindowPos(ImVec2{ i.position.x + style.offset.x, i.position.y + style.offset.y }, ImGuiCond_Always, ImVec2{ style.pivot.x, style.pivot.y });
+            ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
+
+#ifdef USE_DYNAMIC_FONTS
+            // Load the font if necessary
+            auto& font = styleDetail.fonts[i.viewID];
+            if (font == nullptr && !styleDetail.fontName.empty())
+            {
+                font = getOrCreateFont(styleDetail.fontName, i.context);
+            }
+
+            ImGui::PushFont(font, style.textSize);
+#endif
+            ImGuiEx::TextOutlined(
+                ImVec4(style.outlineColor[0], style.outlineColor[1], style.outlineColor[2], style.outlineColor[3]),
+                style.outlineSize,
+                label.text.c_str());
+
+#ifdef USE_DYNAMIC_FONTS
+            ImGui::PopFont();
+#endif
+
+            auto size = ImGui::GetWindowSize();
+
+            ImGui::End();
+            ImGui::PopStyleColor(3);
+            ImGui::PopStyleVar(2);
+
+            // experimental: callout lines
+            if (false)
+            {
+                ImVec2 a{ i.position.x, i.position.y };
+                ImVec2 b{ i.position.x + style.offset.x, i.position.y + style.offset.y };
+                ImVec2 UL = { 0.0, 0.0 };
+
+                ImGui::SetNextWindowPos(ImVec2(0, 0));
+                ImGui::SetNextWindowSize(ImVec2{ std::max(a.x, b.x), std::max(a.y, b.y) });
+                auto flags = (i.windowFlags | ImGuiWindowFlags_NoBackground) & ~ImGuiWindowFlags_AlwaysAutoResize;
+                ImGui::Begin((i.uid + "_callout").c_str(), nullptr, flags);
+                auto* drawList = ImGui::GetWindowDrawList();
+                auto calloutColor = style.borderColor.as(Color::ABGR);
+                ImVec2 start{ a.x - UL.x, a.y - UL.y };
+                ImVec2 end{ b.x - UL.x, b.y - UL.y };
+                drawList->AddLine(start, end, calloutColor, style.borderSize);
+                ImGui::End();
+            }
+
+            // update a decluttering record to reflect our widget's size
+            if (auto* dc = i.registry.try_get<Declutter>(i.entity))
+            {
+                dc->rect = Rect(size.x, size.y);
+            }
+        };
+}
+
+void
+LabelSystem::initialize(VSGContext& vsg)
 {
     //nop
 }
 
 void
-LabelSystemNode::initialize(VSGContext& vsgcontext)
+LabelSystem::update(VSGContext& vsg)
 {
-    // For now we must have a default font set.
-    if (vsgcontext->defaultFont == nullptr)
-        return;
+    // process any objects marked dirty
+    _registry.read([&](entt::registry& reg)
+        {
+            Label::eachDirty(reg, [&](entt::entity e)
+                {
+                });
 
-    // use the VSG stock shaders for text:
-    auto& options = vsgcontext->readerWriterOptions;
-    auto shaderSet = options->shaderSets["text"] = vsg::createTextShaderSet(options);
+            LabelStyle::eachDirty(reg, [&](entt::entity e)
+                {
+                    auto& style = reg.get<LabelStyle>(e);
+                    auto& styleDetail = reg.get<detail::LabelStyleDetail>(e);
+                    if (styleDetail.fontName != style.fontName)
+                    {
+                        styleDetail.fonts.fill(nullptr);
+                        styleDetail.fontName = style.fontName;
+                    }
+                });
+        });
+}
 
-    // Configure the text shader set to turn off depth testing
-    auto depthStencilState = vsg::DepthStencilState::create();
-    depthStencilState->depthTestEnable = VK_FALSE;
-    depthStencilState->depthWriteEnable = VK_FALSE;
-    shaderSet->defaultGraphicsPipelineStates.push_back(depthStencilState);
-
-    auto config = vsg::GraphicsPipelineConfigurator::create(shaderSet);
-
-    // Taken from vsg::CpuLayoutTechnique
-    config->enableArray("inPosition", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    config->enableArray("inColor", VK_VERTEX_INPUT_RATE_INSTANCE, 16);
-    config->enableArray("inOutlineColor", VK_VERTEX_INPUT_RATE_INSTANCE, 16);
-    config->enableArray("inOutlineWidth", VK_VERTEX_INPUT_RATE_INSTANCE, 4);
-    config->enableArray("inTexCoord", VK_VERTEX_INPUT_RATE_VERTEX, 12);
-
-    // set up sampler for the font's texture atlas.
-    auto sampler = vsg::Sampler::create();
-    sampler->magFilter = VK_FILTER_LINEAR;
-    sampler->minFilter = VK_FILTER_LINEAR;
-    sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-    sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
-    sampler->borderColor = VK_BORDER_COLOR_INT_TRANSPARENT_BLACK;
-    sampler->anisotropyEnable = VK_FALSE; // don't need it since we're "billboarding"
-    sampler->maxLod = 12.0; // generate mipmaps up to level 12
-
-    if (vsgcontext->sharedObjects)
-        vsgcontext->sharedObjects->share(sampler);
-
-    // this will prompt the creation of a descriptor image and associated bind command
-    // for the texture atlas
-    config->assignTexture("textureAtlas", vsgcontext->defaultFont->atlas, sampler);
-
-    // cook it
-    config->init();
-
-    // copies any state commands from the configurator to the state group;
-    // this will include the texture bind (the sampler) and the pipeline bind itself.
-    auto stategroup = vsg::StateGroup::create();
-    config->copyTo(stategroup, vsgcontext->sharedObjects);
-
-    // Initialize GraphicsPipeline from the data in the configuration.
-    // Copy the state commands into our pipeline container.
-    // TODO: one pipeline per font...?
-    pipelines.resize(1);
-    pipelines[0].config = config;
-    pipelines[0].commands = vsg::Commands::create();
-    for(auto& child : stategroup->stateCommands)
-        pipelines[0].commands->children.push_back(child);
+ImFont*
+LabelSystem::getOrCreateFont(const std::string& fontName, ImGuiContext* imgc)
+{
+    auto& fonts = _fontsCache[imgc];
+    auto& font = fonts[fontName].font;
+    if (font == nullptr)
+    {
+#ifdef USE_DYNAMIC_FONTS
+        font = ImGui::GetIO().Fonts->AddFontFromFileTTF(fontName.c_str());
+#endif
+    }
+    return font;
 }
 
 void
-LabelSystemNode::createOrUpdateNode(const Label& label, detail::BuildInfo& data, VSGContext& vsgcontext) const
+LabelSystem::on_construct_Label(entt::registry& r, entt::entity e)
 {
-    // bail out if initialization failed
-    if (pipelines.empty())
+    (void)r.get_or_emplace<ActiveState>(e);
+    (void)r.get_or_emplace<Visibility>(e);
+
+    auto& label = r.get<Label>(e);
+    label.owner = e;
+    label.dirty(r);
+
+    if (r.all_of<Widget>(e))
     {
-        Log()->warn("Labels will not display; no default font set in VSGContext");
-        return;
+        Log()->warn("LabelSystem: you added a Label to an entity already containing a Widget; stealing your Widget!");
     }
 
-    bool rebuild = data.existing_node == nullptr;
-
-    if (data.existing_node)
-    {
-        auto textNode = util::find<vsg::Text>(data.existing_node);
-        if (textNode)
-        {
-            auto text = static_cast<vsg::stringValue*>(textNode->text.get());
-            auto layout = static_cast<vsg::StandardLayout*>(textNode->layout.get());
-
-            rebuild =
-                text->value() != label.text ||
-                layout->outlineWidth != label.style.outlineSize ||
-                layout->horizontalAlignment != to_vsg(label.style.horizontalAlignment) ||
-                layout->verticalAlignment != to_vsg(label.style.verticalAlignment);
-        }
-        else
-        {
-            rebuild = true;
-        }
-    }
-
-    if (rebuild)
-    {
-        if (label.text.empty())
-        {
-            data.new_node = vsg::Node::create();
-        }
-        else
-        {
-            auto font = vsgcontext->defaultFont;
-            if (!label.style.font.empty())
-            {
-                auto iter = _fontCache.find(label.style.font);
-                if (iter == _fontCache.end())
-                {
-                    font = vsg::read_cast<vsg::Font>(label.style.font, vsgcontext->readerWriterOptions);
-                    if (!font)
-                    {
-                        Log()->warn("Failed to load font: {}", label.style.font);
-                        font = vsgcontext->defaultFont; // fallback to default font
-                    }
-                    _fontCache[label.style.font] = font;
-                }
-            }
-
-
-            // We are doing our own billboarding with the PixelScaleTransform
-            const float nativeSize = 128.0f;
-            auto layout = vsg::StandardLayout::create();
-            layout->billboard = false; // disabled intentionally
-            layout->position = to_vsg(label.style.pixelOffset);
-            layout->horizontal = vsg::vec3(nativeSize, 0.0f, 0.0f);
-            layout->vertical = vsg::vec3(0.0f, nativeSize, 0.0f);
-            layout->color = vsg::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-            layout->outlineWidth = label.style.outlineSize;
-            layout->outlineColor = vsg::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-            layout->horizontalAlignment = to_vsg(label.style.horizontalAlignment);
-            layout->verticalAlignment = to_vsg(label.style.verticalAlignment);
-
-            // Share this since it should be the same for everything
-            if (vsgcontext->sharedObjects)
-                vsgcontext->sharedObjects->share(layout);
-
-            auto valueBuffer = vsg::stringValue::create(label.text);
-
-            auto textNode = vsg::Text::create();
-            textNode->font = font; // this has to be set or nothing shows up, don't know why yet
-            textNode->text = valueBuffer;
-            textNode->layout = layout;
-            textNode->technique = RockysCpuLayoutTechnique::create(); // one per label yes
-            textNode->setup(LABEL_MAX_NUM_CHARS, vsgcontext->readerWriterOptions); // allocate enough space for max possible characters?
-
-            // don't need this since we're using the custom technique
-            textNode->shaderSet = {};
-
-            auto ssg = ScreenSpaceGroup::create();
-            ssg->vsgcontext = vsgcontext;
-            ssg->scale = label.style.pointSize / (double)nativeSize;
-            ssg->addChild(textNode);
-            data.new_node = ssg;
-        }
-    }
-
-    else
-    {
-        auto ssg = util::find<ScreenSpaceGroup>(data.existing_node);
-        if (ssg)
-        {
-            ssg->scale = label.style.pointSize / 128; // nativeSize
-        }
-    }
+    auto& widget = r.get_or_emplace<Widget>(e);
+    widget.render = _renderFunction;
 }
+
+void
+LabelSystem::on_destroy_Label(entt::registry& r, entt::entity e)
+{
+    //nop
+}
+
+void
+LabelSystem::on_construct_LabelStyle(entt::registry& r, entt::entity e)
+{
+    auto& style = r.get<LabelStyle>(e);
+    style.owner = e;
+    style.dirty(r);
+
+    r.emplace<detail::LabelStyleDetail>(e);
+}
+
+void
+LabelSystem::on_destroy_LabelStyle(entt::registry& r, entt::entity e)
+{
+    r.remove<detail::LabelStyleDetail>(e);
+}
+

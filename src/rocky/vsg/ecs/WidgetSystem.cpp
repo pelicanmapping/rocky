@@ -14,7 +14,6 @@
 #include <rocky/ecs/Widget.h>
 #include <rocky/ecs/Visibility.h>
 #include <imgui.h>
-#include <rocky/vsg/imgui/ImGuiIntegration.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -26,15 +25,15 @@ namespace
         const std::string uid = std::to_string((std::uintptr_t)this);
         ViewLocal<ImVec2> screen;
         ImVec2 windowSize = { -1, -1 };
+        WidgetRenderable() {
+            screen.fill({ -1.0, -1.0 });
+        }
     };
 
     void on_construct_Widget(entt::registry& r, entt::entity e)
     {
-        if (!r.all_of<ActiveState>(e))
-            r.emplace<ActiveState>(e);
-
-        if (!r.all_of<Visibility>(e))
-            r.emplace<Visibility>(e);
+        (void)r.get_or_emplace<ActiveState>(e);
+        (void)r.get_or_emplace<Visibility>(e);
 
         r.emplace<WidgetRenderable>(e);
     }
@@ -63,7 +62,7 @@ WidgetSystemNode::initialize(VSGContext& context)
     // register me as a gui rendering callback.
     auto recorder = [this](RenderingState& rs, void* imguiContext)
         {
-            auto [lock, registry] = _registry.read();
+            auto [lock, reg] = _registry.read();
 
             const int defaultWindowFlags =
                 ImGuiWindowFlags_AlwaysAutoResize |
@@ -74,46 +73,28 @@ WidgetSystemNode::initialize(VSGContext& context)
                 ImGuiWindowFlags_NoFocusOnAppearing |
                 ImGuiWindowFlags_NoSavedSettings;
 
-            auto view = registry.view<Widget, WidgetRenderable, TransformDetail, Visibility, ActiveState>();
+            auto view = reg.view<Widget, WidgetRenderable, TransformDetail, Visibility, ActiveState>();
             for (auto&& [entity, widget, renderable, xdetail, visibility, active] : view.each())
             {
-                auto text = widget.text;
-
                 if (visible(visibility, rs) && xdetail.passingCull(rs))
                 {
-                    WidgetInstance i{
-                        widget,
-                        renderable.uid,
-                        registry,
-                        entity,
-                        defaultWindowFlags,
-                        renderable.screen[rs.viewID],
-                        renderable.windowSize,
-                        (ImGuiContext*)imguiContext,
-                        rs.viewID
-                    };
-
                     if (widget.render)
                     {
+                        WidgetInstance i{
+                               widget,
+                               renderable.uid,
+                               reg,
+                               entity,
+                               defaultWindowFlags,
+                               renderable.screen[rs.viewID],
+                               (ImGuiContext*)imguiContext,
+                               rs.viewID
+                        };
+
                         // Note: widget render needs to call ImGui::SetCurrentContext(i.context)
                         // because of the DLL boundary
                         widget.render(i);
                     }
-
-                    else
-                    {
-                        const ImVec4 outlineColor(0.04f, 0.04f, 0.04f, 1.0f);
-                        ImGuiContextScope s(i.context);
-                        ImGui::SetNextWindowPos(ImVec2(i.position.x - i.size.x / 2, i.position.y - i.size.y / 2));
-                        ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
-                        ImGuiEx::TextOutlined(outlineColor, 1, text);
-                        i.size = ImGui::GetWindowSize();
-                        ImGui::End();
-                    }
-
-                    ROCKY_SOFT_ASSERT(i.size.x > 0 && i.size.y > 0,
-                        "DEVEL ERROR: Widget::render must set instance size prior to ImGui::End (e.g., i.size = ImGui::GetWindowSize)");
-
                 }
             }
         };

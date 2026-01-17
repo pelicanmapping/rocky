@@ -52,7 +52,7 @@ auto Demo_LineFeatures = [](Application& app)
             feature_view.styles.line.color = Color::Yellow;
             feature_view.styles.line.width = 2.0f;
             feature_view.styles.line.resolution = 10000.0f;
-            feature_view.styles.line.depthOffset = 5000.0f;
+            feature_view.styles.line.depthOffset = 12000.0f;
 
             auto prims = feature_view.generate(app.mapNode->srs());
 

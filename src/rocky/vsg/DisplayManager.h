@@ -13,7 +13,6 @@
 namespace ROCKY_NAMESPACE
 {
     class Application;
-    class ImGuiContextGroup;
 
     //! Return value for pointAtWindowCoords(viewer) method
     struct DisplayGeoPoint

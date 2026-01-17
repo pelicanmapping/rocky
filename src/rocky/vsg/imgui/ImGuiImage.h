@@ -74,7 +74,7 @@ namespace ROCKY_NAMESPACE
         float sin_a = sinf(glm::radians(rotationDegrees));
 
         ImVec2 half_size = ImVec2(size.x * 0.5f, size.y * 0.5f);
-        
+
         // 4 corners relative to center (unrotated)
         ImVec2 corners[4] = {
             ImVec2(-half_size.x, -half_size.y),
@@ -84,25 +84,35 @@ namespace ROCKY_NAMESPACE
         };
 
         ImVec2 center(window->DC.CursorPos.x + half_size.x, window->DC.CursorPos.y + half_size.y);
-
+        
         // Rotate + translate corners
         for (int i = 0; i < 4; ++i)
         {
             float x = corners[i].x * cos_a - corners[i].y * sin_a;
             float y = corners[i].x * sin_a + corners[i].y * cos_a;
+
+            // clamping (optional?)
+            if (fabs(x) > half_size.x) x *= (half_size.x / fabs(x));
+            if (fabs(y) > half_size.y) y *= (half_size.y / fabs(y));
+
             corners[i].x = center.x + x;
             corners[i].y = center.y + y;
         }
 
+        //const ImRect bb(
+        //    ImVec2(
+        //        std::min({ corners[0].x, corners[1].x, corners[2].x, corners[3].x }),
+        //        std::min({ corners[0].y, corners[1].y, corners[2].y, corners[3].y })),
+        //    ImVec2(
+        //        std::max({ corners[0].x, corners[1].x, corners[2].x, corners[3].x }),
+        //        std::max({ corners[0].y, corners[1].y, corners[2].y, corners[3].y })));
+
         const ImRect bb(
-            ImVec2(
-                std::min({ corners[0].x, corners[1].x, corners[2].x, corners[3].x }),
-                std::min({ corners[0].y, corners[1].y, corners[2].y, corners[3].y })),
-            ImVec2(
-                std::max({ corners[0].x, corners[1].x, corners[2].x, corners[3].x }),
-                std::max({ corners[0].y, corners[1].y, corners[2].y, corners[3].y })));
+            ImVec2(center.x - half_size.x, center.y - half_size.y),
+            ImVec2(center.x + half_size.x, center.y + half_size.y));
 
         ImGui::ItemSize(bb);
+
         if (!ImGui::ItemAdd(bb, 0))
             return;
 

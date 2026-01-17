@@ -518,6 +518,7 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
                     };
 
                     ImGui::SetCurrentContext(imguicontext);
+                    ImGui::GetIO().DeltaTime = ImGui::GetIO().DeltaTime <= 0.0f ? 0.016f : ImGui::GetIO().DeltaTime;
                     ImGui::NewFrame();
                     for (auto& record : vsgcontext->guiRecorders)
                     {

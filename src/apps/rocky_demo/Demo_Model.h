@@ -18,23 +18,24 @@ auto Demo_Model = [](Application& app)
 
     if (entity == entt::null)
     {
-        auto [lock, registry] = app.registry.write();
+        auto [_, reg] = app.registry.write();
 
         // Create a simple VSG model using the Builder.
         vsg::Builder builder;
         vsg::GeometryInfo gi;
         gi.color = to_vsg(Color::Cyan);
         auto node = builder.createSphere(gi, vsg::StateInfo{});
+        app.vsgcontext->compile(node);
 
         // New entity to host our model
-        entity = registry.create();
+        entity = reg.create();
 
         // The model component; we just set the node directly.
-        auto& model = registry.emplace<NodeGraph>(entity);
+        auto& model = reg.emplace<NodeGraph>(entity);
         model.node = node;
 
         // A transform component to place and move it on the map
-        auto& transform = registry.emplace<Transform>(entity);
+        auto& transform = reg.emplace<Transform>(entity);
         transform.position = GeoPoint(SRS::WGS84, 50, 0, 250000);
         transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale));
         transform.topocentric = true;
@@ -44,13 +45,13 @@ auto Demo_Model = [](Application& app)
 
     if (ImGuiLTable::Begin("model"))
     {
-        auto [lock, registry] = app.registry.read();
+        auto [_, reg] = app.registry.read();
 
-        auto& v = registry.get<Visibility>(entity).visible[0];
+        auto& v = reg.get<Visibility>(entity).visible[0];
         if (ImGuiLTable::Checkbox("Show", &v))
-            setVisible(registry, entity, v);
+            setVisible(reg, entity, v);
 
-        auto& transform = registry.get<Transform>(entity);
+        auto& transform = reg.get<Transform>(entity);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();

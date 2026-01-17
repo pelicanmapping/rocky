@@ -9,6 +9,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    struct TransformDetail;
+
     /**
     * Renders a point(s) geometry.
     */

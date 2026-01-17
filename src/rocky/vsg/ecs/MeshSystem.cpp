@@ -5,6 +5,7 @@
  * MIT License
  */
 #include "MeshSystem.h"
+#include "ECSVisitors.h"
 #include "../PipelineState.h"
 
 using namespace ROCKY_NAMESPACE;

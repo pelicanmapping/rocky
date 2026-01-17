@@ -68,7 +68,9 @@ if (NOT TARGET imgui::imgui)
                     
                 # make imgui depend on sources:
                 set_property(TARGET imgui::imgui APPEND PROPERTY
-                    INTERFACE_LINK_LIBRARIES imgui::sources)          
+                    INTERFACE_LINK_LIBRARIES imgui::sources)         
+                    
+                assign_source_groups("Sources (ImGui)" "${CMAKE_CURRENT_SOURCE_DIR}" ${IMGUI_SOURCES})
             endif()
         else()
             if(NOT ImGui_FIND_QUIETLY)

@@ -11,14 +11,14 @@
 namespace ROCKY_NAMESPACE
 {
     /** ECS component that holds a VSG node */
-    struct NodeGraph : public ComponentBase
+    struct NodeGraph : public Component<NodeGraph>
     {
         vsg::ref_ptr<vsg::Node> node;
     };
 
 
     /** ECS Component that holds a VSG sampler/texture */
-    struct MeshTexture : public ComponentBase2<MeshTexture>
+    struct MeshTexture : public Component<MeshTexture>
     {
         vsg::ref_ptr<vsg::ImageInfo> imageInfo;
     };

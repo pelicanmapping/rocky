@@ -12,8 +12,7 @@
 namespace ROCKY_NAMESPACE
 {
     //! Settings when constructing a similar set of line drawables
-    //! Note, this structure is mirrored on the GPU so alignment rules apply!
-    struct ROCKY_EXPORT LineStyle : public ComponentBase2<LineStyle>
+    struct ROCKY_EXPORT LineStyle : public Component<LineStyle>
     {
         // if alpha is zero, use the line's per-vertex color instead
         Color color = Color{ 1, 1, 1, 1 };
@@ -33,7 +32,7 @@ namespace ROCKY_NAMESPACE
     };
 
 
-    struct ROCKY_EXPORT LineGeometry : public ComponentBase2<LineGeometry>
+    struct ROCKY_EXPORT LineGeometry : public Component<LineGeometry>
     {
         //! Goemetry configuration
         LineTopology topology = LineTopology::Strip;
@@ -59,7 +58,7 @@ namespace ROCKY_NAMESPACE
     * Line string component - holds one or more separate line string geometries
     * sharing the same style.
     */
-    class ROCKY_EXPORT Line : public ComponentBase2<Line>
+    class ROCKY_EXPORT Line : public Component<Line>
     {
     public:
         //! Entity holding the LineStyle to use

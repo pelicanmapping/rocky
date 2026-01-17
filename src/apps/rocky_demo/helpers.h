@@ -38,6 +38,12 @@ namespace ImGui
 }
 #endif
 
+#ifdef _WIN32
+#define ROCKY_DEMO_DEFAULT_FONT "C:/Windows/Fonts/calibri.ttf"
+#else
+#define ROCKY_DEMO_DEFAULT_FONT "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
+#endif
+
 // handy nice-looking table with names on the left.
 namespace ImGuiLTable
 {
@@ -282,6 +288,47 @@ namespace ImGuiLTable
         }
         return changed;
     }
+
+    static bool StringCombo(const char* label, std::string& selected, const std::vector<std::string>& strings)
+    {
+        ImGui::TableNextColumn();
+        ImGui::Text("%s", label);
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        bool changed = false;
+
+        // Present an ImGui Combo for selecting the font:
+        int currentFontIndex = -1;
+        for (size_t i = 0; i < strings.size(); ++i)
+        {
+            if (strings[i] == selected)
+            {
+                currentFontIndex = static_cast<int>(i);
+                break;
+            }
+        }
+        if (currentFontIndex >= 0)
+        {
+            std::string s("##" + std::string(label));
+            if (ImGui::BeginCombo(s.c_str(), strings[currentFontIndex].c_str()))
+            {
+                for (size_t i = 0; i < strings.size(); ++i)
+                {
+                    bool active = i == currentFontIndex;
+                    if (ImGui::Selectable(strings[i].c_str(), active))
+                    {
+                        currentFontIndex = (int)i;
+                        selected = strings[i];
+                        changed = true;
+                    }
+                    if (active)
+                        ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+        }
+        return changed;
+    }   
 
     static void End()
     {

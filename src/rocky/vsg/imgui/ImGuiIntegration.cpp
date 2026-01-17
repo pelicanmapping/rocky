@@ -4,8 +4,6 @@
  * MIT License
  */
 #include "ImGuiIntegration.h"
-#include <imgui_internal.h>
-#include <imgui_impl_vulkan.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -39,35 +37,3 @@ void RenderImGuiContext::traverse(vsg::RecordTraversal& record) const
     Inherit::traverse(record);
 }
 
-
-
-#if 0
-void ImGuiMultiContextRenderer::traverse(vsg::RecordTraversal& record) const
-{
-    // first assemble the draw list for each context
-    for (auto& ci : _contextInfos)
-    {
-        ImGui::SetCurrentContext(ci.imguiContext);
-        ImGui::NewFrame();
-        ci.node->accept(record);
-    }
-
-    // then render each context
-    for (auto& ci : _contextInfos)
-    {
-        ImGui::SetCurrentContext(ci.imguiContext);
-        ImGui::Render();
-    }
-
-    // finally dispatch the final draw lists to vulkan
-    for (auto& ci : _contextInfos)
-    {
-        ImGui::SetCurrentContext(ci.imguiContext);
-        auto* drawData = ImGui::GetDrawData();
-        if (drawData)
-        {
-            ImGui_ImplVulkan_RenderDrawData(drawData, *(record.getCommandBuffer()));
-        }
-    }
-}
-#endif

@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/vsg/Common.h>
 #include <rocky/vsg/Polyfill.h>
+#include <rocky/vsg/VSGUtils.h>
 #include <rocky/Context.h>
 #include <rocky/Callbacks.h>
 #include <rocky/Rendering.h>

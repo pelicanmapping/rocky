@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE
 
 
     //! Mesh geometry component
-    struct MeshGeometry : public ComponentBase2<MeshGeometry>
+    struct MeshGeometry : public Component<MeshGeometry>
     {
         //! Separate arrays containing verts, colors, UVs, and indices.
         std::vector<glm::dvec3> vertices;
@@ -41,7 +41,7 @@ namespace ROCKY_NAMESPACE
     };
 
     //! Mesh style component
-    struct MeshStyle : public ComponentBase2<MeshStyle>
+    struct MeshStyle : public Component<MeshStyle>
     {
         //! Default color for the mesh
         Color color = { 1, 1, 1, 1 };
@@ -76,7 +76,7 @@ namespace ROCKY_NAMESPACE
     };
 
     //! Mesh comonent
-    struct Mesh : public ComponentBase2<Mesh>
+    struct Mesh : public Component<Mesh>
     {
         //! Entity hosting the MeshGeometry to use
         entt::entity geometry = entt::null;

@@ -10,32 +10,16 @@
 
 namespace ROCKY_NAMESPACE
 {
-    // old type. upgrade these to ComponentBase2.
-    struct ComponentBase
-    {
-        //! Revision, for synchronizing this component with another
-        int revision = 0;
-
-        //! Bump the revision. It's up to other systems to detect a change
-        virtual void dirty()
-        {
-            ++revision;
-        }
-
-        entt::entity attach_point = entt::null;
-
-        entt::entity owner = entt::null;
-    };
-
     // Base component type with built-in dirty tracking.
     // NOTE: Yes, we need the CRTP here so that the "Dirty" object is unique for each derived type!
     template<class DERIVED>
-    struct ComponentBase2
+    struct Component
     {
         //! The entity that owns this component
         entt::entity owner = entt::null;
-       
+
         // NOTE: RELIES on the System to install the Dirty singleton!
+        // NOTE: type of this struct is Component<DERIVED>::Dirty
         struct Dirty
         {
             std::mutex mutex;
@@ -76,27 +60,6 @@ namespace ROCKY_NAMESPACE
                     func(e);
                 }
             }
-        }
-    };
-
-    /**
-     * ECS Component that holds a shared pointer to another component type.
-     * This is useful for re-using a single basic component with different
-     * transforms, visibility states, etc.
-     *
-     * WARNING -- EXPIERMENTAL -- API MAY CHANGE OR DISAPPEAR WITHOUT NOTICE!
-     */
-    template<typename T>
-    struct Shareable : public ComponentBase
-    {
-        //! Shared pointer to the shared component
-        std::shared_ptr<T> pointer;
-
-        //! Construct a shared component. The pointer must be non-null
-        //! at the time of construction and must stay non-null.
-        [[deprecated("EXPERIMENTAL FEATURE")]]
-        Shareable<T>(std::shared_ptr<T> p) : pointer(p) {
-            ROCKY_HARD_ASSERT(p != nullptr);
         }
     };
 }

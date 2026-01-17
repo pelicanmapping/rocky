@@ -16,6 +16,11 @@ using namespace std::chrono_literals;
 
 namespace
 {
+    struct SimulatedPlatform
+    {
+        std::string name;
+    };
+
     // Simple simulation system runinng in its own thread.
     // It uses a MotionSystem to process Motion components and update
     // their corresponding Transform components.
@@ -57,53 +62,58 @@ namespace
 
         auto render_widget = [&image, &showPosition, context](WidgetInstance& i)
             {
-                Transform& t = i.registry.get<Transform>(i.entity);
+                auto& platform = i.registry.get<SimulatedPlatform>(i.entity);
+                auto& xform = i.registry.get<Transform>(i.entity);
 
-                auto pointECEF = t.position.transform(SRS::ECEF);
-
-                i.position.x += (i.size.x / 2) - (image.size().y / 2);
-                i.position.y += (i.size.y / 2) - (image.size().y / 2);
+                auto pointECEF = xform.position.transform(SRS::ECEF);
 
                 ImGui::SetCurrentContext(i.context);
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.35f));
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.65f));
                 ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
 
-                i.renderWindow([&]()
+                ImGui::SetNextWindowPos(
+                    ImVec2{ i.position.x - image.size().x/2, i.position.y - image.size().y / 2 },
+                    ImGuiCond_Always,
+                    ImVec2{ 0.0f, 0.0f }); // pivot point in the upper left
+
+                ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
+                {
+                    // calculate the bearing for our icon:
+                    auto& motion = i.registry.get<MotionGreatCircle>(i.entity);
+                    auto heading = pointECEF.srs.ellipsoid().heading(pointECEF, motion.normalAxis);
+
+                    if (ImGui::BeginTable("asset", 2))
                     {
-                        // calculate the bearing for our icon:
-                        auto& motion = i.registry.get<MotionGreatCircle>(i.entity);
-                        auto heading = pointECEF.srs.ellipsoid().heading(pointECEF, motion.normalAxis);
+                        ImGui::TableNextColumn();
+                        image.render(image.size(), heading);
 
-                        if (ImGui::BeginTable("asset", 2))
+                        ImGui::TableNextColumn();
+                        ImGui::Text("%s", platform.name.c_str());
+
+                        if (showPosition)
                         {
-                            ImGui::TableNextColumn();
-                            image.render(image.size(), heading);
-
-                            ImGui::TableNextColumn();
-                            ImGui::Text("ID: %s", i.widget.text.c_str());
-
-                            if (showPosition)
-                            {
-                                auto pointWGS84 = pointECEF.transform(SRS::WGS84);
-                                ImGui::Separator();
-                                ImGui::Text("Pos: %.2f, %.2f", pointWGS84.y, pointWGS84.x);
-                                ImGui::Separator();
-                                ImGui::Text("Alt: %.0f m", pointWGS84.z);
-                                ImGui::Separator();
-                                ImGui::Text("Hdg: %.1f", heading);
-                            }
-
-                            ImGui::EndTable();
+                            auto pointWGS84 = pointECEF.transform(SRS::WGS84);
+                            ImGui::Separator();
+                            ImGui::Text("Pos: %.2f, %.2f", pointWGS84.y, pointWGS84.x);
+                            ImGui::Separator();
+                            ImGui::Text("Alt: %.0f m", pointWGS84.z);
+                            ImGui::Separator();
+                            ImGui::Text("Hdg: %.1f", heading);
                         }
-                    });
+
+                        ImGui::EndTable();
+                    }
+                }
+                auto size = ImGui::GetWindowSize();
+                ImGui::End();
 
                 ImGui::PopStyleColor(2);
                 ImGui::PopStyleVar();
 
                 // update decluttering volume
                 auto& dc = i.registry.get<Declutter>(i.entity);
-                dc.rect = Rect(i.size.x, i.size.y);
+                dc.rect = Rect(size.x, size.y);
             };
 
         auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
@@ -112,8 +122,8 @@ namespace
         auto dropEntity = registry.create();
 
         auto& dropStyle = registry.emplace<LineStyle>(dropEntity);
-        dropStyle.width = 1.5f;
-        dropStyle.color = Color{ 0.5f, 0.4f, 0.4f, 1.0f };
+        dropStyle.width = 2.0f;
+        dropStyle.color = Color{ 0.8f, 0.4f, 0.4f, 1.0f };
 
         auto& dropGeom = registry.emplace<LineGeometry>(dropEntity);
         dropGeom.points = { {0.0, 0.0, 0.0}, {0.0, 0.0, -1e6} };
@@ -128,8 +138,11 @@ namespace
         {
             float t = (float)i / (float)(count);
 
-            // Create a host entity:
+            // Create a host entity & platform:
             auto entity = registry.create();
+
+            auto& platform = registry.emplace<SimulatedPlatform>(entity);
+            platform.name = std::string("Sim " + std::to_string(i + 1));
 
             double lat = -80.0 + rand_unit(mt) * 160.0;
             double lon = -180 + rand_unit(mt) * 360.0;
@@ -149,9 +162,8 @@ namespace
             motion.velocity = { -7500 + rand_unit(mt) * 15000, 0.0, 0.0 };
             motion.normalAxis = pos_ecef.srs.ellipsoid().rotationAxis(pos_ecef, initial_bearing);
 
-            // Add a labeling widget:
+            // Add a widget to render the HUD:
             auto& widget = registry.emplace<Widget>(entity);
-            widget.text = std::to_string(i);
             widget.render = render_widget;
 
             // Add the dropline for this entity:

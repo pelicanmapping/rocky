@@ -42,22 +42,22 @@ namespace
 
         app.registry.write([&](entt::registry& r)
             {
-                auto render = [](WidgetInstance& i)
-                    {
-                        ImGuiContextScope scope(i.context);
-                        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, i.size.x / 2.0);
-                        i.renderWindow([&i]() { ImGui::Text("%s", i.widget.text.c_str()); });
-                        ImGui::PopStyleVar(2);
-                    };
+                auto& style = r.emplace<LabelStyle>(r.create());
+
+                //auto render = [](WidgetInstance& i)
+                //    {
+                //        ImGuiContextScope scope(i.context);
+                //        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                //        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, i.size.x / 2.0);
+                //        i.renderWindow([&i]() { ImGui::Text("%s", i.widget.text.c_str()); });
+                //        ImGui::PopStyleVar(2);
+                //    };
 
                 auto add = [&](const GeoPoint& pos, const std::string& text)
                     {
                         auto entity = enode->entities.emplace_back(r.create());
                         r.emplace<Transform>(entity).position = pos;
-                        auto& widget = r.emplace<Widget>(entity);
-                        widget.text = text;
-                        widget.render = render;
+                        r.emplace<Label>(entity, text, style);
                     };
 
                 add(GeoPoint(SRS::ECEF, 0, 0, (len / 2)), "+Z");

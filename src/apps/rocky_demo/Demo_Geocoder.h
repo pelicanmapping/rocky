@@ -17,27 +17,38 @@ auto Demo_Geocoder = [](Application& app)
     static entt::entity placemark = entt::null;
     static entt::entity outline = entt::null;
 
+    static auto show = [&](entt::registry& r, bool toggle)
+        {
+            r.get<Visibility>(outline).visible.fill(toggle);
+            r.get<Visibility>(placemark).visible.fill(toggle);
+        };
+
     if (placemark == entt::null)
     {
-        app.registry.write([&](entt::registry& registry)
+        app.registry.write([&](entt::registry& reg)
             {
-                outline = registry.create();
-                auto& geom = registry.emplace<LineGeometry>(outline);
-                auto& style = registry.emplace<LineStyle>(outline);
-                registry.emplace<Line>(outline, geom, style);
+                // configure a line geometry that will display the outline of the selected place:
+                outline = reg.create();
 
-                // Make an entity to host our icon:
-                placemark = registry.create();               
+                auto& geom = reg.emplace<LineGeometry>(outline);
+
+                auto& style = reg.emplace<LineStyle>(outline);
+                style.color = Color::Yellow;
+                style.depthOffset = 9000.0f; //meters
+
+                reg.emplace<Line>(outline, geom, style);
+
+                // configure a label for the selected place:
+                placemark = reg.create();
 
                 // label:
-                auto& widget = registry.emplace<Widget>(placemark);
-                widget.text = "Nowhere";
+                auto& label = reg.emplace<Label>(placemark, "");
 
                 // Transform to place the entity:
-                auto& xform = registry.emplace<Transform>(placemark);
+                auto& xform = reg.emplace<Transform>(placemark);
 
-                // Mark it inactive to start.
-                registry.get<Visibility>(placemark).visible.fill(false);
+                // Mark it invisible to start.
+                show(reg, false);
             });
 
         app.vsgcontext->requestFrame();
@@ -49,12 +60,9 @@ auto Demo_Geocoder = [](Application& app)
         {
             if (ImGuiLTable::InputText("Location:", input_buf, 256, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
             {
-                // disable the placemark:
-                app.registry.read([&](entt::registry& reg)
-                    {
-                        // hide the graphics
-                        reg.get<Visibility>(placemark).visible.fill(false);
-                        reg.get<Visibility>(outline).visible.fill(false);
+                // hide the graphics:
+                app.registry.read([&](entt::registry& reg) {
+                        show(reg, false);
                     });
 
                 std::string input(input_buf);
@@ -120,31 +128,28 @@ auto Demo_Geocoder = [](Application& app)
                                 {
                                     // Outline for location boundary:
                                     FeatureView fgen;
-                                    fgen.styles.line.color = Color::Yellow;
-                                    fgen.styles.line.depthOffset = 9000.0f; //meters
 
                                     fgen.features = { myfeature };
                                     auto primitives = fgen.generate(app.mapNode->srs());
 
                                     app.registry.write([&](entt::registry& reg)
                                         {
-                                            auto& style = reg.get<LineStyle>(outline);
-                                            style = primitives.lineStyle;                                            
-                                            style.dirty(reg);
-
+                                            // awkward. do something about this.
                                             auto& geom = reg.get<LineGeometry>(outline);
-                                            geom = primitives.lineGeom;
+                                            geom.topology = primitives.lineGeom.topology;
+                                            geom.points = primitives.lineGeom.points;
+                                            geom.srs = primitives.lineGeom.srs;
+                                            geom.colors = primitives.lineGeom.colors;
                                             geom.dirty(reg);
 
-                                            reg.get<Visibility>(outline).visible.fill(true);
-                                            reg.get<Visibility>(placemark).visible.fill(true);
+                                            show(reg, true);
 
                                             // update the label and the transform:
-                                            auto&& [xform, widget] = reg.get<Transform, Widget>(placemark);
+                                            auto&& [xform, label] = reg.get<Transform, Label>(placemark);
 
                                             auto text = display_name;
                                             util::replaceInPlace(text, ", ", "\n");
-                                            widget.text = text;
+                                            label.text = text;
 
                                             xform.position = myfeature.extent.centroid();
                                             xform.dirty();
@@ -160,10 +165,8 @@ auto Demo_Geocoder = [](Application& app)
                     geocoding_task.reset();
                     input_buf[0] = (char)0;
 
-                    app.registry.read([&](entt::registry& registry)
-                        {
-                            registry.get<Visibility>(outline).visible.fill(false);
-                            registry.get<Visibility>(placemark).visible.fill(false);
+                    app.registry.read([&](entt::registry& reg) {
+                            show(reg, false);
                         });
                 }
             }

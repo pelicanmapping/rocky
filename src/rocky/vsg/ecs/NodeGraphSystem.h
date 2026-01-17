@@ -9,21 +9,43 @@
 
 namespace ROCKY_NAMESPACE
 {
+    struct TransformDetail;
+
     /**
     * VSG node that renders Node components (just plain vsg nodes)
     */
-    class ROCKY_EXPORT NodeSystemNode : public vsg::Inherit<detail::SystemNode<NodeGraph>, NodeSystemNode>
+    class ROCKY_EXPORT NodeSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, NodeSystemNode>
     {
     public:
-        NodeSystemNode(Registry& registry) :
-            Inherit(registry)
-        {
-            //nop
-        }
+        NodeSystemNode(Registry& registry);
 
-        void createOrUpdateNode(const NodeGraph& component, detail::BuildInfo& data, VSGContext&) const override
+        //! One-time initialization of the system        
+        void initialize(VSGContext&) override;
+
+        //! Every frame update
+        void update(VSGContext&) override;
+
+        //! VSG record traversal
+        void traverse(vsg::RecordTraversal&) const override;
+
+        //! VSG visitor traversal
+        void traverse(vsg::ConstVisitor& v) const override;
+
+        // vsg::Compilable
+        void compile(vsg::Context& cc) override;
+
+    private:
+        mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
+
+        // render leaf for collecting and drawing meshes
+        struct Drawable
         {
-            data.new_node = component.node;
-        }
+            vsg::Node* node = nullptr;
+            TransformDetail* xformDetail = nullptr;
+            Drawable(vsg::Node* node_, TransformDetail* xformDetail) : node(node_), xformDetail(xformDetail) {}
+        };
+
+        using DrawList = std::vector<Drawable>;
+        mutable DrawList _drawList;
     };
 }

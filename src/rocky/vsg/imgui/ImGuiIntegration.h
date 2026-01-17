@@ -76,7 +76,7 @@ namespace ROCKY_NAMESPACE
 
     /**
     * Node that renders ImGui commands.
-    * This MUST live under a ImGuiContextGroup in order to work properly.
+    * Add one to a RenderImGuiContext to have it render within that context.
     */
     class ROCKY_EXPORT ImGuiContextNode : public vsg::Inherit<vsg::Node, ImGuiContextNode>
     {
@@ -95,8 +95,7 @@ namespace ROCKY_NAMESPACE
     };
 
     /**
-    * Parent class for ImGuiNode's that has Application integration and represents
-    * each ImGuiNode child in a separate ImGuiContext.
+    * Renders ImGuiContextNode instances in a single VSG window.
     */
     class ROCKY_EXPORT RenderImGuiContext : public vsg::Inherit<RenderImGui, RenderImGuiContext>
     {
@@ -135,7 +134,7 @@ namespace ROCKY_NAMESPACE
     namespace detail
     {
         /**
-        * Node that lives under a RenderImGui node, and invokes any GUI renderers
+        * Node that lives under a RenderImGuiContext node and invokes any GUI renderers
         * installed on the VSGContext (for example, the one used by the WidgetSystem).
         */
         class ImGuiDispatcher : public vsg::Inherit<vsg::Node, ImGuiDispatcher>
@@ -195,8 +194,6 @@ namespace ImGuiEx
 
         return true;
     }
-
-//    static void TextOutlined(const ImVec4& outlineColor, unsigned outlinePixels, const char* fmt, ...) IM_FMTARGS(3);
 
     static bool TextOutlined(const ImVec4& outlineColor, std::string_view text)
     {

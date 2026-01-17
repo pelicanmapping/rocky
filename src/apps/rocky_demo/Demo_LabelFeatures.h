@@ -29,18 +29,9 @@ auto Demo_LabelFeatures = [](Application& app)
     };
     static std::unordered_map<std::string, Candidate> candidates;
     static std::unordered_set<entt::entity> labels;
+    static entt::entity styleEntity = entt::null;
     static bool active = true;
-    static float fontSize = 20.0f;
-    static float minFontSize = 13.0f;
-    static float maxFontSize = 32.0f;
-    static int outlineSize = 2;
-    static int borderSize = 0;
-
-    struct FontData {
-        ImGuiContext* igc = nullptr;
-        ImFont* font = nullptr;
-    };
-    static ViewLocal<FontData> fonts;
+    static float minFontSize = 12.0f, maxFontSize = 32.0f;
 
     if (!status.has_value())
     {
@@ -81,83 +72,30 @@ auto Demo_LabelFeatures = [](Application& app)
         }
 
 
-        auto [lock, registry] = app.registry.write();
+        app.registry.write([&](entt::registry& reg)
+            {
+                styleEntity = reg.create();
+                auto& style = reg.emplace<LabelStyle>(styleEntity);
+                style.fontName = "C:/windows/fonts/arial.ttf";
 
-        static bool appliedFont = false;
-
-        // create an entity for each candidate
-        for (auto& [name, candidate] : candidates)
-        {
-            auto entity = registry.create();
-
-#ifdef ROCKY_HAS_IMGUI
-
-            // attach a component to control decluttering:
-            auto& declutter = registry.emplace<Declutter>(entity);
-            declutter.priority = (float)candidate.pop;
-
-            auto& label = registry.emplace<Widget>(entity);
-
-            label.render = [&, name=std::string(name)](WidgetInstance& i)
+                // create an entity for each candidate
+                for (auto& [name, candidate] : candidates)
                 {
-                    ImGui::SetCurrentContext(i.context);
-                    ImGui::SetNextWindowBgAlpha(0.0f); // fully transparent background
-                    ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, (float)borderSize);
-                    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
-                    ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 1));
-                    ImGui::SetNextWindowPos(ImVec2(i.position.x - i.size.x / 2, i.position.y - i.size.y / 2));
-                    ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
+                    auto entity = reg.create();
 
-#ifdef USE_DYNAMIC_FONTS
-                    // Load the font if necessary
-                    if (fonts[i.viewID].igc != i.context)
-                    {
-                        fonts[i.viewID].font = ImGui::GetIO().Fonts->AddFontFromFileTTF("c:/windows/fonts/arial.ttf");
-                        fonts[i.viewID].igc = i.context;
-                        ImGui::GetIO().FontDefault = fonts[i.viewID].font;
-                    }
-                    ImGui::PushFont(nullptr, fontSize);
-#endif
-                    const ImVec4 outlineColor(0.05f, 0.05f, 0.05f, 1.0f);
-                    ImGuiEx::TextOutlined(outlineColor, outlineSize, name);
+                    auto& label = reg.emplace<Label>(entity, name, style);
 
-#ifdef USE_DYNAMIC_FONTS
-                    ImGui::PopFont();
-#endif
-                    i.size = ImGui::GetWindowSize();
-                    ImGui::End();
-                    ImGui::PopStyleColor(1);
-                    ImGui::PopStyleVar(2);                    
+                    // attach a transform to place the label:
+                    auto& transform = reg.emplace<Transform>(entity);
+                    transform.position = candidate.centroid;
 
-                    // update the decluttering record to reflect our widget's size
-                    auto& dc = i.registry.get<Declutter>(i.entity);
-                    dc.rect = Rect(i.size.x, i.size.y);
-                };
+                    // attach a component to control decluttering:
+                    auto& declutter = reg.emplace<Declutter>(entity);
+                    declutter.priority = (float)candidate.pop;
 
-#else
-
-            // attach a label:
-            auto& label = registry.emplace<Label>(entity);
-            label.text = name;
-            label.style.font = app.vsgcontext->defaultFont;
-            label.style.pointSize = starting_label_size;
-            label.style.outlineSize = 0.2f;
-
-            // attach a component to control decluttering:
-            auto& declutter = registry.emplace<Declutter>(entity);
-            declutter.priority = (float)candidate.pop;
-            // note, 0.75 is points-to-pixels
-            auto width = 0.75f * 0.60f * label.style.pointSize * (float)label.text.size();
-            double height = 0.75 * label.style.pointSize;
-            declutter.rect = Rect(width, height);
-#endif
-
-            // attach a transform to place the label:
-            auto& transform = registry.emplace<Transform>(entity);
-            transform.position = candidate.centroid;
-
-            labels.emplace(entity);
-        }
+                    labels.emplace(entity);
+                }
+            });
 
         app.vsgcontext->requestFrame();
     }
@@ -168,30 +106,34 @@ auto Demo_LabelFeatures = [](Application& app)
         {
             if (ImGuiLTable::Checkbox("Show", &active))
             {
-                auto [lock, registry] = app.registry.write();
-
-                for (auto entity : labels)
-                {                    
-                    if (active)
-                        registry.emplace_or_replace<ActiveState>(entity);
-                    else
-                        registry.remove<ActiveState>(entity);
-                }
+                app.registry.write([&](entt::registry& reg)
+                    {
+                        for (auto entity : labels)
+                        {
+                            if (active)
+                                reg.emplace_or_replace<ActiveState>(entity);
+                            else
+                                reg.remove<ActiveState>(entity);
+                        }
+                    });
             }
 
+            auto [_, reg] = app.registry.read();
+            auto& style = reg.get<LabelStyle>(styleEntity);
+
 #ifdef USE_DYNAMIC_FONTS
-            if (ImGuiLTable::SliderFloat("Font size", &fontSize, minFontSize, maxFontSize, "%.0f"))
+            if (ImGuiLTable::SliderFloat("Font size", &style.textSize, minFontSize, maxFontSize, "%.0f"))
             {
                 app.vsgcontext->requestFrame();
             }
 #endif
 
-            if (ImGuiLTable::SliderInt("Outline size", &outlineSize, 0, 5))
+            if (ImGuiLTable::SliderFloat("Outline size", &style.outlineSize, 0, 5, "%.0f"))
             {
                 app.vsgcontext->requestFrame();
             }
 
-            if (ImGuiLTable::SliderInt("Border size", &borderSize, 0, 2))
+            if (ImGuiLTable::SliderFloat("Border size", &style.borderSize, 0, 2, "%.0f"))
             {
                 app.vsgcontext->requestFrame();
             }

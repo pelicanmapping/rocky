@@ -11,7 +11,7 @@
 
 namespace ROCKY_NAMESPACE
 {
-    struct ROCKY_EXPORT PointStyle : public ComponentBase2<PointStyle>
+    struct ROCKY_EXPORT PointStyle : public Component<PointStyle>
     {
         Color color = Color{ 1, 1, 1, 1 }; // used when useGeometryColors == false
         float width = 3.0f; // pixels; used then useGeometryWidths = false
@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
     };
 
 
-    struct ROCKY_EXPORT PointGeometry : public ComponentBase2<PointGeometry>
+    struct ROCKY_EXPORT PointGeometry : public Component<PointGeometry>
     {
         //! SRS of the points in the points vector (when set)
         SRS srs;
@@ -48,7 +48,7 @@ namespace ROCKY_NAMESPACE
     /**
     * Point(s) component - holds a collection of points
     */
-    class ROCKY_EXPORT Point : public ComponentBase2<Point>
+    class ROCKY_EXPORT Point : public Component<Point>
     {
     public:
         //! Entity holding the PointStyle to use

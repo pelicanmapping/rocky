@@ -7,7 +7,6 @@
 #include <rocky/Common.h>
 #if defined(ROCKY_HAS_IMGUI) && __has_include(<imgui.h>)
 #include <imgui.h>
-#include <rocky/Image.h>
 #include <entt/entt.hpp>
 
 namespace ROCKY_NAMESPACE
@@ -19,10 +18,7 @@ namespace ROCKY_NAMESPACE
     */
     struct Widget
     {
-        //! Default text to display when "render" is not set
-        std::string text;
-
-        //! Custom render function
+        //! Render function
         std::function<void(WidgetInstance&)> render;
     };
 
@@ -36,45 +32,32 @@ namespace ROCKY_NAMESPACE
         entt::entity entity;
         int windowFlags;
         ImVec2 position;
-        ImVec2& size;
         ImGuiContext* context;
         std::uint32_t viewID;
-
-        inline void beginWindow() {
-            ImGui::SetNextWindowPos(ImVec2(position.x - size.x / 2, position.y - size.y / 2));
-            ImGui::Begin(uid.c_str(), nullptr, windowFlags);
-        }
-
-        inline void endWindow() {
-            size = ImGui::GetWindowSize();
-            ImGui::End();
-        }
-
-        //! Submit a widget rendering function (convenience function).
-        //! Don't forget to call ImGui::SetCurrentContext(i.context) or use
-        //! ImGuiContextScope to set the current context before calling this.
-        template<typename FUNC>
-        inline void renderWindow(FUNC&& f) {
-            beginWindow();
-            f();
-            endWindow();
-        }
     };
 
-    /**
-    * RAII helper to set and restore the current ImGui context.
-    */
-    struct ImGuiContextScope
+    //! Helper RAII class for creating an non-styled widget window
+    struct WidgetStyleEmpty
     {
-        ImGuiContext* previous = nullptr;
-        inline ImGuiContextScope(ImGuiContext* newContext)
+        WidgetInstance& _i;
+
+        WidgetStyleEmpty(WidgetInstance& i) : _i(i)
         {
-            previous = ImGui::GetCurrentContext();
-            ImGui::SetCurrentContext(newContext);
+            ImGui::SetCurrentContext(i.context);
+            ImGui::SetNextWindowBgAlpha(0.0f); // fully transparent background
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, (float)0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
+            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 1));
+            ImGui::SetNextWindowPos(ImVec2{ i.position.x, i.position.y }, ImGuiCond_Always, ImVec2{ 0.5f, 0.5f });
+            ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
         }
-        inline ~ImGuiContextScope()
+
+        ~WidgetStyleEmpty()
         {
-            ImGui::SetCurrentContext(previous);
+            //_i.size = ImGui::GetWindowSize();
+            ImGui::End();
+            ImGui::PopStyleColor(1);
+            ImGui::PopStyleVar(2);
         }
     };
 }

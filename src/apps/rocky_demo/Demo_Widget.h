@@ -80,7 +80,6 @@ auto Demo_Widget = [](Application& app)
         entity = registry.create();
 
         auto& widget = registry.emplace<Widget>(entity);
-        widget.text = "I'm a widget.";
 
         widget.render = [&](WidgetInstance& i)
             {
@@ -88,7 +87,7 @@ auto Demo_Widget = [](Application& app)
                 static int some_int = 0;
                 static bool fixed_window_open = false;
 
-                ImGuiContextScope s(i.context);
+                ImGui::SetCurrentContext(i.context);
 
                 i.windowFlags &= ~ImGuiWindowFlags_NoInputs;
                 i.windowFlags &= ~ImGuiWindowFlags_NoBringToFrontOnFocus;
@@ -96,14 +95,14 @@ auto Demo_Widget = [](Application& app)
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7.0f);
                 ImGui::SetNextWindowBgAlpha(1.0f);
 
-                i.renderWindow([&]()
-                    {
-                        ImGui::Text("%s", i.widget.text.c_str());
-                        ImGui::Separator();
-                        ImGui::Text("%s", "Text string");
-                        ImGui::SliderFloat("Slider", &some_float, 0.0f, 1.0f);
-                        ImGui::Checkbox("Show me a fixed-position window", &fixed_window_open);
-                    });
+                ImGui::SetNextWindowPos(ImVec2{ i.position.x, i.position.y }, ImGuiCond_Always, ImVec2{ 0.5f, 0.5f });
+                ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
+                {
+                    ImGui::Text("%s", "I am a widget.");
+                    ImGui::SliderFloat("Slider", &some_float, 0.0f, 1.0f);
+                    ImGui::Checkbox("Show me a fixed-position window", &fixed_window_open);
+                }
+                ImGui::End();
 
                 ImGui::PopStyleVar();
 
@@ -155,28 +154,15 @@ auto Demo_Widget = [](Application& app)
 
     if (ImGuiLTable::Begin("widget_demo"))
     {
-        auto [lock, registry] = app.registry.read();
+        auto [lock, reg] = app.registry.read();
 
-        auto& v = registry.get<Visibility>(entity).visible[0];
+        auto& v = reg.get<Visibility>(entity).visible[0];
         if (ImGuiLTable::Checkbox("Show", &v))
         {
-            setVisible(registry, entity, v);
+            setVisible(reg, entity, v);
         }
 
-        auto& widget = registry.get<Widget>(entity);
-
-        if (widget.text.length() <= 255)
-        {
-            char buf[256];
-            std::copy(widget.text.begin(), widget.text.end(), buf);
-            buf[widget.text.length()] = '\0';
-            if (ImGuiLTable::InputText("Text", &buf[0], 255))
-            {
-                widget.text = std::string(buf);
-            }
-        }
-
-        auto& transform = registry.get<Transform>(entity);
+        auto& transform = reg.get<Transform>(entity);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
             transform.dirty();

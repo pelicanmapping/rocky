@@ -4,8 +4,9 @@
  * MIT License
  */
 #include "PointSystem.h"
+#include "TransformDetail.h"
+#include "ECSVisitors.h"
 #include "../PipelineState.h"
-#include "../VSGUtils.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;

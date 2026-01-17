@@ -322,6 +322,7 @@ Rocky has a set of built-in primitives for displaying objects on the map.
 * Point - a collection of points
 * Model - a VSG scene graph representing an object
 * Widget - an interactive ImGui panel (for labels, icons, or custom UIs)
+* Label - a simple text label (based on Widget)
 
 To create and manage these elements, Rocky uses an [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system) (ECS) driven by the popular [EnTT](https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. Suffice it to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
 

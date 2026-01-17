@@ -8,8 +8,6 @@
 #include "ecs/MeshSystem.h"
 #include "ecs/LineSystem.h"
 #include "ecs/PointSystem.h"
-#include "ecs/IconSystem.h"
-#include "ecs/IconSystem2.h"
 #include "ecs/LabelSystem.h"
 #include "ecs/WidgetSystem.h"
 #include "ecs/TransformSystem.h"
@@ -231,12 +229,12 @@ Application::ctor(int& argc, char** argv)
     ecsNode->add(LineSystemNode::create(registry));
     ecsNode->add(PointSystemNode::create(registry));
 
-    if (indirect)
-        ecsNode->add(IconSystem2Node::create(registry));
-    else
-        ecsNode->add(IconSystemNode::create(registry));
+    //if (indirect)
+    //    ecsNode->add(IconSystem2Node::create(registry));
+    //else
+    //    ecsNode->add(IconSystemNode::create(registry));
     
-    ecsNode->add(LabelSystemNode::create(registry));
+    ecsNode->add(LabelSystem::create(registry));
 
 #ifdef ROCKY_HAS_IMGUI
     ecsNode->add(WidgetSystemNode::create(registry));
@@ -612,6 +610,7 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
                 auto idle_function = [ic, node]()
                     {
                         ImGui::SetCurrentContext(ic);
+                        ImGui::GetIO().DeltaTime = ImGui::GetIO().DeltaTime <= 0.0f ? 0.016f : ImGui::GetIO().DeltaTime;
                         ImGui::NewFrame();
                         node->render(ic);
                         ImGui::EndFrame();

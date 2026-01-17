@@ -9,6 +9,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    struct TransformDetail;
+
     /**
     * Renders a line or linestring geometry.
     */
@@ -169,10 +171,6 @@ namespace ROCKY_NAMESPACE
         inline vsg::PipelineLayout* getPipelineLayout(const Line& line) {
             return _pipelines[0].config->layout;
         }
-
-        // Called when a Line is marked dirty (i.e., upon first creation or when either the
-        // style of the geometry entity is reassigned).
-        //void createOrUpdateComponent(const Line&, detail::LineDetail&, detail::LineGeometryDetail*);
 
         // Called when a line geometry component is found in the dirty list
         void createOrUpdateGeometry(const LineGeometry& geom, detail::LineGeometryDetail&, VSGContext& context);

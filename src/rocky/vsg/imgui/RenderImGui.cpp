@@ -243,12 +243,14 @@ void RenderImGui::traverse(vsg::RecordTraversal& rt) const
 
     // record all the ImGui commands to ImDrawData container
     ImGui_ImplVulkan_NewFrame();
+
+    ImGui::GetIO().DeltaTime = ImGui::GetIO().DeltaTime <= 0.0f ? 0.016f : ImGui::GetIO().DeltaTime;
     ImGui::NewFrame();
 
     // traverse children
     vsg::Group::traverse(rt);
 
-    //ImGui::EndFrame(); // called automatically by Render() below
+    ImGui::EndFrame();
     ImGui::Render();
 
     // if ImDrawData has been recorded then we need to clear the frame buffer and do the final record to Vulkan command buffer.

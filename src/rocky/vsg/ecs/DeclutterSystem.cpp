@@ -67,11 +67,6 @@ DeclutterSystem::update(VSGContext& vsgcontext)
                 process(e, declutter, xform);
             });
 
-        registry.view<ActiveState, Shareable<Declutter>, TransformDetail>().each([&](auto&& e, auto, auto&& declutter, auto&& xform)
-            {
-                process(e, *declutter.pointer, xform);
-            });
-
         // sort them by the metric we selected:
         std::sort(sorted.begin(), sorted.end(), [](const auto& lhs, const auto& rhs) { return std::get<0>(lhs) > std::get<0>(rhs); });
         _last_max_size = sorted.size();

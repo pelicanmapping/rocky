@@ -90,8 +90,8 @@ std::vector<Demo> demos =
         Demo{ "Point", Demo_Point },
         Demo{ "Icon", Demo_Icon },
         Demo{ "Model", Demo_Model },
+        Demo{ "Label", Demo_Label },
         Demo{ "Widget", Demo_Widget },
-        Demo{ "Label (old)", Demo_Label },
         Demo{ "Node Pager", Demo_NodePager }
     } },
     Demo{ "GIS", {},
@@ -113,7 +113,7 @@ std::vector<Demo> demos =
     Demo{ "Camera", Demo_MapManipulator },
     Demo{ "Views", Demo_Views },
     Demo{ "Terrain", Demo_Terrain },
-    Demo{ "Miscellany", {},
+    Demo{ "Misc", {},
     {
         Demo{ "Drawing", Demo_Draw },
         Demo{ "Geocoding", Demo_Geocoder },

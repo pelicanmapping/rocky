@@ -8,6 +8,7 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/ecs/ECSTypes.h>
+#include <rocky/vsg/ecs/TransformDetail.h>
 
 namespace ROCKY_NAMESPACE
 {
