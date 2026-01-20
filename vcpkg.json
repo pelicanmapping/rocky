@@ -10,6 +10,7 @@
         { "name" : "entt" },
         { "name" : "gdal", "default-features": false, "features": [ "recommended-features", "webp" ] },
         { "name" : "glm" },
+        { "name" : "imgui", "features": [ "vulkan-binding" ] },
         { "name" : "nlohmann-json" },
         { "name" : "openssl" },
         { "name" : "proj" },
