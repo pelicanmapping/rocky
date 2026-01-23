@@ -19,7 +19,7 @@
     
     
       
-        <title>struct BuildItem - Rocky</title>
+        <title>struct Dirty - Rocky</title>
       
     
     
@@ -60,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#struct-builditem" class="md-skip">
+        <a href="#struct-dirty" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              struct BuildItem
+              struct Dirty
             
           </span>
         </div>
@@ -348,14 +348,12 @@
 
 
 
-<h1 id="struct-builditem">struct BuildItem</h1>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#42</em></p>
-<p>Internal record for a component that needs building</p>
-<p>Inherits from BuildInfo</p>
+<h1 id="struct-dirty">struct Dirty</h1>
+<p><em>Defined at src/rocky/ecs/Component.h#23</em></p>
+<p>NOTE: RELIES on the System to install the Dirty singleton! NOTE: type of this struct is Component<DERIVED>::Dirty</p>
 <h2 id="members">Members</h2>
-<p>public int entity</p>
-<p>public int version</p>
-<p>public int component</p>
+<p>public int mutex</p>
+<p>public int entities</p>
 
 
 

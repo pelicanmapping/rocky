@@ -366,72 +366,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#systemnode_on_construct" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SystemNode_on_construct
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#systemnode_on_construct_shared" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SystemNode_on_construct_shared
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#systemnode_on_update" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SystemNode_on_update
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#systemnode_on_update_shared" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SystemNode_on_update_shared
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#systemnode_on_destroy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SystemNode_on_destroy
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#systemnode_on_destroy_shared" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        SystemNode_on_destroy_shared
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#setthreadname" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -470,14 +404,7 @@
 <li><a href="ImGuiDispatcher/">ImGuiDispatcher</a></li>
 <li><a href="FindNodeVisitor/">FindNodeVisitor</a></li>
 <li><a href="ForEachNodeVisitor/">ForEachNodeVisitor</a></li>
-<li><a href="SystemNodeBase/">SystemNodeBase</a></li>
-<li><a href="Renderable/">Renderable</a></li>
-<li><a href="BuildInfo/">BuildInfo</a></li>
-<li><a href="BuildItem/">BuildItem</a></li>
-<li><a href="BuildBatch/">BuildBatch</a></li>
-<li><a href="EntityNodeFactory/">EntityNodeFactory</a></li>
 <li><a href="SimpleSystemNodeBase/">SimpleSystemNodeBase</a></li>
-<li><a href="SystemNode/">SystemNode</a></li>
 <li><a href="PointStyleRecord/">PointStyleRecord</a></li>
 <li><a href="PointStyleUniform/">PointStyleUniform</a></li>
 <li><a href="PointDrawable/">PointDrawable</a></li>
@@ -507,29 +434,6 @@
 <h3 id="srgb_to_linear">sRGB_to_linear</h3>
 <p><em>float sRGB_to_linear(float c)</em></p>
 <p><em>Defined at src/rocky/Image.h#381</em></p>
-<h3 id="systemnode_on_construct">SystemNode_on_construct</h3>
-<p><em>void SystemNode_on_construct(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#296</em></p>
-<p>called by registry.emplace<T>()</p>
-<h3 id="systemnode_on_construct_shared">SystemNode_on_construct_shared</h3>
-<p><em>void SystemNode_on_construct_shared(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#319</em></p>
-<h3 id="systemnode_on_update">SystemNode_on_update</h3>
-<p><em>void SystemNode_on_update(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#349</em></p>
-<p>invoked by registry.replace<T>(), emplace_or_replace<T>(), or patch<T>()</p>
-<h3 id="systemnode_on_update_shared">SystemNode_on_update_shared</h3>
-<p><em>void SystemNode_on_update_shared(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#364</em></p>
-<p>invoked by registry.replace<T>(), emplace_or_replace<T>(), or patch<T>()</p>
-<h3 id="systemnode_on_destroy">SystemNode_on_destroy</h3>
-<p><em>void SystemNode_on_destroy(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#381</em></p>
-<p>invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)</p>
-<h3 id="systemnode_on_destroy_shared">SystemNode_on_destroy_shared</h3>
-<p><em>void SystemNode_on_destroy_shared(int &amp; r, int e)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/ECSNode.h#389</em></p>
-<p>invoked by registry.erase<T>(), remove<T>(), or registry.destroy(e)</p>
 <h3 id="setthreadname">setThreadName</h3>
 <p><em>int setThreadName(const int &amp; name)</em></p>
 <p>Sets the name of the current thread</p>
