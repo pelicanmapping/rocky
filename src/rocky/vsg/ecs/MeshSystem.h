@@ -23,10 +23,6 @@ namespace ROCKY_NAMESPACE
 
         void reserve(size_t numVerts);
 
-        inline void addTriangle(const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors);
-
-        void addTriangle(const vsg::vec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors);
-
         void compile(vsg::Context&) override;
 
         vsg::vec4 _defaultColor = { 1,1,1,1 };
@@ -102,30 +98,12 @@ namespace ROCKY_NAMESPACE
             std::size_t capacity = 0;
         };
 
-        // internal data paired with Mesh
-        //struct MeshDetail
-        //{
-        //    //! Points at the mesh geometry node associated with this Mesh,
-        //    //! since many Mesh components may share the same geometry.
-        //    vsg::ref_ptr<vsg::Node> node;
-        //};
-
         // internal data paired with MeshTexture
         struct MeshTextureDetail
         {
             // nop
             bool unused = true;
         };
-    }
-
-    inline void MeshGeometryNode::addTriangle(const vsg::dvec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors)
-    {
-        vsg::vec3 verts32[3] = {
-            vsg::vec3(verts[0]),
-            vsg::vec3(verts[1]),
-            vsg::vec3(verts[2]) };
-
-        addTriangle(verts32, uvs, colors);
     }
 
     /**
@@ -174,11 +152,6 @@ namespace ROCKY_NAMESPACE
         mutable detail::MeshStyleDetail _defaultMeshStyleDetail;
         mutable std::vector<detail::MeshStyleDetail*> _styleDetailBins;
         mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
-
-        // Called when a component is marked dirty (i.e., upon first creation or when either the
-        // style of the geometry entity is reassigned).
-        //void createOrUpdateComponent(const Mesh&, detail::MeshDetail&, detail::MeshStyleDetail*,
-        //    detail::MeshGeometryDetail*, VSGContext&);
 
         // Called when a line geometry component is found in the dirty list
         void createOrUpdateGeometry(const MeshGeometry&, detail::MeshGeometryDetail&, VSGContext&);

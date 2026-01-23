@@ -340,10 +340,6 @@ namespace
             styles.meshColorFunction ? styles.meshColorFunction(feature) :
             styles.meshStyle.color;
 
-        meshGeom.reserve(
-            meshGeom.vertices.size() + m.triangles.size() * 3,
-            meshGeom.vertices.size() + m.triangles.size() * 3);
-
         for (auto& tri : m.triangles)
         {
             meshGeom.vertices.emplace_back(m.verts[tri.second.i0]);

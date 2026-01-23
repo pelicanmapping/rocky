@@ -415,32 +415,6 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             localizer->addChild(geomDetail.geomNode);
             root = localizer;
         }
-
-        //else if (geom.triangles.size() > 0)
-        //{
-        //    GeoPoint anchor(geom.srs, geom.triangles.front().verts[0]);
-        //    auto [xform, offset] = anchor.parseAsReferencePoint();
-
-        //    geomDetail.geomNode->reserve(geom.triangles.size() * 3);
-
-        //    vsg::dvec3 v0, v1, v2;
-        //    vsg::vec3 v32[3];
-        //    for (auto& tri : geom.triangles)
-        //    {
-        //        xform(tri.verts[0], v0); v32[0] = v0 - to_vsg(offset);
-        //        xform(tri.verts[1], v1); v32[1] = v1 - to_vsg(offset);
-        //        xform(tri.verts[2], v2); v32[2] = v2 - to_vsg(offset);
-
-        //        geomDetail.geomNode->addTriangle(
-        //            v32,
-        //            reinterpret_cast<const vsg::vec2*>(&tri.uvs),
-        //            reinterpret_cast<const vsg::vec4*>(&tri.colors));
-        //    }
-
-        //    auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
-        //    localizer->addChild(geomDetail.geomNode);
-        //    root = localizer;
-        //}
     }
     else
     {
@@ -448,17 +422,6 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
         {
             copyArrays(geom.vertices);
         }
-
-        //else if (geom.triangles.size() > 0)
-        //{
-        //    for (auto& tri : geom.triangles)
-        //    {
-        //        geomDetail.geomNode->addTriangle(
-        //            reinterpret_cast<const vsg::dvec3*>(&tri.verts),
-        //            reinterpret_cast<const vsg::vec2*>(&tri.uvs),
-        //            reinterpret_cast<const vsg::vec4*>(&tri.colors));
-        //    }
-        //}
 
         root = geomDetail.geomNode;
     }
@@ -785,28 +748,6 @@ MeshGeometryNode::reserve(size_t num_verts)
     _colors.reserve(num_verts);
     _uvs.reserve(num_verts);
     _indices.reserve(num_verts);
-}
-
-void
-MeshGeometryNode::addTriangle(const vsg::vec3* verts, const vsg::vec2* uvs, const vsg::vec4* colors)
-{
-    for (int v = 0; v < 3; ++v)
-    {
-        auto i = _verts.size();
-        auto key = std::make_tuple(verts[v], colors[v]);
-        auto iter1 = _lut.find(key);
-        i = iter1 != _lut.end() ? iter1->second : _verts.size();
-
-        if (i == _verts.size())
-        {
-            _verts.push_back(verts[v]);
-            _uvs.push_back(uvs[v]);
-            _colors.push_back(colors[v]);
-            _lut[key] = (index_type)i;
-        }
-
-        _indices.push_back((index_type)i);
-    }
 }
 
 void
