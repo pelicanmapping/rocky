@@ -41,8 +41,10 @@ namespace ROCKY_NAMESPACE
         entt::entity _defaultStyleEntity = entt::null;
 
         void on_construct_Label(entt::registry& r, entt::entity e);
+        void on_update_Label(entt::registry& r, entt::entity e);
         void on_destroy_Label(entt::registry& r, entt::entity e);
         void on_construct_LabelStyle(entt::registry& r, entt::entity e);
+        void on_update_LabelStyle(entt::registry& r, entt::entity e);
         void on_destroy_LabelStyle(entt::registry& r, entt::entity e);
 
         ImFont* getOrCreateFont(const std::string&, ImGuiContext*);

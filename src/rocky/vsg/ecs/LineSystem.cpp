@@ -98,20 +98,17 @@ namespace
     {
         (void) r.get_or_emplace<ActiveState>(e);
         (void) r.get_or_emplace<Visibility>(e);
-        r.get<Line>(e).owner = e;
-        r.get<Line>(e).dirty(r);
+        Line::dirty(r, e);
     }
     void on_construct_LineStyle(entt::registry& r, entt::entity e)
     {
         r.emplace<LineStyleDetail>(e);
-        r.get<LineStyle>(e).owner = e;
-        r.get<LineStyle>(e).dirty(r);
+        LineStyle::dirty(r, e);
     }
     void on_construct_LineGeometry(entt::registry& r, entt::entity e)
     {
         r.emplace<LineGeometryDetail>(e);
-        r.get<LineGeometry>(e).owner = e;
-        r.get<LineGeometry>(e).dirty(r);
+        LineGeometry::dirty(r, e);
     }
 
     void on_destroy_LineStyle(entt::registry& r, entt::entity e)
@@ -133,19 +130,15 @@ namespace
 
     void on_update_Line(entt::registry& r, entt::entity e)
     {
-        r.get<Line>(e).dirty(r);
+        Line::dirty(r, e);
     }
     void on_update_LineStyle(entt::registry& r, entt::entity e)
     {
-        dispose(r.get<LineStyleDetail>(e).bind);
-        r.get<LineStyleDetail>(e).recycle();
-        r.get<LineStyle>(e).dirty(r);
+        LineStyle::dirty(r, e);
     }
     void on_update_LineGeometry(entt::registry& r, entt::entity e)
     {
-        dispose(r.get<LineGeometryDetail>(e).root);
-        r.get<LineGeometryDetail>(e).recycle();
-        r.get<LineGeometry>(e).dirty(r);
+        LineGeometry::dirty(r, e);
     }
 }
 

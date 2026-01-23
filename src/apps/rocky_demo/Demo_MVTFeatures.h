@@ -80,12 +80,12 @@ auto Demo_MVTFeatures = [](Application& app)
                 fview.origin = key.extent().centroid();
 
                 // set up the styling for the FeatureView to use for lines and meshes.
-                fview.styles.line.color = Color::Red;
-                fview.styles.line.width = 5.0f;
-                fview.styles.line.depthOffset = 10; // meters
+                fview.styles.lineStyle.color = Color::Red;
+                fview.styles.lineStyle.width = 5.0f;
+                fview.styles.lineStyle.depthOffset = 10; // meters
 
-                fview.styles.mesh.color = Color(1, 0.75f, 0.2f, 1);
-                fview.styles.mesh.depthOffset = 12; // meters
+                fview.styles.meshStyle.color = Color(1, 0.75f, 0.2f, 1);
+                fview.styles.meshStyle.depthOffset = 12; // meters
 
                 if (gdal->featureCount() > 0)
                     fview.features.reserve(gdal->featureCount());
@@ -117,23 +117,20 @@ auto Demo_MVTFeatures = [](Application& app)
                     fview.clamper.srs = fview.features.front().srs;
 
                     // generate primitives from features:
-                    auto prims = fview.generate(app.mapNode->srs());
+                    auto entity = fview.generate(app.mapNode->srs(), app.registry);
 
-                    if (!prims.empty())
+                    if (entity != entt::null)
                     {
                         auto node = EntityNode::create(app.registry);
 
                         // Take a write-lock to move the primitives into ECS entities.
                         app.registry.write([&](entt::registry& reg)
                             {
-                                auto e = prims.createEntity(reg);
-
                                 // Since we localized to an origin, the tile needs a transform:
-                                auto& xform = reg.get_or_emplace<Transform>(e);
+                                auto& xform = reg.get_or_emplace<Transform>(entity);
                                 xform.position = fview.origin;
                                 xform.frustumCulled = false; // NodePager will take care of frustum culling for us
-
-                                node->entities.emplace_back(e);
+                                node->entities.emplace_back(entity);
                             });
 
                         result = node;

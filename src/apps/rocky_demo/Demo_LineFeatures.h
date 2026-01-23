@@ -38,32 +38,26 @@ auto Demo_LineFeatures = [](Application& app)
         }
         else if (data.available() && data->status.ok())
         {
-            FeatureView feature_view;
+            FeatureView featureView;
 
             // create a feature view and add features to it:
             data->fs->each(app.vsgcontext->io, [&](Feature&& feature)
                 {
                     // convert anything we find to lines:
                     feature.geometry.convertToType(Geometry::Type::LineString);
-                    feature_view.features.emplace_back(std::move(feature));
+                    featureView.features.emplace_back(std::move(feature));
                 });
 
             // apply a style for geometry creation:
-            feature_view.styles.line.color = Color::Yellow;
-            feature_view.styles.line.width = 2.0f;
-            feature_view.styles.line.resolution = 10000.0f;
-            feature_view.styles.line.depthOffset = 12000.0f;
+            featureView.styles.lineStyle.color = Color::Yellow;
+            featureView.styles.lineStyle.width = 2.0f;
+            featureView.styles.lineStyle.resolution = 10000.0f;
+            featureView.styles.lineStyle.depthOffset = 12000.0f;
 
-            auto prims = feature_view.generate(app.mapNode->srs());
+            auto entity = featureView.generate(app.mapNode->srs(), app.registry);
 
-            if (!prims.empty())
-            {
-                app.registry.write([&](entt::registry& registry)
-                    {
-                        auto e = prims.createEntity(registry);
-                        entities.emplace_back(e);
-                    });
-            }
+            if (entity != entt::null)
+                entities.emplace_back(entity);
 
             app.vsgcontext->requestFrame();
         }

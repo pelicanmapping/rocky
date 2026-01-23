@@ -19,6 +19,8 @@ namespace ROCKY_NAMESPACE
     public:
         NodeSystemNode(Registry& registry);
 
+        ~NodeSystemNode();
+
         //! One-time initialization of the system        
         void initialize(VSGContext&) override;
 
@@ -47,5 +49,8 @@ namespace ROCKY_NAMESPACE
 
         using DrawList = std::vector<Drawable>;
         mutable DrawList _drawList;
+
+        void on_construct_NodeGraph(entt::registry& r, entt::entity e);
+        void on_update_NodeGraph(entt::registry& r, entt::entity e);
     };
 }

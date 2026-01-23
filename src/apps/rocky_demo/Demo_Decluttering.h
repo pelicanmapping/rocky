@@ -23,7 +23,7 @@ namespace
         auto view = registry.view<Declutter, Visibility>();
         for (auto&& [entity, declutter, visibility] : view.each())
         {
-            visibility.visible.fill(true);
+            visibility.visible = true;
         }
     }
 }

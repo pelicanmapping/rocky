@@ -142,8 +142,10 @@ auto Demo_RTT = [](Application& app)
                     xform(v[i], v[i]);
                 }
 
-                geom.triangles.emplace_back(Triangle{ {v[0], v[1], v[2]}, { bg,bg,bg }, {uv[0], uv[1], uv[2]} });
-                geom.triangles.emplace_back(Triangle{ {v[0], v[2], v[3]}, { bg,bg,bg }, {uv[0], uv[2], uv[3]} });
+                std::uint32_t i = (std::uint32_t)geom.vertices.size();
+                geom.vertices.insert(geom.vertices.end(), { v[0], v[1], v[2], v[3] });
+                geom.uvs.insert(geom.uvs.end(), { uv[0], uv[1], uv[2], uv[3] });
+                geom.indices.insert(geom.indices.end(), { i, i + 1, i + 2, i, i + 2, i + 3 });
             }
         }
 

@@ -114,42 +114,26 @@ namespace
 
     void on_construct_Mesh(entt::registry& r, entt::entity e)
     {
-        //r.emplace<MeshDetail>(e);
-
-        // TODO: put this in a utility function somewhere
-        // common components that may already exist on this entity:
         (void)r.get_or_emplace<ActiveState>(e);
         (void)r.get_or_emplace<Visibility>(e);
-
-        r.get<Mesh>(e).owner = e;
-        r.get<Mesh>(e).dirty(r);
+        Mesh::dirty(r, e);
     }
     void on_construct_MeshStyle(entt::registry& r, entt::entity e)
     {
         r.emplace<MeshStyleDetail>(e);
-        r.get<MeshStyle>(e).owner = e;
-        r.get<MeshStyle>(e).dirty(r);
+        MeshStyle::dirty(r, e);
     }
     void on_construct_MeshGeometry(entt::registry& r, entt::entity e)
     {
         r.emplace<MeshGeometryDetail>(e);
-        r.get<MeshGeometry>(e).owner = e;
-        r.get<MeshGeometry>(e).dirty(r);
+        MeshGeometry::dirty(r, e);
     }
     void on_construct_Texture(entt::registry& r, entt::entity e)
     {
         (void)r.get_or_emplace<MeshTextureDetail>(e);
-        auto& tex = r.get<MeshTexture>(e);
-        tex.owner = e;
-        tex.dirty(r);
+        MeshTexture::dirty(r, e);
     }
 
-
-    //void on_destroy_MeshDetail(entt::registry& r, entt::entity e)
-    //{
-    //    auto& d = r.get<MeshDetail>(e);
-    //    d = MeshDetail();
-    //}
     void on_destroy_MeshStyleDetail(entt::registry& r, entt::entity e)
     {
         auto& d = r.get<MeshStyleDetail>(e);
@@ -172,24 +156,23 @@ namespace
 
     void on_update_Mesh(entt::registry& r, entt::entity e)
     {
-        //on_destroy_MeshDetail(r, e);
-        r.get<Mesh>(e).dirty(r);
+        Mesh::dirty(r, e);
     }
     void on_update_MeshStyle(entt::registry& r, entt::entity e)
     {
         on_destroy_MeshStyleDetail(r, e);
-        r.get<MeshStyle>(e).dirty(r);
+        MeshStyle::dirty(r, e);
     }
     void on_update_MeshGeometry(entt::registry& r, entt::entity e)
     {
         on_destroy_MeshGeometryDetail(r, e);
-        r.get<MeshGeometry>(e).dirty(r);
+        MeshGeometry::dirty(r, e);
     }
     void on_update_Texture(entt::registry& r, entt::entity e)
     {
         auto& d = r.get<MeshTextureDetail>(e);
         d = MeshTextureDetail();
-        r.get<MeshTexture>(e).dirty(r);
+        MeshTexture::dirty(r, e);
     }
 }
 
@@ -415,7 +398,6 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
 
     if (geom.srs.valid())
     {
-
         if (geom.vertices.size() > 0)
         {
             GeoPoint anchor(geom.srs, geom.vertices.front());
@@ -424,7 +406,8 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             // transform and localize:
             std::vector<glm::dvec3> verts(geom.vertices); // copy
             xform.transformRange(verts.begin(), verts.end());
-            for (auto& v : verts) v -= offset;
+            for (auto& v : verts)
+                v -= offset;
 
             copyArrays(verts);
 
@@ -433,31 +416,31 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             root = localizer;
         }
 
-        else if (geom.triangles.size() > 0)
-        {
-            GeoPoint anchor(geom.srs, geom.triangles.front().verts[0]);
-            auto [xform, offset] = anchor.parseAsReferencePoint();
+        //else if (geom.triangles.size() > 0)
+        //{
+        //    GeoPoint anchor(geom.srs, geom.triangles.front().verts[0]);
+        //    auto [xform, offset] = anchor.parseAsReferencePoint();
 
-            geomDetail.geomNode->reserve(geom.triangles.size() * 3);
+        //    geomDetail.geomNode->reserve(geom.triangles.size() * 3);
 
-            vsg::dvec3 v0, v1, v2;
-            vsg::vec3 v32[3];
-            for (auto& tri : geom.triangles)
-            {
-                xform(tri.verts[0], v0); v32[0] = v0 - to_vsg(offset);
-                xform(tri.verts[1], v1); v32[1] = v1 - to_vsg(offset);
-                xform(tri.verts[2], v2); v32[2] = v2 - to_vsg(offset);
+        //    vsg::dvec3 v0, v1, v2;
+        //    vsg::vec3 v32[3];
+        //    for (auto& tri : geom.triangles)
+        //    {
+        //        xform(tri.verts[0], v0); v32[0] = v0 - to_vsg(offset);
+        //        xform(tri.verts[1], v1); v32[1] = v1 - to_vsg(offset);
+        //        xform(tri.verts[2], v2); v32[2] = v2 - to_vsg(offset);
 
-                geomDetail.geomNode->addTriangle(
-                    v32,
-                    reinterpret_cast<const vsg::vec2*>(&tri.uvs),
-                    reinterpret_cast<const vsg::vec4*>(&tri.colors));
-            }
+        //        geomDetail.geomNode->addTriangle(
+        //            v32,
+        //            reinterpret_cast<const vsg::vec2*>(&tri.uvs),
+        //            reinterpret_cast<const vsg::vec4*>(&tri.colors));
+        //    }
 
-            auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
-            localizer->addChild(geomDetail.geomNode);
-            root = localizer;
-        }
+        //    auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
+        //    localizer->addChild(geomDetail.geomNode);
+        //    root = localizer;
+        //}
     }
     else
     {
@@ -466,16 +449,16 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
             copyArrays(geom.vertices);
         }
 
-        else if (geom.triangles.size() > 0)
-        {
-            for (auto& tri : geom.triangles)
-            {
-                geomDetail.geomNode->addTriangle(
-                    reinterpret_cast<const vsg::dvec3*>(&tri.verts),
-                    reinterpret_cast<const vsg::vec2*>(&tri.uvs),
-                    reinterpret_cast<const vsg::vec4*>(&tri.colors));
-            }
-        }
+        //else if (geom.triangles.size() > 0)
+        //{
+        //    for (auto& tri : geom.triangles)
+        //    {
+        //        geomDetail.geomNode->addTriangle(
+        //            reinterpret_cast<const vsg::dvec3*>(&tri.verts),
+        //            reinterpret_cast<const vsg::vec2*>(&tri.uvs),
+        //            reinterpret_cast<const vsg::vec4*>(&tri.colors));
+        //    }
+        //}
 
         root = geomDetail.geomNode;
     }
@@ -777,14 +760,6 @@ MeshSystemNode::update(VSGContext& vsgcontext)
                     const auto& [geom, geomDetail] = reg.get<MeshGeometry, MeshGeometryDetail>(e);
                     createOrUpdateGeometry(geom, geomDetail, vsgcontext);
                 });
-
-            //Mesh::eachDirty(reg, [&](entt::entity e)
-            //    {
-            //        const auto& [comp, compDetail] = reg.get<Mesh, MeshDetail>(e);
-            //        auto* styleDetail = comp.style != entt::null ? reg.try_get<MeshStyleDetail>(comp.style) : nullptr;
-            //        auto* geomDetail = comp.geometry != entt::null ? reg.try_get<MeshGeometryDetail>(comp.geometry) : nullptr;
-            //        createOrUpdateComponent(comp, compDetail, styleDetail, geomDetail, vsgcontext);
-            //    });
         });
 
     Inherit::update(vsgcontext);

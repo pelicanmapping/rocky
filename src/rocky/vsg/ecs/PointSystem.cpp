@@ -96,20 +96,17 @@ namespace
     {
         (void)r.get_or_emplace<ActiveState>(e);
         (void)r.get_or_emplace<Visibility>(e);
-        r.get<Point>(e).owner = e;
-        r.get<Point>(e).dirty(r);
+        Point::dirty(r, e);
     }
     void on_construct_PointStyle(entt::registry& r, entt::entity e)
     {
         r.emplace<PointStyleDetail>(e);
-        r.get<PointStyle>(e).owner = e;
-        r.get<PointStyle>(e).dirty(r);
+        PointStyle::dirty(r, e);
     }
     void on_construct_PointGeometry(entt::registry& r, entt::entity e)
     {
         r.emplace<PointGeometryDetail>(e);
-        r.get<PointGeometry>(e).owner = e;
-        r.get<PointGeometry>(e).dirty(r);
+        PointGeometry::dirty(r, e);
     }
 
     void on_destroy_PointStyle(entt::registry& r, entt::entity e)
@@ -131,19 +128,19 @@ namespace
 
     void on_update_Point(entt::registry& r, entt::entity e)
     {
-        r.get<Point>(e).dirty(r);
+        Point::dirty(r, e);
     }
     void on_update_PointStyle(entt::registry& r, entt::entity e)
     {
         dispose(r.get<PointStyleDetail>(e).bind);
         r.get<PointStyleDetail>(e).recycle();
-        r.get<PointStyle>(e).dirty(r);
+        PointStyle::dirty(r, e);
     }
     void on_update_PointGeometry(entt::registry& r, entt::entity e)
     {
         dispose(r.get<PointGeometryDetail>(e).rootNode);
         r.get<PointGeometryDetail>(e).recycle();
-        r.get<PointGeometry>(e).dirty(r);
+        PointGeometry::dirty(r, e);
     }
 }
 

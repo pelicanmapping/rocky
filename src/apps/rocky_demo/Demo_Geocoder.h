@@ -12,43 +12,47 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_Geocoder = [](Application& app)
 {
+    struct Placemark
+    {
+        entt::entity label = entt::null;
+        entt::entity outline = entt::null;
+
+        void create(entt::registry& reg)
+        {
+            // configure a line geometry that will display the outline of the selected place:
+            outline = reg.create();
+            auto& geom = reg.emplace<LineGeometry>(outline);
+            auto& style = reg.emplace<LineStyle>(outline);
+            style.color = Color::Yellow;
+            style.depthOffset = 9000.0f; //meters
+            reg.emplace<Line>(outline, geom, style);
+
+            // configure a label for the selected place:
+            label = reg.create();
+            reg.emplace<Label>(label, "");
+            reg.emplace<Transform>(label);
+        }
+
+        void show(entt::registry& r, bool toggle)
+        {
+            r.get<Visibility>(outline).visible = toggle;
+            r.get<Visibility>(label).visible = toggle;
+        }
+    };
+
+    static Placemark placemark;
+
     static jobs::future<Result<std::vector<Feature>>> geocoding_task;
     static char input_buf[256];
-    static entt::entity placemark = entt::null;
-    static entt::entity outline = entt::null;
 
-    static auto show = [&](entt::registry& r, bool toggle)
-        {
-            r.get<Visibility>(outline).visible.fill(toggle);
-            r.get<Visibility>(placemark).visible.fill(toggle);
-        };
-
-    if (placemark == entt::null)
+    if (placemark.label == entt::null)
     {
         app.registry.write([&](entt::registry& reg)
             {
-                // configure a line geometry that will display the outline of the selected place:
-                outline = reg.create();
-
-                auto& geom = reg.emplace<LineGeometry>(outline);
-
-                auto& style = reg.emplace<LineStyle>(outline);
-                style.color = Color::Yellow;
-                style.depthOffset = 9000.0f; //meters
-
-                reg.emplace<Line>(outline, geom, style);
-
-                // configure a label for the selected place:
-                placemark = reg.create();
-
-                // label:
-                auto& label = reg.emplace<Label>(placemark, "");
-
-                // Transform to place the entity:
-                auto& xform = reg.emplace<Transform>(placemark);
-
-                // Mark it invisible to start.
-                show(reg, false);
+                // configure some graphics to represent the selected place,
+                // and make them invisible to start.
+                placemark.create(reg);
+                placemark.show(reg, false);
             });
 
         app.vsgcontext->requestFrame();
@@ -62,7 +66,7 @@ auto Demo_Geocoder = [](Application& app)
             {
                 // hide the graphics:
                 app.registry.read([&](entt::registry& reg) {
-                        show(reg, false);
+                        placemark.show(reg, false);
                     });
 
                 std::string input(input_buf);
@@ -127,25 +131,19 @@ auto Demo_Geocoder = [](Application& app)
                                 if (myfeature.geometry.type != Geometry::Type::Points)
                                 {
                                     // Outline for location boundary:
-                                    FeatureView fgen;
-
-                                    fgen.features = { myfeature };
-                                    auto primitives = fgen.generate(app.mapNode->srs());
+                                    FeatureView featureView;
+                                    featureView.entity = placemark.outline; // ...to update an existing entity
+                                    featureView.features = { myfeature };
+                                    featureView.styles.lineStyle.color = Color::Yellow;
+                                    featureView.styles.lineStyle.depthOffset = 9000.0f; // meters
+                                    featureView.generate(app.mapNode->srs(), app.registry);
 
                                     app.registry.write([&](entt::registry& reg)
-                                        {
-                                            // awkward. do something about this.
-                                            auto& geom = reg.get<LineGeometry>(outline);
-                                            geom.topology = primitives.lineGeom.topology;
-                                            geom.points = primitives.lineGeom.points;
-                                            geom.srs = primitives.lineGeom.srs;
-                                            geom.colors = primitives.lineGeom.colors;
-                                            geom.dirty(reg);
-
-                                            show(reg, true);
+                                        {                                            
+                                            placemark.show(reg, true);
 
                                             // update the label and the transform:
-                                            auto&& [xform, label] = reg.get<Transform, Label>(placemark);
+                                            auto&& [xform, label] = reg.get<Transform, Label>(placemark.label);
 
                                             auto text = display_name;
                                             util::replaceInPlace(text, ", ", "\n");
@@ -166,7 +164,7 @@ auto Demo_Geocoder = [](Application& app)
                     input_buf[0] = (char)0;
 
                     app.registry.read([&](entt::registry& reg) {
-                            show(reg, false);
+                            placemark.show(reg, false);
                         });
                 }
             }

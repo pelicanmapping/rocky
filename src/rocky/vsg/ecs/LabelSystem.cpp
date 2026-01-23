@@ -152,10 +152,7 @@ LabelSystem::on_construct_Label(entt::registry& r, entt::entity e)
 {
     (void)r.get_or_emplace<ActiveState>(e);
     (void)r.get_or_emplace<Visibility>(e);
-
-    auto& label = r.get<Label>(e);
-    label.owner = e;
-    label.dirty(r);
+    Label::dirty(r, e);
 
     if (r.all_of<Widget>(e))
     {
@@ -167,6 +164,12 @@ LabelSystem::on_construct_Label(entt::registry& r, entt::entity e)
 }
 
 void
+LabelSystem::on_update_Label(entt::registry& r, entt::entity e)
+{
+    Label::dirty(r, e);
+}
+
+void
 LabelSystem::on_destroy_Label(entt::registry& r, entt::entity e)
 {
     //nop
@@ -175,11 +178,14 @@ LabelSystem::on_destroy_Label(entt::registry& r, entt::entity e)
 void
 LabelSystem::on_construct_LabelStyle(entt::registry& r, entt::entity e)
 {
-    auto& style = r.get<LabelStyle>(e);
-    style.owner = e;
-    style.dirty(r);
-
     r.emplace<detail::LabelStyleDetail>(e);
+    LabelStyle::dirty(r, e);
+}
+
+void
+LabelSystem::on_update_LabelStyle(entt::registry& r, entt::entity e)
+{
+    LabelStyle::dirty(r, e);
 }
 
 void
@@ -187,4 +193,3 @@ LabelSystem::on_destroy_LabelStyle(entt::registry& r, entt::entity e)
 {
     r.remove<detail::LabelStyleDetail>(e);
 }
-

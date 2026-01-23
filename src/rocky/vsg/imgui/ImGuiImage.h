@@ -91,21 +91,9 @@ namespace ROCKY_NAMESPACE
             float x = corners[i].x * cos_a - corners[i].y * sin_a;
             float y = corners[i].x * sin_a + corners[i].y * cos_a;
 
-            // clamping (optional?)
-            if (fabs(x) > half_size.x) x *= (half_size.x / fabs(x));
-            if (fabs(y) > half_size.y) y *= (half_size.y / fabs(y));
-
             corners[i].x = center.x + x;
             corners[i].y = center.y + y;
         }
-
-        //const ImRect bb(
-        //    ImVec2(
-        //        std::min({ corners[0].x, corners[1].x, corners[2].x, corners[3].x }),
-        //        std::min({ corners[0].y, corners[1].y, corners[2].y, corners[3].y })),
-        //    ImVec2(
-        //        std::max({ corners[0].x, corners[1].x, corners[2].x, corners[3].x }),
-        //        std::max({ corners[0].y, corners[1].y, corners[2].y, corners[3].y })));
 
         const ImRect bb(
             ImVec2(center.x - half_size.x, center.y - half_size.y),

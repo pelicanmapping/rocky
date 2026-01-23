@@ -40,8 +40,9 @@ auto Demo_Mesh_Absolute = [](Application& app)
                 auto v3 = xform(glm::dvec3(lon + step, lat + step, alt));
                 auto v4 = xform(glm::dvec3(lon, lat + step, alt));
                 
-                geom.triangles.emplace_back(Triangle{ {v1, v2, v3} });
-                geom.triangles.emplace_back(Triangle{ {v1, v3, v4} });
+                std::uint32_t i = (std::uint32_t)geom.vertices.size();
+                geom.vertices.insert(geom.vertices.end(), { v1, v2, v3, v4 });
+                geom.indices.insert(geom.indices.end(), { i, i + 1, i + 2, i, i + 2, i + 3 });
             }
         }
 

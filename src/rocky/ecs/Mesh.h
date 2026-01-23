@@ -8,6 +8,7 @@
 #include <rocky/Color.h>
 #include <rocky/SRS.h>
 #include <array>
+#include <unordered_map>
 
 namespace ROCKY_NAMESPACE
 {
@@ -34,10 +35,19 @@ namespace ROCKY_NAMESPACE
 
         //! Alternatively, you can define a collection of triangles.
         //! Prefer the array method above.
-        std::vector<Triangle> triangles;
+        //std::vector<Triangle> triangles;
 
         //! Reference SRS for the triangles data.
         SRS srs;
+
+        //! Reserve space for X points and Y indices
+        inline void reserve(size_t x, size_t y) {
+            vertices.reserve(x);
+            colors.reserve(x);
+            normals.reserve(x);
+            uvs.reserve(x);
+            indices.reserve(y);
+        }
     };
 
     //! Mesh style component
@@ -53,7 +63,7 @@ namespace ROCKY_NAMESPACE
         // as a simple method or avoiding depth fighting
         float depthOffset = 0.0f;
 
-        //! Entity hotsing the (optional) Texture to use
+        //! Entity hosting the (optional) MeshTexture to use
         entt::entity texture = entt::null;
 
         //! Whether to display only the edges of the mesh triangles

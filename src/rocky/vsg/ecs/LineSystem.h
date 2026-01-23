@@ -107,7 +107,6 @@ namespace ROCKY_NAMESPACE
                 styleData = nullptr;
                 styleUBO = nullptr;
             }
-
         };
 
         struct LineGeometryDetail
@@ -120,12 +119,6 @@ namespace ROCKY_NAMESPACE
                 geomNode = nullptr;
             }
         };
-
-        //struct LineDetail
-        //{
-        //    // points to the (possibly shared!) geometry used by this Line instance
-        //    vsg::ref_ptr<vsg::Node> node;
-        //};
     }
 
 

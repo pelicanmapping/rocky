@@ -22,9 +22,8 @@ auto Demo_PolygonFeatures = [](Application& app)
         std::shared_ptr<rocky::FeatureSource> fs;
     };
     static jobs::future<LoadedFeatures> data;
-    static std::vector<entt::entity> entities;
     static bool ready = false;
-    static entt::entity primitivesEntity = entt::null;
+    static entt::entity entity = entt::null;
 
     if (!ready)
     {
@@ -46,11 +45,11 @@ auto Demo_PolygonFeatures = [](Application& app)
         }
         else if (data.available() && data->status.ok())
         {
-            FeatureView feature_view;
+            FeatureView featureView;
 
             // create a feature view and add features to it
             if (data->fs->featureCount() > 0)
-                feature_view.features.reserve(data->fs->featureCount());
+                featureView.features.reserve(data->fs->featureCount());
 
             auto iter = data->fs->iterate(app.vsgcontext->io);
             while (iter.hasMore())
@@ -58,33 +57,22 @@ auto Demo_PolygonFeatures = [](Application& app)
                 auto feature = iter.next();
                 if (feature.valid())
                 {
-                    feature_view.features.emplace_back(std::move(feature));
+                    featureView.features.emplace_back(std::move(feature));
                 }
             }
 
             // generate random colors for the feature geometry:
             std::uniform_real_distribution<float> frand(0.15f, 1.0f);
 
-            feature_view.styles.mesh.depthOffset = 9000.0f;
-            feature_view.styles.mesh.useGeometryColors = true;
-
-            feature_view.styles.meshColorFunction = [&frand](const Feature& f)
+            featureView.styles.meshStyle.depthOffset = 9000.0f;
+            featureView.styles.meshStyle.useGeometryColors = true;
+            featureView.styles.meshColorFunction = [&frand](const Feature& f)
                 {
                     std::default_random_engine re(f.id);
                     return Color{ frand(re), frand(re), frand(re), 1.0f };
                 };
 
-            // compile the features into renderable geometry
-            auto prims = feature_view.generate(app.mapNode->srs());
-
-            if (!prims.empty())
-            {
-                app.registry.write([&](entt::registry& registry)
-                    {
-                        primitivesEntity = prims.createEntity(registry);
-                        entities.emplace_back(primitivesEntity);
-                    });
-            }
+            entity = featureView.generate(app.mapNode->srs(), app.registry);
 
             ready = true;
             app.vsgcontext->requestFrame();
@@ -99,18 +87,25 @@ auto Demo_PolygonFeatures = [](Application& app)
     {
         auto [lock, reg] = app.registry.read();
 
-        auto& v = reg.get<Visibility>(entities.front()).visible[0];
-        if (ImGuiLTable::Checkbox("Show", &v))
+        if (entity != entt::null)
         {
-            setVisible(reg, entities.begin(), entities.end(), v);
-        }
+            auto& v = reg.get<Visibility>(entity).visible[0];
+            if (ImGuiLTable::Checkbox("Show", &v))
+            {
+                setVisible(reg, entity, v);
+            }
 
-        static bool wireframe = false;
-        if (ImGuiLTable::Checkbox("Wireframe", &wireframe))
+            static bool wireframe = false;
+            if (ImGuiLTable::Checkbox("Wireframe", &wireframe))
+            {
+                auto& style = reg.get<MeshStyle>(entity);
+                style.wireframe = wireframe;
+                style.dirty(reg);
+            }
+        }
+        else
         {
-            auto& style = reg.get<MeshStyle>(primitivesEntity);
-            style.wireframe = wireframe;
-            style.dirty(reg);
+            ImGui::TextColored(ImVec4(1.f, .3f, .3f, 1.f), "%s", "No features loaded");
         }
 
         ImGuiLTable::End();

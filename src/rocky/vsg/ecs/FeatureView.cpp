@@ -129,7 +129,7 @@ namespace
     void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, const GeoPoint& origin,
         ElevationSession& clamper, const SRS& output_srs, LineGeometry& lineGeom)
     {
-        float max_span = styles.line.resolution;
+        float max_span = styles.lineStyle.resolution;
 
         float final_max_span = max_span;
 
@@ -197,7 +197,7 @@ namespace
     {
         // scales our local gnomonic coordinates so they are the same order of magnitude as
         // weemesh's default epsilon values:
-        const double gnomonic_scale = 1e6; // 1.0; // 1000.0;
+        const double gnomonic_scale = 1e6;
 
         // Meshed triangles will be at a maximum this many degrees across in size,
         // to help follow the curvature of the earth.
@@ -338,37 +338,43 @@ namespace
 
         auto color =
             styles.meshColorFunction ? styles.meshColorFunction(feature) :
-            styles.mesh.color;
+            styles.meshStyle.color;
 
-        //Triangle temp = {
-        //    {}, // we'll fill in the verts below
-        //    {color, color, color},
-        //    {}, // uvs - don't need them
-        //};
-
-        meshGeom.triangles.reserve(meshGeom.triangles.size() + m.triangles.size());
+        meshGeom.reserve(
+            meshGeom.vertices.size() + m.triangles.size() * 3,
+            meshGeom.vertices.size() + m.triangles.size() * 3);
 
         for (auto& tri : m.triangles)
         {
-            Triangle temp;
-            temp.colors = { color, color, color };
-            temp.verts[0] = m.verts[tri.second.i0];
-            temp.verts[1] = m.verts[tri.second.i1];
-            temp.verts[2] = m.verts[tri.second.i2];
-            meshGeom.triangles.emplace_back(std::move(temp));
+            meshGeom.vertices.emplace_back(m.verts[tri.second.i0]);
+            meshGeom.vertices.emplace_back(m.verts[tri.second.i1]);
+            meshGeom.vertices.emplace_back(m.verts[tri.second.i2]);
+
+            meshGeom.colors.emplace_back(color);
+            meshGeom.colors.emplace_back(color);
+            meshGeom.colors.emplace_back(color);
+
+            meshGeom.normals.emplace_back(glm::dvec3(0, 0, 1)); // will be computed later
+            meshGeom.normals.emplace_back(glm::dvec3(0, 0, 1));
+            meshGeom.normals.emplace_back(glm::dvec3(0, 0, 1));
+
+            meshGeom.uvs.emplace_back(glm::fvec2(0, 0));
+            meshGeom.uvs.emplace_back(glm::fvec2(0, 0));
+            meshGeom.uvs.emplace_back(glm::fvec2(0, 0));
+
+            meshGeom.indices.emplace_back((std::uint32_t)meshGeom.vertices.size() - 3);
+            meshGeom.indices.emplace_back((std::uint32_t)meshGeom.vertices.size() - 2);
+            meshGeom.indices.emplace_back((std::uint32_t)meshGeom.vertices.size() - 1);
         }
     }
 }
 
 
-FeatureView::Primitives
-FeatureView::generate(const SRS& output_srs)
+entt::entity
+FeatureView::generate(const SRS& output_srs, Registry& registry)
 {
-    Primitives output;
-    output.lineGeom.topology = LineTopology::Segments;
-
-    output.lineStyle = styles.line;
-    output.meshStyle = styles.mesh;
+    Workspace ws;
+    ws.lineGeom.topology = LineTopology::Segments;
 
     for (auto& feature : features)
     {
@@ -384,13 +390,13 @@ FeatureView::generate(const SRS& output_srs)
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            compile_feature_to_lines(feature, styles, origin, clamper, output_srs, output.lineGeom);
+            compile_feature_to_lines(feature, styles, origin, clamper, output_srs, ws.lineGeom);
         }
 
         else if (feature.geometry.type == Geometry::Type::Polygon ||
             feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, output.meshGeom);
+            compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, ws.meshGeom);
         }
 
         else
@@ -399,9 +405,37 @@ FeatureView::generate(const SRS& output_srs)
         }
     }
 
-    return output;
+    entt::entity e = entity;
+
+    if (!ws.empty())
+    {
+        registry.write([&](entt::registry& r)
+            {
+                if (e == entt::null)
+                {
+                    e = r.create();
+                }
+
+                if (!ws.lineGeom.points.empty())
+                {
+                    auto& style = r.emplace_or_replace<LineStyle>(e, std::move(styles.lineStyle));
+                    auto& geom = r.emplace_or_replace<LineGeometry>(e, std::move(ws.lineGeom));
+                    r.emplace_or_replace<Line>(e, geom, style);
+                }
+
+                if (!ws.meshGeom.vertices.empty())
+                {
+                    auto& style = r.emplace_or_replace<MeshStyle>(e, std::move(styles.meshStyle));
+                    auto& geom = r.emplace_or_replace<MeshGeometry>(e, std::move(ws.meshGeom));
+                    r.emplace_or_replace<Mesh>(e, geom, style);
+                }
+            });
+    }
+
+    return e;
 }
 
+#if 0
 void
 FeatureView::generate(FeatureView::PrimitivesRef& output, const SRS& output_srs)
 {
@@ -437,3 +471,5 @@ FeatureView::generate(FeatureView::PrimitivesRef& output, const SRS& output_srs)
         }
     }
 }
+
+#endif

@@ -170,7 +170,7 @@ namespace
             }
             else
             {
-                track_visibility.visible.fill(false);
+                track_visibility.visible = false;
             }
         }
 

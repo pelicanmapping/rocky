@@ -8,8 +8,7 @@
 #include <rocky/ElevationSampler.h>
 #include <rocky/ecs/Line.h>
 #include <rocky/ecs/Mesh.h>
-
-#include <functional>
+#include <rocky/ecs/Registry.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -20,8 +19,8 @@ namespace ROCKY_NAMESPACE
     */
     struct StyleSheet
     {
-        LineStyle line;
-        MeshStyle mesh;
+        LineStyle lineStyle;
+        MeshStyle meshStyle;
 
         // EXPERIMENTAL, may change
         std::function<Color(const Feature&)> meshColorFunction;
@@ -41,51 +40,14 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Return value from FeatureView generate().
-        struct Primitives
+        struct Workspace
         {
-            Line line;
             LineGeometry lineGeom;
-            LineStyle lineStyle;
-
-            Mesh mesh;
             MeshGeometry meshGeom;
-            MeshStyle meshStyle;
 
             inline bool empty() const {
-                return lineGeom.points.empty() && meshGeom.triangles.empty();
+                return lineGeom.points.empty() && meshGeom.vertices.empty();
             }
-
-            //! Creates components for the primitive data and moves them
-            //! into the registry. After calling this method, the member
-            //! primitives are reset.
-            inline entt::entity createEntity(entt::registry& r) {
-                if (empty())
-                    return entt::null;
-
-                auto e = r.create();
-
-                if (!lineGeom.points.empty())
-                {
-                    auto& style = r.emplace<LineStyle>(e, std::move(lineStyle));
-                    auto& geom = r.emplace<LineGeometry>(e, std::move(lineGeom));
-                    r.emplace<Line>(e, geom, style);
-                    
-                }
-                if (!meshGeom.triangles.empty())
-                {
-                    auto& style = r.emplace<MeshStyle>(e, std::move(meshStyle));
-                    auto& geom = r.emplace<MeshGeometry>(e, std::move(meshGeom));
-                    r.emplace<Mesh>(e, geom, style);
-                }
-                return e;
-            }
-        };
-
-        //! Return value from FeatureView generate().
-        struct PrimitivesRef
-        {
-            LineGeometry* lineGeom = nullptr;
-            MeshGeometry* meshGeom = nullptr;
         };
 
     public:
@@ -103,6 +65,10 @@ namespace ROCKY_NAMESPACE
         //! An optional elevation sampler will create clamped geometry.
         ElevationSession clamper;
 
+        //! A target entity to which to attach generated primitives.
+        //! If you leave this at entt::null, a new entity will be created.
+        entt::entity entity = entt::null;
+
     public:
         //! Default construct - no data
         FeatureView() = default;
@@ -112,9 +78,10 @@ namespace ROCKY_NAMESPACE
         //! @param srs SRS of resulting geometry; Usually this should be the World SRS of your map.
         //! @param runtime Runtime operations interface
         //! @return Collection of primtives representing the feature geometry
-        Primitives generate(const SRS& output_srs);
+        entt::entity generate(const SRS& output_srs, Registry& r);
+        
 
     protected:
-        void generate(PrimitivesRef& working, const SRS& output_srs);
+        //void generate(PrimitivesRef& working, const SRS& output_srs);
     };
 }

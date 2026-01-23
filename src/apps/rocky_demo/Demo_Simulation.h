@@ -60,16 +60,21 @@ namespace
     {
         std::vector<entt::entity> entities;
 
-        auto render_widget = [&image, &showPosition, context](WidgetInstance& i)
+        auto renderEntity = [&image, &showPosition, context](WidgetInstance& i)
             {
                 auto& platform = i.registry.get<SimulatedPlatform>(i.entity);
                 auto& xform = i.registry.get<Transform>(i.entity);
 
                 auto pointECEF = xform.position.transform(SRS::ECEF);
 
+                float red = ((int)i.entity % 3) == 0 ? 0.5f : 0.0f;
+                float green = ((int)i.entity % 3) == 1 ? 0.5f : 0.0f;
+                float blue = ((int)i.entity % 3) == 2 ? 0.5f : 0.0f;
+
                 ImGui::SetCurrentContext(i.context);
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
-                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0.65f));
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7.0f);
+                ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(red, green, blue, 0.65f));
                 ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
 
                 ImGui::SetNextWindowPos(
@@ -109,11 +114,11 @@ namespace
                 ImGui::End();
 
                 ImGui::PopStyleColor(2);
-                ImGui::PopStyleVar();
+                ImGui::PopStyleVar(2);
 
                 // update decluttering volume
                 auto& dc = i.registry.get<Declutter>(i.entity);
-                dc.rect = Rect(size.x, size.y);
+                dc.rect = Rect(0, 0, size.x, size.y);
             };
 
         auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
@@ -164,7 +169,7 @@ namespace
 
             // Add a widget to render the HUD:
             auto& widget = registry.emplace<Widget>(entity);
-            widget.render = render_widget;
+            widget.render = renderEntity;
 
             // Add the dropline for this entity:
             registry.emplace<Line>(entity, dropGeom, dropStyle);

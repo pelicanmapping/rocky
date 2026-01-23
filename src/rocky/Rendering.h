@@ -18,8 +18,18 @@ namespace ROCKY_NAMESPACE
 
     //! ViewLocal is a container that holds data on a per-view basis.
     template<typename T>
-    struct ViewLocal : public std::array<T, ROCKY_MAX_NUMBER_OF_VIEWS> {
+    struct ViewLocal : public std::array<T, ROCKY_MAX_NUMBER_OF_VIEWS>
+    {
+        //! default construct
         ViewLocal() = default;
+
+        //! Construct with uniform value
         explicit ViewLocal(T v) { fill(v); };
+
+        //! Set all views to a value (same as fill)
+        ViewLocal<T>& operator = (T v) {
+            this->fill(v);
+            return *this;
+        }
     };
 }

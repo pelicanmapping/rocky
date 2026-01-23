@@ -39,6 +39,12 @@ namespace ROCKY_NAMESPACE
                 });
         }
 
+        inline static void dirty(entt::registry& r, entt::entity e)
+        {
+            r.get<DERIVED>(e).owner = e;
+            r.get<DERIVED>(e).dirty(r);
+        }
+
         template<class CALLABLE>
         inline static void eachDirty(entt::registry& r, CALLABLE&& func)
         {
