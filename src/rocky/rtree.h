@@ -30,7 +30,8 @@
 #define RTREE_QUAL RTree<DATATYPE, ELEMTYPE, NUMDIMS, ELEMTYPEREAL, TMAXNODES, TMINNODES>
 
 #define RTREE_DONT_USE_MEMPOOLS // This version does not contain a fixed memory allocator, fill in lines with EXAMPLE to implement one.
-#define RTREE_USE_SPHERICAL_VOLUME // Better split classification, may be slower on some systems
+// #define RTREE_USE_SPHERICAL_VOLUME // Better split classification, may be slower on some systems
+#define RTREE_USE_LINEAR_SPLIT // Faster O(n) split seed selection instead of O(n²)
 
 // gw
 #define RTREE_STOP_SEARCHING false
@@ -353,6 +354,7 @@ protected:
     void DisconnectBranch(Node* a_node, int a_index);
     int PickBranch(const Rect* a_rect, Node* a_node);
     Rect CombineRect(const Rect* a_rectA, const Rect* a_rectB);
+    void CombineRect(const Rect* a_rectA, const Rect* a_rectB, Rect* a_result);
     void SplitNode(Node* a_node, const Branch* a_branch, Node** a_newNode);
     ELEMTYPEREAL RectSphericalVolume(Rect* a_rect);
     ELEMTYPEREAL RectVolume(Rect* a_rect);
@@ -362,6 +364,7 @@ protected:
     void LoadNodes(Node* a_nodeA, Node* a_nodeB, PartitionVars* a_parVars);
     void InitParVars(PartitionVars* a_parVars, int a_maxRects, int a_minFill);
     void PickSeeds(PartitionVars* a_parVars);
+    void PickSeedsLinear(PartitionVars* a_parVars);
     void Classify(int a_index, int a_group, PartitionVars* a_parVars);
     bool RemoveRect(Rect* a_rect, const DATATYPE& a_id, Node** a_root);
     bool RemoveRectRec(Rect* a_rect, const DATATYPE& a_id, Node* a_node, ListNode** a_listNode);
@@ -381,6 +384,8 @@ protected:
 
     Node* m_root;                                    ///< Root of tree
     ELEMTYPEREAL m_unitSphereVolume;                 ///< Unit sphere constant for required number of dimensions
+    std::vector<Node*> m_freeNodes;                  ///< Pool of free nodes for reuse
+    std::vector<ListNode*> m_freeListNodes;          ///< Pool of free list nodes for reuse
 
 public:
     // return all the AABBs that form the RTree
@@ -856,6 +861,18 @@ void RTREE_QUAL::Reset()
 #ifdef RTREE_DONT_USE_MEMPOOLS
     // Delete all existing nodes
     RemoveAllRec(m_root);
+    // Clean up node pool
+    for (Node* node : m_freeNodes)
+    {
+        delete node;
+    }
+    m_freeNodes.clear();
+    // Clean up list node pool
+    for (ListNode* node : m_freeListNodes)
+    {
+        delete node;
+    }
+    m_freeListNodes.clear();
 #else // RTREE_DONT_USE_MEMPOOLS
     // Just reset memory pools.  We are not using complex types
     // EXAMPLE
@@ -885,7 +902,15 @@ typename RTREE_QUAL::Node* RTREE_QUAL::AllocNode()
 {
     Node* newNode;
 #ifdef RTREE_DONT_USE_MEMPOOLS
-    newNode = new Node;
+    if (!m_freeNodes.empty())
+    {
+        newNode = m_freeNodes.back();
+        m_freeNodes.pop_back();
+    }
+    else
+    {
+        newNode = new Node;
+    }
 #else // RTREE_DONT_USE_MEMPOOLS
     // EXAMPLE
 #endif // RTREE_DONT_USE_MEMPOOLS
@@ -900,7 +925,7 @@ void RTREE_QUAL::FreeNode(Node* a_node)
     ASSERT(a_node);
 
 #ifdef RTREE_DONT_USE_MEMPOOLS
-    delete a_node;
+    m_freeNodes.push_back(a_node);
 #else // RTREE_DONT_USE_MEMPOOLS
     // EXAMPLE
 #endif // RTREE_DONT_USE_MEMPOOLS
@@ -913,6 +938,12 @@ RTREE_TEMPLATE
 typename RTREE_QUAL::ListNode* RTREE_QUAL::AllocListNode()
 {
 #ifdef RTREE_DONT_USE_MEMPOOLS
+    if (!m_freeListNodes.empty())
+    {
+        ListNode* node = m_freeListNodes.back();
+        m_freeListNodes.pop_back();
+        return node;
+    }
     return new ListNode;
 #else // RTREE_DONT_USE_MEMPOOLS
     // EXAMPLE
@@ -924,7 +955,7 @@ RTREE_TEMPLATE
 void RTREE_QUAL::FreeListNode(ListNode* a_listNode)
 {
 #ifdef RTREE_DONT_USE_MEMPOOLS
-    delete a_listNode;
+    m_freeListNodes.push_back(a_listNode);
 #else // RTREE_DONT_USE_MEMPOOLS
     // EXAMPLE
 #endif // RTREE_DONT_USE_MEMPOOLS
@@ -1069,7 +1100,7 @@ typename RTREE_QUAL::Rect RTREE_QUAL::NodeCover(Node* a_node)
     Rect rect = a_node->m_branch[0].m_rect;
     for (int index = 1; index < a_node->m_count; ++index)
     {
-        rect = CombineRect(&rect, &(a_node->m_branch[index].m_rect));
+        CombineRect(&rect, &(a_node->m_branch[index].m_rect), &rect);
     }
 
     return rect;
@@ -1140,7 +1171,7 @@ int RTREE_QUAL::PickBranch(const Rect* a_rect, Node* a_node)
     {
         Rect* curRect = &a_node->m_branch[index].m_rect;
         area = CalcRectVolume(curRect);
-        tempRect = CombineRect(a_rect, curRect);
+        CombineRect(a_rect, curRect, &tempRect);
         increase = CalcRectVolume(&tempRect) - area;
         if ((increase < bestIncr) || firstTime)
         {
@@ -1175,6 +1206,20 @@ typename RTREE_QUAL::Rect RTREE_QUAL::CombineRect(const Rect* a_rectA, const Rec
     }
 
     return newRect;
+}
+
+
+// Combine two rectangles into larger one containing both (output parameter version)
+RTREE_TEMPLATE
+void RTREE_QUAL::CombineRect(const Rect* a_rectA, const Rect* a_rectB, Rect* a_result)
+{
+    ASSERT(a_rectA && a_rectB && a_result);
+
+    for (int index = 0; index < NUMDIMS; ++index)
+    {
+        a_result->m_min[index] = Min(a_rectA->m_min[index], a_rectB->m_min[index]);
+        a_result->m_max[index] = Max(a_rectA->m_max[index], a_rectB->m_max[index]);
+    }
 }
 
 
@@ -1296,7 +1341,7 @@ void RTREE_QUAL::GetBranches(Node* a_node, const Branch* a_branch, PartitionVars
     a_parVars->m_coverSplit = a_parVars->m_branchBuf[0].m_rect;
     for (int index = 1; index < MAXNODES + 1; ++index)
     {
-        a_parVars->m_coverSplit = CombineRect(&a_parVars->m_coverSplit, &a_parVars->m_branchBuf[index].m_rect);
+        CombineRect(&a_parVars->m_coverSplit, &a_parVars->m_branchBuf[index].m_rect, &a_parVars->m_coverSplit);
     }
     a_parVars->m_coverSplitArea = CalcRectVolume(&a_parVars->m_coverSplit);
 }
@@ -1322,20 +1367,25 @@ void RTREE_QUAL::ChoosePartition(PartitionVars* a_parVars, int a_minFill)
     int group, chosen = 0, betterGroup = 0;
 
     InitParVars(a_parVars, a_parVars->m_branchCount, a_minFill);
+#ifdef RTREE_USE_LINEAR_SPLIT
+    PickSeedsLinear(a_parVars);
+#else
     PickSeeds(a_parVars);
+#endif
 
     while (((a_parVars->m_count[0] + a_parVars->m_count[1]) < a_parVars->m_total)
         && (a_parVars->m_count[0] < (a_parVars->m_total - a_parVars->m_minFill))
         && (a_parVars->m_count[1] < (a_parVars->m_total - a_parVars->m_minFill)))
     {
         biggestDiff = (ELEMTYPEREAL)-1;
+        Rect rect0, rect1;  // Reused across iterations
         for (int index = 0; index < a_parVars->m_total; ++index)
         {
             if (PartitionVars::NOT_TAKEN == a_parVars->m_partition[index])
             {
                 Rect* curRect = &a_parVars->m_branchBuf[index].m_rect;
-                Rect rect0 = CombineRect(curRect, &a_parVars->m_cover[0]);
-                Rect rect1 = CombineRect(curRect, &a_parVars->m_cover[1]);
+                CombineRect(curRect, &a_parVars->m_cover[0], &rect0);
+                CombineRect(curRect, &a_parVars->m_cover[1], &rect1);
                 ELEMTYPEREAL growth0 = CalcRectVolume(&rect0) - a_parVars->m_area[0];
                 ELEMTYPEREAL growth1 = CalcRectVolume(&rect1) - a_parVars->m_area[1];
                 ELEMTYPEREAL diff = growth1 - growth0;
@@ -1454,6 +1504,62 @@ void RTREE_QUAL::PickSeeds(PartitionVars* a_parVars)
                 worst = waste;
                 seed0 = indexA;
                 seed1 = indexB;
+            }
+        }
+    }
+
+    Classify(seed0, 0, a_parVars);
+    Classify(seed1, 1, a_parVars);
+}
+
+
+// Linear time seed selection - O(NUMDIMS * n) instead of O(n²)
+// Finds the most extreme entries along each dimension and picks the pair
+// with the greatest normalized separation.
+RTREE_TEMPLATE
+void RTREE_QUAL::PickSeedsLinear(PartitionVars* a_parVars)
+{
+    int seed0 = 0, seed1 = 1;
+    ELEMTYPEREAL maxNormalizedSeparation = (ELEMTYPEREAL)-1;
+
+    for (int dim = 0; dim < NUMDIMS; ++dim)
+    {
+        // Find entries with highest low and lowest high along this dimension
+        ELEMTYPE highestLow = a_parVars->m_branchBuf[0].m_rect.m_min[dim];
+        ELEMTYPE lowestHigh = a_parVars->m_branchBuf[0].m_rect.m_max[dim];
+        int highestLowIdx = 0, lowestHighIdx = 0;
+        ELEMTYPE overallLow = highestLow;
+        ELEMTYPE overallHigh = a_parVars->m_branchBuf[0].m_rect.m_max[dim];
+
+        for (int i = 1; i < a_parVars->m_total; ++i)
+        {
+            ELEMTYPE low = a_parVars->m_branchBuf[i].m_rect.m_min[dim];
+            ELEMTYPE high = a_parVars->m_branchBuf[i].m_rect.m_max[dim];
+
+            if (low > highestLow)
+            {
+                highestLow = low;
+                highestLowIdx = i;
+            }
+            if (high < lowestHigh)
+            {
+                lowestHigh = high;
+                lowestHighIdx = i;
+            }
+            if (low < overallLow) overallLow = low;
+            if (high > overallHigh) overallHigh = high;
+        }
+
+        // Calculate normalized separation for this dimension
+        ELEMTYPEREAL width = (ELEMTYPEREAL)(overallHigh - overallLow);
+        if (width > 0)
+        {
+            ELEMTYPEREAL separation = (ELEMTYPEREAL)(highestLow - lowestHigh) / width;
+            if (separation > maxNormalizedSeparation && highestLowIdx != lowestHighIdx)
+            {
+                maxNormalizedSeparation = separation;
+                seed0 = highestLowIdx;
+                seed1 = lowestHighIdx;
             }
         }
     }
