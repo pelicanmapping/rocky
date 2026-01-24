@@ -90,7 +90,7 @@ auto Demo_ElevationSampler = [](Application& app)
                         {
                             auto& transform = r.get<Transform>(entity);
                             transform.position = p;
-                            transform.dirty();
+                            transform.dirty(r);
                         });
 
                     mouse = p.transform(SRS::WGS84);
@@ -144,6 +144,7 @@ auto Demo_ElevationSampler = [](Application& app)
             else if (sample.working())
             {
                 ImGuiLTable::Text("Elevation sampler:", "%s", "...");
+                ImGuiLTable::Text("Geometric error:", "%s", "...");
 
                 if (sample.working())
                     app.vsgcontext->requestFrame();

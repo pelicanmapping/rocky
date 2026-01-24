@@ -20,7 +20,7 @@ namespace ROCKY_NAMESPACE
     {
         // Revision.
         int revision = 0;
-        void dirty() { ++revision; }
+        void dirty(entt::registry&) { ++revision; }
 
         //! Georeferenced position
         GeoPoint position;
@@ -45,5 +45,8 @@ namespace ROCKY_NAMESPACE
         //! True if objects positioned with this transform should be clipped
         //! to the view frustum.
         bool frustumCulled = true;
+
+        [[deprecated]]
+        void dirty() { ++revision; }
     };
 }

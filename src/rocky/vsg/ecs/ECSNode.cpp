@@ -17,6 +17,61 @@
 ROCKY_ABOUT(entt, ENTT_VERSION);
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
+
+
+SimpleSystemNodeBase::SimpleSystemNodeBase(Registry& in_registry) :
+    System(in_registry)
+{
+    _toCompile = vsg::Objects::create();
+    _toDispose = vsg::Objects::create();
+}
+
+void
+SimpleSystemNodeBase::update(VSGContext& vsgcontext)
+{
+    if (!_pipelinesCompiled)
+    {
+        if (!_pipelines.empty())
+            requestCompile(_pipelines[0].commands);
+        _pipelinesCompiled = true;
+    }
+
+    // compiles:
+    if (_toCompile->children.size() > 0)
+    {
+        auto r = vsgcontext->compile(_toCompile);
+        _toCompile->children.clear();
+
+        if (!r)
+        {
+            Log()->critical("Compile failure in {}. {}", className(), r.message);
+            status = Failure(Failure::AssertionFailure, "Compile failure");
+        }
+    }
+
+    // disposals
+    if (_toDispose->children.size() > 0)
+    {
+        vsgcontext->dispose(_toDispose);
+        _toDispose = vsg::Objects::create();
+    }
+
+    // uploads:
+    if (!_buffersToUpload.empty())
+    {
+        vsgcontext->upload(_buffersToUpload);
+        _buffersToUpload.clear();
+    }
+    if (!_imagesToUpload.empty())
+    {
+        vsgcontext->upload(_imagesToUpload);
+        _imagesToUpload.clear();
+    }
+
+    System::update(vsgcontext);
+}
+
 
 
 ECSNode::ECSNode(Registry& reg) :

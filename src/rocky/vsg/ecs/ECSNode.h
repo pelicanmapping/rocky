@@ -12,59 +12,14 @@ namespace ROCKY_NAMESPACE
 {
     namespace detail
     {
-        class SimpleSystemNodeBase : public vsg::Inherit<vsg::Compilable, SimpleSystemNodeBase>,
+        class ROCKY_EXPORT SimpleSystemNodeBase : 
+            public vsg::Inherit<vsg::Compilable, SimpleSystemNodeBase>,
             public System
         {
         protected:
-            SimpleSystemNodeBase(Registry& in_registry) : System(in_registry)
-            {
-                _toCompile = vsg::Objects::create();
-                _toDispose = vsg::Objects::create();
-            }
+            SimpleSystemNodeBase(Registry& in_registry);
 
-            void update(VSGContext& vsgcontext) override
-            {
-                if (!_pipelinesCompiled)
-                {
-                    if (!_pipelines.empty())
-                        requestCompile(_pipelines[0].commands);
-                    _pipelinesCompiled = true;
-                }
-
-                // compiles:
-                if (_toCompile->children.size() > 0)
-                {
-                    auto r = vsgcontext->compile(_toCompile);
-                    _toCompile->children.clear();
-
-                    if (!r)
-                    {
-                        Log()->critical("Compile failure in {}. {}", className(), r.message);
-                        status = Failure(Failure::AssertionFailure, "Compile failure");
-                    }
-                }
-
-                // disposals
-                if (_toDispose->children.size() > 0)
-                {
-                    vsgcontext->dispose(_toDispose);
-                    _toDispose = vsg::Objects::create();
-                }
-
-                // uploads:
-                if (!_buffersToUpload.empty())
-                {
-                    vsgcontext->upload(_buffersToUpload);
-                    _buffersToUpload.clear();
-                }
-                if (!_imagesToUpload.empty())
-                {
-                    vsgcontext->upload(_imagesToUpload);
-                    _imagesToUpload.clear();
-                }
-
-                System::update(vsgcontext);
-            }
+            void update(VSGContext& vsgcontext) override;
 
             inline void requestCompile(vsg::Object* object) {
                 _toCompile->addChild(vsg::ref_ptr<vsg::Object>(object));

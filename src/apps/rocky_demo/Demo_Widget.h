@@ -62,14 +62,14 @@ auto Demo_Widget = [](Application& app)
             {
                 if (move_widget_on_map_click)
                 {
-                    app.registry.read([&](entt::registry& registry)
+                    app.registry.read([&](entt::registry& r)
                         {
-                            auto& transform = registry.get<Transform>(entity);
+                            auto& transform = r.get<Transform>(entity);
                             auto old = transform.position.transform(SRS::WGS84);
                             auto pos = p.transform(SRS::WGS84);
                             pos.z = old.z;
                             transform.position = pos;
-                            transform.dirty();
+                            transform.dirty(r);
                         });
                 }
             });
@@ -165,13 +165,13 @@ auto Demo_Widget = [](Application& app)
         auto& transform = reg.get<Transform>(entity);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
-            transform.dirty();
+            transform.dirty(reg);
 
         if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))
-            transform.dirty();
+            transform.dirty(reg);
 
         if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2'500'000.0, "%.1lf"))
-            transform.dirty();
+            transform.dirty(reg);
 
         ImGuiLTable::End();
     }

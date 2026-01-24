@@ -262,13 +262,13 @@ auto Demo_Line_Relative = [](Application& app)
         auto& transform = r.get<Transform>(entity);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
-            transform.dirty();
+            transform.dirty(r);
 
         if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))
-            transform.dirty();
+            transform.dirty(r);
 
         if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
-            transform.dirty();
+            transform.dirty(r);
 
         ImGuiLTable::End();
     }
@@ -390,7 +390,7 @@ auto Demo_Line_Shared = [](Application& app)
                         {
                             double r = 360 * sin(0.01 * (double)app.frameCount());
                             t.localMatrix = glm::mat4_cast(glm::angleAxis(glm::radians(r), glm::dvec3(0.0, 0.0, 1.0)));
-                            t.dirty();
+                            t.dirty(reg);
                         }
                     });
 

@@ -123,13 +123,13 @@ auto Demo_Label = [](Application& app)
         auto& transform = reg.get<Transform>(entity);
 
         if (ImGuiLTable::SliderDouble("Latitude", &transform.position.y, -85.0, 85.0, "%.1lf"))
-            transform.dirty();
+            transform.dirty(reg);
 
         if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))
-            transform.dirty();
+            transform.dirty(reg);
 
         if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
-            transform.dirty();
+            transform.dirty(reg);
 
         ImGuiLTable::End();
     }

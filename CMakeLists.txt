@@ -17,7 +17,7 @@ project(
 )
 
 # please update this with each ABI change!!
-set(PROJECT_VERSION_ABI 36)
+set(PROJECT_VERSION_ABI 37)
 
 # require C++17
 set(CMAKE_CXX_STANDARD 17)

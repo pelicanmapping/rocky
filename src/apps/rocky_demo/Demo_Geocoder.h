@@ -138,19 +138,19 @@ auto Demo_Geocoder = [](Application& app)
                                     featureView.styles.lineStyle.depthOffset = 9000.0f; // meters
                                     featureView.generate(app.mapNode->srs(), app.registry);
 
-                                    app.registry.write([&](entt::registry& reg)
+                                    app.registry.write([&](entt::registry& r)
                                         {                                            
-                                            placemark.show(reg, true);
+                                            placemark.show(r, true);
 
                                             // update the label and the transform:
-                                            auto&& [xform, label] = reg.get<Transform, Label>(placemark.label);
+                                            auto&& [xform, label] = r.get<Transform, Label>(placemark.label);
 
                                             auto text = display_name;
                                             util::replaceInPlace(text, ", ", "\n");
                                             label.text = text;
 
                                             xform.position = myfeature.extent.centroid();
-                                            xform.dirty();
+                                            xform.dirty(r);
                                         });
                                 }
                             });

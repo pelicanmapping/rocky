@@ -6,7 +6,6 @@
 #pragma once
 #include <rocky/vsg/ecs/FeatureView.h>
 #include <rocky/GDALFeatureSource.h>
-#include <rocky/ecs/EntityCollectionLayer.h>
 #include <random>
 #include "helpers.h"
 

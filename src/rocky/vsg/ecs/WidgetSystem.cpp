@@ -71,7 +71,8 @@ WidgetSystemNode::initialize(VSGContext& context)
                 ImGuiWindowFlags_NoInputs |
                 ImGuiWindowFlags_NoBringToFrontOnFocus |
                 ImGuiWindowFlags_NoFocusOnAppearing |
-                ImGuiWindowFlags_NoSavedSettings;
+                ImGuiWindowFlags_NoSavedSettings |
+                ImGuiWindowFlags_NoDocking;
 
             auto view = reg.view<Widget, WidgetRenderable, TransformDetail, Visibility, ActiveState>();
             for (auto&& [entity, widget, renderable, xdetail, visibility, active] : view.each())

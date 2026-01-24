@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
 
             if (last_time != vsg::time_point::min())
             {
-                auto [lock, registry] = _registry.read();
+                auto [lock, reg] = _registry.read();
 
                 const glm::dvec3 zero{ 0.0, 0.0, 0.0 };
 
@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
                 double dt = 1e-9 * (double)(time - last_time).count();
 
                 // Join query all motions + transform pairs:
-                registry.view<Motion, Transform, TransformDetail>().each([&](auto& motion, auto& transform, auto& transform_detail)
+                reg.view<Motion, Transform, TransformDetail>().each([&](auto& motion, auto& transform, auto& transform_detail)
                     {
                         if (motion.velocity != zero && transform.revision == transform_detail.sync.revision)
                         {
@@ -56,13 +56,13 @@ namespace ROCKY_NAMESPACE
 
                             pos_to_world.inverse(world, pos);
 
-                            transform.dirty();
+                            transform.dirty(reg);
                         }
 
                         motion.velocity += motion.acceleration * dt;
                     });
 
-                registry.view<MotionGreatCircle, Transform, TransformDetail>().each([&](auto& motion, auto& transform, auto& detail)
+                reg.view<MotionGreatCircle, Transform, TransformDetail>().each([&](auto& motion, auto& transform, auto& detail)
                     {
                         // Note. For this demo, we just use the length of the velocity and acceleration
                         // vectors and ignore direction.
@@ -90,7 +90,7 @@ namespace ROCKY_NAMESPACE
                             // move the point:
                             pos = pos.srs.ellipsoid().rotate(world, motion.normalAxis, angle);
 
-                            transform.dirty();
+                            transform.dirty(reg);
                         }
 
                         motion.velocity += motion.acceleration * dt;

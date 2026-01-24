@@ -35,31 +35,6 @@ namespace ROCKY_NAMESPACE
         ImGuiContext* context;
         std::uint32_t viewID;
     };
-
-    //! Helper RAII class for creating an non-styled widget window
-    struct WidgetStyleEmpty
-    {
-        WidgetInstance& _i;
-
-        WidgetStyleEmpty(WidgetInstance& i) : _i(i)
-        {
-            ImGui::SetCurrentContext(i.context);
-            ImGui::SetNextWindowBgAlpha(0.0f); // fully transparent background
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, (float)0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
-            ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 1));
-            ImGui::SetNextWindowPos(ImVec2{ i.position.x, i.position.y }, ImGuiCond_Always, ImVec2{ 0.5f, 0.5f });
-            ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
-        }
-
-        ~WidgetStyleEmpty()
-        {
-            //_i.size = ImGui::GetWindowSize();
-            ImGui::End();
-            ImGui::PopStyleColor(1);
-            ImGui::PopStyleVar(2);
-        }
-    };
 }
 
 #endif
