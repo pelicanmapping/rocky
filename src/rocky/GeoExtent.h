@@ -25,19 +25,17 @@ namespace ROCKY_NAMESPACE
         GeoExtent(GeoExtent&& rhs) noexcept = default;
         GeoExtent& operator=(GeoExtent&&) noexcept = default;
 
-        /** Contructs a valid extent */
+        //! Contructs a valid extent
         GeoExtent(
             const SRS& srs,
             double west, double south,
             double east, double north);
 
-        /** Contructs an invalid extent that you can grow with the expandToInclude method */
+        //! Contructs an invalid extent that you can grow with the expandToInclude method
         GeoExtent(const SRS& srs);
 
-        /** create from Bounds object */
-        GeoExtent(
-            const SRS& srs,
-            const Box& bounds);
+        //! create from Bounds object
+        GeoExtent(const SRS& srs, const Box& bounds);
 
         //! Set from the SW and NE corners.
         void set(double west, double south, double east, double north);
@@ -50,7 +48,7 @@ namespace ROCKY_NAMESPACE
         //! the SRS vertical datum is NOT considered.
         bool operator != (const GeoExtent& rhs) const;
 
-        /** Gets the spatial reference system underlying this extent. */
+        //! Gets the spatial reference system underlying this extent.
         const SRS& srs() const { return _srs; }
 
         //! Coordinates of the bounding edges, normalized for the lat/long frame if necessary
@@ -90,9 +88,11 @@ namespace ROCKY_NAMESPACE
         void getBounds(double& xmin, double& ymin, double& xmax, double& ymax) const;
 
         //! True if this object defines a real, valid extent with positive area
-        inline bool valid() const
-        {
+        inline bool valid() const {
             return _srs.valid() && _width >= 0.0 && _height >= 0.0;
+        }
+        inline operator bool() const {
+            return valid();
         }
 
         //! If this extent crosses the international date line, populates two extents, one for
