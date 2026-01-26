@@ -17,3 +17,8 @@ target_link_libraries(${APP_NAME} rocky imgui::imgui)
 install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 
 set_target_properties(${APP_NAME} PROPERTIES FOLDER "apps")
+
+# MSVC requires /bigobj on debug mode
+if(MSVC)
+    target_compile_options(${APP_NAME} PRIVATE "$<$<CONFIG:Debug>:/bigobj>")
+endif()
