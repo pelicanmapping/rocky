@@ -399,24 +399,24 @@
 
 
 <h1 id="struct-scopedgate">struct ScopedGate</h1>
-<p><em>Defined at src/rocky/Threading.h#87</em></p>
+<p><em>Defined at src/rocky/Threading.h#90</em></p>
 <p>Gate the locks for the duration of this object's scope</p>
 <h2 id="functions">Functions</h2>
 <h3 id="scopedgate">ScopedGate<T></h3>
 <p><em>public void ScopedGate<T>(Gate<T> &amp; gate, const T &amp; key)</em></p>
-<p><em>Defined at src/rocky/Threading.h#91</em></p>
+<p><em>Defined at src/rocky/Threading.h#94</em></p>
 <p>Lock a gate based on key "key"</p>
 <h3 id="scopedgate_1">ScopedGate<T></h3>
 <p><em>public void ScopedGate<T>(Gate<T> &amp; gate, const T &amp; key, CALLABLE &amp;&amp; pred)</em></p>
-<p><em>Defined at src/rocky/Threading.h#102</em></p>
+<p><em>Defined at src/rocky/Threading.h#105</em></p>
 <p>Lock a gate based on key "key" IFF the predicate is true, else it's a nop.</p>
 <h3 id="scopedgate_2">ScopedGate<T></h3>
 <p><em>public void ScopedGate<T>(int &amp; gate, const T &amp; key)</em></p>
-<p><em>Defined at src/rocky/Threading.h#111</em></p>
+<p><em>Defined at src/rocky/Threading.h#114</em></p>
 <p>Lock a gate if the pointer to the gate is valid; else NOOP.</p>
 <h3 id="scopedgate_3">~ScopedGate<T></h3>
 <p><em>public void ~ScopedGate<T>()</em></p>
-<p><em>Defined at src/rocky/Threading.h#120</em></p>
+<p><em>Defined at src/rocky/Threading.h#123</em></p>
 <p>End-of-scope destructor unlocks the gate</p>
 
 
