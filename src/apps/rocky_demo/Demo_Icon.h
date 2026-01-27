@@ -8,6 +8,8 @@
 
 using namespace ROCKY_NAMESPACE;
 
+/** Demonstrates how to create your own Component type (MyIcon) and render it as a Widget. */
+
 auto Demo_Icon = [](Application& app)
 {
     static entt::entity entity = entt::null;
@@ -80,7 +82,7 @@ auto Demo_Icon = [](Application& app)
 
         // Transform to place the icon:
         auto& transform = reg.emplace<Transform>(entity);
-        transform.position = GeoPoint(SRS::WGS84, 2.35, 48.8575, 0);
+        transform.position = GeoPoint(SRS::WGS84, 2.35, 48.8575, 0); // Paris, France
 
         app.vsgcontext->requestFrame();
     }

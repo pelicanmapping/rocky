@@ -31,8 +31,8 @@ auto Demo_EntityCollectionLayer = [](Application& app)
                     // Create a new entity for the widget:
                     auto entity = r.create();
 
-                    auto& widget = r.emplace<Widget>(entity);
-                    widget.text = "ECL Widget #" + std::to_string(i + 1);
+                    auto& label = r.emplace<Label>(entity);
+                    label.text = "ECL Widget #" + std::to_string(i + 1);
 
                     auto& xform = r.emplace<Transform>(entity);
                     xform.position = GeoPoint(SRS::WGS84, -25.0 + i * 5.0, 25.0 - i * 5.0, 500'000.0);

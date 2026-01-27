@@ -24,7 +24,7 @@ namespace
         si.lighting = false;
 
         vsg::GeometryInfo gi;
-        gi.dx = { width, 0, 0 }, gi.dy = { 0, width, 0 }, gi.dz = { 0, 0, len };
+        gi.dx = { width, 0, 0 }, gi.dy = { 0, width, 0 }, gi.dz = { 0, 0, len*0.95f };
 
         gi.color = to_vsg(Color::Cyan);
         group->addChild(builder.createCylinder(gi, si));
@@ -43,15 +43,6 @@ namespace
         app.registry.write([&](entt::registry& r)
             {
                 auto& style = r.emplace<LabelStyle>(r.create());
-
-                //auto render = [](WidgetInstance& i)
-                //    {
-                //        ImGuiContextScope scope(i.context);
-                //        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                //        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, i.size.x / 2.0);
-                //        i.renderWindow([&i]() { ImGui::Text("%s", i.widget.text.c_str()); });
-                //        ImGui::PopStyleVar(2);
-                //    };
 
                 auto add = [&](const GeoPoint& pos, const std::string& text)
                     {

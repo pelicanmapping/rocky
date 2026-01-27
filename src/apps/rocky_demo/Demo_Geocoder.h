@@ -19,7 +19,7 @@ auto Demo_Geocoder = [](Application& app)
 
         void create(entt::registry& reg)
         {
-            // configure a line geometry that will display the outline of the selected place:
+            // configure a line that will display the outline of the selected place:
             outline = reg.create();
             auto& geom = reg.emplace<LineGeometry>(outline);
             auto& style = reg.emplace<LineStyle>(outline);
@@ -42,7 +42,7 @@ auto Demo_Geocoder = [](Application& app)
 
     static Placemark placemark;
 
-    static jobs::future<Result<std::vector<Feature>>> geocoding_task;
+    static Future<Result<std::vector<Feature>>> geocoding_task;
     static char input_buf[256];
 
     if (placemark.label == entt::null)

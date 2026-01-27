@@ -17,7 +17,7 @@ auto Demo_LineFeatures = [](Application& app)
         Result<> status;
         std::shared_ptr<rocky::FeatureSource> fs;
     };
-    static jobs::future<LoadedFeatures> data;
+    static Future<LoadedFeatures> data;
     static std::vector<entt::entity> entities;
 
     if (entities.empty())

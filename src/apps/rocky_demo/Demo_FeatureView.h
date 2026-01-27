@@ -31,6 +31,7 @@ auto Demo_FeatureView = [](Application& app)
             view.features.emplace_back(std::move(feature));
             view.styles.lineStyle.color = Color::Yellow;
             view.styles.lineStyle.stipplePattern = 0xF0F0; // dashed line
+            view.styles.lineStyle.depthOffset = 50000;
 
             entity = view.generate(app.mapNode->srs(), app.registry);
 

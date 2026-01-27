@@ -1,11 +1,10 @@
-/** * rocky c++
+/** rocky c++
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
 #pragma once
 #include <rocky/ecs/Registry.h>
 #include "helpers.h"
-#include <deque>
 
 using namespace ROCKY_NAMESPACE;
 

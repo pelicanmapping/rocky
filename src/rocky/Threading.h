@@ -13,6 +13,9 @@ namespace ROCKY_NAMESPACE
 {
     using Cancelable = WEEJOBS_NAMESPACE::cancelable;
 
+    template<class T>
+    using Future = WEEJOBS_NAMESPACE::future<T>;
+
     namespace detail
     {
         //! Sets the name of the current thread

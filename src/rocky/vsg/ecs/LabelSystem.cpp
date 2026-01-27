@@ -43,7 +43,6 @@ LabelSystem::LabelSystem(Registry& registry) :
 
             ImGui::SetCurrentContext(i.context);
 
-
             ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, style.borderSize);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ style.padding.x, style.padding.y });
             ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(style.borderColor[0], style.borderColor[1], style.borderColor[2], style.borderColor[3]));

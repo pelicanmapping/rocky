@@ -76,7 +76,7 @@ auto Demo_LabelFeatures = [](Application& app)
             {
                 styleEntity = reg.create();
                 auto& style = reg.emplace<LabelStyle>(styleEntity);
-                style.fontName = "C:/windows/fonts/arial.ttf";
+                style.fontName = ROCKY_DEMO_DEFAULT_FONT;
 
                 // create an entity for each candidate
                 for (auto& [name, candidate] : candidates)
@@ -146,7 +146,7 @@ auto Demo_LabelFeatures = [](Application& app)
         }
         ImGuiLTable::End();
 
-        ImGui::TextWrapped("%s", "Tip: You can declutter the labels in the Decluttering panel.");
+        ImGui::TextWrapped("%s", "Tip: Use the Decluttering panel to prevent overlapping labels!");
     }
 
 #else

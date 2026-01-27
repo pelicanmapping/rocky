@@ -16,6 +16,7 @@ using namespace std::chrono_literals;
 
 namespace
 {
+    // Custom component that represents a simulated object
     struct SimulatedPlatform
     {
         std::string name;
@@ -248,7 +249,7 @@ auto Demo_Simulation = [](Application& app)
     }
 
     ImGui::Text("%s", "TIP: toggle visibility in the Map panel!");
-    ImGui::Text("%s", "TIP: declutter by opening the Decluttering panel!");
+    ImGui::Text("%s", "TIP: prevent overlap in the Decluttering panel!");
     ImGui::Separator();
 
     if (ImGuiLTable::Begin("simulation"))

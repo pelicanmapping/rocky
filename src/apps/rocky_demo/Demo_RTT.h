@@ -7,7 +7,6 @@
 #include <vsg/all.h>
 #include <rocky/URI.h>
 #include <rocky/vsg/RTT.h>
-#include <rocky/vsg/ecs/MeshSystem.h>
 #include "helpers.h"
 #include <filesystem>
 

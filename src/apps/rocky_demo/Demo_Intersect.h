@@ -70,8 +70,6 @@ auto Demo_Intersect = [](Application& app)
                     if (mesh) ImGuiLTable::Text("Mesh", "entity %u", e);
                     auto* line = reg.try_get<Line>(e);
                     if (line) ImGuiLTable::Text("Line", "entity %u", e);
-                    auto* icon = reg.try_get<Icon>(e);
-                    if (icon) ImGuiLTable::Text("Icon", "entity %u", e);
                     auto* node = reg.try_get<NodeGraph>(e);
                     if (node) ImGuiLTable::Text("NodeGraph", "entity %u", e);
                 }

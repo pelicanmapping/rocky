@@ -6,7 +6,7 @@
 #pragma once
 
 #include <rocky/Common.h>
-#include <rocky/weejobs.h>
+#include <rocky/Threading.h>
 
 #include <algorithm>
 #include <cctype>
@@ -405,9 +405,9 @@ namespace ROCKY_NAMESPACE
         class ROCKY_EXPORT BackgroundServices
         {
         public:
-            using Function = std::function<void(jobs::cancelable&)>;
-            using Future = jobs::future<bool>;
-            using Promise = jobs::future<bool>;
+            using Function = std::function<void(Cancelable&)>;
+            using Task = Future<bool>;
+            using Promise = Task;
 
             //! Run a function in a thread with the given name.
             Promise start(const std::string& name, Function function);
@@ -417,7 +417,7 @@ namespace ROCKY_NAMESPACE
 
         protected:
             std::mutex mutex;
-            std::vector<Future> futures;
+            std::vector<Task> tasks;
             jobs::detail::semaphore semaphore;
         };
 

@@ -70,7 +70,6 @@ auto Demo_Stats = [](Application& app)
         if (app.renderContinuously)
         {
             float fps = std::ceil(1.0f / (1e-6f * (float)average(&frames, over, f)));
-            //float fps = 1.0f / (1e-6f * (float)lowest(&frames, over, f));
             buf = util::format("%.2f ms (%.0f fps)", 0.001f * (float)app.stats.frame.count(), fps);
         }
         else

@@ -4,10 +4,7 @@
  * MIT License
  */
 #pragma once
-
-#include <rocky/URI.h>
 #include "helpers.h"
-#include <filesystem>
 
 using namespace ROCKY_NAMESPACE;
 

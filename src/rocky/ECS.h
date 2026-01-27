@@ -9,7 +9,6 @@
 #include <rocky/ecs/Line.h>
 #include <rocky/ecs/Mesh.h>
 #include <rocky/ecs/Point.h>
-#include <rocky/ecs/Icon.h>
 #include <rocky/ecs/Label.h>
 #include <rocky/ecs/Widget.h>
 #include <rocky/ecs/Transform.h>

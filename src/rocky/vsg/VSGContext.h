@@ -37,9 +37,6 @@ namespace ROCKY_NAMESPACE
         //! Search paths for vsg::findFile
         vsg::Paths searchPaths;
 
-        //! Default font
-        vsg::ref_ptr<vsg::Font> defaultFont;
-
         //! Number of render-on-demaframe rendered requests
         std::atomic_int renderRequests = { 0 };
 

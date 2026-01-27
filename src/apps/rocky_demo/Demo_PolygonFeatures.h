@@ -20,7 +20,7 @@ auto Demo_PolygonFeatures = [](Application& app)
         Status status;
         std::shared_ptr<rocky::FeatureSource> fs;
     };
-    static jobs::future<LoadedFeatures> data;
+    static Future<LoadedFeatures> data;
     static bool ready = false;
     static entt::entity entity = entt::null;
 

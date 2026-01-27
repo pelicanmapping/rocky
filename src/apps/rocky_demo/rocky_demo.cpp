@@ -113,7 +113,7 @@ std::vector<Demo> demos =
     Demo{ "Camera", Demo_MapManipulator },
     Demo{ "Views", Demo_Views },
     Demo{ "Terrain", Demo_Terrain },
-    Demo{ "Misc", {},
+    Demo{ "Experimental", {},
     {
         Demo{ "Drawing", Demo_Draw },
         Demo{ "Geocoding", Demo_Geocoder },

@@ -354,9 +354,9 @@ BackgroundServices::start(const std::string& name, Function function)
         };
 
     jobs::context context{ std::string(name), jobs::get_pool(name, 1) };
-    futures.emplace_back(jobs::dispatch(delegate, context));
+    tasks.emplace_back(jobs::dispatch(delegate, context));
 
-    return futures.back();
+    return tasks.back();
 }
 
 void
@@ -365,13 +365,13 @@ BackgroundServices::quit()
     std::lock_guard lock(mutex);
 
     // tell all tasks to cancel
-    for (auto& f : futures)
+    for (auto& f : tasks)
         f.abandon();
 
     // block until all the background tasks exit.
     semaphore.join();
 
-    futures.clear();
+    tasks.clear();
 }
 
 #ifdef ROCKY_HAS_ZLIB

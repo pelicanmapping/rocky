@@ -9,6 +9,8 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
+    /** Example of draw lines on the map with the mouse */
+
     //! VSG event handler that captures mouse actions as geopoints.
     class MapEventHandler : public vsg::Inherit<vsg::Visitor, MapEventHandler>
     {
@@ -71,6 +73,7 @@ auto Demo_Draw = [](Application& app)
 {
     static entt::entity entity = entt::null;
     static CallbackSubs subs;
+    static bool on = false;
     static bool drawing = false;
     static std::uint64_t frame = 0;
     static auto active = [](Application& app) {
@@ -93,7 +96,7 @@ auto Demo_Draw = [](Application& app)
                 auto& style = r.emplace<LineStyle>(entity);
                 style.color = Color::Yellow;
                 style.width = 3;
-                style.depthOffset = 1000;
+                style.depthOffset = 20000;
 
                 r.emplace<Line>(entity, geom, style);
             });
@@ -105,6 +108,7 @@ auto Demo_Draw = [](Application& app)
         subs += handler->onLeftClick([&](const GeoPoint& p)
             {
                 if (!active(app)) return;
+                if (!on) return;
 
                 app.registry.read([&](entt::registry& r)
                     {
@@ -150,6 +154,7 @@ auto Demo_Draw = [](Application& app)
                         });
                 }
                 drawing = false;
+                on = false;
                 app.vsgcontext->requestFrame();
             });
 
@@ -158,6 +163,9 @@ auto Demo_Draw = [](Application& app)
 
     ImGui::Text("%s", "Left click: start a line or add a new point");
     ImGui::Text("%s", "Right click: finish a line");
+
+    ImGui::Checkbox("Draw", &on);
+    ImGui::SameLine();
 
     if (ImGui::Button("Clear"))
     {

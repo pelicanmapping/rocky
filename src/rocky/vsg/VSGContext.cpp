@@ -334,28 +334,10 @@ VSGContextImpl::ctor(int& argc, char** argv)
 #endif
 
     // For system fonts
-    readerWriterOptions->paths.push_back("C:/windows/fonts");
+    readerWriterOptions->paths.push_back("C:/Windows/Fonts");
+    readerWriterOptions->paths.push_back("/usr/share/fonts/truetype");
     readerWriterOptions->paths.push_back("/etc/fonts");
     readerWriterOptions->paths.push_back("/usr/local/share/rocky/data");
-
-#if 1
-    // Load a default font if there is one
-    auto font_file = util::getEnvVar("ROCKY_DEFAULT_FONT");
-    if (!font_file.has_value())
-    {
-#ifdef WIN32
-        font_file = "calibri.ttf";
-#else
-        font_file = "times.vsgb";
-#endif
-    }
-
-    defaultFont = vsg::read_cast<vsg::Font>(font_file.value(), readerWriterOptions);
-    if (!defaultFont)
-    {
-        Log()->warn("Cannot load font \"" + font_file.value() + "\"");
-    }
-#endif
 
     // establish search paths for shaders and data:
     auto vsgPaths = vsg::getEnvPaths("VSG_FILE_PATH");
