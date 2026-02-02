@@ -134,23 +134,32 @@ namespace
         MeshTexture::dirty(r, e);
     }
 
+    void on_destroy_MeshStyle(entt::registry& r, entt::entity e)
+    {
+        r.remove<MeshStyleDetail>(e);
+    }
     void on_destroy_MeshStyleDetail(entt::registry& r, entt::entity e)
     {
         auto& d = r.get<MeshStyleDetail>(e);
         dispose(d.bind);
         for(auto& pass : d.passes)
             dispose(pass);
-        d = MeshStyleDetail();
+    }
+    void on_destroy_MeshGeometry(entt::registry& r, entt::entity e)
+    {
+        r.remove<MeshGeometryDetail>(e);
     }
     void on_destroy_MeshGeometryDetail(entt::registry& r, entt::entity e)
     {
-        auto& d = r.get<MeshGeometryDetail>(e);
-        dispose(d.rootNode);
-        d = MeshGeometryDetail();
+        dispose(r.get<MeshGeometryDetail>(e).rootNode);
+    }
+    void on_destroy_MeshTexture(entt::registry& r, entt::entity e)
+    {
+        r.remove<MeshTextureDetail>(e);
     }
     void on_destroy_MeshTextureDetail(entt::registry& r, entt::entity e)
     {
-        auto& d = r.get<MeshTextureDetail>(e);     
+        //nop
     }
 
 
@@ -160,18 +169,14 @@ namespace
     }
     void on_update_MeshStyle(entt::registry& r, entt::entity e)
     {
-        on_destroy_MeshStyleDetail(r, e);
         MeshStyle::dirty(r, e);
     }
     void on_update_MeshGeometry(entt::registry& r, entt::entity e)
     {
-        on_destroy_MeshGeometryDetail(r, e);
         MeshGeometry::dirty(r, e);
     }
     void on_update_Texture(entt::registry& r, entt::entity e)
     {
-        auto& d = r.get<MeshTextureDetail>(e);
-        d = MeshTextureDetail();
         MeshTexture::dirty(r, e);
     }
 }
@@ -197,9 +202,11 @@ MeshSystemNode::MeshSystemNode(Registry& registry) :
             r.on_update<MeshGeometry>().connect<&on_update_MeshGeometry>();
             r.on_update<MeshTexture>().connect<&on_update_Texture>();
 
-            //r.on_destroy<MeshDetail>().connect<&on_destroy_MeshDetail>();
+            r.on_destroy<MeshStyle>().connect<&on_destroy_MeshStyle>();
             r.on_destroy<MeshStyleDetail>().connect<&on_destroy_MeshStyleDetail>();
+            r.on_destroy<MeshGeometry>().connect<&on_destroy_MeshGeometry>();
             r.on_destroy<MeshGeometryDetail>().connect<&on_destroy_MeshGeometryDetail>();
+            r.on_destroy<MeshTexture>().connect<&on_destroy_MeshTexture>();
             r.on_destroy<MeshTextureDetail>().connect<&on_destroy_MeshTextureDetail>();
 
             // Set up the dirty tracking.

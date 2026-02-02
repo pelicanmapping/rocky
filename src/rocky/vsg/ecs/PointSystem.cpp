@@ -132,14 +132,10 @@ namespace
     }
     void on_update_PointStyle(entt::registry& r, entt::entity e)
     {
-        dispose(r.get<PointStyleDetail>(e).bind);
-        r.get<PointStyleDetail>(e).recycle();
         PointStyle::dirty(r, e);
     }
     void on_update_PointGeometry(entt::registry& r, entt::entity e)
     {
-        dispose(r.get<PointGeometryDetail>(e).rootNode);
-        r.get<PointGeometryDetail>(e).recycle();
         PointGeometry::dirty(r, e);
     }
 }
@@ -162,8 +158,9 @@ PointSystemNode::PointSystemNode(Registry& registry) :
             r.on_update<PointStyle>().connect<&on_update_PointStyle>();
             r.on_update<PointGeometry>().connect<&on_update_PointGeometry>();
 
-            //r.on_destroy<PointDetail>().connect<&on_destroy_PointDetail>();
+            r.on_destroy<PointStyle>().connect<&on_destroy_PointStyle>();
             r.on_destroy<PointStyleDetail>().connect<&on_destroy_PointStyleDetail>();
+            r.on_destroy<PointGeometry>().connect<&on_destroy_PointGeometry>();
             r.on_destroy<PointGeometryDetail>().connect<&on_destroy_PointGeometryDetail>();
 
             // Set up the dirty tracking.
