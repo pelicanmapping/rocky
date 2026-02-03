@@ -484,12 +484,15 @@
 <p><em>Defined at src/rocky/SentryTracker.h#79</em></p>
 <p>Calls emplace if token is null, otherwise called update and returns a new token.</p>
 <h3 id="flush">flush</h3>
-<p><em>public void flush(unsigned int maxCount, CALLABLE &amp;&amp; dispose)</em></p>
-<p><em>Defined at src/rocky/SentryTracker.h#90</em></p>
+<p><em>public void flush(unsigned int maxToDispose, unsigned int minCacheSize, CALLABLE &amp;&amp; dispose)</em></p>
+<p><em>Defined at src/rocky/SentryTracker.h#93</em></p>
 <p>Removes any tracked objects that were not updated since the last flush, and calls dispose() on each one.</p>
+<p><strong>maxToDispose</strong> Maximum number of objects to dispose of in this call</p>
+<p><strong>minCacheSize</strong> Minimum number of objects to keep in the list, even if some of them are expired</p>
+<p><strong>dispose</strong> Function to call when disposing of an object</p>
 <h3 id="snapshot">snapshot</h3>
 <p><em>public int snapshot()</em></p>
-<p><em>Defined at src/rocky/SentryTracker.h#125</em></p>
+<p><em>Defined at src/rocky/SentryTracker.h#128</em></p>
 <p>Snapshot of the object list (for debugging)</p>
 
 
