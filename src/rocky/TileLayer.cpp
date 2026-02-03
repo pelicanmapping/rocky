@@ -325,6 +325,7 @@ TileLayer::getOrCreateTile(const TileKey& key, const IOOptions& io, std::functio
 
         auto cached = io.services().residentImageCache->get(cacheKey);
 
+        // note: "first" = Image, "second" = GeoExtent
         if (cached.has_value() && cached.value().first && cached.value().second)
         {
             return GeoImage(cached.value().first, cached.value().second);

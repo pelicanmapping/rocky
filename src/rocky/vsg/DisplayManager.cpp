@@ -347,9 +347,6 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
         ds3.extendedDynamicState3PolygonMode = VK_TRUE;
     }
 
-    //auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
-    //bary.fragmentShaderBarycentric = VK_TRUE;
-
     auto window = vsg::Window::create(traits);
 
     // install extensions:

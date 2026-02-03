@@ -14,6 +14,9 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_MapManipulator = [](Application& app)
 {
+    static bool spin = false;
+    static float spinSpeed = 1.0f;
+
     auto first_view = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0);
     if (first_view)
     {
@@ -48,6 +51,13 @@ auto Demo_MapManipulator = [](Application& app)
 
                 ImGuiLTable::End();
             }
+
+            ImGui::SeparatorText("Automatic");
+            ImGuiLTable::Begin("manip auto settings");
+            ImGuiLTable::Checkbox("Spin", &spin);
+            if (spin)
+                ImGuiLTable::SliderFloat("Spin speed", &spinSpeed, 1.0f, 20.0f, "%.1f");
+            ImGuiLTable::End();
 
             ImGui::SeparatorText("Fly to");
             static float duration_s = 2.0f;
@@ -96,9 +106,16 @@ auto Demo_MapManipulator = [](Application& app)
                 manip->home();
             }
 
-            ImGuiLTable::Begin("fly to settings");
             ImGuiLTable::SliderFloat("Duration (s)", &duration_s, 0.0f, 10.0f, "%.1f");
-            ImGuiLTable::End();
+
+            if (spin)
+            {
+                auto tse = app.viewer->getFrameStamp()->time.time_since_epoch();
+                auto now = 0.001 * (double)std::chrono::duration_cast<std::chrono::milliseconds>(tse).count();
+                auto vp = manip->viewpoint();
+                vp.heading = std::fmod(now * (double)spinSpeed, 360.0);
+                manip->setViewpoint(vp);
+            }
         }
     }
 };

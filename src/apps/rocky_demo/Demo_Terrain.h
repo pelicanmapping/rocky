@@ -140,6 +140,8 @@ auto Demo_Terrain = [](Application& app)
             app.mapNode->terrainSettings().maxLevel = maxLevel;
         }
 
+        ImGuiLTable::SliderInt("L2 cache size", (int*)&app.mapNode->terrainSettings().tileCacheSize.mutable_value(), 0, 4096);
+
         float* bg = (float*)&app.mapNode->terrainSettings().backgroundColor.mutable_value();
         ImGuiLTable::ColorEdit3("Background color", bg);
 

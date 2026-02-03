@@ -91,7 +91,7 @@ NodePager::initialize(VSGContext& vsgcontext)
             {
                 std::scoped_lock lock(_sentry_mutex);
 
-                _sentry.flush(~0, [vsgcontext](vsg::ref_ptr<vsg::Node> node) mutable
+                _sentry.flush(~0u, 0u, [vsgcontext](vsg::ref_ptr<vsg::Node> node) mutable
                     {
                         if (node)
                         {

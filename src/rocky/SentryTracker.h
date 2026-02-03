@@ -86,8 +86,11 @@ namespace ROCKY_NAMESPACE
 
             //! Removes any tracked objects that were not updated since the last
             //! flush, and calls dispose() on each one.
+            //! @param maxToDispose Maximum number of objects to dispose of in this call
+            //! @param minCacheSize Minimum number of objects to keep in the list, even if some of them are expired
+            //! @param dispose Function to call when disposing of an object
             template<typename CALLABLE>
-            inline void flush(unsigned maxCount, CALLABLE&& dispose)
+            inline void flush(unsigned maxToDispose, unsigned minCacheSize, CALLABLE&& dispose)
             {
                 // After cull, all visited tiles are in front of the sentry, and all
                 // non-visited tiles are behind it. Start at the sentry position and
@@ -96,7 +99,7 @@ namespace ROCKY_NAMESPACE
                 ListIterator tmp;
                 unsigned count = 0;
 
-                for (++i; i != _list.end() && count < maxCount; ++i)
+                for (++i; i != _list.end() && count < maxToDispose && _size > minCacheSize; ++i)
                 {
                     ListEntry& le = *i;
 

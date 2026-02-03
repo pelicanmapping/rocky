@@ -63,6 +63,9 @@ namespace ROCKY_NAMESPACE
         //! Whether to apply lighting to the terrain surface
         option<bool> lighting = false;
 
+        //! Number of expired terrain tiles to cache in memory
+        option<unsigned> tileCacheSize = 0u;
+
     public: // internal runtime settings, not serialized.
 
         //! TEMPORARY.

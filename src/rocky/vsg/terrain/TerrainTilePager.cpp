@@ -220,7 +220,7 @@ TerrainTilePager::update(const vsg::FrameStamp* fs, const IOOptions& io, std::sh
             return false;
         };
 
-        _tracker.flush(~0, dispose);
+        _tracker.flush(~0, _settings.tileCacheSize.value_or(0u), dispose);
     }
 
     // synchronize

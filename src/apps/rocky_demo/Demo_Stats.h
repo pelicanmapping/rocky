@@ -131,12 +131,10 @@ auto Demo_Stats = [](Application& app)
     {
         ImGuiLTable::Text("Last frame rendered", "%s", std::to_string(app.frameCount()).c_str());
 
-        if (!app.mapNode->profile.isComposite())
-        {
-            //auto& engine = app.mapNode->terrainNode->->engine;
-            //ImGuiLTable::Text("Terrain tiles resident", "%s", std::to_string(engine->tiles.size()).c_str());
-            //ImGuiLTable::Text("Terrain geometry pool", "%s", std::to_string(engine->geometryPool.size()).c_str());
-        }
+        auto terrainStats = app.mapNode->terrainNode->stats();
+        ImGuiLTable::Text("Terrain tiles resident", "%s", std::to_string(terrainStats.numResidentTiles).c_str());
+        ImGuiLTable::Text("Terrain geometry pool", "%s", std::to_string(terrainStats.geometryPoolSize).c_str());
+
         ImGuiLTable::End();
     }
 

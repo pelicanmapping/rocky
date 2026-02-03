@@ -118,6 +118,13 @@ namespace ROCKY_NAMESPACE
         //! Serialize to JSON
         std::string to_json() const;
 
+        //! Get some stats from the terrain engine(s)
+        struct Stats {
+            size_t numResidentTiles = 0;
+            size_t geometryPoolSize = 0;
+        };
+        Stats stats() const;
+
     private:
 
         Result<> createProfiles(VSGContext);
