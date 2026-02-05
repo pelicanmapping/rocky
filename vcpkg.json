@@ -1,6 +1,6 @@
 {
     "name": "rocky",
-    "version-string": "0.9",
+    "version-string": "0.9.9",
     "port-version": 1,
     "description": "3D Maps SDK for C++/Vulkan",
     "homepage": "https://github.com/pelicanmapping/rocky",
@@ -10,7 +10,7 @@
         { "name" : "entt" },
         { "name" : "gdal", "default-features": false, "features": [ "recommended-features", "webp" ] },
         { "name" : "glm" },
-        { "name" : "imgui", "features": [ "vulkan-binding" ] },
+        { "name" : "imgui", "features" : [ "vulkan-binding" ] },
         { "name" : "nlohmann-json" },
         { "name" : "openssl" },
         { "name" : "proj" },
