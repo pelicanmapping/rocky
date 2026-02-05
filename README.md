@@ -51,7 +51,10 @@ That will download and build all the dependencies (takes a while) and generate y
 
 If you would rather not use vcpkg, you can build and install the [dependencies](#acknowledgements) yourself, or use your favorite package manager (like `apt` on Linux).
 
-*Please note: Rocky requires Vulkan SDK 1.3.268 or newer.*
+> *Note: Rocky requires Vulkan SDK 1.3.268 or newer.*
+
+> *Note: Rocky requires ImGui version 1.92 or newer to get full dynamic font support.*
+
 
 ## Run the Demo
 Rocky is pretty good at finding its data files, but if you run into trouble, you might need to set a couple environment variables to help:
