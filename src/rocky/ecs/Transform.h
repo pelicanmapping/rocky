@@ -18,10 +18,6 @@ namespace ROCKY_NAMESPACE
     */
     struct Transform // : public Component<Transform>
     {
-        // Revision.
-        int revision = 0;
-        void dirty(entt::registry&) { ++revision; }
-
         //! Georeferenced position
         GeoPoint position;
 
@@ -46,7 +42,14 @@ namespace ROCKY_NAMESPACE
         //! to the view frustum.
         bool frustumCulled = true;
 
-        [[deprecated]]
+        // Revision.
+        int revision = 0;
+
+        //! Mark the transform dirty.
+        void dirty(entt::registry&) { ++revision; }
+
+        //! Mark the transform dirty.
+        //[[deprecated]]
         void dirty() { ++revision; }
     };
 }

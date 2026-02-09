@@ -6,7 +6,6 @@
 #pragma once
 #include <rocky/Common.h>
 #include <entt/entt.hpp>
-#include <memory>
 
 namespace ROCKY_NAMESPACE
 {
@@ -26,6 +25,9 @@ namespace ROCKY_NAMESPACE
             std::vector<entt::entity> entities;
         };
 
+        //! Add this component to a global "dirty" collection.
+        //! A system is responsible for installing the Dirty singleton by calling
+        //! registry.emplace<MyComponent:Dirty>(registry.create());
         inline void dirty(entt::registry& r)
         {
             ROCKY_SOFT_ASSERT_AND_RETURN(owner != entt::null, void(),
@@ -39,12 +41,16 @@ namespace ROCKY_NAMESPACE
                 });
         }
 
+        //! Add this component to a global "dirty" collection.
+        //! A system is responsible for installing the Dirty singleton by calling
+        //! registry.emplace<MyComponent:Dirty>(registry.create());
         inline static void dirty(entt::registry& r, entt::entity e)
         {
             r.get<DERIVED>(e).owner = e;
             r.get<DERIVED>(e).dirty(r);
         }
 
+        //! Iterate over all dirty components of this type, invoking the given callable
         template<class CALLABLE>
         inline static void eachDirty(entt::registry& r, CALLABLE&& func)
         {

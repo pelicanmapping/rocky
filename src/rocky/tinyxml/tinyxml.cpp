@@ -953,7 +953,11 @@ bool TiXmlDocument::LoadFile( FILE* file, TiXmlEncoding encoding )
 
 	// Get the file size, so we can pre-allocate the string. HUGE speed impact.
 	long length = 0;
+#ifdef _WIN32
+	int f_d = _fileno(file);
+#else
 	int f_d = fileno(file);
+#endif
 	struct stat st;
 	fstat(f_d, &st);
 	length = st.st_size;
