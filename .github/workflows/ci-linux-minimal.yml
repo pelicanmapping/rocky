@@ -44,8 +44,10 @@ jobs:
           libxcursor-dev \
           libxi-dev \
           libvulkan-dev \
+          libvulkan1 \
           libxxf86vm-dev \
           libxcb1-dev \
+          libx11-xcb-dev \
           mono-complete
 
     - name: Cache vcpkg repository
