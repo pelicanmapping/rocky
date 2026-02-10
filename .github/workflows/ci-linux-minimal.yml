@@ -47,8 +47,7 @@ jobs:
           libxinerama-dev \
           libxcursor-dev \
           libxi-dev \
-          libvulkan-dev \
-          vulkan-headers
+          libvulkan-dev
 
     - name: Cache vcpkg repository
       uses: actions/cache@v4
