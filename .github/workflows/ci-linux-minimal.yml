@@ -1,0 +1,123 @@
+name: linux-x64-Release-minimal
+
+on: [push, pull_request, workflow_dispatch]
+
+env:
+  VCPKG_BINARY_SOURCES : 'clear;x-gha,readwrite'
+  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
+  BUILD_TYPE: Release
+  VCPKG_VERSION: 'master'
+
+jobs:
+
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: ['ubuntu-latest']
+        include:
+          - os: 'ubuntu-latest'
+            triplet: 'x64-linux'
+            mono: ''
+            VCPKG_WORKSPACE: '~/vcpkg_own'
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - name: Export GitHub Actions cache environment variables
+      uses: actions/github-script@v7
+      with:
+        script: |
+          core.exportVariable('ACTIONS_CACHE_URL', process.env.ACTIONS_CACHE_URL || '');
+          core.exportVariable('ACTIONS_RUNTIME_TOKEN', process.env.ACTIONS_RUNTIME_TOKEN || '');
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          pkg-config \
+          libx11-dev \
+          libxrandr-dev \
+          libxinerama-dev \
+          libxcursor-dev \
+          libxi-dev \
+          libvulkan-dev \
+          vulkan-headers
+
+    - name: Cache vcpkg repository
+      uses: actions/cache@v4
+      id: vcpkg-repo-cache
+      with:
+        path: ${{ matrix.VCPKG_WORKSPACE }}/vcpkg
+        key: ${{ runner.os }}-vcpkg-repo-${{ env.VCPKG_VERSION }}
+
+    - name: Installing vcpkg (linux)
+      if: steps.vcpkg-repo-cache.outputs.cache-hit != 'true'
+      shell: 'bash'
+      run: |
+        mkdir -p ${{ matrix.VCPKG_WORKSPACE }}
+        cd ${{ matrix.VCPKG_WORKSPACE }}
+        git clone https://github.com/microsoft/vcpkg
+        cd vcpkg
+        git checkout ${{env.VCPKG_VERSION}}
+        cd ..
+        ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
+
+    - name: Bootstrap vcpkg if cached
+      if: steps.vcpkg-repo-cache.outputs.cache-hit == 'true'
+      shell: 'bash'
+      run: |
+        cd ${{ matrix.VCPKG_WORKSPACE }}/vcpkg
+        ./bootstrap-vcpkg.sh -disableMetrics
+
+    - name: Configure vcpkg triplet
+      shell: 'bash'
+      run: |
+        echo "set(VCPKG_BUILD_TYPE release)" >> ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/triplets/x64-linux.cmake
+        ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/vcpkg version
+
+    - name: Get vcpkg commit hash
+      id: vcpkg-commit
+      shell: bash
+      run: |
+        cd ${{ matrix.VCPKG_WORKSPACE }}/vcpkg
+        echo "hash=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
+    - name: Cache vcpkg dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/installed
+          ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/downloads
+        key: ${{ runner.os }}-vcpkg-deps-${{ steps.vcpkg-commit.outputs.hash }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json', 'vcpkg-ports/**/vcpkg.json') }}
+        restore-keys: |
+          ${{ runner.os }}-vcpkg-deps-${{ steps.vcpkg-commit.outputs.hash }}-${{ matrix.triplet }}-
+          ${{ runner.os }}-vcpkg-deps-${{ steps.vcpkg-commit.outputs.hash }}-
+
+    - name: Create Build Environment
+      run: |
+        cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      shell: bash
+      working-directory: ${{ runner.workspace }}/build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DROCKY_SUPPORTS_GDAL=ON -DROCKY_SUPPORT_QT=OFF -DROCKY_SUPPORTS_MBTILES=OFF -DROCKY_SUPPORTS_AZURE=OFF -DROCKY_SUPPORTS_BING=OFF -DCMAKE_TOOLCHAIN_FILE=${{ matrix.VCPKG_WORKSPACE }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_BUILD_TYPE=$BUILD_TYPE -DVCPKG_MANIFEST_DIR=$GITHUB_WORKSPACE -DVCPKG_OVERLAY_PORTS=$GITHUB_WORKSPACE/vcpkg-ports
+
+    - name: 'Upload cmake configure log artifact'
+      uses: actions/upload-artifact@v4
+      if: ${{ failure() }}
+      with:
+        name: cmake-log
+        path: ${{ runner.workspace }}/build/CMakeCache.txt
+        retention-days: 1
+
+    - name: Build
+      working-directory: ${{ runner.workspace }}/build
+      shell: bash
+      run: cmake --build . --config $BUILD_TYPE
