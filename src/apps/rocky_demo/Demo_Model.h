@@ -17,12 +17,20 @@ auto Demo_Model = [](Application& app)
     {
         auto [_, reg] = app.registry.write();
 
+#if 1
         // Create a simple VSG model using the Builder.
         vsg::Builder builder;
         vsg::GeometryInfo gi;
         gi.color = to_vsg(Color::Cyan);
         auto node = builder.createSphere(gi, vsg::StateInfo{});
+#else
+        auto node = vsg::read_cast<vsg::Node>("H:/devel/vsg/vsgexamples/repo/data/models/teapot.vsgt");
+#endif
         app.vsgcontext->compile(node);
+
+        vsg::ComputeBounds cb;
+        node->accept(cb);
+        auto radius = vsg::length(cb.bounds.max - cb.bounds.min) * 0.5;
 
         // New entity to host our model
         entity = reg.create();
@@ -33,9 +41,10 @@ auto Demo_Model = [](Application& app)
 
         // A transform component to place and move it on the map
         auto& transform = reg.emplace<Transform>(entity);
-        transform.position = GeoPoint(SRS::WGS84, 50, 0, 250000);
+        transform.position = GeoPoint(SRS::WGS84, 50, 0, 0);
         transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale));
         transform.topocentric = true;
+        transform.radius = radius * scale;
 
         app.vsgcontext->requestFrame();
     }
