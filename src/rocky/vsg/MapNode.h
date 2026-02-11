@@ -11,6 +11,8 @@
 #include <rocky/Horizon.h>
 #include <rocky/Map.h>
 #include <rocky/Rendering.h>
+#include <rocky/GeoPoint.h>
+#include <rocky/Viewpoint.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -35,6 +37,11 @@ namespace ROCKY_NAMESPACE
 
         //! Node rendering the terrain surface
         vsg::ref_ptr<TerrainNode> terrainNode;
+
+    public:
+
+        //! Create a Viewpoint that will "fit" the given points into the camera's view.
+        Viewpoint createViewpoint(const std::vector<GeoPoint>& points, vsg::Camera* camera) const;
 
     public:
 

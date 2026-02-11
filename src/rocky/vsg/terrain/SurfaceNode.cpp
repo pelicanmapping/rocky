@@ -91,6 +91,9 @@ SurfaceNode::recomputeBound()
                     std::clamp(geom->uvs->at(i).x * scaleU + biasU, 0.0, 1.0),
                     std::clamp(geom->uvs->at(i).y * scaleV + biasV, 0.0, 1.0));
 
+                if (h == NO_DATA_VALUE)
+                    h = 0.0;
+
                 auto& vert = geom->verts->at(i);
                 auto& norm = geom->normals->at(i);
                 (*_proxyVerts)[i] = vert + norm * h;

@@ -1173,8 +1173,10 @@ namespace
         T* f = (T*)data;
         for (int i = 0; i < count; ++i)
         {
-            double value = static_cast<double>(*f) * scale + offset;
-            *f++ = static_cast<T>(value);
+            if (*f != NO_DATA_VALUE) {
+                double value = static_cast<double>(*f) * scale + offset;
+                *f++ = static_cast<T>(value);
+            }
         }
     }
 
@@ -1390,7 +1392,7 @@ GDAL_detail::Driver::createHeightfield(const TileKey& key, unsigned tileSize, co
             py = std::clamp(py, 0.0, ysize - 1.0);
         };
 
-    if (_layer->precise == true)
+    if (_layer->precise == true || (intersection != key.extent()))
     {
         // in precise mode, we sample every single point separately
         for (unsigned r = 0; r < tileSize; ++r)
@@ -1401,13 +1403,16 @@ GDAL_detail::Driver::createHeightfield(const TileKey& key, unsigned tileSize, co
             {
                 double x = tile_xmin + (dx * (double)c);
 
-                geo2pixel(x, y, px, py);
-
-                // this function applies the 1/2 pixel offset for us for DEMs
-                auto err = band->InterpolateAtPoint(px, py, alg, &realPart, nullptr);
-                if (err == CE_None)
+                if (intersection.contains(x, y))
                 {
-                    hf.heightAt(c, r) = (float)realPart * _linearUnits;
+                    geo2pixel(x, y, px, py);
+
+                    // this function applies the 1/2 pixel offset for us for DEMs
+                    auto err = band->InterpolateAtPoint(px, py, alg, &realPart, nullptr);
+                    if (err == CE_None)
+                    {
+                        hf.heightAt(c, r) = (float)realPart * _linearUnits;
+                    }
                 }
             }
         }

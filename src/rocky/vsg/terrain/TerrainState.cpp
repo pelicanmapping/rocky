@@ -409,4 +409,10 @@ TerrainState::updateSettings(const TerrainSettings& settings)
         uniforms.applyLighting = settings.lighting.value() ? 1.0f : 0.0f;
         _terrainDescriptors.data->dirty();
     }
+
+    if (uniforms.debugNormals != (settings.debugNormals.value() ? 1.0f : 0.0f))
+    {
+        uniforms.debugNormals = settings.debugNormals.value() ? 1.0f : 0.0f;
+        _terrainDescriptors.data->dirty();
+    }
 }

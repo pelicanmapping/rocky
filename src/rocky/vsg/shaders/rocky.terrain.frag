@@ -16,11 +16,12 @@ layout(location = 0) in Varyings {
     vec3 vertexView;
 } vary;
 
-// uniforms (TerrainNode.h)
+// uniforms (TerrainState.h)
 layout(set = 0, binding = 9) uniform TerrainData {
     vec4 backgroundColor;
     float wireOverlay;
     float lighting;
+    float debugNormals;
 } settings;
 
 layout(set = 0, binding = 11) uniform sampler2D color_tex;
@@ -45,11 +46,17 @@ void main()
 
     out_color = mix(settings.backgroundColor, clamp(texel, 0, 1), texel.a);
 
+    vec3 normal = get_normal();
+
     // lighting:
     out_color = mix(
         out_color,
-        apply_lighting(out_color, vary.vertexView, get_normal()),
+        apply_lighting(out_color, vary.vertexView, normal),
         settings.lighting);
+
+    // debug normals:
+    vec3 exag_normal = (normalize(vec3(normal.x * 4.0, normal.y * 4.0, normal.z)) + 1.0) * 0.5;
+    out_color.rgb = mix(out_color.rgb, exag_normal, settings.debugNormals);
 
 #if defined(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION) && defined(GL_EXT_fragment_shader_barycentric)
     // wireframe overlay:

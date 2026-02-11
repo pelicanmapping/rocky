@@ -107,7 +107,7 @@ namespace
     vsg::ref_ptr<vsg::ShaderSet> makeAtmoShaderSet(VSGContext& context)
     {
         auto file = vsg::findFile(ATMOSPHERE_VERT_SHADER, context->searchPaths);
-        Log()->warn("Loading atmosphere vertex shader from: {}", file.string());
+        Log()->info("Loading atmosphere vertex shader from: {}", file.string());
 
         // load shaders
         auto vertexShader = vsg::ShaderStage::read(

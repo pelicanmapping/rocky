@@ -22,6 +22,7 @@ namespace ROCKY_NAMESPACE
             glm::vec4 backgroundColor = Color("#08AEE0");
             float applyWireOverlay = 0.0f;
             float applyLighting = 0.0f;
+            float debugNormals = 0.0f;
         };
 
         vsg::ref_ptr<vsg::Data> data;

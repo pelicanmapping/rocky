@@ -106,7 +106,8 @@ namespace ROCKY_NAMESPACE
     inline float Heightfield::decode(T v) const
     {
         // decodes the [0..1] value from an encoded normalized image into a real height.
-        return static_cast<float>(v) * (image->_maxValue - image->_minValue) + image->_minValue;
+        return static_cast<float>(v) == 1.0f? NO_DATA_VALUE : 
+            static_cast<float>(v) * (image->_maxValue - image->_minValue) + image->_minValue;
     }
 
     inline float& Heightfield::heightAt(unsigned c, unsigned r)
@@ -189,10 +190,15 @@ namespace ROCKY_NAMESPACE
 
         auto* ptr = outImage->data<EncodedDataType>();
 
+        constexpr EncodedDataType noDataEncodedValue = std::numeric_limits<EncodedDataType>::max();
+
         forEachHeight([&](float h)
             {
-                if (h == NO_DATA_VALUE) h = 0.0f;
-                *ptr++ = static_cast<EncodedDataType>(((h - image->_minValue) / (image->_maxValue - image->_minValue)) * 65535.0f);
+                EncodedDataType value =
+                    (h == NO_DATA_VALUE) ? noDataEncodedValue :
+                    static_cast<EncodedDataType>(((h - image->_minValue) / (image->_maxValue - image->_minValue)) * (noDataEncodedValue-1));
+
+                *ptr++ = value;
             });
 
         return Heightfield(outImage);

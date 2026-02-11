@@ -267,6 +267,7 @@ ElevationLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                 for (unsigned c = 0; c < cols; ++c)
                 {
                     auto& point = points[r * cols + c];
+
                     float& height = hf.heightAt(c, r);
 
                     for (unsigned i = 0; i < sources.size(); ++i)
@@ -274,6 +275,7 @@ ElevationLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                         unsigned j = useIndirectIndexing ? indexes[i] : i;
 
                         auto r = sources[j].read(point.x, point.y);
+
                         height = r.ok() ? r.value().r : NO_DATA_VALUE;
 
                         if (height != NO_DATA_VALUE)

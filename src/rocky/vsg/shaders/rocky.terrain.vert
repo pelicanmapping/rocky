@@ -55,9 +55,14 @@ float terrain_get_elevation(in vec2 uv)
     float h = texture(elevation_tex, elevc).r;
 
     if (tile.max_height >= tile.min_height)
-        h = h * (tile.max_height - tile.min_height) + tile.min_height; // R16_UNORM
+    {
+        if (h == 1.0)
+            h = 0.0; // replace no-data with zero elevation
+        else
+            h = h * (tile.max_height - tile.min_height) + tile.min_height; // R16_UNORM
+    }
+    return h;
 
-     return h;
 }
 
 void main()

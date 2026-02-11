@@ -123,6 +123,24 @@ auto Demo_Map = [](Application& app)
                     ImGuiLTable::TextLinkOpenURL("Source:", layer->attribution->text.c_str(),
                         layer->attribution->href.full().empty() ? nullptr : layer->attribution->href.full().c_str());
                 }
+
+                auto view = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0);
+                auto manip = MapManipulator::get(view);
+                if (manip && ImGuiLTable::Button("Zoom"))
+                {
+                    if (layer->extent().valid())
+                    {
+                        std::vector<GeoPoint> points;
+                        points.push_back(GeoPoint(layer->extent().srs(), extent.west(), extent.south()));
+                        points.push_back(GeoPoint(layer->extent().srs(), extent.east(), extent.north()));
+                        auto vp = app.mapNode->createViewpoint(points, view->camera);
+                        if (vp.valid())
+                        {
+                            manip->setViewpoint(vp, 1s);
+                            app.vsgcontext->requestFrame();
+                        }
+                    }
+                }
                 ImGuiLTable::End();
             }
             ImGui::Unindent();
