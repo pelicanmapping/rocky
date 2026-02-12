@@ -8,15 +8,13 @@
 using namespace ROCKY_NAMESPACE;
 
 void
-GeoTransform::dirty()
-{
-    for (auto& view : _transformDetail.views)
-        view.revision = -1;
-}
-
-void
 GeoTransform::traverse(vsg::RecordTraversal& record) const
 {
+    if (revision != _transformDetail.sync.revision)
+    {
+        _transformDetail.sync = *this;
+    }
+
     _transformDetail.update(record);
 
     RenderingState rs{

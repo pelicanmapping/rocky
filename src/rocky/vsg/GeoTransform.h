@@ -21,21 +21,8 @@ namespace ROCKY_NAMESPACE
         public ROCKY_NAMESPACE::Transform
     {
     public:
-        //! Sphere for horizon culling
-        vsg::dsphere bound = { };
-
-    public:
         //! Construct an invalid geotransform
         GeoTransform() = default;
-
-        //! Call this is you change position directly.
-        void dirty();
-
-        //! Shortcut for changing position and calling dirty().
-        inline void setPosition(const GeoPoint& p) {
-            position = p;
-            dirty();
-        }
 
     public:
 
