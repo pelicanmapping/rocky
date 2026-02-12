@@ -1,4 +1,4 @@
-name: windows-x64-Release-minimal
+name: linux-x64-Release-minimal
 
 on: [push, pull_request, workflow_dispatch]
 
@@ -18,24 +18,37 @@ jobs:
 
     strategy:
       matrix:
-        os: ['windows-latest']
+        os: ['ubuntu-latest']
         include:
-          - os: 'windows-latest'
-            triplet: 'x64-windows'
+          - os: 'ubuntu-latest'
+            triplet: 'x64-linux'
             mono: ''
-            VCPKG_WORKSPACE: 'c:/vcpkg_own'
+            VCPKG_WORKSPACE: '~/vcpkg_own'
 
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: recursive
 
-    - name: Install Vulkan SDK
-      uses: pelicanmapping/setup-vulkan-sdk@v1.2.1
-      with:
-        vulkan-query-version: 1.3.231.1
-        vulkan-components: Vulkan-Headers, Vulkan-Loader
-        vulkan-use-cache: true
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          ninja-build \
+          pkg-config \
+          libx11-dev \
+          libxrandr-dev \
+          libxinerama-dev \
+          libxcursor-dev \
+          libxi-dev \
+          libvulkan-dev \
+          libvulkan1 \
+          libxxf86vm-dev \
+          libxcb1-dev \
+          libx11-xcb-dev \
+          mono-complete
 
     - name: Cache vcpkg repository
       uses: actions/cache@v4
@@ -44,36 +57,36 @@ jobs:
         path: ${{ matrix.VCPKG_WORKSPACE }}/vcpkg
         key: ${{ runner.os }}-vcpkg-repo-${{ env.VCPKG_VERSION }}
 
-    - name: Installing vcpkg (windows)
+    - name: Installing vcpkg (linux)
       if: steps.vcpkg-repo-cache.outputs.cache-hit != 'true'
       shell: 'bash'
       run: |
-        cmake -E make_directory ${{ matrix.VCPKG_WORKSPACE }}
+        mkdir -p ${{ matrix.VCPKG_WORKSPACE }}
         cd ${{ matrix.VCPKG_WORKSPACE }}
         git clone https://github.com/microsoft/vcpkg
         cd vcpkg
         git checkout ${{env.VCPKG_VERSION}}
         cd ..
-        ./vcpkg/bootstrap-vcpkg.bat -disableMetrics
+        ./vcpkg/bootstrap-vcpkg.sh -disableMetrics
 
     - name: Bootstrap vcpkg if cached
       if: steps.vcpkg-repo-cache.outputs.cache-hit == 'true'
       shell: 'bash'
       run: |
         cd ${{ matrix.VCPKG_WORKSPACE }}/vcpkg
-        ./bootstrap-vcpkg.bat -disableMetrics
+        ./bootstrap-vcpkg.sh -disableMetrics
 
     - name: Configure vcpkg triplet
       shell: 'bash'
       run: |
-        echo "set(VCPKG_BUILD_TYPE release)" >> ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/triplets/x64-windows.cmake
+        echo "set(VCPKG_BUILD_TYPE release)" >> ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/triplets/x64-linux.cmake
         ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/vcpkg version
 
     - name: Setup NuGet binary cache
       shell: 'bash'
       run: |
-        nuget_exe=$(${{ matrix.VCPKG_WORKSPACE }}/vcpkg/vcpkg fetch nuget | tail -n 1)
-        "$nuget_exe" sources add \
+        ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/vcpkg fetch nuget
+        mono $(${{ matrix.VCPKG_WORKSPACE }}/vcpkg/vcpkg fetch nuget | tail -n 1) sources add \
           -source "https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json" \
           -storepasswordincleartext \
           -name "GitHub" \
@@ -105,7 +118,7 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: ${{ runner.workspace }}/build
-      run: cmake $GITHUB_WORKSPACE -DWIN32_USE_MP=ON -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DROCKY_SUPPORTS_GDAL=ON -DROCKY_SUPPORT_QT=OFF -DROCKY_SUPPORTS_MBTILES=OFF -DROCKY_SUPPORTS_AZURE=OFF -DROCKY_SUPPORTS_BING=OFF -DCMAKE_TOOLCHAIN_FILE=${{ matrix.VCPKG_WORKSPACE }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_BUILD_TYPE=$BUILD_TYPE -DVCPKG_MANIFEST_DIR=$GITHUB_WORKSPACE -DVCPKG_OVERLAY_PORTS=$GITHUB_WORKSPACE/vcpkg-ports
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DROCKY_SUPPORTS_GDAL=ON -DROCKY_SUPPORT_QT=OFF -DROCKY_SUPPORTS_MBTILES=OFF -DROCKY_SUPPORTS_AZURE=OFF -DROCKY_SUPPORTS_BING=OFF -DCMAKE_TOOLCHAIN_FILE=${{ matrix.VCPKG_WORKSPACE }}/vcpkg/scripts/buildsystems/vcpkg.cmake -DVCPKG_BUILD_TYPE=$BUILD_TYPE -DVCPKG_MANIFEST_DIR=$GITHUB_WORKSPACE -DVCPKG_OVERLAY_PORTS=$GITHUB_WORKSPACE/vcpkg-ports
 
     - name: 'Upload cmake configure log artifact'
       uses: actions/upload-artifact@v4
