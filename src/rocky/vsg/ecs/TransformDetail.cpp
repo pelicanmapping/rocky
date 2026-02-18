@@ -87,6 +87,7 @@ TransformDetail::update(vsg::RecordTraversal& record)
         {
             auto rv = view.modelview[3] + vsg::dvec4(sync.radius, sync.radius, 0, 0);
             auto rc = (view.proj * rv);
+
             tx += std::abs((rc.x / rc.w) - clip.x);
             ty += std::abs((rc.y / rc.w) - clip.y);
         }
@@ -120,16 +121,14 @@ TransformDetail::push(vsg::RecordTraversal& record) const
     // replicates RecordTraversal::accept(MatrixTransform&):
     state->modelviewMatrixStack.push(view.modelview);
     state->dirty = true;
-    if (!sync.frustumCulled)
-        state->pushFrustum();
+    state->pushFrustum();
 }
 
 void
 TransformDetail::pop(vsg::RecordTraversal& record) const
 {
     auto* state = record.getState();
-    if (!sync.frustumCulled)
-        state->popFrustum();
+    state->popFrustum();
     state->modelviewMatrixStack.pop();
     state->dirty = true;
 }
