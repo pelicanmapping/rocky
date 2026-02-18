@@ -245,7 +245,7 @@ Application::ctor(int& argc, char** argv)
 
 Application::~Application()
 {
-    Log()->info("Quitting background services...");
+    Log()->debug("Quitting background services...");
     background.quit();
 }
 

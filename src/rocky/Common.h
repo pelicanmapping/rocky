@@ -19,7 +19,7 @@
 #  endif
 #else
 #  define ROCKY_EXPORT
-#endif  
+#endif
 
 #define ROCKY_NAMESPACE rocky
 
@@ -51,6 +51,12 @@ namespace ROCKY_NAMESPACE
 
     //! Generate an application-wide unique identifier.
     extern ROCKY_EXPORT UID createUID();
+
+    //! unqualify a C++ class name
+    inline constexpr std::string_view unqualify(std::string_view s) {
+        auto pos = s.rfind("::");
+        return (pos == s.npos) ? s : s.substr(pos + 2);
+    }
 
     //! Base class for anything using the "Inherit" pattern
     //! @private
@@ -84,6 +90,9 @@ namespace ROCKY_NAMESPACE
         using WeakPtr = weakptr;
         using constweakptr = std::weak_ptr<const ME>;
         using ConstWeakPtr = constweakptr;
+        virtual std::string_view className() const noexcept {
+            return unqualify(typeid(ME).name());
+        }
         template<typename... Args>
         static std::shared_ptr<ME> create(Args&&... args) {
             return std::make_shared<ME>(std::forward<Args>(args)...);

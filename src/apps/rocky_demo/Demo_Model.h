@@ -16,7 +16,6 @@ auto Demo_Model = [](Application& app)
     if (entity == entt::null)
     {
         auto [_, reg] = app.registry.write();
-
 #if 1
         // Create a simple VSG model using the Builder.
         vsg::Builder builder;

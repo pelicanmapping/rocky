@@ -14,7 +14,9 @@ auto ElevationSampler::fetch(const TileKey& key, const IOOptions& io) const -> R
     {
         auto r = cache->get(key);
         if (r.has_value())
+        {
             return r.value();
+        }
     }
 
     // failing that, check the layer, and fall back to parent tiles if necessary.

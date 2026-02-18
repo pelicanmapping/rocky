@@ -28,7 +28,7 @@ using namespace ROCKY_NAMESPACE;
 namespace
 {
     // custom VSG logger that redirects to spdlog.
-    class VSG_to_Spdlog_Logger : public Inherit<vsg::Logger, VSG_to_Spdlog_Logger>
+    class VSG_to_Spdlog_Logger : public vsg::Inherit<vsg::Logger, VSG_to_Spdlog_Logger>
     {
     public:
         std::shared_ptr<spdlog::logger> vsg_logger;
@@ -355,7 +355,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
     };
 
     auto exec_path = std::filesystem::path(util::getExecutableLocation());
-    Log()->info("Running from: {}", exec_path.string());
+    Log()->debug("Running from: {}", exec_path.string());
 
     for (auto& relative_path : relative_paths_to_add)
     {

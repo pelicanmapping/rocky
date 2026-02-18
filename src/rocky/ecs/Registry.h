@@ -55,7 +55,7 @@ namespace ROCKY_NAMESPACE
         //!   auto [lock, registry] = ecs_registry.read();
         //! 
         //! @return A tuple including a scoped shared lock and a reference to the underlying registry
-        Read read() const {
+        inline Read read() const {
             return { std::shared_lock(_impl->_mutex), _impl->_registry };
         }
 
@@ -68,14 +68,14 @@ namespace ROCKY_NAMESPACE
         //!   auto [lock, registry] = ecs_registry.write();
         //! 
         //! @return A tuple including a scoped unique lock and a reference to the underlying registry
-        Write write() const {
+        inline Write write() const {
             return { std::unique_lock(_impl->_mutex), _impl->_registry };
         }
 
         //! Convenience function to invoke a lambda with a read-locked registry reference.
         //! The signature of CALLABLE must match void(entt::registry&).
         template<typename CALLABLE>
-        void read(CALLABLE&& func) const {
+        inline void read(CALLABLE&& func) const {
             static_assert(std::is_invocable_r_v<void, CALLABLE, entt::registry&>, "Callable must match void(entt::registry&)");
             auto [lock, registry] = read();
             func(registry);
@@ -84,7 +84,7 @@ namespace ROCKY_NAMESPACE
         //! Convenience function to invoke a lambda with a write-locked registry reference.
         //! The signature of CALLABLE must match void(entt::registry&).
         template<typename CALLABLE>
-        void write(CALLABLE&& func) const {
+        inline void write(CALLABLE&& func) const {
             static_assert(std::is_invocable_r_v<void, CALLABLE, entt::registry&>, "Callable must match void(entt::registry&)");
             auto [lock, registry] = write();
             func(registry);

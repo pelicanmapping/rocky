@@ -9,9 +9,6 @@
 
 using namespace ROCKY_NAMESPACE;
 
-
-#define LC "[Layer] \"" << getName() << "\" "
-
 Layer::Layer() :
     super()
 {
@@ -42,7 +39,7 @@ Layer::construct(std::string_view conf)
     get_to(j, "open", openAutomatically);
     get_to(j, "attribution", attribution);
 
-    fail(Failure::ResourceUnavailable, openAutomatically ? "Layer closed" : "Layer disabled");
+    _status = Failure(Failure::ResourceUnavailable, openAutomatically ? "Layer closed" : "Layer disabled");
 }
 
 std::string
@@ -82,7 +79,7 @@ Layer::bumpRevision()
 const Failure&
 Layer::fail(const Failure& f) const
 {
-    Log()->debug("Layer \"{}\" FAILED with status {}", name, f.message);
+    Log()->debug("{} \"{}\" FAILED with status {}", className(), name, f.message);
     _status = f;
     return _status.error();
 }

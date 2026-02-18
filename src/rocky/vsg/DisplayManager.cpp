@@ -142,12 +142,12 @@ namespace
             {
                 _app->onNextUpdate([window, this]()
                     {
-                        Log()->info("Removing window...");
+                        Log()->debug("Removing window...");
                         _app->display.removeWindow(window);
 
                         if (_app->viewer->windows().empty())
                         {
-                            Log()->info("All windows closed... shutting down.");
+                            Log()->debug("All windows closed... shutting down.");
                             _app->viewer->close();
                         }
                     });
@@ -357,14 +357,14 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     // This will install the debug messaging callback so we can capture validation errors
     if (vsg::isExtensionSupported(VK_EXT_DEBUG_UTILS_EXTENSION_NAME))
     {
-        Log()->info("Enabling: {}", VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+        Log()->debug("Enabling: {}", VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
         traits->instanceExtensionNames.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
     }
 
     // Barycentric coordinates support for wireOverlay rendering
     if (pd->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
     {
-        Log()->info("Enabling: {}", VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+        Log()->debug("Enabling: {}", VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
     }
     else
@@ -376,7 +376,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     // All the dynamic state extensions
     if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME))
     {
-        Log()->info("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
+        Log()->debug("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_EXTENSION_NAME);
     }
     else
@@ -387,7 +387,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 
     if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME))
     {
-        Log()->info("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
+        Log()->debug("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_2_EXTENSION_NAME);
     }
     else
@@ -398,7 +398,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 
     if (pd->supportsDeviceExtension(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME))
     {
-        Log()->info("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
+        Log()->debug("Enabling: {}", VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_EXT_EXTENDED_DYNAMIC_STATE_3_EXTENSION_NAME);
     }
     else
