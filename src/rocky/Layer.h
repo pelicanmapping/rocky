@@ -3,6 +3,11 @@
  * Copyright 2025 Pelican Mapping
  * MIT License
  */
+/**
+ * @file Layer.h
+ * @defgroup core_layers Layer Classes
+ * @brief Base classes and layer types for map data
+ */
 #pragma once
 
 #include <rocky/Common.h>
@@ -19,7 +24,8 @@ namespace ROCKY_NAMESPACE
     class TileKey;
 
     /**
-     * Base class for all Map layer types.
+     * @ingroup core_layers
+     * @brief Base class for all Map layer types
      */
     class ROCKY_EXPORT Layer : public Inherit<Object, Layer>
     {

@@ -3,6 +3,11 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
+/**
+ * @file Application.h
+ * @defgroup vsg_app VSG Application
+ * @brief High-level application class for VSG rendering
+ */
 #pragma once
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/MapNode.h>
@@ -21,6 +26,16 @@ namespace ROCKY_NAMESPACE
 {
     class RenderImGuiContext;
 
+    /**
+     * @ingroup vsg_app
+     * @brief High-level application class for VSG-based Rocky applications
+     *
+     * Application provides a turnkey solution for creating Rocky applications with:
+     * - Window management
+     * - Default MapNode with rendering
+     * - Event handling and camera manipulation
+     * - Main run loop
+     */
     class ROCKY_EXPORT Application
     {
     public:

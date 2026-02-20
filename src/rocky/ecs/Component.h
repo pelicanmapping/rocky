@@ -3,14 +3,25 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
+/**
+ * @file Component.h
+ * @defgroup ecs Entity Component System
+ * @brief ECS components for creating map annotations and entities
+ */
 #pragma once
 #include <rocky/Common.h>
 #include <entt/entt.hpp>
 
 namespace ROCKY_NAMESPACE
 {
-    // Base component type with built-in dirty tracking.
-    // NOTE: Yes, we need the CRTP here so that the "Dirty" object is unique for each derived type!
+    /**
+     * @ingroup ecs
+     * @brief Base component type with built-in dirty tracking
+     *
+     * @tparam DERIVED The derived component type (CRTP pattern)
+     *
+     * NOTE: Yes, we need the CRTP here so that the "Dirty" object is unique for each derived type!
+     */
     template<class DERIVED>
     struct Component
     {

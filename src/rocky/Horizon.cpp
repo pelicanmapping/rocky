@@ -53,10 +53,7 @@ Horizon::setEye(const glm::dvec3& eye, bool isOrtho)
 
     if (!_orthographic)
     {
-        _VC = glm::dvec3(
-            -_eye.x * _scale.x,
-            -_eye.y * _scale.y,
-            -_eye.z * _scale.z);  // viewer->center (scaled)
+        _VC = glm::dvec3(-_eye.x * _scale.x, -_eye.y * _scale.y, -_eye.z * _scale.z);  // viewer->center (scaled)
         _VCmag = std::max((double)glm::length(_VC), _minVCmag); // clamped to the min HAE
         _VCmag2 = _VCmag * _VCmag;
         _VHmag2 = _VCmag2 - 1.0;  // viewer->horizon line (scaled)
@@ -123,10 +120,10 @@ Horizon::isVisible(double x, double y, double z, double radius) const
     VT = target - _eye;
     double a = glm::dot(VT, -_eyeUnit);
     double b = a * _coneTan;
-    double c = sqrt(glm::dot(VT, VT) - a * a);
+    double c = sqrt(glm::max(glm::dot(VT, VT) - a * a, 0.0));
     double d = c - b;
     double e = d * _coneCos;
-    if (e > -radius)
+    if (e > -radius || std::isnan(e))
         return true;
 
     return false;
@@ -135,20 +132,5 @@ Horizon::isVisible(double x, double y, double z, double radius) const
 double
 Horizon::getDistanceToVisibleHorizon() const
 {
-#if 1
     return glm::length(_scaleInv * sqrt(_VHmag2));
-#else
-    double eyeLen = glm::length(_eye);
-
-    dvec3 geodetic;
-
-    geodetic = _em.geocentricToGeodetic(_eye);
-    double hasl = geodetic.z;
-
-    // limit it:
-    hasl = std::max(hasl, 100.0);
-
-    double radius = eyeLen - hasl;
-    return sqrt(2.0*radius*hasl + hasl * hasl);
-#endif
 }

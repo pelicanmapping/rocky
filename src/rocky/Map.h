@@ -3,6 +3,11 @@
  * Copyright 2023 Pelican Mapping
  * MIT License
  */
+/**
+ * @file Map.h
+ * @defgroup core_map Core Map API
+ * @brief Core map and layer management classes
+ */
 #pragma once
 
 #include <rocky/Common.h>
@@ -15,6 +20,9 @@
 namespace ROCKY_NAMESPACE
 {
     /**
+     * @ingroup core_map
+     * @brief Main data model holding a collection of layers
+     *
      * Map is the main data model, which holds a collection of layers.
      * Create a Map by calling Map::create().
      */
