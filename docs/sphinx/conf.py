@@ -78,8 +78,6 @@ breathe_show_enumvalue_initializer = True
 # -- Exhale configuration ----------------------------------------------------
 # Exhale auto-generates Sphinx pages for the entire API tree
 
-from exhale import utils
-
 exhale_args = {
     # Required arguments
     "containmentFolder":     "./api",
@@ -95,11 +93,6 @@ exhale_args = {
 
     # Use our Doxyfile
     "exhaleUseDoxyfile":     True,
-
-    # Mapping of files to custom page names
-    "customSpecificationsMapping": utils.makeCustomSpecificationsMapping(
-        lambda file_name: file_name.replace("_8h", "")
-    ),
 
     # SELECTIVE DOCUMENTATION: Control what Exhale generates
     # These are the kinds of things we want to show in the API tree
