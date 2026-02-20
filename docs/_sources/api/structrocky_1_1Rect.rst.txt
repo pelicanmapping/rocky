@@ -1,0 +1,17 @@
+.. _exhale_struct_structrocky_1_1Rect:
+
+Struct Rect
+===========
+
+- Defined in :ref:`file_src_rocky_Math.h`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::Rect
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

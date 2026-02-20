@@ -1,0 +1,755 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File LineSystem.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File LineSystem.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_vsg_ecs_LineSystem.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-linesystem-cpp">
+<span id="program-listing-file-src-rocky-vsg-ecs-linesystem-cpp"></span><h1>Program Listing for File LineSystem.cpp<a class="headerlink" href="#program-listing-for-file-linesystem-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_vsg_ecs_LineSystem.cpp.html#file-src-rocky-vsg-ecs-linesystem-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/ecs/LineSystem.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;LineSystem.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ECSVisitors.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;TransformDetail.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;../PipelineState.h&quot;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="o">::</span><span class="nn">detail</span><span class="p">;</span>
+
+<span class="cp">#define LINE_VERT_SHADER &quot;shaders/rocky.line.vert&quot;</span>
+<span class="cp">#define LINE_FRAG_SHADER &quot;shaders/rocky.line.frag&quot;</span>
+
+<span class="cp">#define LINE_SET 0</span>
+<span class="cp">#define LINE_BINDING_UNIFORM  1 </span><span class="c1">// layout(set=0, binding=1) in the shader</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderSet</span><span class="o">&gt;</span><span class="w"> </span><span class="n">createLineShaderSet</span><span class="p">(</span><span class="n">VSGContext</span><span class="o">&amp;</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderSet</span><span class="o">&gt;</span><span class="w"> </span><span class="n">shaderSet</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// load shaders</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">vertexShader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderStage</span><span class="o">::</span><span class="n">read</span><span class="p">(</span>
+<span class="w">            </span><span class="n">VK_SHADER_STAGE_VERTEX_BIT</span><span class="p">,</span>
+<span class="w">            </span><span class="s">&quot;main&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="n">vsg</span><span class="o">::</span><span class="n">findFile</span><span class="p">(</span><span class="n">LINE_VERT_SHADER</span><span class="p">,</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">searchPaths</span><span class="p">),</span>
+<span class="w">            </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">readerWriterOptions</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">fragmentShader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderStage</span><span class="o">::</span><span class="n">read</span><span class="p">(</span>
+<span class="w">            </span><span class="n">VK_SHADER_STAGE_FRAGMENT_BIT</span><span class="p">,</span>
+<span class="w">            </span><span class="s">&quot;main&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="n">vsg</span><span class="o">::</span><span class="n">findFile</span><span class="p">(</span><span class="n">LINE_FRAG_SHADER</span><span class="p">,</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">searchPaths</span><span class="p">),</span>
+<span class="w">            </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">readerWriterOptions</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">vertexShader</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">fragmentShader</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderStages</span><span class="w"> </span><span class="n">shaderStages</span><span class="p">{</span><span class="w"> </span><span class="n">vertexShader</span><span class="p">,</span><span class="w"> </span><span class="n">fragmentShader</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">        </span><span class="n">shaderSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderSet</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">shaderStages</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// &quot;binding&quot; (3rd param) must match &quot;layout(location=X) in&quot; in the vertex shader</span>
+<span class="w">        </span><span class="n">shaderSet</span><span class="o">-&gt;</span><span class="n">addAttributeBinding</span><span class="p">(</span><span class="s">&quot;in_vertex&quot;</span><span class="p">,</span><span class="w">      </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">VK_FORMAT_R32G32B32_SFLOAT</span><span class="p">,</span><span class="w"> </span><span class="p">{});</span>
+<span class="w">        </span><span class="n">shaderSet</span><span class="o">-&gt;</span><span class="n">addAttributeBinding</span><span class="p">(</span><span class="s">&quot;in_vertex_prev&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">VK_FORMAT_R32G32B32_SFLOAT</span><span class="p">,</span><span class="w"> </span><span class="p">{});</span>
+<span class="w">        </span><span class="n">shaderSet</span><span class="o">-&gt;</span><span class="n">addAttributeBinding</span><span class="p">(</span><span class="s">&quot;in_vertex_next&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">VK_FORMAT_R32G32B32_SFLOAT</span><span class="p">,</span><span class="w"> </span><span class="p">{});</span>
+<span class="w">        </span><span class="n">shaderSet</span><span class="o">-&gt;</span><span class="n">addAttributeBinding</span><span class="p">(</span><span class="s">&quot;in_color&quot;</span><span class="p">,</span><span class="w">       </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">VK_FORMAT_R32G32B32A32_SFLOAT</span><span class="p">,</span><span class="w"> </span><span class="p">{});</span>
+
+<span class="w">        </span><span class="n">shaderSet</span><span class="o">-&gt;</span><span class="n">addDescriptorBinding</span><span class="p">(</span><span class="s">&quot;line&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">LINE_SET</span><span class="p">,</span><span class="w"> </span><span class="n">LINE_BINDING_UNIFORM</span><span class="p">,</span>
+<span class="w">            </span><span class="n">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">VK_SHADER_STAGE_VERTEX_BIT</span><span class="p">,</span><span class="w"> </span><span class="p">{});</span>
+
+<span class="w">        </span><span class="c1">// We need VSG&#39;s view-dependent data:</span>
+<span class="w">        </span><span class="n">PipelineUtils</span><span class="o">::</span><span class="n">addViewDependentData</span><span class="p">(</span><span class="n">shaderSet</span><span class="p">,</span><span class="w"> </span><span class="n">VK_SHADER_STAGE_VERTEX_BIT</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// Note: 128 is the maximum size required by the Vulkan spec so don&#39;t increase it</span>
+<span class="w">        </span><span class="n">shaderSet</span><span class="o">-&gt;</span><span class="n">addPushConstantRange</span><span class="p">(</span><span class="s">&quot;pc&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">VK_SHADER_STAGE_VERTEX_BIT</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">128</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">shaderSet</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+
+<span class="w">    </span><span class="c1">// creates an empty, default style detail bind command, ready to be populated.</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="n">initializeStyleDetail</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">PipelineLayout</span><span class="o">*</span><span class="w"> </span><span class="n">layout</span><span class="p">,</span><span class="w"> </span><span class="n">LineStyleDetail</span><span class="o">&amp;</span><span class="w"> </span><span class="n">styleDetail</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// uniform: &quot;mesh.styles&quot; in the shader</span>
+<span class="w">        </span><span class="n">styleDetail</span><span class="p">.</span><span class="n">styleData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ubyteArray</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">LineStyleUniform</span><span class="p">));</span>
+<span class="w">        </span><span class="n">styleDetail</span><span class="p">.</span><span class="n">styleUBO</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">DescriptorBuffer</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">styleDetail</span><span class="p">.</span><span class="n">styleData</span><span class="p">,</span><span class="w"> </span><span class="n">LINE_BINDING_UNIFORM</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// bind command:</span>
+<span class="w">        </span><span class="n">styleDetail</span><span class="p">.</span><span class="n">bind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">BindDescriptorSet</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">        </span><span class="n">styleDetail</span><span class="p">.</span><span class="n">bind</span><span class="o">-&gt;</span><span class="n">pipelineBindPoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VK_PIPELINE_BIND_POINT_GRAPHICS</span><span class="p">;</span>
+<span class="w">        </span><span class="n">styleDetail</span><span class="p">.</span><span class="n">bind</span><span class="o">-&gt;</span><span class="n">firstSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="n">styleDetail</span><span class="p">.</span><span class="n">bind</span><span class="o">-&gt;</span><span class="n">layout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layout</span><span class="p">;</span>
+<span class="w">        </span><span class="n">styleDetail</span><span class="p">.</span><span class="n">bind</span><span class="o">-&gt;</span><span class="n">descriptorSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">DescriptorSet</span><span class="o">::</span><span class="n">create</span><span class="p">(</span>
+<span class="w">            </span><span class="n">styleDetail</span><span class="p">.</span><span class="n">bind</span><span class="o">-&gt;</span><span class="n">layout</span><span class="o">-&gt;</span><span class="n">setLayouts</span><span class="p">.</span><span class="n">front</span><span class="p">(),</span>
+<span class="w">            </span><span class="n">vsg</span><span class="o">::</span><span class="n">Descriptors</span><span class="p">{</span><span class="w"> </span><span class="n">styleDetail</span><span class="p">.</span><span class="n">styleUBO</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">uniforms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">LineStyleUniform</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">styleDetail</span><span class="p">.</span><span class="n">styleData</span><span class="o">-&gt;</span><span class="n">dataPointer</span><span class="p">());</span>
+<span class="w">        </span><span class="n">uniforms</span><span class="p">.</span><span class="n">style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LineStyleRecord</span><span class="p">();</span><span class="w"> </span><span class="c1">// default style</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// disposal vector processed by the system</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="w"> </span><span class="n">s_cleanupMutex</span><span class="p">;</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Objects</span><span class="o">&gt;</span><span class="w"> </span><span class="n">s_toDispose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Objects</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">dispose</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">Object</span><span class="o">*</span><span class="w"> </span><span class="n">object</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">object</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">s_cleanupMutex</span><span class="p">);</span>
+<span class="w">            </span><span class="n">s_toDispose</span><span class="o">-&gt;</span><span class="n">addChild</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Object</span><span class="o">&gt;</span><span class="p">(</span><span class="n">object</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">on_construct_Line</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">get_or_emplace</span><span class="o">&lt;</span><span class="n">ActiveState</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">get_or_emplace</span><span class="o">&lt;</span><span class="n">Visibility</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">        </span><span class="n">Line</span><span class="o">::</span><span class="n">dirty</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">on_construct_LineStyle</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">r</span><span class="p">.</span><span class="n">emplace</span><span class="o">&lt;</span><span class="n">LineStyleDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">        </span><span class="n">LineStyle</span><span class="o">::</span><span class="n">dirty</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">on_construct_LineGeometry</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">r</span><span class="p">.</span><span class="n">emplace</span><span class="o">&lt;</span><span class="n">LineGeometryDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">        </span><span class="n">LineGeometry</span><span class="o">::</span><span class="n">dirty</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">on_destroy_LineStyle</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">r</span><span class="p">.</span><span class="n">remove</span><span class="o">&lt;</span><span class="n">LineStyleDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">on_destroy_LineStyleDetail</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">dispose</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="n">LineStyleDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">).</span><span class="n">bind</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">on_destroy_LineGeometry</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">r</span><span class="p">.</span><span class="n">remove</span><span class="o">&lt;</span><span class="n">LineGeometryDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">on_destroy_LineGeometryDetail</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">dispose</span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="n">LineGeometryDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">).</span><span class="n">root</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">on_update_Line</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Line</span><span class="o">::</span><span class="n">dirty</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">on_update_LineStyle</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">LineStyle</span><span class="o">::</span><span class="n">dirty</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">on_update_LineGeometry</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">LineGeometry</span><span class="o">::</span><span class="n">dirty</span><span class="p">(</span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">LineSystemNode</span><span class="o">::</span><span class="n">LineSystemNode</span><span class="p">(</span><span class="n">Registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">registry</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">Inherit</span><span class="p">(</span><span class="n">registry</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// temporary transform used by the visitor traversal(s)</span>
+<span class="w">    </span><span class="n">_tempMT</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">MatrixTransform</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">    </span><span class="n">_tempMT</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">_registry</span><span class="p">.</span><span class="n">write</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// install the ecs callbacks for Lines</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">on_construct</span><span class="o">&lt;</span><span class="n">Line</span><span class="o">&gt;</span><span class="p">().</span><span class="n">connect</span><span class="o">&lt;&amp;</span><span class="n">on_construct_Line</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">on_construct</span><span class="o">&lt;</span><span class="n">LineStyle</span><span class="o">&gt;</span><span class="p">().</span><span class="n">connect</span><span class="o">&lt;&amp;</span><span class="n">on_construct_LineStyle</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">on_construct</span><span class="o">&lt;</span><span class="n">LineGeometry</span><span class="o">&gt;</span><span class="p">().</span><span class="n">connect</span><span class="o">&lt;&amp;</span><span class="n">on_construct_LineGeometry</span><span class="o">&gt;</span><span class="p">();</span>
+
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">on_update</span><span class="o">&lt;</span><span class="n">Line</span><span class="o">&gt;</span><span class="p">().</span><span class="n">connect</span><span class="o">&lt;&amp;</span><span class="n">on_update_Line</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">on_update</span><span class="o">&lt;</span><span class="n">LineStyle</span><span class="o">&gt;</span><span class="p">().</span><span class="n">connect</span><span class="o">&lt;&amp;</span><span class="n">on_update_LineStyle</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">on_update</span><span class="o">&lt;</span><span class="n">LineGeometry</span><span class="o">&gt;</span><span class="p">().</span><span class="n">connect</span><span class="o">&lt;&amp;</span><span class="n">on_update_LineGeometry</span><span class="o">&gt;</span><span class="p">();</span>
+
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">on_destroy</span><span class="o">&lt;</span><span class="n">LineStyle</span><span class="o">&gt;</span><span class="p">().</span><span class="n">connect</span><span class="o">&lt;&amp;</span><span class="n">on_destroy_LineStyle</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">on_destroy</span><span class="o">&lt;</span><span class="n">LineStyleDetail</span><span class="o">&gt;</span><span class="p">().</span><span class="n">connect</span><span class="o">&lt;&amp;</span><span class="n">on_destroy_LineStyleDetail</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">on_destroy</span><span class="o">&lt;</span><span class="n">LineGeometry</span><span class="o">&gt;</span><span class="p">().</span><span class="n">connect</span><span class="o">&lt;&amp;</span><span class="n">on_destroy_LineGeometry</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">on_destroy</span><span class="o">&lt;</span><span class="n">LineGeometryDetail</span><span class="o">&gt;</span><span class="p">().</span><span class="n">connect</span><span class="o">&lt;&amp;</span><span class="n">on_destroy_LineGeometryDetail</span><span class="o">&gt;</span><span class="p">();</span>
+
+<span class="w">            </span><span class="c1">// Set up the dirty tracking.</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">create</span><span class="p">();</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">emplace</span><span class="o">&lt;</span><span class="n">Line</span><span class="o">::</span><span class="n">Dirty</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">emplace</span><span class="o">&lt;</span><span class="n">LineStyle</span><span class="o">::</span><span class="n">Dirty</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">            </span><span class="n">r</span><span class="p">.</span><span class="n">emplace</span><span class="o">&lt;</span><span class="n">LineGeometry</span><span class="o">::</span><span class="n">Dirty</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineSystemNode</span><span class="o">::</span><span class="n">initialize</span><span class="p">(</span><span class="n">VSGContext</span><span class="o">&amp;</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// Now create the pipeline and stategroup to bind it</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">shaderSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createLineShaderSet</span><span class="p">(</span><span class="n">vsgcontext</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">shaderSet</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span>
+<span class="w">            </span><span class="s">&quot;Line shaders are missing or corrupt. &quot;</span>
+<span class="w">            </span><span class="s">&quot;Did you set ROCKY_FILE_PATH to point at the rocky share folder?&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">_pipelines</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">NUM_PIPELINES</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">feature_mask</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">feature_mask</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">NUM_PIPELINES</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">feature_mask</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_pipelines</span><span class="p">[</span><span class="n">feature_mask</span><span class="p">];</span>
+
+<span class="w">        </span><span class="c1">// Create the pipeline configurator for terrain; this is a helper object</span>
+<span class="w">        </span><span class="c1">// that acts as a &quot;template&quot; for terrain tile rendering state.</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">GraphicsPipelineConfig</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">shaderSet</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// Apply any custom compile settings / defines:</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">shaderHints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">shaderCompileSettings</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// activate the arrays we intend to use</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">enableArray</span><span class="p">(</span><span class="s">&quot;in_vertex&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">VK_VERTEX_INPUT_RATE_VERTEX</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">);</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">enableArray</span><span class="p">(</span><span class="s">&quot;in_vertex_prev&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">VK_VERTEX_INPUT_RATE_VERTEX</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">);</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">enableArray</span><span class="p">(</span><span class="s">&quot;in_vertex_next&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">VK_VERTEX_INPUT_RATE_VERTEX</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">);</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">enableArray</span><span class="p">(</span><span class="s">&quot;in_color&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">VK_VERTEX_INPUT_RATE_VERTEX</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// Uniforms we will need:</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">enableDescriptor</span><span class="p">(</span><span class="s">&quot;line&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// always both</span>
+<span class="w">        </span><span class="n">PipelineUtils</span><span class="o">::</span><span class="n">enableViewDependentData</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">SetPipelineStates</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Visitor</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">feature_mask</span><span class="p">;</span>
+<span class="w">            </span><span class="n">SetPipelineStates</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">feature_mask_</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">feature_mask</span><span class="p">(</span><span class="n">feature_mask_</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+<span class="w">            </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">Object</span><span class="o">&amp;</span><span class="w"> </span><span class="n">object</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">object</span><span class="p">.</span><span class="n">traverse</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">RasterizationState</span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">state</span><span class="p">.</span><span class="n">cullMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VK_CULL_MODE_NONE</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">DepthStencilState</span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">state</span><span class="p">.</span><span class="n">depthTestEnable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VK_TRUE</span><span class="p">;</span>
+<span class="w">                </span><span class="c1">//if ((feature_mask &amp; WRITE_DEPTH) == 0) {</span>
+<span class="w">                </span><span class="c1">//    state.depthWriteEnable = (feature_mask &amp; WRITE_DEPTH) ? VK_TRUE : VK_FALSE;</span>
+<span class="w">                </span><span class="c1">//}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ColorBlendState</span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">state</span><span class="p">.</span><span class="n">attachments</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ColorBlendState</span><span class="o">::</span><span class="n">ColorBlendAttachments</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="p">{</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">VK_BLEND_FACTOR_SRC_ALPHA</span><span class="p">,</span><span class="w"> </span><span class="n">VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA</span><span class="p">,</span><span class="w"> </span><span class="n">VK_BLEND_OP_ADD</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">VK_BLEND_FACTOR_SRC_ALPHA</span><span class="p">,</span><span class="w"> </span><span class="n">VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA</span><span class="p">,</span><span class="w"> </span><span class="n">VK_BLEND_OP_ADD</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">VK_COLOR_COMPONENT_R_BIT</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">VK_COLOR_COMPONENT_G_BIT</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">VK_COLOR_COMPONENT_B_BIT</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">VK_COLOR_COMPONENT_A_BIT</span><span class="w"> </span><span class="p">}</span>
+<span class="w">                </span><span class="p">};</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="w">        </span><span class="n">SetPipelineStates</span><span class="w"> </span><span class="nf">visitor</span><span class="p">(</span><span class="n">feature_mask</span><span class="p">);</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">visitor</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">init</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// Assemble the commands required to activate this pipeline:</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">commands</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Commands</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">commands</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">bindGraphicsPipeline</span><span class="p">);</span>
+<span class="w">        </span><span class="n">c</span><span class="p">.</span><span class="n">commands</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">BindViewDescriptorSets</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">VK_PIPELINE_BIND_POINT_GRAPHICS</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">config</span><span class="o">-&gt;</span><span class="n">layout</span><span class="p">,</span><span class="w"> </span><span class="n">VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Set up our default style detail, which is used when a MeshStyle is missing.</span>
+<span class="w">    </span><span class="n">initializeStyleDetail</span><span class="p">(</span><span class="n">getPipelineLayout</span><span class="p">(</span><span class="n">Line</span><span class="p">()),</span><span class="w"> </span><span class="n">_defaultStyleDetail</span><span class="p">);</span>
+<span class="w">    </span><span class="n">requestCompile</span><span class="p">(</span><span class="n">_defaultStyleDetail</span><span class="p">.</span><span class="n">bind</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineSystemNode</span><span class="o">::</span><span class="n">compile</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">Context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">compileContext</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// called during a compile traversal .. e.g., then adding a new View/RenderGraph.</span>
+<span class="w">    </span><span class="n">_registry</span><span class="p">.</span><span class="n">read</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">reg</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">reg</span><span class="p">.</span><span class="n">view</span><span class="o">&lt;</span><span class="n">LineStyleDetail</span><span class="o">&gt;</span><span class="p">().</span><span class="n">each</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">styleDetail</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">styleDetail</span><span class="p">.</span><span class="n">bind</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">styleDetail</span><span class="p">.</span><span class="n">bind</span><span class="o">-&gt;</span><span class="n">compile</span><span class="p">(</span><span class="n">compileContext</span><span class="p">);</span>
+<span class="w">                </span><span class="p">});</span>
+
+<span class="w">            </span><span class="n">reg</span><span class="p">.</span><span class="n">view</span><span class="o">&lt;</span><span class="n">LineGeometryDetail</span><span class="o">&gt;</span><span class="p">().</span><span class="n">each</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">geomDetail</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="o">-&gt;</span><span class="n">compile</span><span class="p">(</span><span class="n">compileContext</span><span class="p">);</span>
+<span class="w">                </span><span class="p">});</span>
+<span class="w">        </span><span class="p">});</span>
+
+<span class="w">    </span><span class="n">Inherit</span><span class="o">::</span><span class="n">compile</span><span class="p">(</span><span class="n">compileContext</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineSystemNode</span><span class="o">::</span><span class="n">createOrUpdateGeometry</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">LineGeometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">geom</span><span class="p">,</span><span class="w"> </span><span class="n">LineGeometryDetail</span><span class="o">&amp;</span><span class="w"> </span><span class="n">geomDetail</span><span class="p">,</span><span class="w"> </span><span class="n">VSGContext</span><span class="o">&amp;</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// NB: registry is read-locked</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">reallocate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">root</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">reallocate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">capacity</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="o">-&gt;</span><span class="n">allocatedCapacity</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">reallocate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">reallocate</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// discard the old node and create a new one.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="p">)</span>
+<span class="w">            </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">dispose</span><span class="p">(</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LineGeometryNode</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span><span class="w"> </span><span class="n">root</span><span class="p">;</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">dmat4</span><span class="w"> </span><span class="n">localizer_matrix</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">srs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">GeoPoint</span><span class="w"> </span><span class="nf">anchor</span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                </span><span class="n">anchor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">front</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">back</span><span class="p">())</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span>
+
+<span class="w">            </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">anchor</span><span class="p">.</span><span class="n">valid</span><span class="p">(),</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">xform</span><span class="p">,</span><span class="w"> </span><span class="n">offset</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">anchor</span><span class="p">.</span><span class="n">parseAsReferencePoint</span><span class="p">();</span>
+
+<span class="w">            </span><span class="c1">// make a copy that we will use to transform and offset:</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">copy</span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">);</span>
+<span class="w">                </span><span class="n">xform</span><span class="p">.</span><span class="n">transformRange</span><span class="p">(</span><span class="n">copy</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">copy</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">copy</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">point</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">offset</span><span class="p">;</span>
+
+<span class="w">                </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">copy</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">colors</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">topology</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">colors</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">topology</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+
+
+<span class="w">            </span><span class="n">localizer_matrix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">translate</span><span class="p">(</span><span class="n">to_vsg</span><span class="p">(</span><span class="n">offset</span><span class="p">));</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">localizer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">MatrixTransform</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">localizer_matrix</span><span class="p">);</span>
+<span class="w">            </span><span class="n">localizer</span><span class="o">-&gt;</span><span class="n">addChild</span><span class="p">(</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="p">);</span>
+<span class="w">            </span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">localizer</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// no reference point -- push raw geometry</span>
+<span class="w">            </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">colors</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">topology</span><span class="p">);</span>
+<span class="w">            </span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">root</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">requestCompile</span><span class="p">(</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">root</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="c1">// existing node -- update:</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">dsphere</span><span class="w"> </span><span class="n">bound</span><span class="p">;</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">dmat4</span><span class="w"> </span><span class="n">localizer_matrix</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">srs</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">GeoPoint</span><span class="w"> </span><span class="nf">anchor</span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">front</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">back</span><span class="p">())</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span>
+
+<span class="w">            </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">anchor</span><span class="p">.</span><span class="n">valid</span><span class="p">(),</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">xform</span><span class="p">,</span><span class="w"> </span><span class="n">offset</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">anchor</span><span class="p">.</span><span class="n">parseAsReferencePoint</span><span class="p">();</span>
+
+<span class="w">            </span><span class="c1">// make a copy that we will use to transform and offset:</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">copy</span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">);</span>
+<span class="w">            </span><span class="n">xform</span><span class="p">.</span><span class="n">transformRange</span><span class="p">(</span><span class="n">copy</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">copy</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">copy</span><span class="p">)</span>
+<span class="w">                </span><span class="n">point</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">offset</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">copy</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">colors</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">topology</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">mt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">find</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">MatrixTransform</span><span class="o">&gt;</span><span class="p">(</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">root</span><span class="p">);</span>
+<span class="w">            </span><span class="n">mt</span><span class="o">-&gt;</span><span class="n">matrix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">translate</span><span class="p">(</span><span class="n">to_vsg</span><span class="p">(</span><span class="n">offset</span><span class="p">));</span>
+<span class="w">            </span><span class="n">localizer_matrix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mt</span><span class="o">-&gt;</span><span class="n">matrix</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// no reference point -- push raw geometry</span>
+<span class="w">            </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">geom</span><span class="p">.</span><span class="n">points</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">colors</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">.</span><span class="n">topology</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// upload the changed arrays</span>
+<span class="w">        </span><span class="n">requestUpload</span><span class="p">(</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="o">-&gt;</span><span class="n">arrays</span><span class="p">);</span>
+<span class="w">        </span><span class="n">requestUpload</span><span class="p">(</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="o">-&gt;</span><span class="n">indices</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineSystemNode</span><span class="o">::</span><span class="n">createOrUpdateStyle</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">LineStyle</span><span class="o">&amp;</span><span class="w"> </span><span class="n">style</span><span class="p">,</span><span class="w"> </span><span class="n">LineStyleDetail</span><span class="o">&amp;</span><span class="w"> </span><span class="n">styleDetail</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// NB: registry is read-locked</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">needsCompile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">needsUpload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">styleDetail</span><span class="p">.</span><span class="n">bind</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">layout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getPipelineLayout</span><span class="p">(</span><span class="n">Line</span><span class="p">());</span>
+<span class="w">        </span><span class="n">initializeStyleDetail</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span><span class="w"> </span><span class="n">styleDetail</span><span class="p">);</span>
+<span class="w">        </span><span class="n">needsCompile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// update the uniform for this style:</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">uniforms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">LineStyleUniform</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">styleDetail</span><span class="p">.</span><span class="n">styleData</span><span class="o">-&gt;</span><span class="n">dataPointer</span><span class="p">());</span>
+<span class="w">    </span><span class="n">uniforms</span><span class="p">.</span><span class="n">style</span><span class="p">.</span><span class="n">populate</span><span class="p">(</span><span class="n">style</span><span class="p">);</span>
+<span class="w">    </span><span class="n">uniforms</span><span class="p">.</span><span class="n">style</span><span class="p">.</span><span class="n">devicePixelRatio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_devicePixelRatio</span><span class="p">;</span>
+<span class="w">    </span><span class="n">needsUpload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">needsCompile</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">needsCompile</span><span class="p">)</span>
+<span class="w">        </span><span class="n">requestCompile</span><span class="p">(</span><span class="n">styleDetail</span><span class="p">.</span><span class="n">bind</span><span class="p">);</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">needsUpload</span><span class="p">)</span>
+<span class="w">        </span><span class="n">requestUpload</span><span class="p">(</span><span class="n">styleDetail</span><span class="p">.</span><span class="n">styleUBO</span><span class="o">-&gt;</span><span class="n">bufferInfoList</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineSystemNode</span><span class="o">::</span><span class="n">traverse</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">RecordTraversal</span><span class="o">&amp;</span><span class="w"> </span><span class="n">record</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">RenderingState</span><span class="w"> </span><span class="n">rs</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">record</span><span class="p">.</span><span class="n">getCommandBuffer</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">viewID</span><span class="p">,</span>
+<span class="w">        </span><span class="n">record</span><span class="p">.</span><span class="n">getFrameStamp</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">frameCount</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">LineStyleDetail</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">styleDetails</span><span class="p">;</span>
+<span class="w">    </span><span class="n">styleDetails</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_defaultStyleDetail</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Collect render leaves while locking the registry</span>
+<span class="w">    </span><span class="n">_registry</span><span class="p">.</span><span class="n">read</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">reg</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">reg</span><span class="p">.</span><span class="n">view</span><span class="o">&lt;</span><span class="n">LineStyleDetail</span><span class="o">&gt;</span><span class="p">().</span><span class="n">each</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">styleDetail</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">styleDetails</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="o">&amp;</span><span class="n">styleDetail</span><span class="p">);</span>
+<span class="w">                </span><span class="p">});</span>
+
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">view</span><span class="o">&lt;</span><span class="n">Line</span><span class="p">,</span><span class="w"> </span><span class="n">ActiveState</span><span class="p">,</span><span class="w"> </span><span class="n">Visibility</span><span class="o">&gt;</span><span class="p">();</span>
+
+<span class="w">            </span><span class="n">view</span><span class="p">.</span><span class="n">each</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">auto</span><span class="w"> </span><span class="n">entity</span><span class="p">,</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">active</span><span class="p">,</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">visibility</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">geom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">try_get</span><span class="o">&lt;</span><span class="n">LineGeometryDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">line</span><span class="p">.</span><span class="n">geometry</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">geom</span><span class="p">)</span>
+<span class="w">                        </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">                    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">styleDetail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">_defaultStyleDetail</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">try_get</span><span class="o">&lt;</span><span class="n">LineStyle</span><span class="o">&gt;</span><span class="p">(</span><span class="n">line</span><span class="p">.</span><span class="n">style</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">style</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">styleDetail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">reg</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="n">LineStyleDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">line</span><span class="p">.</span><span class="n">style</span><span class="p">);</span>
+
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geom</span><span class="o">-&gt;</span><span class="n">root</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">visible</span><span class="p">(</span><span class="n">visibility</span><span class="p">,</span><span class="w"> </span><span class="n">rs</span><span class="p">))</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">transformDetail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">try_get</span><span class="o">&lt;</span><span class="n">TransformDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">entity</span><span class="p">);</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">transformDetail</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">transformDetail</span><span class="o">-&gt;</span><span class="n">views</span><span class="p">[</span><span class="n">rs</span><span class="p">.</span><span class="n">viewID</span><span class="p">].</span><span class="n">passingCull</span><span class="p">)</span>
+<span class="w">                            </span><span class="p">{</span>
+<span class="w">                                </span><span class="n">styleDetail</span><span class="o">-&gt;</span><span class="n">drawList</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">LineDrawable</span><span class="p">{</span><span class="w"> </span><span class="n">geom</span><span class="o">-&gt;</span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="n">transformDetail</span><span class="w"> </span><span class="p">});</span>
+<span class="w">                                </span><span class="o">++</span><span class="n">count</span><span class="p">;</span>
+<span class="w">                            </span><span class="p">}</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                        </span><span class="k">else</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">styleDetail</span><span class="o">-&gt;</span><span class="n">drawList</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">LineDrawable</span><span class="p">{</span><span class="w"> </span><span class="n">geom</span><span class="o">-&gt;</span><span class="n">root</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="w"> </span><span class="p">});</span>
+<span class="w">                            </span><span class="o">++</span><span class="n">count</span><span class="p">;</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">});</span>
+
+<span class="w">            </span><span class="c1">// Render collected data.</span>
+<span class="w">            </span><span class="c1">// TODO: swap vectors into unprotected space to free up the readlock?</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_pipelines</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">commands</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">record</span><span class="p">);</span>
+
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">styleDetail</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">styleDetails</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">styleDetail</span><span class="o">-&gt;</span><span class="n">drawList</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">styleDetail</span><span class="o">-&gt;</span><span class="n">bind</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">record</span><span class="p">);</span>
+
+<span class="w">                        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">drawable</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">styleDetail</span><span class="o">-&gt;</span><span class="n">drawList</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">drawable</span><span class="p">.</span><span class="n">xformDetail</span><span class="p">)</span>
+<span class="w">                            </span><span class="p">{</span>
+<span class="w">                                </span><span class="n">drawable</span><span class="p">.</span><span class="n">xformDetail</span><span class="o">-&gt;</span><span class="n">push</span><span class="p">(</span><span class="n">record</span><span class="p">);</span>
+<span class="w">                            </span><span class="p">}</span>
+
+<span class="w">                            </span><span class="n">drawable</span><span class="p">.</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">record</span><span class="p">);</span>
+
+<span class="w">                            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">drawable</span><span class="p">.</span><span class="n">xformDetail</span><span class="p">)</span>
+<span class="w">                            </span><span class="p">{</span>
+<span class="w">                                </span><span class="n">drawable</span><span class="p">.</span><span class="n">xformDetail</span><span class="o">-&gt;</span><span class="n">pop</span><span class="p">(</span><span class="n">record</span><span class="p">);</span>
+<span class="w">                            </span><span class="p">}</span>
+<span class="w">                        </span><span class="p">}</span>
+
+<span class="w">                        </span><span class="n">styleDetail</span><span class="o">-&gt;</span><span class="n">drawList</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineSystemNode</span><span class="o">::</span><span class="n">traverse</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ConstVisitor</span><span class="o">&amp;</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">pipeline</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_pipelines</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">pipeline</span><span class="p">.</span><span class="n">commands</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// it might be an ECS visitor, in which case we&#39;ll communicate the entity being visited</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">ecsVisitor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">ECSVisitor</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">v</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">viewID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ecsVisitor</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ecsVisitor</span><span class="o">-&gt;</span><span class="n">viewID</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">_registry</span><span class="p">.</span><span class="n">read</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">reg</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">view</span><span class="o">&lt;</span><span class="n">Line</span><span class="p">,</span><span class="w"> </span><span class="n">ActiveState</span><span class="o">&gt;</span><span class="p">();</span>
+
+<span class="w">            </span><span class="n">view</span><span class="p">.</span><span class="n">each</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">auto</span><span class="w"> </span><span class="n">entity</span><span class="p">,</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">line</span><span class="p">,</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">active</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">geom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">try_get</span><span class="o">&lt;</span><span class="n">LineGeometryDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">line</span><span class="p">.</span><span class="n">geometry</span><span class="p">);</span>
+
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geom</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">geom</span><span class="o">-&gt;</span><span class="n">root</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ecsVisitor</span><span class="p">)</span>
+<span class="w">                            </span><span class="n">ecsVisitor</span><span class="o">-&gt;</span><span class="n">currentEntity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entity</span><span class="p">;</span>
+
+<span class="w">                        </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">transformDetail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">try_get</span><span class="o">&lt;</span><span class="n">TransformDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">entity</span><span class="p">);</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">transformDetail</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">_tempMT</span><span class="o">-&gt;</span><span class="n">matrix</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transformDetail</span><span class="o">-&gt;</span><span class="n">views</span><span class="p">[</span><span class="n">viewID</span><span class="p">].</span><span class="n">model</span><span class="p">;</span>
+<span class="w">                            </span><span class="n">_tempMT</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">geom</span><span class="o">-&gt;</span><span class="n">root</span><span class="p">;</span>
+<span class="w">                            </span><span class="n">_tempMT</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                        </span><span class="k">else</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">geom</span><span class="o">-&gt;</span><span class="n">root</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">});</span>
+<span class="w">        </span><span class="p">});</span>
+
+<span class="w">    </span><span class="n">Inherit</span><span class="o">::</span><span class="n">traverse</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineSystemNode</span><span class="o">::</span><span class="n">update</span><span class="p">(</span><span class="n">VSGContext</span><span class="o">&amp;</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// start by disposing of any old static objects</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">s_toDispose</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">dispose</span><span class="p">(</span><span class="n">s_toDispose</span><span class="p">);</span>
+<span class="w">        </span><span class="n">s_toDispose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Objects</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">devicePixelRatio</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_devicePixelRatio</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_devicePixelRatio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">devicePixelRatio</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// If the DPR changed, dirty all styles so the new dpr will get applied</span>
+<span class="w">        </span><span class="n">_registry</span><span class="p">.</span><span class="n">read</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">reg</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">[</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">style</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">view</span><span class="o">&lt;</span><span class="n">LineStyle</span><span class="o">&gt;</span><span class="p">().</span><span class="n">each</span><span class="p">())</span>
+<span class="w">                    </span><span class="n">style</span><span class="p">.</span><span class="n">dirty</span><span class="p">(</span><span class="n">reg</span><span class="p">);</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">_registry</span><span class="p">.</span><span class="n">read</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">reg</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">LineStyle</span><span class="o">::</span><span class="n">eachDirty</span><span class="p">(</span><span class="n">reg</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">style</span><span class="p">,</span><span class="w"> </span><span class="n">styleDetail</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">try_get</span><span class="o">&lt;</span><span class="n">LineStyle</span><span class="p">,</span><span class="w"> </span><span class="n">LineStyleDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">style</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">styleDetail</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">createOrUpdateStyle</span><span class="p">(</span><span class="o">*</span><span class="n">style</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">styleDetail</span><span class="p">);</span>
+<span class="w">                </span><span class="p">});</span>
+
+<span class="w">            </span><span class="n">LineGeometry</span><span class="o">::</span><span class="n">eachDirty</span><span class="p">(</span><span class="n">reg</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">geom</span><span class="p">,</span><span class="w"> </span><span class="n">geomDetail</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">try_get</span><span class="o">&lt;</span><span class="n">LineGeometry</span><span class="p">,</span><span class="w"> </span><span class="n">LineGeometryDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geom</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">geomDetail</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">createOrUpdateGeometry</span><span class="p">(</span><span class="o">*</span><span class="n">geom</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">geomDetail</span><span class="p">,</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="w">                </span><span class="p">});</span>
+<span class="w">        </span><span class="p">});</span>
+
+<span class="w">    </span><span class="n">Inherit</span><span class="o">::</span><span class="n">update</span><span class="p">(</span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">LineGeometryNode</span><span class="o">::</span><span class="n">LineGeometryNode</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_drawCommand</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">DrawIndexed</span><span class="o">::</span><span class="n">create</span><span class="p">(</span>
+<span class="w">        </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// index count</span>
+<span class="w">        </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="c1">// instance count</span>
+<span class="w">        </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// first index</span>
+<span class="w">        </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="c1">// vertex offset</span>
+<span class="w">        </span><span class="mi">0</span><span class="w">  </span><span class="c1">// first instance</span>
+<span class="w">    </span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">commands</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">_drawCommand</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineGeometryNode</span><span class="o">::</span><span class="n">setFirst</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_drawCommand</span><span class="o">-&gt;</span><span class="n">firstIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineGeometryNode</span><span class="o">::</span><span class="n">setCount</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_drawCommand</span><span class="o">-&gt;</span><span class="n">indexCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">6</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineGeometryNode</span><span class="o">::</span><span class="n">calcBound</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">dsphere</span><span class="o">&amp;</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">dmat4</span><span class="o">&amp;</span><span class="w"> </span><span class="n">matrix</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">first</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_drawCommand</span><span class="o">-&gt;</span><span class="n">firstIndex</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_drawCommand</span><span class="o">-&gt;</span><span class="n">indexCount</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">6</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">output</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">for</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">first</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">expandBy</span><span class="p">(</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="n">matrix</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">_current</span><span class="o">-&gt;</span><span class="n">at</span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">4</span><span class="p">)));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">LineGeometry</span><span class="o">::</span><span class="n">recycle</span><span class="p">(</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">reg</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">geomDetail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reg</span><span class="p">.</span><span class="n">get</span><span class="o">&lt;</span><span class="n">LineGeometryDetail</span><span class="o">&gt;</span><span class="p">(</span><span class="n">owner</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">geomDetail</span><span class="p">.</span><span class="n">geomNode</span><span class="o">-&gt;</span><span class="n">setCount</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">points</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">    </span><span class="n">dirty</span><span class="p">(</span><span class="n">reg</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

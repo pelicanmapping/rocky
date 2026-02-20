@@ -1,0 +1,14 @@
+.. _exhale_function_namespaceWEEJOBS__NAMESPACE_1a44db487a1de31df5815dd5f549007257:
+
+Function WEEJOBS_NAMESPACE::shutdown
+====================================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: WEEJOBS_NAMESPACE::shutdown()
+   :project: Rocky

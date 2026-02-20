@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1aac185aadbf09a8979dd497f97cb52dde:
+
+Function rocky::util::isEnvVarSet
+=================================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::isEnvVarSet(const char *)
+   :project: Rocky

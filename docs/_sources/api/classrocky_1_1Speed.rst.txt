@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1Speed:
+
+Class Speed
+===========
+
+- Defined in :ref:`file_src_rocky_Units.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public rocky::detail::qualified_double< Speed >``
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::Speed
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

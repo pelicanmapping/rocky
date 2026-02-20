@@ -1,0 +1,17 @@
+.. _exhale_struct_structrocky_1_1ActiveState:
+
+Struct ActiveState
+==================
+
+- Defined in :ref:`file_src_rocky_ecs_Visibility.h`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::ActiveState
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

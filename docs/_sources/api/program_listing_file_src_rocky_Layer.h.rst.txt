@@ -1,0 +1,108 @@
+
+.. _program_listing_file_src_rocky_Layer.h:
+
+Program Listing for File Layer.h
+================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_Layer.h>` (``src/rocky/Layer.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Common.h>
+   #include <rocky/Callbacks.h>
+   #include <rocky/DateTime.h>
+   #include <rocky/IOTypes.h>
+   #include <rocky/Result.h>
+   #include <rocky/URI.h>
+   #include <shared_mutex>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class GeoExtent;
+       class TileKey;
+   
+       class ROCKY_EXPORT Layer : public Inherit<Object, Layer>
+       {
+       public:
+           option<bool> openAutomatically = true;
+   
+           option<Hyperlink> attribution = { };
+   
+       public:
+           virtual ~Layer();
+   
+           UID uid() const { return _uid; }
+   
+           inline const Status& status() const {
+               return _status;
+           }
+   
+           Result<> open(const IOOptions& options);
+   
+           void close();
+   
+           bool isOpen() const;
+   
+           virtual std::string to_json() const;
+   
+           virtual const GeoExtent& extent() const;
+   
+           virtual DateTimeExtent dateTimeExtent() const;
+   
+           Callback<void(const Layer*)> onLayerOpened;
+   
+           Callback<void(const Layer*)> onLayerClosed;
+   
+       public:
+   
+           Revision revision() const { return _revision; }
+   
+           virtual void dirty();
+   
+           const std::string& getLayerTypeName() const {
+               return _layerTypeName;
+           }
+   
+           class Options;
+   
+       protected:
+   
+           Layer();
+   
+           Layer(std::string_view conf);
+   
+           virtual Result<> openImplementation(const IOOptions& io);
+   
+           virtual void closeImplementation();
+   
+           const Failure& fail(const Failure& failure) const;
+   
+           const Failure& fail(const Failure::Type type, std::string_view message) const;
+   
+           void setLayerTypeName(const std::string&);
+   
+       private:
+           UID _uid = -1;
+           mutable Status _status;
+           std::atomic<Revision> _revision = { 1 };
+           mutable std::shared_mutex _state_mutex;
+           std::string _layerTypeName;
+   
+           void construct(std::string_view);
+   
+       protected:
+   
+           void bumpRevision();
+   
+           std::shared_mutex& layerStateMutex() const { return _state_mutex; }
+   
+           // allow the map access
+           friend class Map;
+       };
+   
+   } // namespace ROCKY_NAMESPACE

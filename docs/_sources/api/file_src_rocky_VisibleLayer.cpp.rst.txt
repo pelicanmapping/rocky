@@ -1,0 +1,47 @@
+
+.. _file_src_rocky_VisibleLayer.cpp:
+
+File VisibleLayer.cpp
+=====================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/VisibleLayer.cpp``)
+-------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_VisibleLayer.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``VisibleLayer.h`` (:ref:`file_src_rocky_VisibleLayer.h`)
+
+- ``json.h`` (:ref:`file_src_rocky_json.h`)
+
+
+
+
+
+
+Defines
+-------
+
+
+- :ref:`exhale_define_VisibleLayer_8cpp_1aa499bb75bb504909cd0a72baf48c4653`
+

@@ -1,0 +1,26 @@
+.. _exhale_struct_structrocky_1_1LabelStyle:
+
+Struct LabelStyle
+=================
+
+- Defined in :ref:`file_src_rocky_ecs_Label.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public rocky::Component< LabelStyle >`` (:ref:`exhale_struct_structrocky_1_1Component`)
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::LabelStyle
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

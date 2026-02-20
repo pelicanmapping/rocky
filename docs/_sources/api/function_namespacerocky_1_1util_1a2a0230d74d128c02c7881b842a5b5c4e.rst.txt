@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1a2a0230d74d128c02c7881b842a5b5c4e:
+
+Template Function rocky::util::find
+===================================
+
+- Defined in :ref:`file_src_rocky_vsg_VSGUtils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::find(vsg::Object *)
+   :project: Rocky

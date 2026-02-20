@@ -1,0 +1,62 @@
+
+.. _program_listing_file_src_rocky_vsg_terrain_TerrainEngine.h:
+
+Program Listing for File TerrainEngine.h
+========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_terrain_TerrainEngine.h>` (``src/rocky/vsg/terrain/TerrainEngine.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/vsg/VSGContext.h>
+   #include <rocky/vsg/terrain/TerrainSettings.h>
+   #include <rocky/vsg/terrain/GeometryPool.h>
+   #include <rocky/vsg/terrain/TerrainState.h>
+   #include <rocky/vsg/terrain/TerrainTilePager.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class Map;
+   
+       class TerrainEngine
+       {
+       public:
+           TerrainEngine(
+               std::shared_ptr<const Map> map,
+               const Profile& profile,
+               const SRS& renderingSRS,
+               TerrainState& stateFactory,
+               VSGContext context,
+               const TerrainSettings& settings,
+               TerrainTileHost* host);
+   
+           const TerrainSettings& settings;
+   
+           VSGContext context;
+   
+           std::shared_ptr<const Map> map;
+   
+           Profile profile;
+   
+           SRS renderingSRS;
+   
+           GeometryPool geometryPool;
+   
+           TerrainState& stateFactory;
+   
+           TerrainTileHost* host = nullptr;
+   
+           std::string loadSchedulerName = "rocky::terrain_loader";
+   
+           vsg::ref_ptr<TerrainTileNode> createTile(
+               const TileKey& key,
+               vsg::ref_ptr<TerrainTileNode> parent);
+   
+           bool update(VSGContext context);
+       };
+   }

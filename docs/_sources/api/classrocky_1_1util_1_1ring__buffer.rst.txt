@@ -1,0 +1,34 @@
+.. _exhale_class_classrocky_1_1util_1_1ring__buffer:
+
+Template Class ring_buffer
+==========================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Derived Type
+************
+
+- ``public rocky::util::ring_buffer_with_condition< T >`` (:ref:`exhale_class_classrocky_1_1util_1_1ring__buffer__with__condition`)
+
+
+Template Parameter Order
+------------------------
+
+#. `typename <exhale_struct_structrocky_1_1option_>`_
+
+
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::util::ring_buffer
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1a6ed56d3e329a51029e78456a12d1ffa9:
+
+Template Function rocky::util::remove
+=====================================
+
+- Defined in :ref:`file_src_rocky_vsg_VSGUtils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::remove(vsg::ref_ptr<vsg::Node>, COLLECTION&)
+   :project: Rocky

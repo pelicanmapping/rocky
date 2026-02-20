@@ -1,0 +1,14 @@
+.. _exhale_function_namespaceWEEJOBS__NAMESPACE_1a02e2b4771ff1112794e587a832b390f7:
+
+Function WEEJOBS_NAMESPACE::get_metrics
+=======================================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: WEEJOBS_NAMESPACE::get_metrics()
+   :project: Rocky

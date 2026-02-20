@@ -1,0 +1,17 @@
+.. _exhale_class_classrocky_1_1Status:
+
+Class Status
+============
+
+- Defined in :ref:`file_src_rocky_Result.h`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::Status
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

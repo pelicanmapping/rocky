@@ -1,0 +1,17 @@
+.. _exhale_class_classrocky_1_1Viewpoint:
+
+Class Viewpoint
+===============
+
+- Defined in :ref:`file_src_rocky_Viewpoint.h`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::Viewpoint
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

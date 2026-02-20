@@ -1,0 +1,837 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File TMS.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File TMS.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_TMS.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-tms-cpp">
+<span id="program-listing-file-src-rocky-tms-cpp"></span><h1>Program Listing for File TMS.cpp<a class="headerlink" href="#program-listing-for-file-tms-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_TMS.cpp.html#file-src-rocky-tms-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/TMS.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;TMS.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;tinyxml/tinyxml.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;nlohmann/json.hpp&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="n">json</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">nlohmann</span><span class="o">::</span><span class="n">json</span><span class="p">;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="o">::</span><span class="nn">TMS</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="o">::</span><span class="nn">util</span><span class="p">;</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="nf">intersects</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">minXa</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">minYa</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">maxXa</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">maxYa</span><span class="p">,</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">minXb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">minYb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">maxXb</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">maxYb</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">minXa</span><span class="p">,</span><span class="w"> </span><span class="n">minXb</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">maxXa</span><span class="p">,</span><span class="w"> </span><span class="n">maxXb</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">minYa</span><span class="p">,</span><span class="w"> </span><span class="n">minYb</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">maxYa</span><span class="p">,</span><span class="w"> </span><span class="n">maxYb</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="nf">getHorizSRSString</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">srs</span><span class="p">.</span><span class="n">horizontallyEquivalentTo</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="s">&quot;epsg:3785&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="s">&quot;epsg:4326&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">srs</span><span class="p">.</span><span class="n">definition</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="nf">getChildTextValue</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TiXmlElement</span><span class="o">*</span><span class="w"> </span><span class="n">node</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">TiXmlText</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">FirstChild</span><span class="p">());</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">text</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">text</span><span class="o">-&gt;</span><span class="n">Value</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">TiXmlElement</span><span class="o">*</span><span class="w"> </span><span class="nf">find</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">TiXmlElement</span><span class="o">*</span><span class="w"> </span><span class="n">node</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">node</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">toLower</span><span class="p">(</span><span class="n">node</span><span class="o">-&gt;</span><span class="n">ValueStr</span><span class="p">())</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">toLower</span><span class="p">(</span><span class="n">tag</span><span class="p">))</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">node</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TiXmlNode</span><span class="o">*</span><span class="w"> </span><span class="n">childnode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">node</span><span class="o">-&gt;</span><span class="n">FirstChild</span><span class="p">();</span>
+<span class="w">            </span><span class="n">childnode</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">            </span><span class="n">childnode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">childnode</span><span class="o">-&gt;</span><span class="n">NextSibling</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">match</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">find</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span><span class="w"> </span><span class="n">childnode</span><span class="o">-&gt;</span><span class="n">ToElement</span><span class="p">());</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">match</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">Result</span><span class="o">&lt;</span><span class="n">TileMap</span><span class="o">&gt;</span><span class="w"> </span><span class="n">parseTileMapFromXML</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">xml</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">TileMap</span><span class="w"> </span><span class="n">tilemap</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">TiXmlDocument</span><span class="w"> </span><span class="n">doc</span><span class="p">;</span>
+<span class="w">        </span><span class="n">doc</span><span class="p">.</span><span class="n">Parse</span><span class="p">(</span><span class="n">xml</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">doc</span><span class="p">.</span><span class="n">Error</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">GeneralError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;XML parse error at row &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">doc</span><span class="p">.</span><span class="n">ErrorRow</span><span class="p">())</span>
+<span class="w">                </span><span class="o">+</span><span class="w"> </span><span class="s">&quot; col &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">doc</span><span class="p">.</span><span class="n">ErrorCol</span><span class="p">()));</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">tilemapxml</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">find</span><span class="p">(</span><span class="s">&quot;tilemap&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">doc</span><span class="p">.</span><span class="n">RootElement</span><span class="p">());</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">tilemapxml</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ConfigurationError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;XML missing TileMap element&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">tilemapxml</span><span class="o">-&gt;</span><span class="n">QueryStringAttribute</span><span class="p">(</span><span class="s">&quot;version&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">version</span><span class="p">);</span>
+<span class="w">        </span><span class="n">tilemapxml</span><span class="o">-&gt;</span><span class="n">QueryStringAttribute</span><span class="p">(</span><span class="s">&quot;tilemapservice&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">tileMapService</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TiXmlNode</span><span class="o">*</span><span class="w"> </span><span class="n">childnode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tilemapxml</span><span class="o">-&gt;</span><span class="n">FirstChild</span><span class="p">();</span>
+<span class="w">            </span><span class="n">childnode</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">            </span><span class="n">childnode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">childnode</span><span class="o">-&gt;</span><span class="n">NextSibling</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">childxml</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">childnode</span><span class="o">-&gt;</span><span class="n">ToElement</span><span class="p">();</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">childxml</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">toLower</span><span class="p">(</span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">Value</span><span class="p">());</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;abstract&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">tilemap</span><span class="p">.</span><span class="n">abstract</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getChildTextValue</span><span class="p">(</span><span class="n">childxml</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;title&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">tilemap</span><span class="p">.</span><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getChildTextValue</span><span class="p">(</span><span class="n">childxml</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;srs&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">tilemap</span><span class="p">.</span><span class="n">srsString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getChildTextValue</span><span class="p">(</span><span class="n">childxml</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;boundingbox&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;minx&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">minX</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;miny&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">minY</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;maxx&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">maxX</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;maxy&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">maxY</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;origin&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;x&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">originX</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;y&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">originY</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;tileformat&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryUnsignedAttribute</span><span class="p">(</span><span class="s">&quot;width&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">format</span><span class="p">.</span><span class="n">width</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryUnsignedAttribute</span><span class="p">(</span><span class="s">&quot;height&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">format</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryStringAttribute</span><span class="p">(</span><span class="s">&quot;mime-type&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">format</span><span class="p">.</span><span class="n">mimeType</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryStringAttribute</span><span class="p">(</span><span class="s">&quot;extension&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tilemap</span><span class="p">.</span><span class="n">format</span><span class="p">.</span><span class="n">extension</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;tilesets&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">temp</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">QueryStringAttribute</span><span class="p">(</span><span class="s">&quot;profile&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">temp</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">tilemap</span><span class="p">.</span><span class="n">profileType</span><span class="w"> </span><span class="o">=</span>
+<span class="w">                        </span><span class="n">temp</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;global-geodetic&quot;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">GEODETIC</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                        </span><span class="n">temp</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;global-mercator&quot;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">MERCATOR</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                        </span><span class="n">temp</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;local&quot;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">LOCAL</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                        </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">UNKNOWN</span><span class="p">;</span>
+
+<span class="w">                    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TiXmlNode</span><span class="o">*</span><span class="w"> </span><span class="n">tilesetnode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">FirstChild</span><span class="p">();</span>
+<span class="w">                        </span><span class="n">tilesetnode</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">                        </span><span class="n">tilesetnode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tilesetnode</span><span class="o">-&gt;</span><span class="n">NextSibling</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">tilesetxml</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tilesetnode</span><span class="o">-&gt;</span><span class="n">ToElement</span><span class="p">();</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tilesetxml</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">TileSet</span><span class="w"> </span><span class="n">tileset</span><span class="p">;</span>
+<span class="w">                            </span><span class="n">tilesetxml</span><span class="o">-&gt;</span><span class="n">QueryStringAttribute</span><span class="p">(</span><span class="s">&quot;href&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tileset</span><span class="p">.</span><span class="n">href</span><span class="p">);</span>
+<span class="w">                            </span><span class="n">tilesetxml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;units-per-pixel&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tileset</span><span class="p">.</span><span class="n">unitsPerPixel</span><span class="p">);</span>
+<span class="w">                            </span><span class="n">tilesetxml</span><span class="o">-&gt;</span><span class="n">QueryUnsignedAttribute</span><span class="p">(</span><span class="s">&quot;order&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">tileset</span><span class="p">.</span><span class="n">order</span><span class="p">);</span>
+<span class="w">                            </span><span class="n">tilemap</span><span class="p">.</span><span class="n">tileSets</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">tileset</span><span class="p">));</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;dataextents&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">Profile</span><span class="w"> </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tilemap</span><span class="p">.</span><span class="n">createProfile</span><span class="p">();</span>
+
+<span class="w">                    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TiXmlNode</span><span class="o">*</span><span class="w"> </span><span class="n">denode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">childxml</span><span class="o">-&gt;</span><span class="n">FirstChild</span><span class="p">();</span>
+<span class="w">                        </span><span class="n">denode</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">                        </span><span class="n">denode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">denode</span><span class="o">-&gt;</span><span class="n">NextSibling</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">dexml</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">denode</span><span class="o">-&gt;</span><span class="n">ToElement</span><span class="p">();</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dexml</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="kt">double</span><span class="w"> </span><span class="n">minX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">minY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">maxX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">maxY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">                            </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">maxLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">                            </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">description</span><span class="p">;</span>
+
+<span class="w">                            </span><span class="n">dexml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;minx&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">minX</span><span class="p">);</span>
+<span class="w">                            </span><span class="n">dexml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;miny&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">minY</span><span class="p">);</span>
+<span class="w">                            </span><span class="n">dexml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;maxx&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">maxX</span><span class="p">);</span>
+<span class="w">                            </span><span class="n">dexml</span><span class="o">-&gt;</span><span class="n">QueryDoubleAttribute</span><span class="p">(</span><span class="s">&quot;maxy&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">maxY</span><span class="p">);</span>
+<span class="w">                            </span><span class="n">dexml</span><span class="o">-&gt;</span><span class="n">QueryUnsignedAttribute</span><span class="p">(</span><span class="s">&quot;maxlevel&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">maxLevel</span><span class="p">);</span>
+<span class="w">                            </span><span class="n">dexml</span><span class="o">-&gt;</span><span class="n">QueryStringAttribute</span><span class="p">(</span><span class="s">&quot;description&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">description</span><span class="p">);</span>
+
+<span class="w">                            </span><span class="c1">// Note: TMS DataExtents are a Pelican extension and are ALWAYS in WGS84.</span>
+<span class="w">                            </span><span class="k">auto</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span><span class="w"> </span><span class="n">minX</span><span class="p">,</span><span class="w"> </span><span class="n">minY</span><span class="p">,</span><span class="w"> </span><span class="n">maxX</span><span class="p">,</span><span class="w"> </span><span class="n">maxY</span><span class="p">).</span><span class="n">transform</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">());</span>
+
+<span class="w">                            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">                            </span><span class="p">{</span>
+<span class="w">                                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">maxLevel</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0u</span><span class="p">)</span>
+<span class="w">                                </span><span class="p">{</span>
+<span class="w">                                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">description</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                                        </span><span class="n">tilemap</span><span class="p">.</span><span class="n">dataExtents</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">DataExtent</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">maxLevel</span><span class="p">));</span>
+<span class="w">                                    </span><span class="k">else</span>
+<span class="w">                                        </span><span class="n">tilemap</span><span class="p">.</span><span class="n">dataExtents</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">DataExtent</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">maxLevel</span><span class="p">,</span><span class="w"> </span><span class="n">description</span><span class="p">));</span>
+<span class="w">                                </span><span class="p">}</span>
+<span class="w">                                </span><span class="k">else</span>
+<span class="w">                                </span><span class="p">{</span>
+<span class="w">                                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">description</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                                        </span><span class="n">tilemap</span><span class="p">.</span><span class="n">dataExtents</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">DataExtent</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">));</span>
+<span class="w">                                    </span><span class="k">else</span>
+<span class="w">                                        </span><span class="n">tilemap</span><span class="p">.</span><span class="n">dataExtents</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">DataExtent</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">description</span><span class="p">));</span>
+<span class="w">                                </span><span class="p">}</span>
+<span class="w">                            </span><span class="p">}</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Now, clean up any messes.</span>
+
+<span class="w">        </span><span class="c1">// Try to compute the profile based on the SRS if there was no PROFILE tag given</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tilemap</span><span class="p">.</span><span class="n">profileType</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">UNKNOWN</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">tilemap</span><span class="p">.</span><span class="n">srsString</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">SRS</span><span class="w"> </span><span class="nf">srs</span><span class="p">(</span><span class="n">tilemap</span><span class="p">.</span><span class="n">srsString</span><span class="p">);</span>
+
+<span class="w">            </span><span class="n">tilemap</span><span class="p">.</span><span class="n">profileType</span><span class="w"> </span><span class="o">=</span>
+<span class="w">                </span><span class="n">srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">GEODETIC</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                </span><span class="n">srs</span><span class="p">.</span><span class="n">horizontallyEquivalentTo</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">MERCATOR</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                </span><span class="n">srs</span><span class="p">.</span><span class="n">isProjected</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">LOCAL</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">UNKNOWN</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">tilemap</span><span class="p">.</span><span class="n">computeMinMaxLevel</span><span class="p">();</span>
+<span class="w">        </span><span class="n">tilemap</span><span class="p">.</span><span class="n">computeNumTiles</span><span class="p">();</span>
+<span class="w">        </span><span class="n">tilemap</span><span class="p">.</span><span class="n">generateTileSets</span><span class="p">(</span><span class="mi">20u</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">tilemap</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="kt">bool</span>
+<span class="n">TileMap</span><span class="o">::</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">profileType</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">UNKNOWN</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">TileMap</span><span class="o">::</span><span class="n">computeMinMaxLevel</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">minLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">INT_MAX</span><span class="p">;</span>
+<span class="w">    </span><span class="n">maxLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tileSet</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">tileSets</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tileSet</span><span class="p">.</span><span class="n">order</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">minLevel</span><span class="p">)</span><span class="w"> </span><span class="n">minLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tileSet</span><span class="p">.</span><span class="n">order</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tileSet</span><span class="p">.</span><span class="n">order</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxLevel</span><span class="p">)</span><span class="w"> </span><span class="n">maxLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tileSet</span><span class="p">.</span><span class="n">order</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">TileMap</span><span class="o">::</span><span class="n">computeNumTiles</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">numTilesWide</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">numTilesHigh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tileSets</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tileSets</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">order</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tileSets</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">unitsPerPixel</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">numTilesWide</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)((</span><span class="n">maxX</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">minX</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">format</span><span class="p">.</span><span class="n">width</span><span class="p">));</span>
+<span class="w">        </span><span class="n">numTilesHigh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)((</span><span class="n">maxY</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">minY</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">res</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">format</span><span class="p">.</span><span class="n">width</span><span class="p">));</span>
+
+<span class="w">        </span><span class="c1">//In case the first level specified isn&#39;t level 0, compute the number of tiles at level 0</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">level</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">numTilesWide</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">            </span><span class="n">numTilesHigh</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Profile</span>
+<span class="n">TileMap</span><span class="o">::</span><span class="n">createProfile</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Profile</span><span class="w"> </span><span class="n">GLOBAL_GEODETIC</span><span class="p">(</span><span class="s">&quot;global-geodetic&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Profile</span><span class="w"> </span><span class="n">SPHERICAL_MERCATOR</span><span class="p">(</span><span class="s">&quot;spherical-mercator&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">Profile</span><span class="w"> </span><span class="n">profile</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">eps</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-6</span><span class="p">;</span>
+
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">def</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">srsString</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">vsrsString</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">vsrsString</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;egm96&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="n">def</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="s">&quot;+5773&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">SRS</span><span class="w"> </span><span class="n">new_srs</span><span class="p">(</span><span class="n">def</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">profileType</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">GEODETIC</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GLOBAL_GEODETIC</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">profileType</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">MERCATOR</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SPHERICAL_MERCATOR</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">new_srs</span><span class="p">.</span><span class="n">horizontallyEquivalentTo</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//HACK:  Some TMS sources, most notably TileCache, use a global mercator extent that is very slightly different than</span>
+<span class="w">        </span><span class="c1">//       the automatically computed mercator bounds which can cause rendering issues due to the some texture coordinates</span>
+<span class="w">        </span><span class="c1">//       crossing the dateline.  If the incoming bounds are nearly the same as our definion of global mercator, just use our definition.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">numTilesWide</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">numTilesHigh</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">            </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">.</span><span class="n">extent</span><span class="p">().</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">minX</span><span class="p">,</span><span class="w"> </span><span class="n">eps</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">            </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">.</span><span class="n">extent</span><span class="p">().</span><span class="n">ymin</span><span class="p">(),</span><span class="w"> </span><span class="n">minY</span><span class="p">,</span><span class="w"> </span><span class="n">eps</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">            </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">.</span><span class="n">extent</span><span class="p">().</span><span class="n">xmax</span><span class="p">(),</span><span class="w"> </span><span class="n">maxX</span><span class="p">,</span><span class="w"> </span><span class="n">eps</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">            </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">.</span><span class="n">extent</span><span class="p">().</span><span class="n">ymax</span><span class="p">(),</span><span class="w"> </span><span class="n">maxY</span><span class="p">,</span><span class="w"> </span><span class="n">eps</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SPHERICAL_MERCATOR</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span>
+<span class="w">        </span><span class="n">new_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">minX</span><span class="p">,</span><span class="w"> </span><span class="mf">-180.</span><span class="p">,</span><span class="w"> </span><span class="n">eps</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">maxX</span><span class="p">,</span><span class="w"> </span><span class="mf">180.</span><span class="p">,</span><span class="w"> </span><span class="n">eps</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">minY</span><span class="p">,</span><span class="w"> </span><span class="mf">-90.</span><span class="p">,</span><span class="w"> </span><span class="n">eps</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">maxY</span><span class="p">,</span><span class="w"> </span><span class="mf">90.</span><span class="p">,</span><span class="w"> </span><span class="n">eps</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GLOBAL_GEODETIC</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// everything else is a &quot;LOCAL&quot; profile.</span>
+<span class="w">        </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Profile</span><span class="p">(</span>
+<span class="w">            </span><span class="n">new_srs</span><span class="p">,</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="n">minX</span><span class="p">,</span><span class="w"> </span><span class="n">minY</span><span class="p">,</span><span class="w"> </span><span class="n">maxX</span><span class="p">,</span><span class="w"> </span><span class="n">maxY</span><span class="p">),</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">numTilesWide</span><span class="p">,</span><span class="w"> </span><span class="mi">1u</span><span class="p">),</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">numTilesHigh</span><span class="p">,</span><span class="w"> </span><span class="mi">1u</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">profile</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span>
+<span class="n">TileMap</span><span class="o">::</span><span class="n">getURI</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tilekey</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">invertY</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">intersectsKey</span><span class="p">(</span><span class="n">tilekey</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//OE_NOTICE &lt;&lt; LC &lt;&lt; &quot;No key intersection for tile key &quot; &lt;&lt; tilekey.str() &lt;&lt; std::endl;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">zoom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tilekey</span><span class="p">.</span><span class="n">level</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tilekey</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">numCols</span><span class="p">,</span><span class="w"> </span><span class="n">numRows</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tilekey</span><span class="p">.</span><span class="n">profile</span><span class="p">.</span><span class="n">numTiles</span><span class="p">(</span><span class="n">tilekey</span><span class="p">.</span><span class="n">level</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">numRows</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">tilekey</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">y_inverted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tilekey</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">//Some TMS like services swap the Y coordinate so 0,0 is the upper left rather than the lower left.  The normal TMS</span>
+<span class="w">    </span><span class="c1">//specification has 0,0 at the bottom left, so inverting Y will make 0,0 in the upper left.</span>
+<span class="w">    </span><span class="c1">//http://code.google.com/apis/maps/documentation/overlays.html#Google_Maps_Coordinates</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">invertY</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">y_inverted</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">working</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filename</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// are we doing variable substitution?</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">sub</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">working</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="sc">&#39;{&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">working</span><span class="p">.</span><span class="n">npos</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Select the correct TileSet</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tileSets</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tileSet</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">tileSets</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tileSet</span><span class="p">.</span><span class="n">order</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">zoom</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">tileSet</span><span class="p">.</span><span class="n">href</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">tileSet</span><span class="p">.</span><span class="n">href</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;/&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;/&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;.&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">format</span><span class="p">.</span><span class="n">extension</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">stringstream</span><span class="w"> </span><span class="n">ss</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">path</span><span class="p">(</span><span class="n">working</span><span class="p">).</span><span class="n">remove_filename</span><span class="p">().</span><span class="n">string</span><span class="p">();</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">working</span><span class="p">;</span>
+<span class="w">                        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;${x}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">x</span><span class="p">));</span>
+<span class="w">                        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;${y}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y</span><span class="p">));</span>
+<span class="w">                        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;${-y}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y_inverted</span><span class="p">));</span>
+<span class="w">                        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;${z}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">zoom</span><span class="p">));</span>
+<span class="w">                        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;{x}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">x</span><span class="p">));</span>
+<span class="w">                        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;{y}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y</span><span class="p">));</span>
+<span class="w">                        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;{-y}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y_inverted</span><span class="p">));</span>
+<span class="w">                        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;{z}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">zoom</span><span class="p">));</span>
+<span class="w">                        </span><span class="k">return</span><span class="w"> </span><span class="n">temp</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="k">else</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">return</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">+</span>
+<span class="w">                            </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">zoom</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="sc">&#39;/&#39;</span><span class="w"> </span><span class="o">+</span>
+<span class="w">                            </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="sc">&#39;/&#39;</span><span class="w"> </span><span class="o">+</span>
+<span class="w">                            </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;.&quot;</span><span class="w"> </span><span class="o">+</span>
+<span class="w">                            </span><span class="n">format</span><span class="p">.</span><span class="n">extension</span><span class="p">;</span>
+
+<span class="w">                        </span><span class="k">return</span><span class="w"> </span><span class="n">path</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sub</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">working</span><span class="p">;</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;${x}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">x</span><span class="p">));</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;${y}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y</span><span class="p">));</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;${-y}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y_inverted</span><span class="p">));</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;${z}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">zoom</span><span class="p">));</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;{x}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">x</span><span class="p">));</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;{y}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y</span><span class="p">));</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;{-y}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y_inverted</span><span class="p">));</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">replaceInPlace</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;{z}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">zoom</span><span class="p">));</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">temp</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Just go with it. No way of knowing the max level.</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">path</span><span class="p">(</span><span class="n">working</span><span class="p">).</span><span class="n">remove_filename</span><span class="p">().</span><span class="n">string</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">zoom</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="sc">&#39;/&#39;</span><span class="w"> </span><span class="o">+</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="sc">&#39;/&#39;</span><span class="w"> </span><span class="o">+</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;.&quot;</span><span class="w"> </span><span class="o">+</span>
+<span class="w">            </span><span class="n">format</span><span class="p">.</span><span class="n">extension</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">TileMap</span><span class="o">::</span><span class="n">intersectsKey</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tilekey</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Box</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tilekey</span><span class="p">.</span><span class="n">extent</span><span class="p">().</span><span class="n">bounds</span><span class="p">();</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">inter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">intersects</span><span class="p">(</span>
+<span class="w">        </span><span class="n">minX</span><span class="p">,</span><span class="w"> </span><span class="n">minY</span><span class="p">,</span><span class="w"> </span><span class="n">maxX</span><span class="p">,</span><span class="w"> </span><span class="n">maxY</span><span class="p">,</span>
+<span class="w">        </span><span class="n">b</span><span class="p">.</span><span class="n">xmin</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">ymin</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">xmax</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">ymax</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">inter</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">tilekey</span><span class="p">.</span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">horizontallyEquivalentTo</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="w"> </span><span class="nf">keyMin</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">xmin</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">ymin</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">zmin</span><span class="p">);</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="w"> </span><span class="nf">keyMax</span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">xmax</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">ymax</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">zmax</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">xform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tilekey</span><span class="p">.</span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">to</span><span class="p">(</span><span class="n">tilekey</span><span class="p">.</span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">geodeticSRS</span><span class="p">());</span>
+<span class="w">        </span><span class="n">xform</span><span class="p">(</span><span class="n">keyMin</span><span class="p">,</span><span class="w"> </span><span class="n">keyMin</span><span class="p">);</span>
+<span class="w">        </span><span class="n">xform</span><span class="p">(</span><span class="n">keyMax</span><span class="p">,</span><span class="w"> </span><span class="n">keyMax</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">inter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">intersects</span><span class="p">(</span>
+<span class="w">            </span><span class="n">minX</span><span class="p">,</span><span class="w"> </span><span class="n">minY</span><span class="p">,</span><span class="w"> </span><span class="n">maxX</span><span class="p">,</span><span class="w"> </span><span class="n">maxY</span><span class="p">,</span>
+<span class="w">            </span><span class="n">b</span><span class="p">.</span><span class="n">xmin</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">ymin</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">xmax</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">ymax</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">inter</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">TileMap</span><span class="o">::</span><span class="n">generateTileSets</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">numLevels</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Profile</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createProfile</span><span class="p">();</span>
+<span class="w">    </span><span class="n">tileSets</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">maxX</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">minX</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">numLevels</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">numCols</span><span class="p">,</span><span class="w"> </span><span class="n">numRows</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">numTiles</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">res</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">width</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">numCols</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">format</span><span class="p">.</span><span class="n">width</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">TileSet</span><span class="w"> </span><span class="n">ts</span><span class="p">{</span>
+<span class="w">            </span><span class="s">&quot;&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="n">res</span><span class="p">,</span>
+<span class="w">            </span><span class="n">i</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="w">        </span><span class="n">tileSets</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">TileSet</span><span class="p">{</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">res</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="n">TileMap</span><span class="o">::</span><span class="n">TileMap</span><span class="p">(</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">url</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Profile</span><span class="o">&amp;</span><span class="w"> </span><span class="n">profile</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">DataExtentList</span><span class="o">&amp;</span><span class="w"> </span><span class="n">in_dataExtents</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">formatString</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">tile_width</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">tile_height</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profile</span><span class="p">.</span><span class="n">extent</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">profileType</span><span class="w"> </span><span class="o">=</span>
+<span class="w">            </span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">isGeodetic</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">GEODETIC</span><span class="w"> </span><span class="o">:</span>
+<span class="w">            </span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">horizontallyEquivalentTo</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">MERCATOR</span><span class="w"> </span><span class="o">:</span>
+<span class="w">            </span><span class="n">ProfileType</span><span class="o">::</span><span class="n">LOCAL</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">minX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ex</span><span class="p">.</span><span class="n">xmin</span><span class="p">();</span>
+<span class="w">    </span><span class="n">minY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ex</span><span class="p">.</span><span class="n">ymin</span><span class="p">();</span>
+<span class="w">    </span><span class="n">maxX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ex</span><span class="p">.</span><span class="n">xmax</span><span class="p">();</span>
+<span class="w">    </span><span class="n">maxY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ex</span><span class="p">.</span><span class="n">ymax</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">originX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ex</span><span class="p">.</span><span class="n">xmin</span><span class="p">();</span>
+<span class="w">    </span><span class="n">originY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ex</span><span class="p">.</span><span class="n">ymin</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">filename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">url</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Set up a rotating element in the template</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">rotateStart</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filename</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="sc">&#39;[&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">rotateEnd</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filename</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="sc">&#39;]&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rotateStart</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">::</span><span class="n">npos</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">rotateEnd</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">::</span><span class="n">npos</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">rotateEnd</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">rotateStart</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">rotateString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">filename</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="n">rotateStart</span><span class="p">,</span><span class="w"> </span><span class="n">rotateEnd</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">rotateStart</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">srsString</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getHorizSRSString</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">());</span>
+
+<span class="w">    </span><span class="n">format</span><span class="p">.</span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tile_width</span><span class="p">;</span>
+<span class="w">    </span><span class="n">format</span><span class="p">.</span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tile_height</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profile</span><span class="p">.</span><span class="n">numTiles</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="n">numTilesWide</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="w">    </span><span class="n">numTilesHigh</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// format can be a mime-type or an extension:</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">::</span><span class="n">size_type</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">formatString</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="sc">&#39;/&#39;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">::</span><span class="n">npos</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">format</span><span class="p">.</span><span class="n">extension</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">formatString</span><span class="p">;</span>
+<span class="w">        </span><span class="n">format</span><span class="p">.</span><span class="n">mimeType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">;</span><span class="w"> </span><span class="c1">// TODO</span>
+<span class="w">        </span><span class="c1">//tileMap-&gt;_format.setMimeType( Registry::instance()-&gt;getMimeTypeForExtension(format) );</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">format</span><span class="p">.</span><span class="n">mimeType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">formatString</span><span class="p">;</span>
+<span class="w">        </span><span class="n">format</span><span class="p">.</span><span class="n">extension</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">;</span><span class="w"> </span><span class="c1">// TODO;</span>
+<span class="w">        </span><span class="c1">//tileMap-&gt;_format.setExtension( Registry::instance()-&gt;getExtensionForMimeType(format) );</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">//Add the data extents</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">in_dataExtents</span><span class="p">)</span>
+<span class="w">        </span><span class="n">dataExtents</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">temp</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// If we have some data extents specified then make a nicer bounds than the</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">dataExtents</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Get the union of all the extents</span>
+<span class="w">        </span><span class="n">GeoExtent</span><span class="w"> </span><span class="nf">e</span><span class="p">(</span><span class="n">dataExtents</span><span class="p">.</span><span class="n">front</span><span class="p">());</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">dataExtents</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">e</span><span class="p">.</span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">dataExtents</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Convert the bounds to the output profile</span>
+<span class="w">        </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">bounds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">());</span>
+<span class="w">        </span><span class="n">minX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">xmin</span><span class="p">();</span>
+<span class="w">        </span><span class="n">minY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">ymin</span><span class="p">();</span>
+<span class="w">        </span><span class="n">maxX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">xmax</span><span class="p">();</span>
+<span class="w">        </span><span class="n">maxY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">ymax</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">generateTileSets</span><span class="p">(</span><span class="mi">23u</span><span class="p">);</span>
+<span class="w">    </span><span class="n">computeMinMaxLevel</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="c1">//----------------------------------------------------------------------------</span>
+
+<span class="n">Result</span><span class="o">&lt;</span><span class="n">TileMap</span><span class="o">&gt;</span>
+<span class="n">ROCKY_NAMESPACE</span><span class="o">::</span><span class="n">TMS</span><span class="o">::</span><span class="n">readTileMap</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">URI</span><span class="o">&amp;</span><span class="w"> </span><span class="n">location</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">location</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">io</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">tilemap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parseTileMapFromXML</span><span class="p">(</span><span class="n">r</span><span class="o">-&gt;</span><span class="n">content</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tilemap</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">tilemap</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">filename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">location</span><span class="p">.</span><span class="n">full</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// remote locations should have a trailing slash</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">location</span><span class="p">.</span><span class="n">isRemote</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">tilemap</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">filename</span><span class="p">.</span><span class="n">back</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">&#39;/&#39;</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">tilemap</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">filename</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="sc">&#39;/&#39;</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">tilemap</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+
+<span class="kt">void</span>
+<span class="n">TMS</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">close</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">tileMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{};</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;&gt;</span>
+<span class="n">TMS</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">open</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">URI</span><span class="o">&amp;</span><span class="w"> </span><span class="n">uri</span><span class="p">,</span><span class="w"> </span><span class="n">Profile</span><span class="o">&amp;</span><span class="w"> </span><span class="n">profile</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="n">DataExtentList</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dataExtents</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// URI is mandatory.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">uri</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ConfigurationError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;TMS driver requires a valid </span><span class="se">\&quot;</span><span class="s">uri</span><span class="se">\&quot;</span><span class="s"> property&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// If the user supplied a profile, this means we are NOT querying a TMS manifest</span>
+<span class="w">    </span><span class="c1">// and instead this is likely a normal XYZ data source. For these we want to</span>
+<span class="w">    </span><span class="c1">// invert the Y axis by default.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">DataExtentList</span><span class="w"> </span><span class="n">dataExtents_dummy</span><span class="p">;</span><span class="w"> </span><span class="c1">// empty.</span>
+
+<span class="w">        </span><span class="n">tileMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TileMap</span><span class="p">(</span><span class="n">uri</span><span class="p">.</span><span class="n">full</span><span class="p">(),</span><span class="w"> </span><span class="n">profile</span><span class="p">,</span><span class="w"> </span><span class="n">dataExtents_dummy</span><span class="p">,</span><span class="w"> </span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="mi">256</span><span class="p">,</span><span class="w"> </span><span class="mi">256</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// Non-TMS &quot;XYZ&quot; data sources usually have an inverted Y component:</span>
+<span class="w">        </span><span class="n">tileMap</span><span class="p">.</span><span class="n">invertYaxis</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Attempt to read the tile map parameters from a TMS TileMap manifest:</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">tileMapRead</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">readTileMap</span><span class="p">(</span><span class="n">uri</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tileMapRead</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">tileMapRead</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+
+<span class="w">        </span><span class="n">tileMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tileMapRead</span><span class="p">.</span><span class="n">value</span><span class="p">();</span>
+
+<span class="w">        </span><span class="n">Profile</span><span class="w"> </span><span class="n">profileFromTileMap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tileMap</span><span class="p">.</span><span class="n">createProfile</span><span class="p">();</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">profileFromTileMap</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profileFromTileMap</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">tileMapExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">extent</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Make sure we&#39;ve established a profile by this point:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="s">&quot;Failed to establish a profile for &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">uri</span><span class="p">.</span><span class="n">full</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// TileMap and profile are valid at this point. Build the tile sets.</span>
+<span class="w">    </span><span class="c1">// Automatically set the min and max level of the TileMap</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">tileMap</span><span class="p">.</span><span class="n">tileSets</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">tileMap</span><span class="p">.</span><span class="n">dataExtents</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">tileMap</span><span class="p">.</span><span class="n">dataExtents</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">dataExtents</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">de</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dataExtents</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">dataExtents</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">DataExtent</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">extent</span><span class="p">(),</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">tileMap</span><span class="p">.</span><span class="n">maxLevel</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ResultVoidOK</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;&gt;</span>
+<span class="n">TMS</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">read</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">invertY</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">isMapboxRGB</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">URI</span><span class="o">::</span><span class="n">Context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;</span><span class="w"> </span><span class="n">image</span><span class="p">;</span>
+<span class="w">    </span><span class="n">URI</span><span class="w"> </span><span class="n">imageURI</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// create the URI from the tile map?</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tileMap</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">tileMap</span><span class="p">.</span><span class="n">maxLevel</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">y_inverted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tileMap</span><span class="p">.</span><span class="n">invertYaxis</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">invertY</span><span class="p">)</span><span class="w"> </span><span class="n">y_inverted</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">y_inverted</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">imageURI</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">URI</span><span class="p">(</span><span class="n">tileMap</span><span class="p">.</span><span class="n">getURI</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">y_inverted</span><span class="p">),</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">imageURI</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">isMapboxRGB</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">imageURI</span><span class="p">.</span><span class="n">full</span><span class="p">().</span><span class="n">find</span><span class="p">(</span><span class="sc">&#39;?&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">::</span><span class="n">npos</span><span class="p">)</span>
+<span class="w">                </span><span class="n">imageURI</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">URI</span><span class="p">(</span><span class="n">imageURI</span><span class="p">.</span><span class="n">full</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;?mapbox=true&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">                </span><span class="n">imageURI</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">URI</span><span class="p">(</span><span class="n">imageURI</span><span class="p">.</span><span class="n">full</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;&amp;mapbox=true&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">fetch</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">imageURI</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">io</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fetch</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">fetch</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">istringstream</span><span class="w"> </span><span class="n">stream</span><span class="p">(</span><span class="n">fetch</span><span class="o">-&gt;</span><span class="n">content</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">image_rr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">readImageFromStream</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span><span class="w"> </span><span class="n">fetch</span><span class="o">-&gt;</span><span class="n">content</span><span class="p">.</span><span class="n">type</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">image_rr</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">image_rr</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">image</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">image_rr</span><span class="p">.</span><span class="n">value</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">image</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">imageURI</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">tileMap</span><span class="p">.</span><span class="n">intersectsKey</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// We couldn&#39;t read the image from the URL or the cache, so check to see</span>
+<span class="w">                </span><span class="c1">// whether the given key is less than the max level of the tilemap</span>
+<span class="w">                </span><span class="c1">// and create a transparent image.</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">tileMap</span><span class="p">.</span><span class="n">maxLevel</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">ROCKY_TODO</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">image</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">Image</span><span class="o">::</span><span class="n">R8G8B8A8_UNORM</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">image</span><span class="p">;</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_ResourceUnavailable</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

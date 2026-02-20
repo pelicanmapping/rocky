@@ -1,0 +1,162 @@
+
+.. _file_src_rocky_Utils.h:
+
+File Utils.h
+============
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/Utils.h``)
+----------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_Utils.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``algorithm``
+
+- ``cctype``
+
+- ``functional``
+
+- ``memory``
+
+- ``mutex``
+
+- ``optional``
+
+- ``rocky/Common.h`` (:ref:`file_src_rocky_Common.h`)
+
+- ``rocky/Threading.h`` (:ref:`file_src_rocky_Threading.h`)
+
+- ``sstream``
+
+- ``stdexcept``
+
+- ``string``
+
+- ``vector``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_Cache.h`
+
+- :ref:`file_src_rocky_Color.cpp`
+
+- :ref:`file_src_rocky_Context.cpp`
+
+- :ref:`file_src_rocky_DateTime.cpp`
+
+- :ref:`file_src_rocky_Feature.h`
+
+- :ref:`file_src_rocky_GeoPoint.cpp`
+
+- :ref:`file_src_rocky_Profile.cpp`
+
+- :ref:`file_src_rocky_URI.cpp`
+
+- :ref:`file_src_rocky_Units.cpp`
+
+- :ref:`file_src_rocky_Utils.cpp`
+
+- :ref:`file_src_rocky_vsg_DisplayManager.h`
+
+- :ref:`file_src_rocky_vsg_ecs_DeclutterSystem.cpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+- :ref:`namespace_rocky__util`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1make__string`
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1vector__map`
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1vector__map_1_1ENTRY`
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1vector__map__equal`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1BackgroundServices`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1ring__buffer`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1ring__buffer__with__condition`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1StreamCompressor`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1StringTokenizer`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ad8479efec937c159be048e7b5b4d2e7c`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1adc8adaa6fc9264fd6f716489a74a5720`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a3c0e92fe5630f02244d8583fd9bcb277`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a4c2bbda9afacd57dee066bda2661528d`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1abb90ff752eb3df307936f89b4c7de429`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1aba843723ab1e4efba84efe6b9613d98a`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1aac185aadbf09a8979dd497f97cb52dde`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1aa259da7b5b73a93a74ea163263208784`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ae2201c767506449b9ab259df179e56f9`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ad51fd7c03a1358e1aa1ecafe26cf9b9f`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a3eaedd170fee901609ec53b60e2569c4`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1aece656d7385eae6b944666b9773d66e4`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a74066cc76a9522c25303d83c251ace57`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a178aab26dcaef9e13569002d5ed936cc`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a2a8cbc23bea02d13ca16fbe0832e9ac4`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable_namespacerocky_1_1util_1a638cb9f1286d83713a69c0b150da5216`
+

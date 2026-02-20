@@ -1,0 +1,14 @@
+.. _exhale_function_namespaceWEEJOBS__NAMESPACE_1_1detail_1aaa111eb49014d790785f69bc15853d80:
+
+Function WEEJOBS_NAMESPACE::detail::steal_job
+=============================================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: WEEJOBS_NAMESPACE::detail::steal_job(class jobpool *, detail::job&)
+   :project: Rocky

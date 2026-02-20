@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespaceweemesh_1a8ef7d898f2ed2d11cdc16b288a8edf3a:
+
+Typedef weemesh::vert_array_t
+=============================
+
+- Defined in :ref:`file_src_rocky_weemesh.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: weemesh::vert_array_t
+   :project: Rocky

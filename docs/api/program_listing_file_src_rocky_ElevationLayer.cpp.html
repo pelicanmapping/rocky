@@ -1,0 +1,595 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File ElevationLayer.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File ElevationLayer.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_ElevationLayer.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-elevationlayer-cpp">
+<span id="program-listing-file-src-rocky-elevationlayer-cpp"></span><h1>Program Listing for File ElevationLayer.cpp<a class="headerlink" href="#program-listing-for-file-elevationlayer-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_ElevationLayer.cpp.html#file-src-rocky-elevationlayer-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/ElevationLayer.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ElevationLayer.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Heightfield.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;json.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cinttypes&gt;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="o">::</span><span class="nn">util</span><span class="p">;</span>
+
+<span class="cp">#define LC &quot;[ElevationLayer] \&quot;&quot; &lt;&lt; name().value() &lt;&lt; &quot;\&quot; : &quot;</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// perform very basic sanity-check validation on a heightfield.</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="nf">validateHeightfield</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Image</span><span class="o">*</span><span class="w"> </span><span class="n">image</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">image</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">image</span><span class="o">-&gt;</span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">image</span><span class="o">-&gt;</span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1024</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">image</span><span class="o">-&gt;</span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">image</span><span class="o">-&gt;</span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1024</span><span class="p">)</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">//------------------------------------------------------------------------</span>
+
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">ElevationLayer</span><span class="p">()</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">super</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">construct</span><span class="p">({},</span><span class="w"> </span><span class="p">{});</span>
+<span class="p">}</span>
+
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">ElevationLayer</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="w"> </span><span class="n">JSON</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">super</span><span class="p">(</span><span class="n">JSON</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">construct</span><span class="p">(</span><span class="n">JSON</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">construct</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="w"> </span><span class="n">JSON</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">tileSize</span><span class="p">.</span><span class="n">set_default</span><span class="p">(</span><span class="mi">257u</span><span class="p">);</span><span class="w"> </span><span class="c1">// override the default in TileLayer</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_json</span><span class="p">(</span><span class="n">JSON</span><span class="p">);</span>
+<span class="w">    </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;offset&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">offset</span><span class="p">);</span>
+<span class="w">    </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;noDataValue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">noDataValue</span><span class="p">);</span>
+<span class="w">    </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;minValidValue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">minValidValue</span><span class="p">);</span>
+<span class="w">    </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;maxValidValue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">maxValidValue</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">encoding_value</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;encoding&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">encoding_value</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">encoding_value</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;singleChannel&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="n">encoding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Encoding</span><span class="o">::</span><span class="n">SingleChannel</span><span class="p">;</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">encoding_value</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;mapbox&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="n">encoding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Encoding</span><span class="o">::</span><span class="n">MapboxRGB</span><span class="p">;</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">encoding_value</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;terrarium&quot;</span><span class="p">)</span>
+<span class="w">            </span><span class="n">encoding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Encoding</span><span class="o">::</span><span class="n">TerrariumRGB</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">to_json</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_json</span><span class="p">(</span><span class="n">super</span><span class="o">::</span><span class="n">to_json</span><span class="p">());</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;offset&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">offset</span><span class="p">);</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;noDataValue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">noDataValue</span><span class="p">);</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;minValidValue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">minValidValue</span><span class="p">);</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;maxValidValue&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">maxValidValue</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">encoding</span><span class="p">.</span><span class="n">has_value</span><span class="p">(</span><span class="n">Encoding</span><span class="o">::</span><span class="n">SingleChannel</span><span class="p">))</span>
+<span class="w">        </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;encoding&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;singleChannel&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">encoding</span><span class="p">.</span><span class="n">has_value</span><span class="p">(</span><span class="n">Encoding</span><span class="o">::</span><span class="n">MapboxRGB</span><span class="p">))</span>
+<span class="w">        </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;encoding&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;mapbox&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">encoding</span><span class="p">.</span><span class="n">has_value</span><span class="p">(</span><span class="n">Encoding</span><span class="o">::</span><span class="n">TerrariumRGB</span><span class="p">))</span>
+<span class="w">        </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;encoding&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;terrarium&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">j</span><span class="p">.</span><span class="n">dump</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;&gt;</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">openImplementation</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">super</span><span class="o">::</span><span class="n">openImplementation</span><span class="p">(</span><span class="n">io</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">r</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ResultVoidOK</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">closeImplementation</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">super</span><span class="o">::</span><span class="n">closeImplementation</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">normalizeNoDataValues</span><span class="p">(</span><span class="n">Image</span><span class="o">*</span><span class="w"> </span><span class="n">hf</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">hf</span><span class="w"> </span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// we know heightfields are R32_SFLOAT so take a shortcut.</span>
+<span class="w">        </span><span class="kt">float</span><span class="o">*</span><span class="w"> </span><span class="n">pixel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hf</span><span class="o">-&gt;</span><span class="n">data</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">hf</span><span class="o">-&gt;</span><span class="n">width</span><span class="p">()</span><span class="o">*</span><span class="n">hf</span><span class="o">-&gt;</span><span class="n">height</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="o">++</span><span class="n">pixel</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">float</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">pixel</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">isnan</span><span class="p">(</span><span class="n">h</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">                </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">h</span><span class="p">,</span><span class="w"> </span><span class="n">noDataValue</span><span class="p">.</span><span class="n">value</span><span class="p">(),</span><span class="w"> </span><span class="mf">1e-6f</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">                </span><span class="n">h</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">minValidValue</span><span class="w"> </span><span class="o">||</span>
+<span class="w">                </span><span class="n">h</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxValidValue</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="o">*</span><span class="n">pixel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NO_DATA_VALUE</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">pair</span><span class="o">&lt;</span><span class="n">Distance</span><span class="p">,</span><span class="w"> </span><span class="n">Distance</span><span class="o">&gt;</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">resolution</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">level</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">dims</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profile</span><span class="p">.</span><span class="n">tileDimensions</span><span class="p">(</span><span class="n">level</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_pair</span><span class="p">(</span>
+<span class="w">        </span><span class="n">Distance</span><span class="p">(</span><span class="n">dims</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)(</span><span class="n">tileSize</span><span class="p">.</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">units</span><span class="p">()),</span>
+<span class="w">        </span><span class="n">Distance</span><span class="p">(</span><span class="n">dims</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)(</span><span class="n">tileSize</span><span class="p">.</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">units</span><span class="p">()));</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">assembleTile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Mosaic</span><span class="o">&gt;</span><span class="w"> </span><span class="n">output</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Determine the intersecting keys</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">localKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">intersectingKeys</span><span class="p">(</span><span class="n">profile</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// collect heightfield for each intersecting key. Note, we&#39;re hitting the</span>
+<span class="w">    </span><span class="c1">// underlying tile source here, so there&#39;s no vetical datum shifts happening yet.</span>
+<span class="w">    </span><span class="c1">// we will do that later.</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">GeoImage</span><span class="o">&gt;</span><span class="w"> </span><span class="n">sources</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">localKeys</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">keyExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">extent</span><span class="p">();</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">numSourcesAtFullResolution</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">localKey</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">localKeys</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// resolve an image for each local key.</span>
+<span class="w">            </span><span class="n">TileKey</span><span class="w"> </span><span class="n">actualKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">localKey</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">]()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Result</span><span class="o">&lt;</span><span class="n">GeoImage</span><span class="o">&gt;</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="c1">// not found in the resident cache; go to the source, and fall back until we get</span>
+<span class="w">                    </span><span class="c1">// a usable image tile.</span>
+<span class="w">                    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">actualKey</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createTileImplementation_internal</span><span class="p">(</span><span class="n">actualKey</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">io</span><span class="p">.</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">                            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_OperationCanceled</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">ok</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">image</span><span class="p">())</span>
+<span class="w">                            </span><span class="k">return</span><span class="w"> </span><span class="n">r</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">else</span>
+<span class="w">                            </span><span class="n">actualKey</span><span class="p">.</span><span class="n">makeParent</span><span class="p">();</span>
+<span class="w">                    </span><span class="p">}</span>
+
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_ResourceUnavailable</span><span class="p">;</span>
+<span class="w">                </span><span class="p">};</span>
+
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">localTile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">getOrCreateTile</span><span class="p">(</span><span class="n">localKey</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">,</span><span class="w"> </span><span class="n">create</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">localTile</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">sources</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">localTile</span><span class="p">.</span><span class="n">value</span><span class="p">()));</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">actualKey</span><span class="p">.</span><span class="n">level</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">localKey</span><span class="p">.</span><span class="n">level</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="o">++</span><span class="n">numSourcesAtFullResolution</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">io</span><span class="p">.</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// If we actually got at least one piece of usable data,</span>
+<span class="w">        </span><span class="c1">// move ahead and build a mosaic of all sources.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">numSourcesAtFullResolution</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">            </span><span class="c1">// output size is the max of all the source sizes.</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">sources</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">cols</span><span class="p">,</span><span class="w"> </span><span class="n">source</span><span class="p">.</span><span class="n">image</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">width</span><span class="p">());</span>
+<span class="w">                </span><span class="n">rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">rows</span><span class="p">,</span><span class="w"> </span><span class="n">source</span><span class="p">.</span><span class="n">image</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">height</span><span class="p">());</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// assume all tiles to mosaic are in the same SRS.</span>
+<span class="w">            </span><span class="n">SRSOperation</span><span class="w"> </span><span class="n">xform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">extent</span><span class="p">().</span><span class="n">srs</span><span class="p">().</span><span class="n">to</span><span class="p">(</span><span class="n">sources</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">srs</span><span class="p">());</span>
+
+<span class="w">            </span><span class="c1">// Now sort the heightfields by resolution to make sure we&#39;re sampling</span>
+<span class="w">            </span><span class="c1">// the highest resolution one first.</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">sort</span><span class="p">(</span>
+<span class="w">                </span><span class="n">sources</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">sources</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+<span class="w">                </span><span class="p">[](</span><span class="k">const</span><span class="w"> </span><span class="n">GeoImage</span><span class="o">&amp;</span><span class="w"> </span><span class="n">lhs</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">GeoImage</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">lhs</span><span class="p">.</span><span class="n">extent</span><span class="p">().</span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">extent</span><span class="p">().</span><span class="n">width</span><span class="p">();</span>
+<span class="w">                </span><span class="p">});</span>
+
+<span class="w">            </span><span class="c1">// new output HF:</span>
+<span class="w">            </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Mosaic</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">HF_WRITABLE_FORMAT</span><span class="p">,</span><span class="w"> </span><span class="n">cols</span><span class="p">,</span><span class="w"> </span><span class="n">rows</span><span class="p">);</span>
+<span class="w">            </span><span class="n">Heightfield</span><span class="w"> </span><span class="nf">hf</span><span class="p">(</span><span class="n">output</span><span class="p">);</span>
+<span class="w">            </span><span class="n">hf</span><span class="p">.</span><span class="n">fill</span><span class="p">(</span><span class="n">NO_DATA_VALUE</span><span class="p">);</span>
+
+<span class="w">            </span><span class="c1">// Cache pointers to the source images that mosaic to create this tile.</span>
+<span class="w">            </span><span class="n">output</span><span class="o">-&gt;</span><span class="n">dependencies</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="n">sources</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">source</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">sources</span><span class="p">)</span>
+<span class="w">                </span><span class="n">output</span><span class="o">-&gt;</span><span class="n">dependencies</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">source</span><span class="p">.</span><span class="n">image</span><span class="p">());</span>
+
+<span class="w">            </span><span class="c1">// working set of points. it&#39;s much faster to xform an entire vector all at once.</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">points</span><span class="p">;</span>
+<span class="w">            </span><span class="n">points</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">cols</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">rows</span><span class="p">);</span>
+
+<span class="w">            </span><span class="c1">// note, for elevation we sample edge to edge instead of on pixel-center.</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">minx</span><span class="p">,</span><span class="w"> </span><span class="n">miny</span><span class="p">,</span><span class="w"> </span><span class="n">maxx</span><span class="p">,</span><span class="w"> </span><span class="n">maxy</span><span class="p">;</span>
+<span class="w">            </span><span class="n">key</span><span class="p">.</span><span class="n">extent</span><span class="p">().</span><span class="n">getBounds</span><span class="p">(</span><span class="n">minx</span><span class="p">,</span><span class="w"> </span><span class="n">miny</span><span class="p">,</span><span class="w"> </span><span class="n">maxx</span><span class="p">,</span><span class="w"> </span><span class="n">maxy</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">dx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">maxx</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">minx</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)(</span><span class="n">cols</span><span class="mi">-1</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">dy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">maxy</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">miny</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)(</span><span class="n">rows</span><span class="mi">-1</span><span class="p">);</span>
+
+<span class="w">            </span><span class="c1">// build a grid of sample points:</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rows</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">r</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">miny</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">dy</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">r</span><span class="p">);</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">cols</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">c</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">minx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">dx</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">c</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">points</span><span class="p">[</span><span class="n">r</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cols</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">c</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="w"> </span><span class="p">};</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// transform the sample points to the SRS of our source data tiles.</span>
+<span class="w">            </span><span class="c1">// Note, point.z will hold a vdatum offset if applicable.</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">xform</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">xform</span><span class="p">.</span><span class="n">transformArray</span><span class="p">(</span><span class="o">&amp;</span><span class="n">points</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">points</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// indirect indexing is a trick that minimized the number of sources we</span>
+<span class="w">            </span><span class="c1">// need to iterate over, but we can only use it when all resolutions are</span>
+<span class="w">            </span><span class="c1">// the same.</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="o">&gt;</span><span class="w"> </span><span class="n">indexes</span><span class="p">(</span><span class="n">sources</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">iota</span><span class="p">(</span><span class="n">indexes</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">indexes</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="n">useIndirectIndexing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">numSourcesAtFullResolution</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">sources</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+
+<span class="w">            </span><span class="c1">// sample the heights:</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rows</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">r</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">cols</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">c</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">point</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">points</span><span class="p">[</span><span class="n">r</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cols</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">c</span><span class="p">];</span>
+
+<span class="w">                    </span><span class="kt">float</span><span class="o">&amp;</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hf</span><span class="p">.</span><span class="n">heightAt</span><span class="p">(</span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+
+<span class="w">                    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">sources</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">useIndirectIndexing</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">indexes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">i</span><span class="p">;</span>
+
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sources</span><span class="p">[</span><span class="n">j</span><span class="p">].</span><span class="n">read</span><span class="p">(</span><span class="n">point</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">point</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+
+<span class="w">                        </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">ok</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">r</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">NO_DATA_VALUE</span><span class="p">;</span>
+
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">height</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">NO_DATA_VALUE</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="n">indexes</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="n">indexes</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="w">                            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                    </span><span class="p">}</span>
+
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">height</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">NO_DATA_VALUE</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">height</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">point</span><span class="p">.</span><span class="n">z</span><span class="p">;</span><span class="w"> </span><span class="c1">// apply reverse vdatum offset</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">io</span><span class="p">.</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// If the progress was cancelled clear out any of the output data.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">io</span><span class="p">.</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">output</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;</span><span class="n">GeoImage</span><span class="o">&gt;</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">createTile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// lock prevents closing the layer while creating an image</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">shared_lock</span><span class="w"> </span><span class="nf">readLock</span><span class="p">(</span><span class="n">layerStateMutex</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">status</span><span class="p">().</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">status</span><span class="p">().</span><span class="n">error</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">getOrCreateTile</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">]()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">createTileInKeyProfile</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;</span><span class="n">GeoImage</span><span class="o">&gt;</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">createTileImplementation_internal</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createTileImplementation</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">valid</span><span class="p">(),</span><span class="w"> </span><span class="n">result</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// If the image is not a heightfield, decode it to a heightfield.</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">image</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">decodeRGB</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">image</span><span class="p">());</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoImage</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">extent</span><span class="p">());</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">GeneralError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Failed to decode RGB image to heightfield.&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Failed to create heightfield for key {0} : {1}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">str</span><span class="p">(),</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">error</span><span class="p">().</span><span class="n">message</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;</span><span class="n">GeoImage</span><span class="o">&gt;</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">createTileInKeyProfile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Result</span><span class="o">&lt;</span><span class="n">GeoImage</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Failure_ResourceUnavailable</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">(),</span><span class="w"> </span><span class="n">result</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Check that the key is legal (in valid LOD range, etc.)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">intersects</span><span class="p">(</span><span class="n">key</span><span class="p">))</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_ResourceUnavailable</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// we check the srs too in case the vdatums differ.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">profile</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">profile</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createTileImplementation_internal</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">r</span><span class="p">;</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">value</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// If the profiles are different, use a compositing method to assemble the tile.</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">hf</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">assembleTile</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">hf</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoImage</span><span class="p">(</span><span class="n">hf</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">extent</span><span class="p">());</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Check for cancelation before writing to a cache</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">io</span><span class="p">.</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_ResourceUnavailable</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">result</span><span class="p">.</span><span class="n">value</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">image</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">image</span><span class="p">();</span>
+
+<span class="w">        </span><span class="n">Heightfield</span><span class="w"> </span><span class="nf">hf</span><span class="p">(</span><span class="n">image</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">hf</span><span class="p">.</span><span class="n">image</span><span class="o">-&gt;</span><span class="n">pixelFormat</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">HF_WRITABLE_FORMAT</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">normalizeNoDataValues</span><span class="p">(</span><span class="n">hf</span><span class="p">.</span><span class="n">image</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+
+<span class="w">            </span><span class="c1">// enocde for GPU</span>
+<span class="w">            </span><span class="n">hf</span><span class="p">.</span><span class="n">computeAndSetMinMax</span><span class="p">();</span>
+<span class="w">            </span><span class="n">image</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hf</span><span class="p">.</span><span class="n">encode</span><span class="p">().</span><span class="n">image</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoImage</span><span class="p">(</span><span class="n">image</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">extent</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;</span>
+<span class="n">ElevationLayer</span><span class="o">::</span><span class="n">decodeRGB</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;</span><span class="w"> </span><span class="n">image</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">image</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">image</span><span class="o">-&gt;</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">image</span><span class="o">-&gt;</span><span class="n">pixelFormat</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">HF_WRITABLE_FORMAT</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// already a heightfield, just compute the minmax and return it</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">image</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// For RGB-encoded elevation, we want read the components in their raw form</span>
+<span class="w">    </span><span class="c1">// and not perform any color space conversion.</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">view_format</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">image</span><span class="o">-&gt;</span><span class="n">pixelFormat</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">R8_SRGB</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">R8_UNORM</span><span class="w"> </span><span class="o">:</span>
+<span class="w">        </span><span class="n">image</span><span class="o">-&gt;</span><span class="n">pixelFormat</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">R8G8_SRGB</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">R8G8_UNORM</span><span class="w"> </span><span class="o">:</span>
+<span class="w">        </span><span class="n">image</span><span class="o">-&gt;</span><span class="n">pixelFormat</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">R8G8B8_SRGB</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">R8G8B8_UNORM</span><span class="w"> </span><span class="o">:</span>
+<span class="w">        </span><span class="n">image</span><span class="o">-&gt;</span><span class="n">pixelFormat</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">R8G8B8A8_SRGB</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">R8G8B8A8_UNORM</span><span class="w"> </span><span class="o">:</span>
+<span class="w">        </span><span class="n">image</span><span class="o">-&gt;</span><span class="n">pixelFormat</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">Image</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">image</span><span class="o">-&gt;</span><span class="n">viewAs</span><span class="p">(</span><span class="n">view_format</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// convert the RGB Elevation into an actual heightfield</span>
+<span class="w">    </span><span class="n">Heightfield</span><span class="w"> </span><span class="nf">hf</span><span class="p">(</span><span class="n">view</span><span class="p">.</span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="n">height</span><span class="p">());</span>
+
+<span class="w">    </span><span class="n">glm</span><span class="o">::</span><span class="n">fvec4</span><span class="w"> </span><span class="n">pixel</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">encoding</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Encoding</span><span class="o">::</span><span class="n">TerrariumRGB</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">view</span><span class="p">.</span><span class="n">eachPixel</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">pixel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">s</span><span class="p">(),</span><span class="w"> </span><span class="n">i</span><span class="p">.</span><span class="n">t</span><span class="p">());</span>
+
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">pixel</span><span class="p">.</span><span class="n">r</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">255.0f</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">256.0f</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pixel</span><span class="p">.</span><span class="n">g</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">255.0f</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pixel</span><span class="p">.</span><span class="n">b</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">255.0f</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">256.0f</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">32768.0f</span><span class="p">;</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">height</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">-9999</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">999999</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NO_DATA_VALUE</span><span class="p">;</span>
+
+<span class="w">                </span><span class="n">hf</span><span class="p">.</span><span class="n">heightAt</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">s</span><span class="p">(),</span><span class="w"> </span><span class="n">i</span><span class="p">.</span><span class="n">t</span><span class="p">())</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">height</span><span class="p">;</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="c1">// default to MapboxRGB</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">view</span><span class="p">.</span><span class="n">eachPixel</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">pixel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">view</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">s</span><span class="p">(),</span><span class="w"> </span><span class="n">i</span><span class="p">.</span><span class="n">t</span><span class="p">());</span>
+
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-10000.f</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">((</span><span class="n">pixel</span><span class="p">.</span><span class="n">r</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">256.0f</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">256.0f</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pixel</span><span class="p">.</span><span class="n">g</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">256.0f</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pixel</span><span class="p">.</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">256.0f</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.1f</span><span class="p">);</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">height</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">-9999</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">999999</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">NO_DATA_VALUE</span><span class="p">;</span>
+
+<span class="w">                </span><span class="n">hf</span><span class="p">.</span><span class="n">heightAt</span><span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">s</span><span class="p">(),</span><span class="w"> </span><span class="n">i</span><span class="p">.</span><span class="n">t</span><span class="p">())</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">height</span><span class="p">;</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// compute the new min/max and compress the heightfield.</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">hf</span><span class="p">.</span><span class="n">image</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

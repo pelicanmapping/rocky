@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a56912edb41faea0203c0cc18ab5b48ca:
+
+Function rocky::pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer>, int, int)
+========================================================================
+
+- Defined in :ref:`file_src_rocky_vsg_DisplayManager.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer>, int, int)
+   :project: Rocky

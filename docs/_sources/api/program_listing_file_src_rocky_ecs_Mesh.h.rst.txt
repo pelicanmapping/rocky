@@ -1,0 +1,73 @@
+
+.. _program_listing_file_src_rocky_ecs_Mesh.h:
+
+Program Listing for File Mesh.h
+===============================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_ecs_Mesh.h>` (``src/rocky/ecs/Mesh.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/ecs/Component.h>
+   #include <rocky/Color.h>
+   #include <rocky/SRS.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       struct MeshGeometry : public Component<MeshGeometry>
+       {
+           std::vector<glm::dvec3> vertices;
+           std::vector<glm::fvec4> colors;
+           std::vector<glm::fvec3> normals;
+           std::vector<glm::fvec2> uvs;
+           std::vector<std::uint32_t> indices;
+   
+           SRS srs;
+   
+           inline void reserve(size_t x, size_t y) {
+               vertices.reserve(x);
+               colors.reserve(x);
+               normals.reserve(x);
+               uvs.reserve(x);
+               indices.reserve(y);
+           }
+       };
+   
+       struct MeshStyle : public Component<MeshStyle>
+       {
+           Color color = { 1, 1, 1, 1 };
+   
+           bool useGeometryColors = false;
+   
+           // vertex adjustment (in meters) to apply to the mesh verts
+           // as a simple method or avoiding depth fighting
+           float depthOffset = 0.0f;
+   
+           entt::entity texture = entt::null;
+   
+           bool wireframe = false;
+   
+           bool lighting = false;
+   
+           bool writeDepth = true;
+   
+           bool drawBackfaces = false;
+   
+           bool twoPassAlpha = false;
+       };
+   
+       struct Mesh : public Component<Mesh>
+       {
+           entt::entity geometry = entt::null;
+   
+           entt::entity style = entt::null;
+   
+           inline Mesh() = default;
+           inline Mesh(const MeshGeometry& geometry_) : geometry(geometry_.owner) {}
+           inline Mesh(const MeshGeometry& geometry_, const MeshStyle& style_) : geometry(geometry_.owner), style(style_.owner) {}
+       };
+   }

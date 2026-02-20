@@ -1,0 +1,14 @@
+.. _exhale_variable_namespacerocky_1_1util_1a638cb9f1286d83713a69c0b150da5216:
+
+Variable rocky::util::EMPTY_STRING
+==================================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: rocky::util::EMPTY_STRING
+   :project: Rocky

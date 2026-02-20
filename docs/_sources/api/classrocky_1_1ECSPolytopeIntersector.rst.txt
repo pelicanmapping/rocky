@@ -1,0 +1,27 @@
+.. _exhale_class_classrocky_1_1ECSPolytopeIntersector:
+
+Class ECSPolytopeIntersector
+============================
+
+- Defined in :ref:`file_src_rocky_vsg_ecs_ECSVisitors.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Types
+**********
+
+- ``public vsg::Inherit< vsg::PolytopeIntersector, ECSPolytopeIntersector >``
+- ``public rocky::ECSVisitor`` (:ref:`exhale_class_classrocky_1_1ECSVisitor`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::ECSPolytopeIntersector
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

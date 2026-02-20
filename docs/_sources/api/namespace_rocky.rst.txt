@@ -1,0 +1,724 @@
+
+.. _namespace_rocky:
+
+Namespace rocky
+===============
+
+
+rocky c++ Copyright 2023 Pelican Mapping MIT License 
+
+
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+Detailed Description
+--------------------
+
+rocky c++ Copyright 2023-2024 Pelican Mapping, Chris Djali MIT License
+
+rocky c++ Copyright 2025 Pelican Mapping MIT License
+
+A collection of types used by the various I/O systems.
+
+Classes here are extensions of the vsgImGui classes to support multi-context ImGui rendering. This is neccessary when crossing DLL boundaries and the like. 
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky__TMS`
+
+- :ref:`namespace_rocky__util`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structrocky_1_1ActiveState`
+
+- :ref:`exhale_struct_structrocky_1_1Application_1_1Stats`
+
+- :ref:`exhale_struct_structrocky_1_1Box`
+
+- :ref:`exhale_struct_structrocky_1_1CallbackSubs`
+
+- :ref:`exhale_struct_structrocky_1_1CelestialBody`
+
+- :ref:`exhale_struct_structrocky_1_1Component`
+
+- :ref:`exhale_struct_structrocky_1_1Component_1_1Dirty`
+
+- :ref:`exhale_struct_structrocky_1_1Content`
+
+- :ref:`exhale_struct_structrocky_1_1Declutter`
+
+- :ref:`exhale_struct_structrocky_1_1DisplayGeoPoint`
+
+- :ref:`exhale_struct_structrocky_1_1DisplayManager_1_1ViewData`
+
+- :ref:`exhale_struct_structrocky_1_1ElevationSample`
+
+- :ref:`exhale_struct_structrocky_1_1Failure`
+
+- :ref:`exhale_struct_structrocky_1_1Feature_1_1FieldValue`
+
+- :ref:`exhale_struct_structrocky_1_1FeatureSource_1_1iterator_1_1implementation`
+
+- :ref:`exhale_struct_structrocky_1_1FeatureSource_1_1Metadata`
+
+- :ref:`exhale_struct_structrocky_1_1FeatureView_1_1Workspace`
+
+- :ref:`exhale_struct_structrocky_1_1Geometry`
+
+- :ref:`exhale_struct_structrocky_1_1GeometryKey`
+
+- :ref:`exhale_struct_structrocky_1_1GeometryPool_1_1Settings`
+
+- :ref:`exhale_struct_structrocky_1_1Hyperlink`
+
+- :ref:`exhale_struct_structrocky_1_1Image_1_1Layout`
+
+- :ref:`exhale_struct_structrocky_1_1json__parse__result`
+
+- :ref:`exhale_struct_structrocky_1_1Label`
+
+- :ref:`exhale_struct_structrocky_1_1LabelStyle`
+
+- :ref:`exhale_struct_structrocky_1_1LineGeometry`
+
+- :ref:`exhale_struct_structrocky_1_1LineStyle`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1Action`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1ActionOption`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1ActionOptions`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1InputSpec`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1State`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1Task`
+
+- :ref:`exhale_struct_structrocky_1_1Mesh`
+
+- :ref:`exhale_struct_structrocky_1_1MeshGeometry`
+
+- :ref:`exhale_struct_structrocky_1_1MeshStyle`
+
+- :ref:`exhale_struct_structrocky_1_1MeshTexture`
+
+- :ref:`exhale_struct_structrocky_1_1Motion`
+
+- :ref:`exhale_struct_structrocky_1_1MotionGreatCircle`
+
+- :ref:`exhale_struct_structrocky_1_1NamedFunction`
+
+- :ref:`exhale_struct_structrocky_1_1NodeGraph`
+
+- :ref:`exhale_struct_structrocky_1_1NodeSystemNode_1_1Drawable`
+
+- :ref:`exhale_struct_structrocky_1_1option`
+
+- :ref:`exhale_struct_structrocky_1_1PipelineUtils`
+
+- :ref:`exhale_struct_structrocky_1_1PointGeometry`
+
+- :ref:`exhale_struct_structrocky_1_1PointStyle`
+
+- :ref:`exhale_struct_structrocky_1_1Profile_1_1Data`
+
+- :ref:`exhale_struct_structrocky_1_1Rect`
+
+- :ref:`exhale_struct_structrocky_1_1Registry_1_1Impl`
+
+- :ref:`exhale_struct_structrocky_1_1Registry_1_1Read`
+
+- :ref:`exhale_struct_structrocky_1_1Registry_1_1Write`
+
+- :ref:`exhale_struct_structrocky_1_1RenderingState`
+
+- :ref:`exhale_struct_structrocky_1_1Sphere`
+
+- :ref:`exhale_struct_structrocky_1_1StyleSheet`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainDescriptors`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainDescriptors_1_1Uniforms`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainNode_1_1Stats`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainState_1_1TextureDef`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainTileDescriptors`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainTileDescriptors_1_1Uniforms`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainTileModel`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainTileModel_1_1ColorLayer`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainTileModel_1_1Elevation`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainTileModel_1_1MaterialMap`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainTileModel_1_1NormalMap`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainTileModel_1_1Tile`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainTilePager_1_1TileInfo`
+
+- :ref:`exhale_struct_structrocky_1_1TerrainTileRenderModel`
+
+- :ref:`exhale_struct_structrocky_1_1TextureData`
+
+- :ref:`exhale_struct_structrocky_1_1TileLayer_1_1DataExtentsIndex`
+
+- :ref:`exhale_struct_structrocky_1_1Transform`
+
+- :ref:`exhale_struct_structrocky_1_1TransformDetail`
+
+- :ref:`exhale_struct_structrocky_1_1TransformDetail_1_1Cached`
+
+- :ref:`exhale_struct_structrocky_1_1TransformViewDetail`
+
+- :ref:`exhale_struct_structrocky_1_1URI_1_1Context`
+
+- :ref:`exhale_struct_structrocky_1_1URI_1_1Stream`
+
+- :ref:`exhale_struct_structrocky_1_1URIResponse`
+
+- :ref:`exhale_struct_structrocky_1_1ViewLocal`
+
+- :ref:`exhale_struct_structrocky_1_1Visibility`
+
+- :ref:`exhale_class_classrocky_1_1Angle`
+
+- :ref:`exhale_class_classrocky_1_1Application`
+
+- :ref:`exhale_class_classrocky_1_1Cache`
+
+- :ref:`exhale_class_classrocky_1_1Callback`
+
+- :ref:`exhale_class_classrocky_1_1Color`
+
+- :ref:`exhale_class_classrocky_1_1ContextFactory`
+
+- :ref:`exhale_class_classrocky_1_1ContextImpl`
+
+- :ref:`exhale_class_classrocky_1_1DateTime`
+
+- :ref:`exhale_class_classrocky_1_1DateTimeExtent`
+
+- :ref:`exhale_class_classrocky_1_1DeclutterSystem`
+
+- :ref:`exhale_class_classrocky_1_1DescriptorBufferEx`
+
+- :ref:`exhale_class_classrocky_1_1DisplayManager`
+
+- :ref:`exhale_class_classrocky_1_1Distance`
+
+- :ref:`exhale_class_classrocky_1_1Duration`
+
+- :ref:`exhale_class_classrocky_1_1EarthFileImporter`
+
+- :ref:`exhale_class_classrocky_1_1ECSLineSegmentIntersector`
+
+- :ref:`exhale_class_classrocky_1_1ECSNode`
+
+- :ref:`exhale_class_classrocky_1_1ECSPolytopeIntersector`
+
+- :ref:`exhale_class_classrocky_1_1ECSVisitor`
+
+- :ref:`exhale_class_classrocky_1_1ElevationLayer`
+
+- :ref:`exhale_class_classrocky_1_1ElevationSampler`
+
+- :ref:`exhale_class_classrocky_1_1ElevationSession`
+
+- :ref:`exhale_class_classrocky_1_1Ellipsoid`
+
+- :ref:`exhale_class_classrocky_1_1EntityCollectionLayer`
+
+- :ref:`exhale_class_classrocky_1_1EntityNode`
+
+- :ref:`exhale_class_classrocky_1_1Ephemeris`
+
+- :ref:`exhale_class_classrocky_1_1Feature`
+
+- :ref:`exhale_class_classrocky_1_1FeatureSource`
+
+- :ref:`exhale_class_classrocky_1_1FeatureSource_1_1iterator`
+
+- :ref:`exhale_class_classrocky_1_1FeatureView`
+
+- :ref:`exhale_class_classrocky_1_1GeoCircle`
+
+- :ref:`exhale_class_classrocky_1_1Geocoder`
+
+- :ref:`exhale_class_classrocky_1_1GeoExtent`
+
+- :ref:`exhale_class_classrocky_1_1GeoExtent3D`
+
+- :ref:`exhale_class_classrocky_1_1GeoHeightfield`
+
+- :ref:`exhale_class_classrocky_1_1GeoImage`
+
+- :ref:`exhale_class_classrocky_1_1Geometry_1_1iterator__base`
+
+- :ref:`exhale_class_classrocky_1_1GeometryPool`
+
+- :ref:`exhale_class_classrocky_1_1GeoPoint`
+
+- :ref:`exhale_class_classrocky_1_1GeoTransform`
+
+- :ref:`exhale_class_classrocky_1_1Heightfield`
+
+- :ref:`exhale_class_classrocky_1_1Horizon`
+
+- :ref:`exhale_class_classrocky_1_1Image`
+
+- :ref:`exhale_class_classrocky_1_1Image_1_1iterator`
+
+- :ref:`exhale_class_classrocky_1_1ImageLayer`
+
+- :ref:`exhale_class_classrocky_1_1ImGuiContextNode`
+
+- :ref:`exhale_class_classrocky_1_1Inherit`
+
+- :ref:`exhale_class_classrocky_1_1IOOptions`
+
+- :ref:`exhale_class_classrocky_1_1Layer`
+
+- :ref:`exhale_class_classrocky_1_1Line`
+
+- :ref:`exhale_class_classrocky_1_1LineGeometryNode`
+
+- :ref:`exhale_class_classrocky_1_1LineSystemNode`
+
+- :ref:`exhale_class_classrocky_1_1Map`
+
+- :ref:`exhale_class_classrocky_1_1MapManipulator`
+
+- :ref:`exhale_class_classrocky_1_1MapManipulator_1_1Settings`
+
+- :ref:`exhale_class_classrocky_1_1MapNode`
+
+- :ref:`exhale_class_classrocky_1_1Memory`
+
+- :ref:`exhale_class_classrocky_1_1MeshGeometryNode`
+
+- :ref:`exhale_class_classrocky_1_1MeshSystemNode`
+
+- :ref:`exhale_class_classrocky_1_1Mosaic`
+
+- :ref:`exhale_class_classrocky_1_1MotionSystem`
+
+- :ref:`exhale_class_classrocky_1_1NodeLayer`
+
+- :ref:`exhale_class_classrocky_1_1NodePager`
+
+- :ref:`exhale_class_classrocky_1_1NodeSystemNode`
+
+- :ref:`exhale_class_classrocky_1_1Object`
+
+- :ref:`exhale_class_classrocky_1_1PagedNode`
+
+- :ref:`exhale_class_classrocky_1_1PixelScaleTransform`
+
+- :ref:`exhale_class_classrocky_1_1Point`
+
+- :ref:`exhale_class_classrocky_1_1PointGeometryNode`
+
+- :ref:`exhale_class_classrocky_1_1PointSystemNode`
+
+- :ref:`exhale_class_classrocky_1_1Profile`
+
+- :ref:`exhale_class_classrocky_1_1Registry`
+
+- :ref:`exhale_class_classrocky_1_1RenderImGui`
+
+- :ref:`exhale_class_classrocky_1_1RenderImGuiContext`
+
+- :ref:`exhale_class_classrocky_1_1Result`
+
+- :ref:`exhale_class_classrocky_1_1RTT`
+
+- :ref:`exhale_class_classrocky_1_1ScreenSize`
+
+- :ref:`exhale_class_classrocky_1_1ScreenSpaceGroup`
+
+- :ref:`exhale_class_classrocky_1_1SendEventsToImGui`
+
+- :ref:`exhale_class_classrocky_1_1SendEventsToImGuiContext`
+
+- :ref:`exhale_class_classrocky_1_1Services`
+
+- :ref:`exhale_class_classrocky_1_1SetColorWriteMask`
+
+- :ref:`exhale_class_classrocky_1_1SetCullMode`
+
+- :ref:`exhale_class_classrocky_1_1SetDepthWriteEnable`
+
+- :ref:`exhale_class_classrocky_1_1SetPolygonMode`
+
+- :ref:`exhale_class_classrocky_1_1SharedGeometry`
+
+- :ref:`exhale_class_classrocky_1_1SkyNode`
+
+- :ref:`exhale_class_classrocky_1_1Speed`
+
+- :ref:`exhale_class_classrocky_1_1SRS`
+
+- :ref:`exhale_class_classrocky_1_1SRSOperation`
+
+- :ref:`exhale_class_classrocky_1_1Status`
+
+- :ref:`exhale_class_classrocky_1_1StreamingGPUBuffer`
+
+- :ref:`exhale_class_classrocky_1_1SurfaceNode`
+
+- :ref:`exhale_class_classrocky_1_1System`
+
+- :ref:`exhale_class_classrocky_1_1TerrainEngine`
+
+- :ref:`exhale_class_classrocky_1_1TerrainNode`
+
+- :ref:`exhale_class_classrocky_1_1TerrainProfileNode`
+
+- :ref:`exhale_class_classrocky_1_1TerrainSettings`
+
+- :ref:`exhale_class_classrocky_1_1TerrainState`
+
+- :ref:`exhale_class_classrocky_1_1TerrainTileHost`
+
+- :ref:`exhale_class_classrocky_1_1TerrainTileModelFactory`
+
+- :ref:`exhale_class_classrocky_1_1TerrainTileNode`
+
+- :ref:`exhale_class_classrocky_1_1TerrainTilePager`
+
+- :ref:`exhale_class_classrocky_1_1TileKey`
+
+- :ref:`exhale_class_classrocky_1_1TileLayer`
+
+- :ref:`exhale_class_classrocky_1_1TMSElevationLayer`
+
+- :ref:`exhale_class_classrocky_1_1TMSImageLayer`
+
+- :ref:`exhale_class_classrocky_1_1TransformSystem`
+
+- :ref:`exhale_class_classrocky_1_1Units`
+
+- :ref:`exhale_class_classrocky_1_1URI`
+
+- :ref:`exhale_class_classrocky_1_1Viewpoint`
+
+- :ref:`exhale_class_classrocky_1_1VisibleLayer`
+
+- :ref:`exhale_class_classrocky_1_1VSGContextFactory`
+
+- :ref:`exhale_class_classrocky_1_1VSGContextImpl`
+
+- :ref:`exhale_class_classrocky_1_1VulkanExtensions`
+
+
+Enums
+-----
+
+
+- :ref:`exhale_enum_namespacerocky_1aa00be5b88a4787c8dbc23ae0c654c13a`
+
+- :ref:`exhale_enum_namespacerocky_1a30b774b3641c9404ffdd09935c7b9ae0`
+
+- :ref:`exhale_enum_namespacerocky_1a1c64a26d565d66ba679efddadeca5cee`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespacerocky_1a8d82c29783195912f7dcade0122a9181`
+
+- :ref:`exhale_function_namespacerocky_1abd7ee4e41eaff226d877aa500db57cdc`
+
+- :ref:`exhale_function_namespacerocky_1a004f1ecf8511deb396742dfb6c55c1d6`
+
+- :ref:`exhale_function_namespacerocky_1a73173663f2cdc0eda90ddcd7e2d15401`
+
+- :ref:`exhale_function_namespacerocky_1ad2af4eacd1a449bcc19952500b9cd627`
+
+- :ref:`exhale_function_namespacerocky_1ac802505e3b5315deccf3827335072cdc`
+
+- :ref:`exhale_function_namespacerocky_1a619899c07a1fd6a139fdc44300582ad7`
+
+- :ref:`exhale_function_namespacerocky_1a8f2056d2f8fd468a1327a32b3a2e55ae`
+
+- :ref:`exhale_function_namespacerocky_1a0206e2148edf646f2dbd59595a94914e`
+
+- :ref:`exhale_function_namespacerocky_1a1a3b406ffa8af0361a7b157019f9cc86`
+
+- :ref:`exhale_function_namespacerocky_1a943e31ae762771613ccb613eac882162`
+
+- :ref:`exhale_function_namespacerocky_1a969bf1142666ca8b574cbac619466f2c`
+
+- :ref:`exhale_function_namespacerocky_1aa065b69918aa6dd951ab513eab27713d`
+
+- :ref:`exhale_function_namespacerocky_1a96610d4cccdeb3aebcd8b761e6d1c343`
+
+- :ref:`exhale_function_namespacerocky_1aa9f1e4142cb93295efd3d881cab4dce5`
+
+- :ref:`exhale_function_namespacerocky_1a24cfa280b45303e2b538e26ee001f3f4`
+
+- :ref:`exhale_function_namespacerocky_1aeed824820d408d0743ca5cf6b56309ff`
+
+- :ref:`exhale_function_namespacerocky_1afb6a778d5f9828e9075e62b5ef8cc9b8`
+
+- :ref:`exhale_function_namespacerocky_1a2dd15ab9999cb5aac9f53c170a28bf12`
+
+- :ref:`exhale_function_namespacerocky_1a5c5d7fdcc8073ac3528286d54076e788`
+
+- :ref:`exhale_function_namespacerocky_1aa22e8a098a2f111777fea52c1a5c4b89`
+
+- :ref:`exhale_function_namespacerocky_1a2049371eccab3200ec7dfc85e9d742de`
+
+- :ref:`exhale_function_namespacerocky_1ab1d43c8feee9032c33e7505a767b5845`
+
+- :ref:`exhale_function_namespacerocky_1ab1d8685d0c70492fa0a90300e44ca254`
+
+- :ref:`exhale_function_namespacerocky_1ae86cc39a89c4b564340718a1c8ea8775`
+
+- :ref:`exhale_function_namespacerocky_1a81df6fc1439cf3f131a193a65fa04d03`
+
+- :ref:`exhale_function_namespacerocky_1a3eba94dd6dcc59d9550e39529ebfe340`
+
+- :ref:`exhale_function_namespacerocky_1a715d873555f9d4858b58b80a1093ddcd`
+
+- :ref:`exhale_function_namespacerocky_1a7ae0665f2b63ff0add1c552f001abaf2`
+
+- :ref:`exhale_function_namespacerocky_1a05caeaabb211063696bdd776e9b75900`
+
+- :ref:`exhale_function_namespacerocky_1abccf9754ab3d94fecb416b32823773db`
+
+- :ref:`exhale_function_namespacerocky_1ac49188fd4b9750246ad3888afec2bf0f`
+
+- :ref:`exhale_function_namespacerocky_1a834e76ca7bb98cd4e6b9592983e02da2`
+
+- :ref:`exhale_function_namespacerocky_1a124a6388914a3027a7186fa284ca261a`
+
+- :ref:`exhale_function_namespacerocky_1ac84018679114c2d1f9961dc40be16a5b`
+
+- :ref:`exhale_function_namespacerocky_1a813e8c9057a10dee760d1ef2b685d9ba`
+
+- :ref:`exhale_function_namespacerocky_1ac7950fe74d4bc206418d7d04aeadde96`
+
+- :ref:`exhale_function_namespacerocky_1a96e26d9d7fee9385e79037dec62213eb`
+
+- :ref:`exhale_function_namespacerocky_1a2e44a7b5ea2e3ba3aae28edaa8a67eb0`
+
+- :ref:`exhale_function_namespacerocky_1a7141bbd85f36fe83cf663c2d893b0851`
+
+- :ref:`exhale_function_namespacerocky_1a56912edb41faea0203c0cc18ab5b48ca`
+
+- :ref:`exhale_function_namespacerocky_1ac9b3da0b66fbec89a2178febc578a2ec`
+
+- :ref:`exhale_function_namespacerocky_1a81804deee100da7875cd66d2d2396762`
+
+- :ref:`exhale_function_namespacerocky_1ab7dbfec472d3735d4dbf0e093f1cbb96`
+
+- :ref:`exhale_function_namespacerocky_1a6cf9edea8f63de3509e7726d2f19444b`
+
+- :ref:`exhale_function_namespacerocky_1a971e4761d667cdcaa498c14b5d240751`
+
+- :ref:`exhale_function_namespacerocky_1ac3c7f51739e72d709d5e7958079beb35`
+
+- :ref:`exhale_function_namespacerocky_1aaaebc78e9056ae3b24d7c5711cb97d90`
+
+- :ref:`exhale_function_namespacerocky_1abf375c08f392272fb474d574a5c2c098`
+
+- :ref:`exhale_function_namespacerocky_1ac39f9030bd5b598ffe362f700080d5fb`
+
+- :ref:`exhale_function_namespacerocky_1aad39a09f9d0b42b7e2636a9d91c04e6b`
+
+- :ref:`exhale_function_namespacerocky_1a8ae97cae8e00e370693561c038391a6d`
+
+- :ref:`exhale_function_namespacerocky_1a7c8b8a7aef76cad53adf7c0c4cdc3cd9`
+
+- :ref:`exhale_function_namespacerocky_1a2da789a2fcb8e58ff6cbee97956d047e`
+
+- :ref:`exhale_function_namespacerocky_1ae9c3ff1e542000dd7fe64c349d9ec76b`
+
+- :ref:`exhale_function_namespacerocky_1aabc7183eff0c0f1760d2c8528298f82b`
+
+- :ref:`exhale_function_namespacerocky_1a31431f7be04292e3b087df8fccfabf6b`
+
+- :ref:`exhale_function_namespacerocky_1a85aef2b532116d9665b9b12fb5129ab3`
+
+- :ref:`exhale_function_namespacerocky_1ad6c45c9f3e0a2aec96d05b19d3468f0e`
+
+- :ref:`exhale_function_namespacerocky_1a07906f7ab35a55668dda5a0d3c144367`
+
+- :ref:`exhale_function_namespacerocky_1a53202f49e1f49c9897a5b03584ec6976`
+
+- :ref:`exhale_function_namespacerocky_1a8b9a2a9582609b6775d996644160dcad`
+
+- :ref:`exhale_function_namespacerocky_1abd85305b5009d1dcf963f9128c5d5d77`
+
+- :ref:`exhale_function_namespacerocky_1adbfb0f5966caf0a2488d5b759fd74f3b`
+
+- :ref:`exhale_function_namespacerocky_1a5b81c6102830f34c9f93619a84586d68`
+
+- :ref:`exhale_function_namespacerocky_1a1974b8e8753aa60e06c930e6bf31e3b0`
+
+- :ref:`exhale_function_namespacerocky_1a8dbf733db8b0b741c30a7d03ca4ed5de`
+
+- :ref:`exhale_function_namespacerocky_1a3bd090534657716288a685b2499c9eba`
+
+- :ref:`exhale_function_namespacerocky_1a4343d2155ce2c6dad720a22c15a763e9`
+
+- :ref:`exhale_function_namespacerocky_1a12aeeaea2172210cfc1655e3c3096161`
+
+- :ref:`exhale_function_namespacerocky_1a04f6819f8a250099a0dbeb5add9e2aec`
+
+- :ref:`exhale_function_namespacerocky_1ab1c1c7276c08c10b6e61353591d7c059`
+
+- :ref:`exhale_function_namespacerocky_1a09e446896fdfe90d6fd87182ccbf0273`
+
+- :ref:`exhale_function_namespacerocky_1acd9c59642dcad115213d922e34f97322`
+
+- :ref:`exhale_function_namespacerocky_1ad446d8603cd7cdf890d3aa33ee8ca689`
+
+- :ref:`exhale_function_namespacerocky_1a9632995436346c5b432a864c6ec4ff39`
+
+- :ref:`exhale_function_namespacerocky_1afd9e2684943499cd100bf0511ad58071`
+
+- :ref:`exhale_function_namespacerocky_1ae35c4777b754a0fd6d4bea0ae914a330`
+
+- :ref:`exhale_function_namespacerocky_1a7cf9043e5d9afb29efe651161f480aa4`
+
+- :ref:`exhale_function_namespacerocky_1a4674a0dd837fe8b6bf04ec1a56d8234a`
+
+- :ref:`exhale_function_namespacerocky_1aebd13da86127e156d60c80d73c3a2924`
+
+- :ref:`exhale_function_namespacerocky_1a91d3294b6fae9cec15599f550b11e5d1`
+
+- :ref:`exhale_function_namespacerocky_1a1f0a5d2734aaa65e147b39bff252eddb`
+
+- :ref:`exhale_function_namespacerocky_1ab923ec4620419a7116cf3ecf1b35751a`
+
+- :ref:`exhale_function_namespacerocky_1a81b5f3ca3a09b077259f7c2cfac871a0`
+
+- :ref:`exhale_function_namespacerocky_1a13262ab514d5ee6ba8e8c8bc0e248cd0`
+
+- :ref:`exhale_function_namespacerocky_1aef521f795677d347d33ca5e556de4d82`
+
+- :ref:`exhale_function_namespacerocky_1a19c18f4d1b2bcbdbf74a8bc5b8b7d2c9`
+
+- :ref:`exhale_function_namespacerocky_1a2de446932dcbe004ecb5145850d8d08f`
+
+- :ref:`exhale_function_namespacerocky_1ad9391db4fcf34563b1185705c35ff633`
+
+- :ref:`exhale_function_namespacerocky_1a4762f9c0462291ace72ff25ade7df607`
+
+- :ref:`exhale_function_namespacerocky_1a50e03f1c1f43967b875d01993e16e7c3`
+
+- :ref:`exhale_function_namespacerocky_1a47e72587d513254598682d7e6b03d883`
+
+- :ref:`exhale_function_namespacerocky_1a3353a91eac98dd00088994bfb04cbdea`
+
+- :ref:`exhale_function_namespacerocky_1ac20e8e261270b7f3439763fe77eef01b`
+
+- :ref:`exhale_function_namespacerocky_1a4af7b74d9ce1191cb5dfbf0e00ae7996`
+
+- :ref:`exhale_function_namespacerocky_1a69627bd84d6266e5eb646206bb4bcfc9`
+
+- :ref:`exhale_function_namespacerocky_1a6149fa9aa01ac3c9e325714f6502848a`
+
+- :ref:`exhale_function_namespacerocky_1a2799af1945eeb2f0d0308cbe35ce4a28`
+
+- :ref:`exhale_function_namespacerocky_1adcea95c504a7e1bef35056f44211006a`
+
+- :ref:`exhale_function_namespacerocky_1a098fc5bdcef5a0f7aaa779aa9ac36cf8`
+
+- :ref:`exhale_function_namespacerocky_1afd176aa2b44713f26c60110f40e52c91`
+
+- :ref:`exhale_function_namespacerocky_1a913f71972d5f34a8c12b3ce9eae317b2`
+
+- :ref:`exhale_function_namespacerocky_1aaa2419add512cda0e0465521a0cc5be6`
+
+- :ref:`exhale_function_namespacerocky_1ae4551d1eec775ba3db83899c393b6de9`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef_namespacerocky_1a071fb2902344e11bbd6e52c3a8e70644`
+
+- :ref:`exhale_typedef_namespacerocky_1a01738a4e9826d878090a009fa6f47c20`
+
+- :ref:`exhale_typedef_namespacerocky_1ab62fee12f298305ded4df2ddf19d8103`
+
+- :ref:`exhale_typedef_namespacerocky_1a3b807358f41feb8138e02ff1a5c97a11`
+
+- :ref:`exhale_typedef_namespacerocky_1a8539a130c4b3ced5ba82dec5273b6935`
+
+- :ref:`exhale_typedef_namespacerocky_1abc2ef1ce71832584cc61941b7968788f`
+
+- :ref:`exhale_typedef_namespacerocky_1a8741ace30908a3eeb2e77b90551b49d6`
+
+- :ref:`exhale_typedef_namespacerocky_1a1aeca3c1309ec88a6d008490e4b73a3b`
+
+- :ref:`exhale_typedef_namespacerocky_1aeb1016a7f2f695b0eafad0f9ee9d4668`
+
+- :ref:`exhale_typedef_namespacerocky_1a8b9755369b5b5a5d4b6b209125811ffa`
+
+- :ref:`exhale_typedef_namespacerocky_1a8289188b9224dd07f76fa54ae27bb8a4`
+
+- :ref:`exhale_typedef_namespacerocky_1a787bb6294207b80e23bb288034695566`
+
+- :ref:`exhale_typedef_namespacerocky_1ae10af4f95701bff9b068016fc0cf93c4`
+
+- :ref:`exhale_typedef_namespacerocky_1a8ce31c79b35ac7411f165b9ffd57b35d`
+
+- :ref:`exhale_typedef_namespacerocky_1a365059057b10d99bf071afe5358c2174`
+
+- :ref:`exhale_typedef_namespacerocky_1ad02bf122878724530153b2c117d4a949`
+
+- :ref:`exhale_typedef_namespacerocky_1a6ae678b1966d6628635a6b4ca1ac8641`
+
+- :ref:`exhale_typedef_namespacerocky_1a3a615576e61bcfea7255d881deb5e6b2`
+
+- :ref:`exhale_typedef_namespacerocky_1adb551e79f9cb4a44243ce8363e7db538`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable_namespacerocky_1aa1d17e8a3adbe79c682b5c59bb691bc6`
+
+- :ref:`exhale_variable_namespacerocky_1a6e3e1ee4f6b65e1b145b742d9a254f71`
+
+- :ref:`exhale_variable_namespacerocky_1a0016f00c11808a4b848b6a0b86d132ff`
+
+- :ref:`exhale_variable_namespacerocky_1a92dc966fe12b3efc26a1397efae77bd4`
+
+- :ref:`exhale_variable_namespacerocky_1afc1f7dda71bc55aa3b375b2ee2467777`
+
+- :ref:`exhale_variable_namespacerocky_1a03618cd54875f6c21dff7658693431aa`
+
+- :ref:`exhale_variable_namespacerocky_1a7548cf282c49763eed7022ac7c6c4e4c`
+
+- :ref:`exhale_variable_namespacerocky_1ada4b392cdc067003fad0824725af9369`

@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1detail_1a6dedb943138a433c4f560e9debb9c03d:
+
+Function rocky::detail::sRGB_to_linear
+======================================
+
+- Defined in :ref:`file_src_rocky_Image.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::detail::sRGB_to_linear(float)
+   :project: Rocky

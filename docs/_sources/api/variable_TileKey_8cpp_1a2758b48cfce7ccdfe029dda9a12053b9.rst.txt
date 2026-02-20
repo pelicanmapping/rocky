@@ -1,0 +1,14 @@
+.. _exhale_variable_TileKey_8cpp_1a2758b48cfce7ccdfe029dda9a12053b9:
+
+Variable scaleBias
+==================
+
+- Defined in :ref:`file_src_rocky_TileKey.cpp`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: scaleBias
+   :project: Rocky

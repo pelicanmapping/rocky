@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1aa065b69918aa6dd951ab513eab27713d:
+
+Function rocky::from_json(const json&, GeoExtent&)
+==================================================
+
+- Defined in :ref:`file_src_rocky_GeoExtent.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::from_json(const json&, GeoExtent&)
+   :project: Rocky

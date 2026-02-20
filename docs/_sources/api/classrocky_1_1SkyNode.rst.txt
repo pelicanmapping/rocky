@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1SkyNode:
+
+Class SkyNode
+=============
+
+- Defined in :ref:`file_src_rocky_vsg_SkyNode.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public vsg::Inherit< vsg::Group, SkyNode >``
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::SkyNode
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

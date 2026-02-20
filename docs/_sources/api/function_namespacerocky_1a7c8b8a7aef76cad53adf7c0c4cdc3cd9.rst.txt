@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a7c8b8a7aef76cad53adf7c0c4cdc3cd9:
+
+Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Angle)
+==========================================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Angle)
+   :project: Rocky

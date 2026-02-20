@@ -1,0 +1,66 @@
+
+.. _file_src_rocky_Viewpoint.h:
+
+File Viewpoint.h
+================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/Viewpoint.h``)
+--------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_Viewpoint.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``functional``
+
+- ``rocky/GeoPoint.h`` (:ref:`file_src_rocky_GeoPoint.h`)
+
+- ``rocky/Units.h`` (:ref:`file_src_rocky_Units.h`)
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_Viewpoint.cpp`
+
+- :ref:`file_src_rocky_vsg_MapManipulator.h`
+
+- :ref:`file_src_rocky_vsg_MapNode.h`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classrocky_1_1Viewpoint`
+

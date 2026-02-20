@@ -1,0 +1,17 @@
+.. _exhale_class_classWEEJOBS__NAMESPACE_1_1metrics:
+
+Class metrics
+=============
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: WEEJOBS_NAMESPACE::metrics
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

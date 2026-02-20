@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1a5edf37654257019e9850ea1285eb921e:
+
+Function rocky::util::moveImageData
+===================================
+
+- Defined in :ref:`file_src_rocky_vsg_VSGUtils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::moveImageData(std::shared_ptr<Image>)
+   :project: Rocky

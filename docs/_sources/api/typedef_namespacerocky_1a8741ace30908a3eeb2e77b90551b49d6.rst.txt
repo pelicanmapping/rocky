@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespacerocky_1a8741ace30908a3eeb2e77b90551b49d6:
+
+Typedef rocky::DealpoolService
+==============================
+
+- Defined in :ref:`file_src_rocky_IOTypes.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: rocky::DealpoolService
+   :project: Rocky

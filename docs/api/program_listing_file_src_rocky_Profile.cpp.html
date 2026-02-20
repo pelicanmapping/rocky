@@ -1,0 +1,610 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File Profile.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File Profile.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_Profile.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-profile-cpp">
+<span id="program-listing-file-src-rocky-profile-cpp"></span><h1>Program Listing for File Profile.cpp<a class="headerlink" href="#program-listing-for-file-profile-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_Profile.cpp.html#file-src-rocky-profile-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/Profile.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Profile.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;TileKey.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Math.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Utils.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;json.h&quot;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="o">::</span><span class="nn">util</span><span class="p">;</span>
+
+<span class="cp">#define LC &quot;[Profile] &quot;</span>
+
+<span class="kt">void</span>
+<span class="nf">Profile::setup</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Box</span><span class="o">&amp;</span><span class="w"> </span><span class="n">bounds</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">width0</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">height0</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Box</span><span class="o">&amp;</span><span class="w"> </span><span class="n">geodeticBounds</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Profile</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">subprofiles</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">srs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Box</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">tx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width0</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">height0</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bounds</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bounds</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">srs</span><span class="p">.</span><span class="n">bounds</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tx</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">b</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">ar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">b</span><span class="p">.</span><span class="n">height</span><span class="p">();</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ar</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">int</span><span class="w"> </span><span class="n">ari</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">ar</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">tx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ari</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">ty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">int</span><span class="w"> </span><span class="n">ari</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">ar</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">tx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">ty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ari</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="c1">// default.</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">tx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">                </span><span class="n">ty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tx</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ty</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geodeticBounds</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">srs</span><span class="p">.</span><span class="n">geodeticSRS</span><span class="p">(),</span><span class="w"> </span><span class="n">geodeticBounds</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// automatically calculate the lat/long extents:</span>
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">()</span><span class="w"> </span><span class="o">?</span>
+<span class="w">                </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">srs</span><span class="p">.</span><span class="n">geodeticSRS</span><span class="p">());</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// make a profile sig (sans srs) and an srs sig for quick comparisons.</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">to_json</span><span class="p">();</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">hash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">hash</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">()(</span><span class="n">temp</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">subprofiles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">subprofiles</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">// invalid profile</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">Profile</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Data</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">equivalentTo</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Profile</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">rhs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_shared</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">hash</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">hash</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseY</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseY</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseX</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseX</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">horizontallyEquivalentTo</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">srs</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="n">Profile</span><span class="o">::</span><span class="n">Profile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">wellKnownName</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Data</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">    </span><span class="n">setup</span><span class="p">(</span><span class="n">wellKnownName</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">Profile</span><span class="o">::</span><span class="n">Profile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Box</span><span class="o">&amp;</span><span class="w"> </span><span class="n">bounds</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">x_tiles_at_lod0</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">y_tiles_at_lod0</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">Box</span><span class="o">&amp;</span><span class="w"> </span><span class="n">geodeticBounds</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Profile</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">subprofiles</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">Data</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">    </span><span class="n">setup</span><span class="p">(</span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="n">bounds</span><span class="p">,</span><span class="w"> </span><span class="n">x_tiles_at_lod0</span><span class="p">,</span><span class="w"> </span><span class="n">y_tiles_at_lod0</span><span class="p">,</span><span class="w"> </span><span class="n">geodeticBounds</span><span class="p">,</span><span class="w"> </span><span class="n">subprofiles</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">setup</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;plate-carree&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;plate-carre&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;eqc-wgs84&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// Yes I know this is not really Plate Carre but it will stand in for now.</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="w"> </span><span class="n">ex</span><span class="p">;</span>
+<span class="w">        </span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">.</span><span class="n">to</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">PLATE_CARREE</span><span class="p">).</span><span class="n">transform</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="mi">180</span><span class="p">,</span><span class="w"> </span><span class="mi">90</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="n">ex</span><span class="p">);</span>
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">PLATE_CARREE</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="o">-</span><span class="n">ex</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="o">-</span><span class="n">ex</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">ex</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">ex</span><span class="p">.</span><span class="n">y</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;global-geodetic&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;global-geodetic&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">90.0</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;spherical-mercator&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;spherical-mercator&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">,</span><span class="w"> </span><span class="n">SRS</span><span class="o">::</span><span class="n">SPHERICAL_MERCATOR</span><span class="p">.</span><span class="n">bounds</span><span class="p">(),</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;+proj=longlat&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">::</span><span class="n">npos</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="n">name</span><span class="p">),</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">90.0</span><span class="p">),</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;qsc+z&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span>
+<span class="w">            </span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=90 +lon_0=0&quot;</span><span class="p">),</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">),</span>
+<span class="w">            </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span><span class="w"> </span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">90.0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;qsc-z&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span>
+<span class="w">            </span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=-90 +lon_0=0&quot;</span><span class="p">),</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">),</span>
+<span class="w">            </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span><span class="w"> </span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;qsc+x&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span>
+<span class="w">            </span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=0&quot;</span><span class="p">),</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">),</span>
+<span class="w">            </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;qsc-x&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span>
+<span class="w">            </span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=180&quot;</span><span class="p">),</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">),</span>
+<span class="w">            </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span><span class="w"> </span><span class="mf">135.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">225.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;qsc+y&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span>
+<span class="w">            </span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=90&quot;</span><span class="p">),</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">),</span>
+<span class="w">            </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">125.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;qsc-y&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span>
+<span class="w">            </span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=-90&quot;</span><span class="p">),</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">),</span>
+<span class="w">            </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span><span class="w"> </span><span class="mf">-135.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;global-qsc&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;qsc&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;global-qsc&quot;</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">Box</span><span class="w"> </span><span class="nf">qscbox</span><span class="p">(</span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">-6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">,</span><span class="w"> </span><span class="mi">6378137</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span>
+<span class="w">            </span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">90.0</span><span class="p">),</span><span class="w">  </span><span class="c1">// extent</span>
+<span class="w">            </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">                             </span><span class="c1">// num tiles at LOD 0 (not used in QSC)</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">90.0</span><span class="p">),</span><span class="w">  </span><span class="c1">// geodetic extent</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=90 +lon_0=0&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">90.0</span><span class="p">)),</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=-90 +lon_0=0&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">)),</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=0&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">)),</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=90&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">125.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">)),</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=180&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">135.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">225.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">)),</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=-90&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">-135.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">))</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">ciEquals</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;moon&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;moon&quot;</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">Box</span><span class="w"> </span><span class="nf">qscbox</span><span class="p">(</span><span class="mi">-1737400</span><span class="p">,</span><span class="w"> </span><span class="mi">-1737400</span><span class="p">,</span><span class="w"> </span><span class="mi">1737400</span><span class="p">,</span><span class="w"> </span><span class="mi">1737400</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">setup</span><span class="p">(</span>
+<span class="w">            </span><span class="n">SRS</span><span class="o">::</span><span class="n">MOON</span><span class="p">,</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">90.0</span><span class="p">),</span><span class="w">  </span><span class="c1">// extent</span>
+<span class="w">            </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">                             </span><span class="c1">// num tiles at LOD 0 (not used in QSC)</span>
+<span class="w">            </span><span class="n">Box</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">90.0</span><span class="p">),</span><span class="w">  </span><span class="c1">// geodetic extent</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +R=1737400 +lat_0=90 +lon_0=0&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">90.0</span><span class="p">)),</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +R=1737400 +lat_0=-90 +lon_0=0&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">)),</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=0&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">)),</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=90&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">125.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">)),</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=180&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">135.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">225.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">)),</span>
+<span class="w">                </span><span class="n">Profile</span><span class="p">(</span><span class="n">SRS</span><span class="p">(</span><span class="s">&quot;+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=-90&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">qscbox</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="mf">-135.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">-45.0</span><span class="p">,</span><span class="w"> </span><span class="mf">45.0</span><span class="p">))</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_shared</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">valid</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">srs</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">srs</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">extent</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">geodeticExtent</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">geodeticExtent</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">wellKnownName</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">wellKnownName</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">to_json</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">json</span><span class="w"> </span><span class="n">temp</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ROCKY_NAMESPACE</span><span class="o">::</span><span class="n">to_json</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="k">this</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">temp</span><span class="p">.</span><span class="n">dump</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">from_json</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">input</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_json</span><span class="p">(</span><span class="n">input</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ROCKY_NAMESPACE</span><span class="o">::</span><span class="n">from_json</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="k">this</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">Profile</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">overrideSRS</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Profile</span><span class="p">(</span>
+<span class="w">        </span><span class="n">srs</span><span class="p">,</span>
+<span class="w">        </span><span class="n">Box</span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">ymin</span><span class="p">(),</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">xmax</span><span class="p">(),</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">ymax</span><span class="p">()),</span>
+<span class="w">        </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseX</span><span class="p">,</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseY</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">TileKey</span><span class="o">&gt;</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">rootKeys</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">allKeysAtLOD</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">TileKey</span><span class="o">&gt;</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">allKeysAtLOD</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">lod</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">valid</span><span class="p">(),</span><span class="w"> </span><span class="p">{});</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">TileKey</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="p">[</span><span class="n">tx</span><span class="p">,</span><span class="w"> </span><span class="n">ty</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">numTiles</span><span class="p">(</span><span class="n">lod</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">tx</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">c</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ty</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">r</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">TileKey</span><span class="p">(</span><span class="n">lod</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="k">this</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">GeoExtent</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">tileExtent</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">lod</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">tileX</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">tileY</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tileDimensions</span><span class="p">(</span><span class="n">lod</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">xmin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extent</span><span class="p">().</span><span class="n">xmin</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">width</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">tileX</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">ymax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extent</span><span class="p">().</span><span class="n">ymax</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">height</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">tileY</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">xmax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xmin</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">width</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">ymin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ymax</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">height</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">srs</span><span class="p">(),</span><span class="w"> </span><span class="n">xmin</span><span class="p">,</span><span class="w"> </span><span class="n">ymin</span><span class="p">,</span><span class="w"> </span><span class="n">xmax</span><span class="p">,</span><span class="w"> </span><span class="n">ymax</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">Profile</span><span class="o">::</span><span class="n">TileDims</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">tileDimensions</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">lod</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">out_width</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseX</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">out_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseY</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kt">double</span><span class="p">(</span><span class="mi">1u</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">lod</span><span class="p">);</span>
+<span class="w">    </span><span class="n">out_width</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">factor</span><span class="p">;</span>
+<span class="w">    </span><span class="n">out_height</span><span class="w"> </span><span class="o">/=</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">factor</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">out_width</span><span class="p">,</span><span class="w"> </span><span class="n">out_height</span><span class="w"> </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="n">Profile</span><span class="o">::</span><span class="n">NumTiles</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">numTiles</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">lod</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">out_tiles_wide</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseX</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">out_tiles_high</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseY</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">factor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1u</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">lod</span><span class="p">;</span>
+<span class="w">    </span><span class="n">out_tiles_wide</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">factor</span><span class="p">;</span>
+<span class="w">    </span><span class="n">out_tiles_high</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="n">factor</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">out_tiles_wide</span><span class="p">,</span><span class="w"> </span><span class="n">out_tiles_high</span><span class="w"> </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">levelOfDetailForHorizResolution</span><span class="p">(</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">resolution</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">tileSize</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">tileSize</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">resolution</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">0.0</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">23</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">tileRes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">.</span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">numTilesBaseX</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">tileSize</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">level</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">while</span><span class="p">(</span><span class="w"> </span><span class="n">tileRes</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">resolution</span><span class="w"> </span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">level</span><span class="o">++</span><span class="p">;</span>
+<span class="w">        </span><span class="n">tileRes</span><span class="w"> </span><span class="o">*=</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">level</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">levelOfDetail</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">height</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">dims</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tileDimensions</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Compute LOD: at LOD n, the height is baseHeight / (2^n)</span>
+<span class="w">    </span><span class="c1">// Solve for n: n = log2(baseHeight / rhsTargetHeight)</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">computed_lod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">round</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">log2</span><span class="p">(</span><span class="n">dims</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">height</span><span class="p">)));</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="p">)</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">computed_lod</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span>
+<span class="n">Profile</span><span class="o">::</span><span class="n">toReadableString</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">wellKnownName</span><span class="p">().</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">wellKnownName</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">to_json</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;json.h&quot;</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="n">json</span><span class="o">&amp;</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Profile</span><span class="o">&amp;</span><span class="w"> </span><span class="n">obj</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">obj</span><span class="p">.</span><span class="n">wellKnownName</span><span class="p">().</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">wellKnownName</span><span class="p">();</span><span class="w"> </span><span class="c1">// string</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">json</span><span class="o">::</span><span class="n">object</span><span class="p">();</span>
+<span class="w">                </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;extent&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">extent</span><span class="p">());</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">tx</span><span class="p">,</span><span class="w"> </span><span class="n">ty</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">numTiles</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="w">                </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;tx&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">tx</span><span class="p">);</span>
+<span class="w">                </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ty&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ty</span><span class="p">);</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">isComposite</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">sp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">json</span><span class="o">::</span><span class="n">array</span><span class="p">();</span>
+<span class="w">                    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">subprofile</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">subprofiles</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">json</span><span class="w"> </span><span class="n">subprofile_json</span><span class="p">;</span>
+<span class="w">                        </span><span class="n">to_json</span><span class="p">(</span><span class="n">subprofile_json</span><span class="p">,</span><span class="w"> </span><span class="n">subprofile</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">sp</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">subprofile_json</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;subprofiles&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sp</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">from_json</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">json</span><span class="o">&amp;</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">Profile</span><span class="o">&amp;</span><span class="w"> </span><span class="n">obj</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">.</span><span class="n">is_string</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Profile</span><span class="p">(</span><span class="n">get_string</span><span class="p">(</span><span class="n">j</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">.</span><span class="n">is_object</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">extent</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">tx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">ty</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;extent&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">extent</span><span class="p">);</span>
+<span class="w">            </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;tx&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">tx</span><span class="p">);</span>
+<span class="w">            </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ty&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ty</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">extent</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Profile</span><span class="p">(</span><span class="n">extent</span><span class="p">.</span><span class="n">srs</span><span class="p">(),</span><span class="w"> </span><span class="n">extent</span><span class="p">.</span><span class="n">bounds</span><span class="p">(),</span><span class="w"> </span><span class="n">tx</span><span class="p">,</span><span class="w"> </span><span class="n">ty</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="p">.</span><span class="n">contains</span><span class="p">(</span><span class="s">&quot;subprofiles&quot;</span><span class="p">))</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">j_subprofiles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">j</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="s">&quot;subprofiles&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">j_subprofiles</span><span class="p">.</span><span class="n">is_array</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">obj</span><span class="p">.</span><span class="n">subprofiles</span><span class="p">().</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">                    </span><span class="n">obj</span><span class="p">.</span><span class="n">subprofiles</span><span class="p">().</span><span class="n">reserve</span><span class="p">(</span><span class="n">j_subprofiles</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+
+<span class="w">                    </span><span class="k">for</span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">j_subprofile</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">j_subprofiles</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">Profile</span><span class="w"> </span><span class="n">subprofile</span><span class="p">;</span>
+<span class="w">                        </span><span class="n">from_json</span><span class="p">(</span><span class="n">j_subprofile</span><span class="p">,</span><span class="w"> </span><span class="n">subprofile</span><span class="p">);</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">subprofile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">obj</span><span class="p">.</span><span class="n">subprofiles</span><span class="p">().</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">subprofile</span><span class="p">);</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Profile</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

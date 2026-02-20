@@ -1,0 +1,17 @@
+.. _exhale_class_classrocky_1_1Ephemeris:
+
+Class Ephemeris
+===============
+
+- Defined in :ref:`file_src_rocky_Ephemeris.h`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::Ephemeris
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

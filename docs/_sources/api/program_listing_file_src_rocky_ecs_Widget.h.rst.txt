@@ -1,0 +1,42 @@
+
+.. _program_listing_file_src_rocky_ecs_Widget.h:
+
+Program Listing for File Widget.h
+=================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_ecs_Widget.h>` (``src/rocky/ecs/Widget.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Common.h>
+   #if defined(ROCKY_HAS_IMGUI) && __has_include(<imgui.h>)
+   #include <imgui.h>
+   #include <entt/entt.hpp>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       struct WidgetInstance;
+   
+       struct Widget
+       {
+           std::function<void(WidgetInstance&)> render;
+       };
+   
+       struct WidgetInstance
+       {
+           struct Widget& widget;
+           const std::string& uid;
+           entt::registry& registry;
+           entt::entity entity;
+           int windowFlags;
+           ImVec2 position;
+           ImGuiContext* context;
+           std::uint32_t viewID;
+       };
+   }
+   
+   #endif

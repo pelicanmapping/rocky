@@ -1,0 +1,145 @@
+
+.. _program_listing_file_src_rocky_URI.h:
+
+Program Listing for File URI.h
+==============================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_URI.h>` (``src/rocky/URI.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Common.h>
+   #include <rocky/IOTypes.h>
+   
+   #include <string>
+   #include <vector>
+   #include <chrono>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       struct URIResponse
+       {
+           Content content;
+           std::int64_t lastModifiedTime = 0;
+           std::chrono::duration<double> duration_s;
+           bool fromCache = false;
+           std::string jsonMetadata;
+   
+           URIResponse(const Content& in_content) :
+               content(in_content) {
+           }
+           URIResponse(const Content& in_content, std::chrono::duration<double> in_duration) :
+               content(in_content), duration_s(in_duration) {
+           }
+           //URIResponse(Content&& in_content, std::chrono::duration<double> in_duration) :
+           //    content(std::move(in_content)),
+           //    duration_s(in_duration)
+           //{
+           //    //nop
+           //}
+       };
+   
+       class ROCKY_EXPORT URI
+       {
+       public:
+   
+           using Headers = std::vector<std::pair<std::string, std::string>>;
+   
+           struct Context
+           {
+               Context() = default;
+               Context(std::string_view v) : referrer(v) {}
+               std::string referrer;
+               Headers headers;
+           };
+   
+       public:
+           static bool supportsHTTPS();
+   
+           struct ROCKY_EXPORT Stream
+           {
+           public:
+               Stream(std::shared_ptr<std::istream> s = nullptr);
+   
+               bool valid() const { return _in != nullptr; }
+   
+               operator std::istream&() { return *_in.get(); }
+   
+               std::string to_string();
+   
+           private:
+               std::shared_ptr<std::istream> _in;
+           };
+   
+       public:
+           URI() = default;
+   
+           URI(const URI& rhs) = default;
+   
+           URI(const std::string& location, const URI::Context& context = {});
+   
+           URI(const std::string& location, const std::string& referrer) :
+               URI(location, URI::Context{ referrer }) { }
+   
+           URI(const char* location) :
+               URI(std::string(location)) { }
+   
+           const std::string& base() const { return _baseURI; }
+   
+           const std::string& full() const { return _fullURI; }
+   
+           const std::string& operator * () const { return _fullURI; }
+   
+           void setReferrer(const std::string& value);
+   
+           const URI::Context& context() const { return _context; }
+   
+           bool empty() const { return _baseURI.empty(); }
+   
+           bool isRemote() const;
+   
+           Result<URIResponse> read(const IOOptions& io) const;
+   
+       public:
+   
+           bool operator < (const URI& rhs) const { 
+               return _fullURI < rhs._fullURI;
+           }
+   
+           bool operator == (const URI& rhs) const {
+               return _fullURI.compare(rhs._fullURI) == 0;
+           }
+   
+           bool operator != (const URI& rhs) const {
+               return _fullURI.compare(rhs._fullURI) != 0;
+           }
+   
+   
+       public:
+   
+           //static std::string urlEncode(const std::string& value);
+   
+           static std::string inferContentType(const std::string& value);
+   
+   
+       protected:
+           std::string _baseURI;
+           std::string _fullURI;
+           std::string::size_type _r0 = std::string::npos, _r1 = std::string::npos;
+           URI::Context _context;
+   
+           void set(std::string_view location, const URI::Context& context);
+           void findRotation();
+       };
+   
+       struct Hyperlink
+       {
+           std::string text;
+           URI href;
+       };
+   }

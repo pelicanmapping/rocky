@@ -1,0 +1,23 @@
+.. _exhale_struct_structrocky_1_1Registry_1_1Read:
+
+Struct Registry::Read
+=====================
+
+- Defined in :ref:`file_src_rocky_ecs_Registry.h`
+
+
+Nested Relationships
+--------------------
+
+This struct is a nested type of :ref:`exhale_class_classrocky_1_1Registry`.
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::Registry::Read
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

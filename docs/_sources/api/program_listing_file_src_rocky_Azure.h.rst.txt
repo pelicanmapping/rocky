@@ -1,0 +1,44 @@
+
+.. _program_listing_file_src_rocky_Azure.h:
+
+Program Listing for File Azure.h
+================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_Azure.h>` (``src/rocky/Azure.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Version.h>
+   #ifdef ROCKY_HAS_AZURE
+   
+   #include <rocky/Common.h>
+   #include <rocky/option.h>
+   #include <rocky/URI.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       namespace Azure
+       {
+           struct Options
+           {
+               option<std::string> subscriptionKey;
+   
+               option<std::string> tilesetId = { "microsoft.base.road" };
+   
+               option<URI> mapTileApiUrl = URI("https://atlas.microsoft.com/map/tile");
+   
+               option<std::string> apiVersion = { "2024-04-01" };
+           };
+       }
+   }
+   
+   #else // if !ROCKY_HAS_AZURE
+     #ifndef ROCKY_BUILDING_SDK
+       #error Azure support is not enabled in Rocky.
+     #endif
+   #endif // ROCKY_HAS_AZURE

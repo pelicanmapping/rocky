@@ -1,0 +1,14 @@
+.. _exhale_define_vsg_2Common_8h_1a664cd7bc5ac61018c235f3b04eb77b91:
+
+Define ROCKY_VSG_INTERNAL
+=========================
+
+- Defined in :ref:`file_src_rocky_vsg_Common.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ROCKY_VSG_INTERNAL
+   :project: Rocky

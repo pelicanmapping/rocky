@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1adc8adaa6fc9264fd6f716489a74a5720:
+
+Function rocky::util::endsWith
+==============================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::endsWith(std::string_view, std::string_view, bool)
+   :project: Rocky

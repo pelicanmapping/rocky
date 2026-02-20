@@ -1,0 +1,23 @@
+.. _exhale_struct_structrocky_1_1FeatureView_1_1Workspace:
+
+Struct FeatureView::Workspace
+=============================
+
+- Defined in :ref:`file_src_rocky_vsg_ecs_FeatureView.h`
+
+
+Nested Relationships
+--------------------
+
+This struct is a nested type of :ref:`exhale_class_classrocky_1_1FeatureView`.
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::FeatureView::Workspace
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

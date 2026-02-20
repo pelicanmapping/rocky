@@ -1,0 +1,14 @@
+.. _exhale_function_namespaceweemesh_1a794d8e87edb9d851db612aff095b2e76:
+
+Function weemesh::zero
+======================
+
+- Defined in :ref:`file_src_rocky_weemesh.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: weemesh::zero(0.)
+   :project: Rocky

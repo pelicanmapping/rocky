@@ -1,0 +1,18 @@
+
+.. _namespace_WEEJOBS_NAMESPACE__detail:
+
+Namespace WEEJOBS_NAMESPACE::detail
+===================================
+
+
+Runtime singleton object; Declare with WEEJOBS_INSTANCE in one of your .cpp files. 
+
+
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+

@@ -1,0 +1,235 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File SentryTracker.h &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File SentryTracker.h</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_SentryTracker.h.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-sentrytracker-h">
+<span id="program-listing-file-src-rocky-sentrytracker-h"></span><h1>Program Listing for File SentryTracker.h<a class="headerlink" href="#program-listing-for-file-sentrytracker-h" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_SentryTracker.h.html#file-src-rocky-sentrytracker-h"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/SentryTracker.h</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma once</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/Common.h&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">namespace</span><span class="w"> </span><span class="nn">detail</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="k">class</span><span class="w"> </span><span class="nc">SentryTracker</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">        </span><span class="k">public</span><span class="o">:</span>
+<span class="w">            </span><span class="k">struct</span><span class="w"> </span><span class="nc">ListEntry</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">T</span><span class="w"> </span><span class="n">_data</span><span class="p">;</span>
+<span class="w">                </span><span class="k">typename</span><span class="w"> </span><span class="nc">std</span><span class="o">::</span><span class="n">list</span><span class="o">&lt;</span><span class="n">ListEntry</span><span class="o">&gt;::</span><span class="n">iterator</span><span class="w"> </span><span class="n">_ptr</span><span class="p">;</span>
+<span class="w">            </span><span class="p">};</span>
+
+<span class="w">            </span><span class="k">using</span><span class="w"> </span><span class="n">List</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">list</span><span class="o">&lt;</span><span class="n">ListEntry</span><span class="o">&gt;</span><span class="p">;</span>
+<span class="w">            </span><span class="k">using</span><span class="w"> </span><span class="n">ListIterator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">List</span><span class="o">::</span><span class="n">iterator</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">SentryTracker</span><span class="p">()</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">reset</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kt">void</span><span class="w"> </span><span class="n">reset</span><span class="p">()</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_list</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">                </span><span class="n">_list</span><span class="p">.</span><span class="n">emplace_front</span><span class="p">();</span><span class="w"> </span><span class="c1">// the sentry marker</span>
+<span class="w">                </span><span class="n">_sentryptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_list</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+<span class="w">                </span><span class="n">_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="n">List</span><span class="w"> </span><span class="n">_list</span><span class="p">;</span>
+<span class="w">            </span><span class="n">ListIterator</span><span class="w"> </span><span class="n">_sentryptr</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="nf">emplace</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_list</span><span class="p">.</span><span class="n">emplace_front</span><span class="p">();</span>
+<span class="w">                </span><span class="n">entry</span><span class="p">.</span><span class="n">_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="p">;</span>
+<span class="w">                </span><span class="n">entry</span><span class="p">.</span><span class="n">_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_list</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span><span class="w"> </span><span class="c1">// set the token to point to the new entry</span>
+<span class="w">                </span><span class="n">_size</span><span class="o">++</span><span class="p">;</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="o">&amp;</span><span class="n">entry</span><span class="p">.</span><span class="n">_ptr</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="nf">update</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">token</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// Move the tracker to the front of the list (ahead of the sentry).</span>
+<span class="w">                </span><span class="c1">// Once a cull traversal is complete, all visited tiles will be</span>
+<span class="w">                </span><span class="c1">// in front of the sentry, leaving all non-visited tiles behind it.</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">ListIterator</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">token</span><span class="p">);</span>
+<span class="w">                </span><span class="n">_list</span><span class="p">.</span><span class="n">splice</span><span class="p">(</span><span class="n">_list</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">_list</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">ptr</span><span class="p">);</span>
+<span class="w">                </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_list</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">ptr</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="nf">emplace_or_update</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">token</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">update</span><span class="p">(</span><span class="n">token</span><span class="p">);</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">emplace</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">CALLABLE</span><span class="o">&gt;</span>
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">flush</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">maxToDispose</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">minCacheSize</span><span class="p">,</span><span class="w"> </span><span class="n">CALLABLE</span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">dispose</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// After cull, all visited tiles are in front of the sentry, and all</span>
+<span class="w">                </span><span class="c1">// non-visited tiles are behind it. Start at the sentry position and</span>
+<span class="w">                </span><span class="c1">// iterate over the non-visited tiles, checking them for deletion.</span>
+<span class="w">                </span><span class="n">ListIterator</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_sentryptr</span><span class="p">;</span>
+<span class="w">                </span><span class="n">ListIterator</span><span class="w"> </span><span class="n">tmp</span><span class="p">;</span>
+<span class="w">                </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="o">++</span><span class="n">i</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_list</span><span class="p">.</span><span class="n">end</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">maxToDispose</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">_size</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">minCacheSize</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">ListEntry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">le</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">i</span><span class="p">;</span>
+
+<span class="w">                    </span><span class="c1">// user disposal function</span>
+<span class="w">                    </span><span class="kt">bool</span><span class="w"> </span><span class="n">disposed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dispose</span><span class="p">(</span><span class="n">le</span><span class="p">.</span><span class="n">_data</span><span class="p">);</span>
+
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">disposed</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="c1">// back up the iterator so we can safely erase the entry:</span>
+<span class="w">                        </span><span class="n">tmp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="p">;</span>
+<span class="w">                        </span><span class="o">--</span><span class="n">i</span><span class="p">;</span>
+
+<span class="w">                        </span><span class="c1">// remove it from the tracker list:</span>
+<span class="w">                        </span><span class="n">_list</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">tmp</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">_size</span><span class="o">--</span><span class="p">;</span>
+<span class="w">                        </span><span class="o">++</span><span class="n">count</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="c1">// reset the sentry.</span>
+<span class="w">                </span><span class="n">_list</span><span class="p">.</span><span class="n">splice</span><span class="p">(</span><span class="n">_list</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">_list</span><span class="p">,</span><span class="w"> </span><span class="n">_sentryptr</span><span class="p">);</span>
+<span class="w">                </span><span class="n">_sentryptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_list</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">snapshot</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">                </span><span class="n">result</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="n">_size</span><span class="p">);</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_list</span><span class="p">)</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">_data</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">result</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">_data</span><span class="p">);</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,318 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Function rocky::util::replaceInPlace &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Function rocky::util::setThreadName" href="function_namespacerocky_1_1util_1ae2201c767506449b9ab259df179e56f9.html" />
+    <link rel="prev" title="Template Function rocky::util::remove" href="function_namespacerocky_1_1util_1a6ed56d3e329a51029e78456a12d1ffa9.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="library_root.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="library_root.html#page-hierarchy">Page Hierarchy</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="library_root.html#full-api">Full API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#namespaces">Namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#classes-and-structs">Classes and Structs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#enums">Enums</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="library_root.html#functions">Functions</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="function_TMSImageLayer_8cpp_1a94d155ecb5da04567abf061e0b71a882.html">Function if</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceImGuiEx_1a5b2a9b0ed3e2dc9ca6858d5158467d04.html">Function ImGuiEx::TextOutlined(const ImVec4&amp;, unsigned, std::string_view)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceImGuiEx_1a5eafbb21b9a863323d1875e6c1458430.html">Function ImGuiEx::TextOutlined(const ImVec4&amp;, std::string_view)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a8d82c29783195912f7dcade0122a9181.html">Function rocky::createUID</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1detail_1afffcccc30c5689b858f9f5ad91592ded.html">Function rocky::detail::linear_to_sRGB</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1detail_1a1255167c6e8b9ba6ec627656f7c61790.html">Function rocky::detail::setThreadName</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1detail_1a6dedb943138a433c4f560e9debb9c03d.html">Function rocky::detail::sRGB_to_linear</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1abd7ee4e41eaff226d877aa500db57cdc.html">Function rocky::distanceTo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a004f1ecf8511deb396742dfb6c55c1d6.html">Template Function rocky::euler_degrees_from_quaternion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a73173663f2cdc0eda90ddcd7e2d15401.html">Template Function rocky::euler_radians_from_quaternion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ac802505e3b5315deccf3827335072cdc.html">Template Function rocky::expandBy(SPHERE&amp;, typename SPHERE::vec_type)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ad2af4eacd1a449bcc19952500b9cd627.html">Template Function rocky::expandBy(vsg::dsphere&amp;, const vec_type&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a619899c07a1fd6a139fdc44300582ad7.html">Function rocky::Failure_AssertionFailure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a8f2056d2f8fd468a1327a32b3a2e55ae.html">Function rocky::Failure_ConfigurationError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a0206e2148edf646f2dbd59595a94914e.html">Function rocky::Failure_GeneralError</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a1a3b406ffa8af0361a7b157019f9cc86.html">Function rocky::Failure_OperationCanceled</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a943e31ae762771613ccb613eac882162.html">Function rocky::Failure_ResourceUnavailable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a969bf1142666ca8b574cbac619466f2c.html">Function rocky::Failure_ServiceUnavailable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a5c5d7fdcc8073ac3528286d54076e788.html">Function rocky::from_json(const json&amp;, Color&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ab1d8685d0c70492fa0a90300e44ca254.html">Function rocky::from_json(const json&amp;, DateTime&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1aa065b69918aa6dd951ab513eab27713d.html">Function rocky::from_json(const json&amp;, GeoExtent&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a96610d4cccdeb3aebcd8b761e6d1c343.html">Function rocky::from_json(const json&amp;, GeoPoint&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1aa9f1e4142cb93295efd3d881cab4dce5.html">Function rocky::from_json(const json&amp;, Profile&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a2049371eccab3200ec7dfc85e9d742de.html">Function rocky::from_json(const json&amp;, SRS&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ab1d43c8feee9032c33e7505a767b5845.html">Function rocky::from_json(const json&amp;, Distance&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ae86cc39a89c4b564340718a1c8ea8775.html">Function rocky::from_json(const json&amp;, Angle&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a81df6fc1439cf3f131a193a65fa04d03.html">Function rocky::from_json(const json&amp;, Duration&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1aeed824820d408d0743ca5cf6b56309ff.html">Function rocky::from_json(const json&amp;, Speed&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a24cfa280b45303e2b538e26ee001f3f4.html">Function rocky::from_json(const json&amp;, ScreenSize&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1afb6a778d5f9828e9075e62b5ef8cc9b8.html">Function rocky::from_json(const json&amp;, URI&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a2dd15ab9999cb5aac9f53c170a28bf12.html">Function rocky::from_json(const json&amp;, Hyperlink&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1aa22e8a098a2f111777fea52c1a5c4b89.html">Function rocky::from_json(const json&amp;, Viewpoint&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a3eba94dd6dcc59d9550e39529ebfe340.html">Function rocky::get_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a7ae0665f2b63ff0add1c552f001abaf2.html">Template Function rocky::get_to(const json&amp;, const char *, T&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1abccf9754ab3d94fecb416b32823773db.html">Template Function rocky::get_to(const json&amp;, T&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a715d873555f9d4858b58b80a1093ddcd.html">Function rocky::get_to(const json&amp;, const char *, URI&amp;, const IOOptions&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a05caeaabb211063696bdd776e9b75900.html">Function rocky::get_to(const json&amp;, const char *, rocky::option&lt;URI&gt;&amp;, const IOOptions&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ac49188fd4b9750246ad3888afec2bf0f.html">Template Function rocky::is_identity</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a834e76ca7bb98cd4e6b9592983e02da2.html">Function rocky::json_pretty</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a124a6388914a3027a7186fa284ca261a.html">Function rocky::Log</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ac84018679114c2d1f9961dc40be16a5b.html">Function rocky::operator*(const glm::dvec3&amp;, const glm::dmat4&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a813e8c9057a10dee760d1ef2b685d9ba.html">Function rocky::operator*(const glm::fvec3&amp;, const glm::fmat4&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ac7950fe74d4bc206418d7d04aeadde96.html">Function rocky::operator*(const glm::fmat4&amp;, const glm::fvec3&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a96e26d9d7fee9385e79037dec62213eb.html">Function rocky::operator*(const glm::dmat4&amp;, const glm::dvec3&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a2e44a7b5ea2e3ba3aae28edaa8a67eb0.html">Function rocky::parse_json</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a7141bbd85f36fe83cf663c2d893b0851.html">Function rocky::pointAtWindowCoords(vsg::ref_ptr&lt;vsg::View&gt;, int, int)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a56912edb41faea0203c0cc18ab5b48ca.html">Function rocky::pointAtWindowCoords(vsg::ref_ptr&lt;vsg::Viewer&gt;, int, int)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ac9b3da0b66fbec89a2178febc578a2ec.html">Template Function rocky::quaternion_from_euler_degrees</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a81804deee100da7875cd66d2d2396762.html">Template Function rocky::quaternion_from_euler_radians</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ab7dbfec472d3735d4dbf0e093f1cbb96.html">Template Function rocky::quaternion_from_matrix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a6cf9edea8f63de3509e7726d2f19444b.html">Template Function rocky::quaternion_from_unscaled_matrix</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1aad39a09f9d0b42b7e2636a9d91c04e6b.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class CachePolicy)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a8ae97cae8e00e370693561c038391a6d.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Color)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a7c8b8a7aef76cad53adf7c0c4cdc3cd9.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Angle)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a2da789a2fcb8e58ff6cbee97956d047e.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Distance)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ae9c3ff1e542000dd7fe64c349d9ec76b.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Duration)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1aabc7183eff0c0f1760d2c8528298f82b.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(struct Hyperlink)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a31431f7be04292e3b087df8fccfabf6b.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Speed)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a971e4761d667cdcaa498c14b5d240751.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class ScreenSize)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a07906f7ab35a55668dda5a0d3c144367.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Profile)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a85aef2b532116d9665b9b12fb5129ab3.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class ProxySettings)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a53202f49e1f49c9897a5b03584ec6976.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class DateTime)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ac3c7f51739e72d709d5e7958079beb35.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class SRS)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ad6c45c9f3e0a2aec96d05b19d3468f0e.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class GeoExtent)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1aaaebc78e9056ae3b24d7c5711cb97d90.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class GeoPoint)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1abf375c08f392272fb474d574a5c2c098.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class URI)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ac39f9030bd5b598ffe362f700080d5fb.html">Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Viewpoint)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a8b9a2a9582609b6775d996644160dcad.html">Template Function rocky::set(json&amp;, const char *, const T&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1abd85305b5009d1dcf963f9128c5d5d77.html">Template Function rocky::set(json&amp;, const T&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1adbfb0f5966caf0a2488d5b759fd74f3b.html">Function rocky::setVisible(entt::registry&amp;, entt::entity, bool, int)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a5b81c6102830f34c9f93619a84586d68.html">Template Function rocky::setVisible(entt::registry&amp;, ITER, ITER, bool, int)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1TMS_1a743eab389c70e9b258eadb95f91e832d.html">Function rocky::TMS::readTileMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1TMS_1a404e5520acf008194d1c0ea268043301.html">Function rocky::TMS::readTileMapEntries</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a09e446896fdfe90d6fd87182ccbf0273.html">Function rocky::to_glm(const vsg::vec2&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1acd9c59642dcad115213d922e34f97322.html">Function rocky::to_glm(const vsg::dvec2&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ad446d8603cd7cdf890d3aa33ee8ca689.html">Function rocky::to_glm(const vsg::vec3&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a1974b8e8753aa60e06c930e6bf31e3b0.html">Function rocky::to_glm(const vsg::dvec3&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a8dbf733db8b0b741c30a7d03ca4ed5de.html">Function rocky::to_glm(const vsg::vec4&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a3bd090534657716288a685b2499c9eba.html">Function rocky::to_glm(const vsg::dvec4&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a4343d2155ce2c6dad720a22c15a763e9.html">Function rocky::to_glm(const vsg::mat4&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a12aeeaea2172210cfc1655e3c3096161.html">Function rocky::to_glm(const vsg::dmat4&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a04f6819f8a250099a0dbeb5add9e2aec.html">Function rocky::to_glm(const vsg::quat&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ab1c1c7276c08c10b6e61353591d7c059.html">Function rocky::to_glm(const vsg::dquat&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a91d3294b6fae9cec15599f550b11e5d1.html">Function rocky::to_json(json&amp;, const Color&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a13262ab514d5ee6ba8e8c8bc0e248cd0.html">Function rocky::to_json(json&amp;, const DateTime&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a9632995436346c5b432a864c6ec4ff39.html">Function rocky::to_json(json&amp;, const GeoExtent&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ae35c4777b754a0fd6d4bea0ae914a330.html">Function rocky::to_json(json&amp;, const GeoPoint&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a7cf9043e5d9afb29efe651161f480aa4.html">Function rocky::to_json(json&amp;, const Profile&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ab923ec4620419a7116cf3ecf1b35751a.html">Function rocky::to_json(json&amp;, const SRS&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a81b5f3ca3a09b077259f7c2cfac871a0.html">Function rocky::to_json(json&amp;, const Distance&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1aef521f795677d347d33ca5e556de4d82.html">Function rocky::to_json(json&amp;, const Angle&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a19c18f4d1b2bcbdbf74a8bc5b8b7d2c9.html">Function rocky::to_json(json&amp;, const Duration&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a2de446932dcbe004ecb5145850d8d08f.html">Function rocky::to_json(json&amp;, const Speed&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1afd9e2684943499cd100bf0511ad58071.html">Function rocky::to_json(json&amp;, const ScreenSize&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a4674a0dd837fe8b6bf04ec1a56d8234a.html">Function rocky::to_json(json&amp;, const URI&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1aebd13da86127e156d60c80d73c3a2924.html">Function rocky::to_json(json&amp;, const Hyperlink&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a1f0a5d2734aaa65e147b39bff252eddb.html">Function rocky::to_json(json&amp;, const Viewpoint&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ad9391db4fcf34563b1185705c35ff633.html">Function rocky::to_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a47e72587d513254598682d7e6b03d883.html">Function rocky::to_vsg(const glm::fvec2&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a3353a91eac98dd00088994bfb04cbdea.html">Function rocky::to_vsg(const glm::dvec2&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ac20e8e261270b7f3439763fe77eef01b.html">Function rocky::to_vsg(const glm::fvec3&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a4af7b74d9ce1191cb5dfbf0e00ae7996.html">Function rocky::to_vsg(const glm::dvec3&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a69627bd84d6266e5eb646206bb4bcfc9.html">Function rocky::to_vsg(const glm::fvec4&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a6149fa9aa01ac3c9e325714f6502848a.html">Function rocky::to_vsg(const glm::dvec4&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a2799af1945eeb2f0d0308cbe35ce4a28.html">Function rocky::to_vsg(const glm::fmat4&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1adcea95c504a7e1bef35056f44211006a.html">Function rocky::to_vsg(const glm::dmat4&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1afd176aa2b44713f26c60110f40e52c91.html">Function rocky::to_vsg(const glm::fquat&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a098fc5bdcef5a0f7aaa779aa9ac36cf8.html">Function rocky::to_vsg(const glm::dquat&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a50e03f1c1f43967b875d01993e16e7c3.html">Function rocky::to_vsg(const Box&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a4762f9c0462291ace72ff25ade7df607.html">Function rocky::to_vsg(const Sphere&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1a913f71972d5f34a8c12b3ce9eae317b2.html">Function rocky::unqualify</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1ad8479efec937c159be048e7b5b4d2e7c.html">Function rocky::util::ciEquals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1ab354be200d5231381876682f923fd13d.html">Function rocky::util::createTexture</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1adc8adaa6fc9264fd6f716489a74a5720.html">Function rocky::util::endsWith</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a2a0230d74d128c02c7881b842a5b5c4e.html">Template Function rocky::util::find</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1aeb3217af13136c48bfa5d63e661a2ed0.html">Template Function rocky::util::forEach</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a3c0e92fe5630f02244d8583fd9bcb277.html">Template Function rocky::util::format</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a28f469d5889cd263865c25e89cfcf4d0.html">Function rocky::util::fromVkPixelFormat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a4c2bbda9afacd57dee066bda2661528d.html">Function rocky::util::getEnvVar</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1abb90ff752eb3df307936f89b4c7de429.html">Function rocky::util::getExecutableLocation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1aba843723ab1e4efba84efe6b9613d98a.html">Template Function rocky::util::indexOf</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1aac185aadbf09a8979dd497f97cb52dde.html">Function rocky::util::isEnvVarSet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a9bbdbeaf15292ebe79f02498d668e5a8.html">Function rocky::util::makeImageFromVSG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a53abbc23dde1976ad12dc191779433d4.html">Template Function rocky::util::move</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a5edf37654257019e9850ea1285eb921e.html">Function rocky::util::moveImageData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a11f2d085901cdcfc80ef0d1a7c1ca66e.html">Function rocky::util::moveImageToVSG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a6ed56d3e329a51029e78456a12d1ffa9.html">Template Function rocky::util::remove</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Function rocky::util::replaceInPlace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1ae2201c767506449b9ab259df179e56f9.html">Function rocky::util::setThreadName</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1ad51fd7c03a1358e1aa1ecafe26cf9b9f.html">Function rocky::util::startsWith</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1aece656d7385eae6b944666b9773d66e4.html">Function rocky::util::toLower(char)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a3eaedd170fee901609ec53b60e2569c4.html">Function rocky::util::toLower(std::string_view)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a74066cc76a9522c25303d83c251ace57.html">Function rocky::util::toLowerInPlace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1ab8fd1d04b82bc8cfa502dd14dbdf305b.html">Function rocky::util::toVkPixelFormat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a178aab26dcaef9e13569002d5ed936cc.html">Function rocky::util::trim</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a2a8cbc23bea02d13ca16fbe0832e9ac4.html">Function rocky::util::trimInPlace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a1ef291e16bc06d92855455fcee3dfbe5.html">Template Function rocky::util::wrap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1ab96a72ff571dc7ad8fbf77649e4f7ad1.html">Function rocky::util::wrapImageData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1_1util_1a1fd8023fc2203c11a2dfc8b39704b5e6.html">Function rocky::util::wrapImageInVSG</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1aaa2419add512cda0e0465521a0cc5be6.html">Function rocky::visible</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespacerocky_1ae4551d1eec775ba3db83899c393b6de9.html">Function rocky::visit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_Context_8cpp_1aa83081ad58b78689e627696a415f29b4.html">Function ROCKY_ABOUT(glm, std::to_string(GLM_VERSION_MAJOR)+”.”+std::to_string(GLM_VERSION_MINOR)+”.”+std::to_string(GLM_VERSION_PATCH)+”.”+std::to_string(GLM_VERSION_REVISION))</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_Log_8cpp_1af4459301def93be876806f804e7e3411.html">Function ROCKY_ABOUT(spdlog, std::to_string(SPDLOG_VER_MAJOR)+”.”+std::to_string(SPDLOG_VER_MINOR)+”.”+std::to_string(SPDLOG_VER_PATCH))</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_SRS_8cpp_1a55557c22e9ef72114c7b2850004b7034.html">Function ROCKY_ABOUT(proj, std::to_string(PROJ_VERSION_MAJOR)+”.”+std::to_string(PROJ_VERSION_MINOR))</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_ECSNode_8cpp_1ab943274dfb2c6cd2947220f1481b56f1.html">Function ROCKY_ABOUT(entt, ENTT_VERSION)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_TMSElevationLayer_8cpp_1a632de0fd8dcf0a11f3ac979aa8d5daf8.html">Function ROCKY_ADD_OBJECT_FACTORY(TMSElevation, (const std::string&amp;JSON, const IOOptions&amp;io) { return TMSElevationLayer::create(JSON, io);})</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_TMSImageLayer_8cpp_1a48358a0c02c0872bb575fdadaf2a5faf.html">Function ROCKY_ADD_OBJECT_FACTORY(TMSImage, (std::string_view JSON, const IOOptions&amp;io) { return TMSImageLayer::create(JSON, io);})</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1a2eeb5aaf0aa0cc99e0f13f0454ebb334.html">Function WEEJOBS_NAMESPACE::alive</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1_1detail_1a2710ae65193506d54c64d0379e6b8739.html">Function WEEJOBS_NAMESPACE::detail::pool_dispatch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1_1detail_1aaa111eb49014d790785f69bc15853d80.html">Function WEEJOBS_NAMESPACE::detail::steal_job</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1a2e5229fe8ff14976e96f69cdb2c06644.html">Function WEEJOBS_NAMESPACE::dispatch(std::function&lt;void()&gt;, const context&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1aabc9b2721e0b1f080cc574e5f4769730.html">Template Function WEEJOBS_NAMESPACE::dispatch(F, const context&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1a7e5e48f960937d658337f04edbbb9b51.html">Template Function WEEJOBS_NAMESPACE::dispatch(F, future&lt;T&gt;, const context&amp;)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1a02e2b4771ff1112794e587a832b390f7.html">Function WEEJOBS_NAMESPACE::get_metrics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1a2912ee8681e1be4aff4d489c0abdd779.html">Function WEEJOBS_NAMESPACE::get_pool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1adc8d1b77b4b106ff2cbb058e00da1eac.html">Function WEEJOBS_NAMESPACE::instance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1ab6b1e260260de8d70efc5ccb6da18263.html">Function WEEJOBS_NAMESPACE::set_allow_work_stealing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1a2436e3c38e57766ada9823d1b5fc17cc.html">Function WEEJOBS_NAMESPACE::set_thread_name_function</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceWEEJOBS__NAMESPACE_1a44db487a1de31df5815dd5f549007257.html">Function WEEJOBS_NAMESPACE::shutdown</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceweemesh_1a3308817e38eaca16d35735962ce3d41d.html">Template Function weemesh::clamp</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceweemesh_1aaca29c5c759c5c86362ab5ff9588c848.html">Template Function weemesh::equivalent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceweemesh_1a6f11ef3e0a4ccbfd7de0c63f7937c630.html">Template Function weemesh::hash_value_unsigned</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceweemesh_1aee1c5d92a845cf39b42a82408ef8b01c.html">Function weemesh::same_vert</a></li>
+<li class="toctree-l4"><a class="reference internal" href="function_namespaceweemesh_1a794d8e87edb9d851db612aff095b2e76.html">Function weemesh::zero</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#variables">Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#defines">Defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#typedefs">Typedefs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="library_root.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Function rocky::util::replaceInPlace</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/function_namespacerocky_1_1util_1aa259da7b5b73a93a74ea163263208784.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="function-rocky-util-replaceinplace">
+<span id="exhale-function-namespacerocky-1-1util-1aa259da7b5b73a93a74ea163263208784"></span><h1>Function rocky::util::replaceInPlace<a class="headerlink" href="#function-rocky-util-replaceinplace" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>Defined in <a class="reference internal" href="file_src_rocky_Utils.h.html#file-src-rocky-utils-h"><span class="std std-ref">File Utils.h</span></a></p></li>
+</ul>
+<section id="function-documentation">
+<h2>Function Documentation<a class="headerlink" href="#function-documentation" title="Link to this heading"></a></h2>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky4util14replaceInPlaceERNSt6stringENSt11string_viewENSt11string_viewE">
+<span id="_CPPv3N5rocky4util14replaceInPlaceERNSt6stringENSt11string_viewENSt11string_viewE"></span><span id="_CPPv2N5rocky4util14replaceInPlaceERNSt6stringENSt11string_viewENSt11string_viewE"></span><span id="rocky::util::replaceInPlace__ssR.std::string_view.std::string_view"></span><span class="target" id="namespacerocky_1_1util_1aa259da7b5b73a93a74ea163263208784"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">rocky</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">util</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">replaceInPlace</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">in_out</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string_view</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">pattern</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string_view</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">replacement</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky4util14replaceInPlaceERNSt6stringENSt11string_viewENSt11string_viewE" title="Link to this definition"></a><br /></dt>
+<dd><p>Replaces all the instances of “pattern” with “replacement” in “in_out”. </p>
+<p>Replaces all the instances of “sub” with “other” in “s”. </p>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="function_namespacerocky_1_1util_1a6ed56d3e329a51029e78456a12d1ffa9.html" class="btn btn-neutral float-left" title="Template Function rocky::util::remove" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="function_namespacerocky_1_1util_1ae2201c767506449b9ab259df179e56f9.html" class="btn btn-neutral float-right" title="Function rocky::util::setThreadName" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

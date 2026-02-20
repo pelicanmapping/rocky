@@ -1,0 +1,14 @@
+.. _exhale_define_weejobs_8h_1a2839450cda6ef1ffe41bb0ce4d606f2d:
+
+Define WEEJOBS_VERSION_STRING
+=============================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: WEEJOBS_VERSION_STRING
+   :project: Rocky

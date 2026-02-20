@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1ad51fd7c03a1358e1aa1ecafe26cf9b9f:
+
+Function rocky::util::startsWith
+================================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::startsWith(std::string_view, std::string_view, bool)
+   :project: Rocky

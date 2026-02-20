@@ -1,0 +1,78 @@
+
+.. _program_listing_file_src_rocky_TerrainTileModel.h:
+
+Program Listing for File TerrainTileModel.h
+===========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_TerrainTileModel.h>` (``src/rocky/TerrainTileModel.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Common.h>
+   #include <rocky/TileKey.h>
+   #include <rocky/GeoImage.h>
+   #include <vector>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class Image;
+       class Heightfield;
+       class Layer;
+       class Map;
+   
+       struct TerrainTileModel
+       {
+       public:
+           struct ROCKY_EXPORT Tile
+           {
+               TileKey key;
+               Revision revision = -1;
+               glm::fmat4 matrix = glm::fmat4(1.0f); // identity
+           };
+   
+           struct ROCKY_EXPORT ColorLayer : public Tile
+           {
+               GeoImage image;
+               std::shared_ptr<const Layer> layer;
+               using Vector = std::vector<ColorLayer>;
+           };
+   
+           struct ROCKY_EXPORT Elevation : public Tile
+           {
+               GeoImage heightfield;
+           };
+   
+           struct ROCKY_EXPORT NormalMap : public Tile
+           {
+               GeoImage image;
+               std::shared_ptr<const Layer> layer;
+           };
+   
+           struct ROCKY_EXPORT MaterialMap : public Tile
+           {
+           };
+   
+           bool empty() const
+           {
+               return      colorLayers.empty() && !elevation.heightfield;
+           }
+   
+           Revision revision = -1;
+   
+           TileKey key;
+   
+   
+           ColorLayer::Vector colorLayers;
+   
+           Elevation elevation;
+   
+           NormalMap normalMap;
+   
+       };
+   
+   }

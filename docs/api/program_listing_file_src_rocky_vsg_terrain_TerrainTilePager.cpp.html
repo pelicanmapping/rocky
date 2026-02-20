@@ -1,0 +1,553 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File TerrainTilePager.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File TerrainTilePager.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_vsg_terrain_TerrainTilePager.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-terraintilepager-cpp">
+<span id="program-listing-file-src-rocky-vsg-terrain-terraintilepager-cpp"></span><h1>Program Listing for File TerrainTilePager.cpp<a class="headerlink" href="#program-listing-for-file-terraintilepager-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_vsg_terrain_TerrainTilePager.cpp.html#file-src-rocky-vsg-terrain-terraintilepager-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/terrain/TerrainTilePager.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;TerrainTilePager.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;TerrainEngine.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;TerrainSettings.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;TerrainTileNode.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;TerrainTileHost.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;SurfaceNode.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;../VSGUtils.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/TerrainTileModelFactory.h&gt;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+
+<span class="cp">#define LC &quot;[TerrainTilePager] &quot;</span>
+
+<span class="cp">#define RP_DEBUG if(false) Log()-&gt;info</span>
+
+<span class="c1">//----------------------------------------------------------------------------</span>
+
+<span class="n">TerrainTilePager</span><span class="o">::</span><span class="n">TerrainTilePager</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TerrainSettings</span><span class="o">&amp;</span><span class="w"> </span><span class="n">settings</span><span class="p">,</span><span class="w"> </span><span class="n">TerrainTileHost</span><span class="o">*</span><span class="w"> </span><span class="n">host</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">_host</span><span class="p">(</span><span class="n">host</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_settings</span><span class="p">(</span><span class="n">settings</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_firstLOD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">settings</span><span class="p">.</span><span class="n">minLevel</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">TerrainTilePager</span><span class="o">::~</span><span class="n">TerrainTilePager</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">releaseAll</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">TerrainTilePager</span><span class="o">::</span><span class="n">releaseAll</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_mutex</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">_tiles</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">    </span><span class="n">_tracker</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+<span class="w">    </span><span class="n">_createChildren</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">    </span><span class="n">_loadData</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">    </span><span class="n">_mergeData</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">    </span><span class="n">_updateData</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">TerrainTilePager</span><span class="o">::</span><span class="n">ping</span><span class="p">(</span><span class="n">TerrainTileNode</span><span class="o">*</span><span class="w"> </span><span class="n">tile</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">TerrainTileNode</span><span class="o">*</span><span class="w"> </span><span class="n">parent</span><span class="p">,</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">RecordTraversal</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_settings</span><span class="p">.</span><span class="n">supportMultiThreadedRecord</span><span class="p">)</span>
+<span class="w">        </span><span class="n">_mutex</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// first, update the tracker to keep this tile alive.</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">[</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">];</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="p">)</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tile</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">trackerToken</span><span class="p">)</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">trackerToken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_tracker</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">trackerToken</span><span class="p">);</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">trackerToken</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_tracker</span><span class="p">.</span><span class="n">emplace</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// next, see if the tile needs anything.</span>
+<span class="w">    </span><span class="c1">// &quot;progressive&quot; means do not load LOD N+1 until LOD N is complete.</span>
+<span class="w">    </span><span class="c1">// This is currently the only option.</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">progressive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">progressive</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// If this tile is fully merged, and it needs children, queue them up to load.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">dataMerger</span><span class="p">.</span><span class="n">available</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">needsSubtiles</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_createChildren</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parent</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// If this is a root tile, and it needs data, queue that up:</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">dataLoader</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_loadData</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// If this is a non-root tile that needs data, check to make sure the</span>
+<span class="w">            </span><span class="c1">// parent&#39;s tile is done loaded before queueing that up.</span>
+<span class="w">            </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">parent_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">[</span><span class="n">parent</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">];</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">parent_info</span><span class="p">.</span><span class="n">tile</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">parent_info</span><span class="p">.</span><span class="n">tile</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parent_info</span><span class="p">.</span><span class="n">tile</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">parent_info</span><span class="p">.</span><span class="n">dataMerger</span><span class="p">.</span><span class="n">available</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">dataLoader</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_loadData</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// If a data-load is complete and ready to merge, queue it up.</span>
+<span class="w">    </span><span class="c1">// This will only queue one merge per frame to prevent overloading</span>
+<span class="w">    </span><span class="c1">// the (synchronous) update cycle in VSG.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">dataLoader</span><span class="p">.</span><span class="n">available</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">dataMerger</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_mergeData</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Tile updates are TBD.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">needsUpdate</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_updateData</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_settings</span><span class="p">.</span><span class="n">supportMultiThreadedRecord</span><span class="p">)</span>
+<span class="w">        </span><span class="n">_mutex</span><span class="p">.</span><span class="n">unlock</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">TerrainTilePager</span><span class="o">::</span><span class="n">update</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">FrameStamp</span><span class="o">*</span><span class="w"> </span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">TerrainEngine</span><span class="o">&gt;</span><span class="w"> </span><span class="n">engine</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_mutex</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="o">!</span><span class="n">_updateData</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="o">!</span><span class="n">_createChildren</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="o">!</span><span class="n">_loadData</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="o">!</span><span class="n">_mergeData</span><span class="p">.</span><span class="n">empty</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">//Log::info()</span>
+<span class="w">    </span><span class="c1">//    &lt;&lt; &quot;Frame &quot; &lt;&lt; fs-&gt;frameCount &lt;&lt; &quot;: &quot;</span>
+<span class="w">    </span><span class="c1">//    &lt;&lt; &quot;tiles=&quot; &lt;&lt; _tracker._list.size()-1 &lt;&lt; &quot; &quot;</span>
+<span class="w">    </span><span class="c1">//    &lt;&lt; &quot;needsSubtiles=&quot; &lt;&lt; _loadSubtiles.size() &lt;&lt; &quot; &quot;</span>
+<span class="w">    </span><span class="c1">//    &lt;&lt; &quot;needsLoad=&quot; &lt;&lt; _loadData.size() &lt;&lt; &quot; &quot;</span>
+<span class="w">    </span><span class="c1">//    &lt;&lt; &quot;needsMerge=&quot; &lt;&lt; _mergeData.size() &lt;&lt; std::endl;</span>
+
+<span class="w">    </span><span class="c1">// update any tiles that asked for it</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_updateData</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iter</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iter</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">update</span><span class="p">(</span><span class="n">fs</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">))</span>
+<span class="w">                </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">_updateData</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// launch any &quot;new subtiles&quot; requests</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_createChildren</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iter</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">requestCreateChildren</span><span class="p">(</span><span class="n">iter</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">,</span><span class="w"> </span><span class="n">engine</span><span class="p">);</span><span class="w"> </span><span class="c1">// parent, context</span>
+<span class="w">            </span><span class="n">iter</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">needsSubtiles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">_createChildren</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// launch any data loading requests</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_loadData</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iter</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">requestLoadData</span><span class="p">(</span><span class="n">iter</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">,</span><span class="w"> </span><span class="n">engine</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">_loadData</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// schedule any data merging requests</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_mergeData</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iter</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">requestMergeData</span><span class="p">(</span><span class="n">iter</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">,</span><span class="w"> </span><span class="n">engine</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">changes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">_mergeData</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// Flush unused tiles (i.e., tiles that failed to ping) out of the system.</span>
+<span class="w">    </span><span class="c1">// Tiles ping their children all at once; this should in theory prevent</span>
+<span class="w">    </span><span class="c1">// a child from expiring without its siblings.</span>
+<span class="w">    </span><span class="c1">// Only do this is the frame advanced - otherwise just leave it be.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fs</span><span class="o">-&gt;</span><span class="n">frameCount</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">_lastUpdate</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">dispose</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="n">TerrainTileNode</span><span class="o">*</span><span class="w"> </span><span class="n">tile</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">doNotExpire</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">;</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">parent_iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">createParentKey</span><span class="p">());</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parent_iter</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parent_iter</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">tile</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parent</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="c1">// Feed the children to the garbage disposal before removing them</span>
+<span class="w">                        </span><span class="c1">// so any vulkan objects are safely destroyed</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">                            </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">dispose</span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+
+<span class="w">                        </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">subtilesLoader</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+<span class="w">                        </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">needsSubtiles</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="n">_tiles</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">        </span><span class="n">_tracker</span><span class="p">.</span><span class="n">flush</span><span class="p">(</span><span class="o">~</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">_settings</span><span class="p">.</span><span class="n">tileCacheSize</span><span class="p">.</span><span class="n">value_or</span><span class="p">(</span><span class="mi">0u</span><span class="p">),</span><span class="w"> </span><span class="n">dispose</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// synchronize</span>
+<span class="w">    </span><span class="n">_lastUpdate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fs</span><span class="o">-&gt;</span><span class="n">frameCount</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">changes</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">TerrainTileNode</span><span class="o">&gt;</span>
+<span class="n">TerrainTilePager</span><span class="o">::</span><span class="n">getTile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_mutex</span><span class="p">);</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span>
+<span class="w">        </span><span class="n">iter</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_tiles</span><span class="p">.</span><span class="n">end</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">iter</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">tile</span><span class="w"> </span><span class="o">:</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">TerrainTileNode</span><span class="o">&gt;</span><span class="p">(</span><span class="k">nullptr</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">TerrainTilePager</span><span class="o">::</span><span class="n">requestCreateChildren</span><span class="p">(</span><span class="n">TileInfo</span><span class="o">&amp;</span><span class="w"> </span><span class="n">info</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">TerrainEngine</span><span class="o">&gt;</span><span class="w"> </span><span class="n">engine</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="c1">// make sure we&#39;re not already working on it</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">info</span><span class="p">.</span><span class="n">childrenCreator</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">RP_DEBUG</span><span class="p">(</span><span class="s">&quot;requestLoadSubtiles -&gt; {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">.</span><span class="n">str</span><span class="p">());</span>
+
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">observer_ptr</span><span class="o">&lt;</span><span class="n">TerrainTileNode</span><span class="o">&gt;</span><span class="w"> </span><span class="n">weak_parent</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// function that will create all 4 children and compile them</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">create_children</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="n">weak_parent</span><span class="p">](</span><span class="n">Cancelable</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">weak_parent</span><span class="p">.</span><span class="n">ref_ptr</span><span class="p">();</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">quad</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">QuadGroup</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">quadrant</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">quadrant</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">quadrant</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+
+<span class="w">                </span><span class="n">TileKey</span><span class="w"> </span><span class="n">childkey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parent</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">.</span><span class="n">createChildKey</span><span class="p">(</span><span class="n">quadrant</span><span class="p">);</span>
+
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">tile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">createTile</span><span class="p">(</span><span class="n">childkey</span><span class="p">,</span><span class="w"> </span><span class="n">parent</span><span class="p">);</span>
+
+<span class="w">                </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">tile</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">);</span>
+
+<span class="w">                </span><span class="n">quad</span><span class="o">-&gt;</span><span class="n">children</span><span class="p">[</span><span class="n">quadrant</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tile</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// assign the result once all 4 children are added</span>
+<span class="w">            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">quad</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">compile</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+
+<span class="w">            </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">onNextUpdate</span><span class="p">([</span><span class="n">result</span><span class="p">,</span><span class="w"> </span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="n">weak_parent</span><span class="p">]()</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">parent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">weak_parent</span><span class="p">.</span><span class="n">ref_ptr</span><span class="p">();</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">parent</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">parent</span><span class="o">-&gt;</span><span class="n">addChild</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">                </span><span class="p">});</span>
+
+<span class="w">            </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="c1">// a callback that will return the loading priority of a tile</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">priority_func</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">weak_parent</span><span class="p">]()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">float</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">tile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">weak_parent</span><span class="p">.</span><span class="n">ref_ptr</span><span class="p">();</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">tile</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="o">-</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">lastTraversalRange</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="o">-</span><span class="n">FLT_MAX</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">childrenCreator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jobs</span><span class="o">::</span><span class="n">dispatch</span><span class="p">(</span>
+<span class="w">        </span><span class="n">create_children</span><span class="p">,</span>
+<span class="w">        </span><span class="n">jobs</span><span class="o">::</span><span class="n">context</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="s">&quot;create child &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">.</span><span class="n">str</span><span class="p">(),</span>
+<span class="w">            </span><span class="n">jobs</span><span class="o">::</span><span class="n">get_pool</span><span class="p">(</span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">loadSchedulerName</span><span class="p">),</span>
+<span class="w">            </span><span class="n">priority_func</span><span class="p">,</span>
+<span class="w">            </span><span class="k">nullptr</span>
+<span class="w">        </span><span class="p">});</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">TerrainTilePager</span><span class="o">::</span><span class="n">requestLoadData</span><span class="p">(</span><span class="n">TileInfo</span><span class="o">&amp;</span><span class="w"> </span><span class="n">info</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">in_io</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">TerrainEngine</span><span class="o">&gt;</span><span class="w"> </span><span class="n">engine</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="c1">// make sure we&#39;re not already working on it</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">dataLoader</span><span class="p">.</span><span class="n">working</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">dataLoader</span><span class="p">.</span><span class="n">available</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">;</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">tile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">RP_DEBUG</span><span class="p">(</span><span class="s">&quot;requestLoadData -&gt; {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">str</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="w"> </span><span class="nf">io</span><span class="p">(</span><span class="n">in_io</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">load</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">tile</span><span class="p">,</span><span class="w"> </span><span class="n">engine</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">](</span><span class="n">Cancelable</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">bool</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">TerrainTileModelFactory</span><span class="w"> </span><span class="n">factory</span><span class="p">;</span>
+<span class="w">        </span><span class="n">factory</span><span class="p">.</span><span class="n">compositeColorLayers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">dataModel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factory</span><span class="p">.</span><span class="n">createTileModel</span><span class="p">(</span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">map</span><span class="p">.</span><span class="n">get</span><span class="p">(),</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">.</span><span class="n">with</span><span class="p">(</span><span class="n">p</span><span class="p">));</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">dataModel</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">newRenderModel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">stateFactory</span><span class="p">.</span><span class="n">updateRenderModel</span><span class="p">(</span>
+<span class="w">                </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">renderModel</span><span class="p">,</span>
+<span class="w">                </span><span class="n">dataModel</span><span class="p">,</span>
+<span class="w">                </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">context</span><span class="p">);</span>
+
+<span class="w">            </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">renderModel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">newRenderModel</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">requestFrame</span><span class="p">();</span>
+
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="c1">// a callback that will return the loading priority of a tile</span>
+<span class="w">    </span><span class="c1">// we must use a WEAK pointer to allow job cancelation to work</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">observer_ptr</span><span class="o">&lt;</span><span class="n">TerrainTileNode</span><span class="o">&gt;</span><span class="w"> </span><span class="n">tile_weak</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="p">);</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">priority_func</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">tile_weak</span><span class="p">]()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">float</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">TerrainTileNode</span><span class="o">&gt;</span><span class="w"> </span><span class="n">tile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tile_weak</span><span class="p">.</span><span class="n">ref_ptr</span><span class="p">();</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">tile</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="o">-</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">lastTraversalRange</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="o">-</span><span class="n">FLT_MAX</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">dataLoader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jobs</span><span class="o">::</span><span class="n">dispatch</span><span class="p">(</span>
+<span class="w">        </span><span class="n">load</span><span class="p">,</span>
+<span class="w">        </span><span class="n">jobs</span><span class="o">::</span><span class="n">context</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="s">&quot;load data &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">str</span><span class="p">(),</span>
+<span class="w">            </span><span class="n">jobs</span><span class="o">::</span><span class="n">get_pool</span><span class="p">(</span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">loadSchedulerName</span><span class="p">),</span>
+<span class="w">            </span><span class="n">priority_func</span><span class="p">,</span>
+<span class="w">            </span><span class="k">nullptr</span>
+<span class="w">        </span><span class="p">}</span><span class="w"> </span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">TerrainTilePager</span><span class="o">::</span><span class="n">requestMergeData</span><span class="p">(</span><span class="n">TileInfo</span><span class="o">&amp;</span><span class="w"> </span><span class="n">info</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">in_io</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">TerrainEngine</span><span class="o">&gt;</span><span class="w"> </span><span class="n">engine</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="c1">// make sure we&#39;re not already working on it</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">dataMerger</span><span class="p">.</span><span class="n">working</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">dataMerger</span><span class="p">.</span><span class="n">available</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// if the loader didn&#39;t load anything, we&#39;re done.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">dataLoader</span><span class="p">.</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">info</span><span class="p">.</span><span class="n">dataMerger</span><span class="p">.</span><span class="n">resolve</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// operation to dispose of the old state command and replace it with a new one:</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">merge</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">engine</span><span class="p">](</span><span class="n">Cancelable</span><span class="o">&amp;</span><span class="w"> </span><span class="n">c</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">tile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">host</span><span class="o">-&gt;</span><span class="n">tiles</span><span class="p">().</span><span class="n">getTile</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tile</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">stategroup</span><span class="o">-&gt;</span><span class="n">stateCommands</span><span class="p">)</span>
+<span class="w">                </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">dispose</span><span class="p">(</span><span class="n">c</span><span class="p">);</span>
+
+<span class="w">            </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">stategroup</span><span class="o">-&gt;</span><span class="n">stateCommands</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">renderModel</span><span class="p">.</span><span class="n">descriptors</span><span class="p">.</span><span class="n">bind</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">            </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">surface</span><span class="o">-&gt;</span><span class="n">setElevation</span><span class="p">(</span>
+<span class="w">                </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">renderModel</span><span class="p">.</span><span class="n">elevation</span><span class="p">.</span><span class="n">image</span><span class="p">,</span>
+<span class="w">                </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">renderModel</span><span class="p">.</span><span class="n">elevation</span><span class="p">.</span><span class="n">matrix</span><span class="p">);</span>
+
+<span class="w">            </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">merge_operation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">PromiseOperation</span><span class="o">&lt;</span><span class="kt">bool</span><span class="o">&gt;::</span><span class="n">create</span><span class="p">(</span><span class="n">merge</span><span class="p">);</span>
+<span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">dataMerger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">merge_operation</span><span class="o">-&gt;</span><span class="n">future</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">observer_ptr</span><span class="o">&lt;</span><span class="n">TerrainTileNode</span><span class="o">&gt;</span><span class="w"> </span><span class="n">weak_tile</span><span class="p">(</span><span class="n">info</span><span class="p">.</span><span class="n">tile</span><span class="p">);</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">priority_func</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">weak_tile</span><span class="p">]()</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">float</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">tile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">weak_tile</span><span class="p">.</span><span class="n">ref_ptr</span><span class="p">();</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">tile</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="o">-</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">lastTraversalRange</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">tile</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="o">-</span><span class="n">FLT_MAX</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="n">engine</span><span class="o">-&gt;</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">onNextUpdate</span><span class="p">(</span><span class="n">merge_operation</span><span class="p">,</span><span class="w"> </span><span class="n">priority_func</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

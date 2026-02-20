@@ -1,0 +1,23 @@
+.. _exhale_struct_structRTree_1_1Branch:
+
+Struct RTree::Branch
+====================
+
+- Defined in :ref:`file_src_rocky_rtree.h`
+
+
+Nested Relationships
+--------------------
+
+This struct is a nested type of :ref:`exhale_class_classRTree`.
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: RTree::Branch
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

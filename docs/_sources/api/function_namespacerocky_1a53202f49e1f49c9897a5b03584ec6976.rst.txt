@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a53202f49e1f49c9897a5b03584ec6976:
+
+Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class DateTime)
+=============================================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class DateTime)
+   :project: Rocky

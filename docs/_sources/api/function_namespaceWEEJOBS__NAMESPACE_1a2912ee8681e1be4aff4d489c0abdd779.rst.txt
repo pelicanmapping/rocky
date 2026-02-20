@@ -1,0 +1,14 @@
+.. _exhale_function_namespaceWEEJOBS__NAMESPACE_1a2912ee8681e1be4aff4d489c0abdd779:
+
+Function WEEJOBS_NAMESPACE::get_pool
+====================================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: WEEJOBS_NAMESPACE::get_pool(const std::string&, unsigned)
+   :project: Rocky

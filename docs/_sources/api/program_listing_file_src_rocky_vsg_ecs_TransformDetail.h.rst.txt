@@ -1,0 +1,74 @@
+
+.. _program_listing_file_src_rocky_vsg_ecs_TransformDetail.h:
+
+Program Listing for File TransformDetail.h
+==========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_ecs_TransformDetail.h>` (``src/rocky/vsg/ecs/TransformDetail.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/vsg/VSGContext.h>
+   #include <rocky/ecs/Transform.h>
+   #include <rocky/Rendering.h>
+   #include <rocky/SRS.h>
+   #include <rocky/Ellipsoid.h>
+   #include <rocky/Horizon.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       struct TransformViewDetail
+       {
+           int revision = -1;    // revision of this data, for syncing
+           vsg::dmat4 model;     // model matrix
+           vsg::dmat4 proj;      // projection matrix
+           vsg::dmat4 modelview; // modelview matrix
+           vsg::dmat4 mvp;       // modelview-projection matrix
+           vsg::vec4 viewport;   // pixel-space viewport
+           bool passingCull = true; // whether the transform passes frustum/horizon culling
+       };
+   
+       struct TransformDetail
+       {
+           TransformDetail() {
+               sync.revision = -1;
+           }
+   
+           // Synchronous copy of the corresponding Transform component.
+           // TransformSystem will sync this as necessary so that the user can
+           // safely and frame-accurately perform asynchronous Transform updates.
+           Transform sync;
+   
+           // Per-view data, calculated during the record traversal
+           ViewLocal<TransformViewDetail> views;
+   
+           // Cached global data
+           struct Cached
+           {
+               SRS world_srs;
+               const Ellipsoid* world_ellipsoid = nullptr;
+               SRSOperation pos_to_world;
+               ViewLocal<Horizon>* horizon = nullptr;
+           };
+           Cached cached;
+   
+           bool update(vsg::RecordTraversal&);
+   
+           void push(vsg::RecordTraversal&) const;
+   
+           void pop(vsg::RecordTraversal&) const;
+   
+           inline bool passingCull(RenderingState) const;
+       };
+   
+   
+       // inline functions
+       inline bool TransformDetail::passingCull(RenderingState rs) const
+       {
+           return views[rs.viewID].passingCull;
+       }
+   }

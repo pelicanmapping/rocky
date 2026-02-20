@@ -1,0 +1,83 @@
+
+.. _file_src_rocky_vsg_imgui_ImGuiIntegration.h:
+
+File ImGuiIntegration.h
+=======================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_vsg_imgui>` (``src/rocky/vsg/imgui``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/vsg/imgui/ImGuiIntegration.h``)
+-------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_vsg_imgui_ImGuiIntegration.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``imgui.h`` (:ref:`file_src_rocky_rocky_imgui.h`)
+
+- ``rocky/Callbacks.h`` (:ref:`file_src_rocky_Callbacks.h`)
+
+- ``rocky/vsg/VSGContext.h`` (:ref:`file_src_rocky_vsg_VSGContext.h`)
+
+- ``rocky/vsg/imgui/RenderImGui.h`` (:ref:`file_src_rocky_vsg_imgui_RenderImGui.h`)
+
+- ``rocky/vsg/imgui/SendEventsToImGui.h`` (:ref:`file_src_rocky_vsg_imgui_SendEventsToImGui.h`)
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_vsg_imgui_ImGuiIntegration.cpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_ImGuiEx`
+
+- :ref:`namespace_rocky`
+
+- :ref:`namespace_rocky__detail`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classrocky_1_1ImGuiContextNode`
+
+- :ref:`exhale_class_classrocky_1_1RenderImGuiContext`
+
+- :ref:`exhale_class_classrocky_1_1SendEventsToImGuiContext`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceImGuiEx_1a5b2a9b0ed3e2dc9ca6858d5158467d04`
+
+- :ref:`exhale_function_namespaceImGuiEx_1a5eafbb21b9a863323d1875e6c1458430`
+

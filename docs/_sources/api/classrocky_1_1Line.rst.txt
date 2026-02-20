@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1Line:
+
+Class Line
+==========
+
+- Defined in :ref:`file_src_rocky_ecs_Line.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public rocky::Component< Line >`` (:ref:`exhale_struct_structrocky_1_1Component`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::Line
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

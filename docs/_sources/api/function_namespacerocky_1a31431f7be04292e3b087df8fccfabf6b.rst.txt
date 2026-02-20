@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a31431f7be04292e3b087df8fccfabf6b:
+
+Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Speed)
+==========================================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Speed)
+   :project: Rocky

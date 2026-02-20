@@ -1,0 +1,125 @@
+
+.. _program_listing_file_src_rocky_SentryTracker.h:
+
+Program Listing for File SentryTracker.h
+========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_SentryTracker.h>` (``src/rocky/SentryTracker.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Common.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       namespace detail
+       {
+           template<typename T>
+           class SentryTracker
+           {
+           public:
+               struct ListEntry
+               {
+                   T _data;
+                   typename std::list<ListEntry>::iterator _ptr;
+               };
+   
+               using List = std::list<ListEntry>;
+               using ListIterator = typename List::iterator;
+   
+               SentryTracker()
+               {
+                   reset();
+               }
+   
+               void reset()
+               {
+                   _list.clear();
+                   _list.emplace_front(); // the sentry marker
+                   _sentryptr = _list.begin();
+                   _size = 0;
+               }
+   
+               List _list;
+               ListIterator _sentryptr;
+               unsigned _size = 0;
+   
+               inline void* emplace(const T& data)
+               {
+                   auto& entry = _list.emplace_front();
+                   entry._data = data;
+                   entry._ptr = _list.begin(); // set the token to point to the new entry
+                   _size++;
+                   return &entry._ptr;
+               }
+   
+               inline void* update(void* token)
+               {
+                   // Move the tracker to the front of the list (ahead of the sentry).
+                   // Once a cull traversal is complete, all visited tiles will be
+                   // in front of the sentry, leaving all non-visited tiles behind it.
+                   auto ptr = static_cast<ListIterator*>(token);
+                   _list.splice(_list.begin(), _list, *ptr);
+                   *ptr = _list.begin();
+                   return ptr;
+               }
+   
+               inline void* emplace_or_update(const T& data, void* token)
+               {
+                   if (token)
+                       return update(token);
+                   else
+                       return emplace(data);
+               }
+   
+               template<typename CALLABLE>
+               inline void flush(unsigned maxToDispose, unsigned minCacheSize, CALLABLE&& dispose)
+               {
+                   // After cull, all visited tiles are in front of the sentry, and all
+                   // non-visited tiles are behind it. Start at the sentry position and
+                   // iterate over the non-visited tiles, checking them for deletion.
+                   ListIterator i = _sentryptr;
+                   ListIterator tmp;
+                   unsigned count = 0;
+   
+                   for (++i; i != _list.end() && count < maxToDispose && _size > minCacheSize; ++i)
+                   {
+                       ListEntry& le = *i;
+   
+                       // user disposal function
+                       bool disposed = dispose(le._data);
+   
+                       if (disposed)
+                       {
+                           // back up the iterator so we can safely erase the entry:
+                           tmp = i;
+                           --i;
+   
+                           // remove it from the tracker list:
+                           _list.erase(tmp);
+                           _size--;
+                           ++count;
+                       }
+                   }
+   
+                   // reset the sentry.
+                   _list.splice(_list.begin(), _list, _sentryptr);
+                   _sentryptr = _list.begin();
+               }
+   
+               std::vector<T> snapshot() const
+               {
+                   std::vector<T> result;
+                   result.reserve(_size);
+                   for (const auto& e : _list)
+                       if (e._data)
+                           result.emplace_back(e._data);
+                   return result;
+               }
+           };
+       }
+   }

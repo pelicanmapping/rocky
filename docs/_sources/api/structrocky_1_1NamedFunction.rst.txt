@@ -1,0 +1,17 @@
+.. _exhale_struct_structrocky_1_1NamedFunction:
+
+Struct NamedFunction
+====================
+
+- Defined in :ref:`file_src_rocky_Common.h`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::NamedFunction
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

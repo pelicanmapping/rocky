@@ -1,0 +1,81 @@
+
+.. _program_listing_file_src_rocky_Context.h:
+
+Program Listing for File Context.h
+==================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_Context.h>` (``src/rocky/Context.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Common.h>
+   #include <rocky/IOTypes.h>
+   #include <memory>
+   #include <functional>
+   #include <unordered_map>
+   #include <set>
+   #include <cstdint>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT ContextImpl
+       {
+       public:
+           ContextImpl(const ContextImpl& rhs) = delete;
+           ContextImpl(ContextImpl&&) noexcept = delete;
+   
+           // destructor
+           virtual ~ContextImpl();
+   
+           Status status;
+   
+           IOOptions io;
+   
+       public: // Object factory functions
+   
+           using ObjectFactory = std::function<
+               std::shared_ptr<Object>(const std::string& JSON, const IOOptions& io)>;
+   
+           template<class T>
+           static std::shared_ptr<T> createObject(const std::string& name, const std::string& JSON, const IOOptions& io) {
+               return std::dynamic_pointer_cast<T>(createObjectImpl(name, JSON, io));
+           }
+   
+           static std::unordered_map<std::string, ObjectFactory>& objectFactories();
+   
+           static std::set<std::string>& about();
+   
+       protected:
+           ContextImpl();
+   
+       private:
+           static std::shared_ptr<Object> createObjectImpl(const std::string& name, const std::string& JSON, const IOOptions& io);
+   
+           friend class ContextFactory;
+       };
+   
+       using Context = std::shared_ptr<ContextImpl>;
+   
+       class ContextFactory
+       {
+       public:
+           template<typename... Args>
+           static Context create(Args&&... args) {
+               return Context(new ContextImpl(std::forward<Args>(args)...));
+           };
+       };
+   }
+   
+   
+   
+   // macro to install an object factory at startup time from a .cpp file.
+   #define ROCKY_ADD_OBJECT_FACTORY(NAME, FUNC) \
+           struct __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER { \
+               __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER () { \
+                   ROCKY_NAMESPACE::ContextImpl::objectFactories()[ROCKY_NAMESPACE::util::toLower(#NAME)] = FUNC; \
+           } }; \
+           __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER __rocky_objectFactory_##NAME ;

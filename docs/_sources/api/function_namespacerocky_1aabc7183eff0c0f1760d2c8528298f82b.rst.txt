@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1aabc7183eff0c0f1760d2c8528298f82b:
+
+Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(struct Hyperlink)
+===============================================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::ROCKY_DEFINE_JSON_SERIALIZERS(struct Hyperlink)
+   :project: Rocky

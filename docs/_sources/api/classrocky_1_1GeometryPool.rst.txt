@@ -1,0 +1,27 @@
+.. _exhale_class_classrocky_1_1GeometryPool:
+
+Class GeometryPool
+==================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_GeometryPool.h`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+- :ref:`exhale_struct_structrocky_1_1GeometryPool_1_1Settings`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::GeometryPool
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

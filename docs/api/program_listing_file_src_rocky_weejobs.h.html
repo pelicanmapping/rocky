@@ -1,0 +1,1201 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File weejobs.h &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File weejobs.h</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_weejobs.h.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-weejobs-h">
+<span id="program-listing-file-src-rocky-weejobs-h"></span><h1>Program Listing for File weejobs.h<a class="headerlink" href="#program-listing-for-file-weejobs-h" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_weejobs.h.html#file-src-rocky-weejobs-h"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/weejobs.h</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma once</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;atomic&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cfloat&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;chrono&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;condition_variable&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstdlib&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;functional&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;mutex&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;thread&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;type_traits&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vector&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;string&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;algorithm&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;variant&gt;</span>
+
+<span class="c1">// OPTIONAL: Define WEEJOBS_EXPORT if you want to use this library from multiple modules (DLLs)</span>
+<span class="cp">#ifndef WEEJOBS_EXPORT</span>
+<span class="cp">#define WEEJOBS_EXPORT</span>
+<span class="cp">#endif</span>
+
+<span class="c1">// OPTIONAL: Customize the namespace by defining WEEJOBS_NAMESPACE before including this file.</span>
+<span class="cp">#ifndef WEEJOBS_NAMESPACE</span>
+<span class="cp">#define WEEJOBS_NAMESPACE jobs</span>
+<span class="cp">#endif</span>
+
+<span class="c1">// Version</span>
+<span class="cp">#define WEEJOBS_VERSION_MAJOR 1</span>
+<span class="cp">#define WEEJOBS_VERSION_MINOR 1</span>
+<span class="cp">#define WEEJOBS_VERSION_REV   0</span>
+<span class="cp">#define WEEJOBS_STR_NX(s) #s</span>
+<span class="cp">#define WEEJOBS_STR(s) WEEJOBS_STR_NX(s)</span>
+<span class="cp">#define WEEJOBS_COMPUTE_VERSION(major, minor, patch) ((major) * 10000 + (minor) * 100 + (patch))</span>
+<span class="cp">#define WEEJOBS_VERSION_NUMBER WEEJOBS_COMPUTE_VERSION(WEEJOBS_VERSION_MAJOR, WEEJOBS_VERSION_MINOR, WEEJOBS_VERSION_REV)</span>
+<span class="cp">#define WEEJOBS_VERSION_STRING WEEJOBS_STR(WEEJOBS_VERSION_MAJOR) &quot;.&quot; WEEJOBS_STR(WEEJOBS_VERSION_MINOR) &quot;.&quot; WEEJOBS_STR(WEEJOBS_VERSION_REV)</span>
+
+<span class="cp">#if __cplusplus &gt;= 201703L</span>
+<span class="cp">#define WEEJOBS_NO_DISCARD [[nodiscard]]</span>
+<span class="cp">#else</span>
+<span class="cp">#define WEEJOBS_NO_DISCARD</span>
+<span class="cp">#endif</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">WEEJOBS_NAMESPACE</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">cancelable</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="k">virtual</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">canceled</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">namespace</span><span class="w"> </span><span class="nn">detail</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">event</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">        </span><span class="k">public</span><span class="o">:</span>
+<span class="w">            </span><span class="n">event</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_set</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">            </span><span class="o">~</span><span class="n">event</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_set</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">255</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w">  </span><span class="c1">// workaround buggy broadcast</span>
+<span class="w">                    </span><span class="n">_cond</span><span class="p">.</span><span class="n">notify_all</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">wait</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_set</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_m</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_set</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">_cond</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="n">lock</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">_set</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">wait</span><span class="p">(</span><span class="n">T</span><span class="w"> </span><span class="n">timeout</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_set</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_m</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_set</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">_cond</span><span class="p">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">lock</span><span class="p">,</span><span class="w"> </span><span class="n">timeout</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">_set</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">waitAndReset</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_m</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_set</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">_cond</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="n">lock</span><span class="p">);</span>
+<span class="w">                </span><span class="n">_set</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="k">operator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">set</span><span class="p">();</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                    </span><span class="n">reset</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">set</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_set</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_m</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_set</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">_set</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">                        </span><span class="n">_cond</span><span class="p">.</span><span class="n">notify_all</span><span class="p">();</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">reset</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_m</span><span class="p">);</span>
+<span class="w">                </span><span class="n">_set</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">isSet</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">_set</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="k">operator</span><span class="w"> </span><span class="kt">bool</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">isSet</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">protected</span><span class="o">:</span>
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="n">_set</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">condition_variable_any</span><span class="w"> </span><span class="n">_cond</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="w"> </span><span class="n">_m</span><span class="p">;</span><span class="w"> </span><span class="c1">// do not use Mutex, we never want tracking</span>
+<span class="w">        </span><span class="p">};</span>
+
+
+<span class="w">        </span><span class="k">class</span><span class="w"> </span><span class="nc">semaphore</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">        </span><span class="k">public</span><span class="o">:</span>
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">acquire</span><span class="p">()</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_m</span><span class="p">);</span>
+<span class="w">                </span><span class="o">++</span><span class="n">_count</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="k">operator</span><span class="w"> </span><span class="o">++</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">acquire</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">release</span><span class="p">()</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_m</span><span class="p">);</span>
+<span class="w">                </span><span class="n">_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">_count</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">_cv</span><span class="p">.</span><span class="n">notify_all</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="k">operator</span><span class="w"> </span><span class="o">--</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">release</span><span class="p">();</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">reset</span><span class="p">()</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_m</span><span class="p">);</span>
+<span class="w">                </span><span class="n">_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">                </span><span class="n">_cv</span><span class="p">.</span><span class="n">notify_all</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span><span class="w"> </span><span class="n">count</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_m</span><span class="p">);</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">_count</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">join</span><span class="p">()</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_m</span><span class="p">);</span>
+<span class="w">                </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">_count</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">                    </span><span class="n">_cv</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="n">lock</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">join</span><span class="p">(</span><span class="n">cancelable</span><span class="o">*</span><span class="w"> </span><span class="n">c</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_cv</span><span class="p">.</span><span class="n">wait_for</span><span class="p">(</span><span class="n">_m</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">seconds</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="w"> </span><span class="p">[</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">]()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">return</span>
+<span class="w">                        </span><span class="p">(</span><span class="n">_count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">                        </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">c</span><span class="o">-&gt;</span><span class="n">canceled</span><span class="p">());</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">);</span>
+<span class="w">                </span><span class="n">_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">private</span><span class="o">:</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">_count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">condition_variable_any</span><span class="w"> </span><span class="n">_cv</span><span class="p">;</span>
+<span class="w">            </span><span class="k">mutable</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="w"> </span><span class="n">_m</span><span class="p">;</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="cp">#if __cplusplus &gt;= 201703L || _MSVC_LANG &gt;= 201703L</span>
+<span class="w">        </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">F</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="p">...</span><span class="n">Args</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="k">using</span><span class="w"> </span><span class="n">result_of_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">std</span><span class="o">::</span><span class="n">invoke_result</span><span class="o">&lt;</span><span class="n">F</span><span class="p">,</span><span class="w"> </span><span class="n">Args</span><span class="p">...</span><span class="o">&gt;::</span><span class="n">type</span><span class="p">;</span>
+<span class="cp">#else</span>
+<span class="w">        </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">F</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="p">...</span><span class="n">Args</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="k">using</span><span class="w"> </span><span class="n">result_of_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">std</span><span class="o">::</span><span class="n">result_of</span><span class="o">&lt;</span><span class="n">F</span><span class="p">(</span><span class="n">Args</span><span class="p">...)</span><span class="o">&gt;::</span><span class="n">type</span><span class="p">;</span>
+<span class="cp">#endif</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">jobgroup</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">semaphore</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">static</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">jobgroup</span><span class="o">&gt;</span><span class="w"> </span><span class="n">create</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">jobgroup</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">context</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="p">;</span><span class="w"> </span><span class="c1">// readable name of the job</span>
+<span class="w">        </span><span class="k">class</span><span class="w"> </span><span class="nc">jobpool</span><span class="o">*</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span><span class="w"> </span><span class="c1">// job pool to run in</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">priority</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{};</span><span class="w"> </span><span class="c1">// priority of the job</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">jobgroup</span><span class="o">&gt;</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span><span class="w"> </span><span class="c1">// join group for this job</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">can_cancel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"> </span><span class="c1">// if true, the job will cancel if its future goes out of scope</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">future</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">cancelable</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">private</span><span class="o">:</span>
+<span class="w">        </span><span class="c1">// internal structure to track references to the result</span>
+<span class="w">        </span><span class="c1">// One instance of this is shared among all Future instances</span>
+<span class="w">        </span><span class="c1">// created from the copy constructor.</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">shared_t</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">//std::optional&lt;T&gt; _obj;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">variant</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">monostate</span><span class="p">,</span><span class="w"> </span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_obj</span><span class="p">;</span><span class="w"> </span><span class="c1">// variant lets us support object with no default ctor</span>
+<span class="w">            </span><span class="k">mutable</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">event</span><span class="w"> </span><span class="n">_ev</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="w"> </span><span class="n">_continuation_mutex</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_continuation</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="kt">atomic_bool</span><span class="w"> </span><span class="n">_continuation_ran</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="n">future</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">shared_t</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">future</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">future</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="nf">empty</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="n">available</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">_shared</span><span class="p">.</span><span class="n">use_count</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="nf">available</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_ev</span><span class="p">.</span><span class="n">isSet</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="nf">working</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">available</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// cancelable interface</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="nf">canceled</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">empty</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="nf">value</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">get</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_obj</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">*</span><span class="w"> </span><span class="k">operator</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="o">&amp;</span><span class="n">std</span><span class="o">::</span><span class="n">get</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_obj</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">has_value</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">arg</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">available</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">arg</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">T</span><span class="w"> </span><span class="n">release</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="n">avail</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">available</span><span class="p">();</span>
+<span class="w">            </span><span class="n">T</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">();</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">avail</span><span class="p">)</span>
+<span class="w">                </span><span class="n">reset</span><span class="p">();</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">join</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">while</span><span class="w"> </span><span class="p">(</span>
+<span class="w">                </span><span class="o">!</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">                </span><span class="o">!</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_ev</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="p">(</span><span class="mi">1</span><span class="p">)));</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">value</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">join</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">cancelable</span><span class="o">*</span><span class="w"> </span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">working</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">canceled</span><span class="p">()))</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_ev</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">value</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">join</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">cancelable</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">join</span><span class="p">(</span><span class="o">&amp;</span><span class="n">p</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">abandon</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_shared</span><span class="p">.</span><span class="n">reset</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">shared_t</span><span class="p">());</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">reset</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">abandon</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">resolve</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_obj</span><span class="p">.</span><span class="k">template</span><span class="w"> </span><span class="n">emplace</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">value</span><span class="p">);</span>
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_ev</span><span class="p">.</span><span class="n">set</span><span class="p">();</span>
+<span class="w">            </span><span class="n">fire_continuation</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">resolve</span><span class="p">(</span><span class="n">T</span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_obj</span><span class="p">.</span><span class="k">template</span><span class="w"> </span><span class="n">emplace</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">value</span><span class="p">));</span>
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_ev</span><span class="p">.</span><span class="n">set</span><span class="p">();</span>
+<span class="w">            </span><span class="n">fire_continuation</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">resolve</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_ev</span><span class="p">.</span><span class="n">set</span><span class="p">();</span>
+<span class="w">            </span><span class="n">fire_continuation</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">refs</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">_shared</span><span class="p">.</span><span class="n">use_count</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">F</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">R</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">detail</span><span class="o">::</span><span class="n">result_of_t</span><span class="o">&lt;</span><span class="n">F</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="p">,</span><span class="w"> </span><span class="n">cancelable</span><span class="o">&amp;&gt;&gt;</span>
+<span class="w">        </span><span class="n">WEEJOBS_NO_DISCARD</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">then_dispatch</span><span class="p">(</span><span class="n">F</span><span class="w"> </span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{});</span>
+
+<span class="w">        </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">R</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="n">WEEJOBS_NO_DISCARD</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">then_dispatch</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="p">,</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;&amp;</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{});</span>
+
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">then_dispatch</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">con</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{});</span>
+
+<span class="w">    </span><span class="k">private</span><span class="o">:</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">shared_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_shared</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">fire_continuation</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation_mutex</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation_ran</span><span class="p">.</span><span class="n">exchange</span><span class="p">(</span><span class="nb">true</span><span class="p">))</span>
+<span class="w">                </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation</span><span class="p">();</span>
+
+<span class="w">            </span><span class="c1">// Zero out the continuation function immediately after running it.</span>
+<span class="w">            </span><span class="c1">// This is important because the continuation might hold a reference to a promise</span>
+<span class="w">            </span><span class="c1">// that might hamper cancelation.</span>
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span><span class="w"> </span><span class="k">using</span><span class="w"> </span><span class="n">promise</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">namespace</span><span class="w"> </span><span class="nn">detail</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">job</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">context</span><span class="w"> </span><span class="n">ctx</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">bool</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_delegate</span><span class="p">;</span>
+
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="k">operator</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">job</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">lp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">priority</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ctx</span><span class="p">.</span><span class="n">priority</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="o">-</span><span class="n">FLT_MAX</span><span class="p">;</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">rp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">ctx</span><span class="p">.</span><span class="n">priority</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">ctx</span><span class="p">.</span><span class="n">priority</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="o">-</span><span class="n">FLT_MAX</span><span class="p">;</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">lp</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rp</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">steal_job</span><span class="p">(</span><span class="k">class</span><span class="w"> </span><span class="nc">jobpool</span><span class="o">*</span><span class="w"> </span><span class="n">thief</span><span class="p">,</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">job</span><span class="o">&amp;</span><span class="w"> </span><span class="n">stolen</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">jobpool</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">metrics_t</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="kt">atomic_uint</span><span class="w"> </span><span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0u</span><span class="w"> </span><span class="p">};</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="kt">atomic_uint</span><span class="w"> </span><span class="n">pending</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0u</span><span class="w"> </span><span class="p">};</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="kt">atomic_uint</span><span class="w"> </span><span class="n">running</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0u</span><span class="w"> </span><span class="p">};</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="kt">atomic_uint</span><span class="w"> </span><span class="n">postprocessing</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0u</span><span class="w"> </span><span class="p">};</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="kt">atomic_uint</span><span class="w"> </span><span class="n">canceled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0u</span><span class="w"> </span><span class="p">};</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="kt">atomic_uint</span><span class="w"> </span><span class="n">total</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">0u</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="o">~</span><span class="n">jobpool</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">stop_threads</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">_metrics</span><span class="p">.</span><span class="n">name</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">metrics_t</span><span class="o">*</span><span class="w"> </span><span class="n">metrics</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="o">&amp;</span><span class="n">_metrics</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">set_concurrency</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="mi">1u</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_target_concurrency</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_target_concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">                </span><span class="n">start_threads</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">concurrency</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">_target_concurrency</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">set_can_steal_work</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_can_steal_work</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">cancel_all</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_queue_mutex</span><span class="p">);</span>
+<span class="w">            </span><span class="n">_queue</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">            </span><span class="n">_metrics</span><span class="p">.</span><span class="n">canceled</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">_metrics</span><span class="p">.</span><span class="n">pending</span><span class="p">;</span>
+<span class="w">            </span><span class="n">_metrics</span><span class="p">.</span><span class="n">pending</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">_dispatch_delegate</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">bool</span><span class="p">()</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">delegate</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">context</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_done</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// If we have a group semaphore, acquire it BEFORE queuing the job</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">group</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">context</span><span class="p">.</span><span class="n">group</span><span class="o">-&gt;</span><span class="n">acquire</span><span class="p">();</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_target_concurrency</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_queue_mutex</span><span class="p">);</span>
+
+<span class="w">                    </span><span class="n">_queue</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">detail</span><span class="o">::</span><span class="n">job</span><span class="p">{</span><span class="w"> </span><span class="n">context</span><span class="p">,</span><span class="w"> </span><span class="n">delegate</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">                    </span><span class="n">_metrics</span><span class="p">.</span><span class="n">pending</span><span class="o">++</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">_metrics</span><span class="p">.</span><span class="n">total</span><span class="o">++</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">_block</span><span class="p">.</span><span class="n">notify_one</span><span class="p">();</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="c1">// no threads? run synchronously.</span>
+<span class="w">                    </span><span class="n">delegate</span><span class="p">();</span>
+
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">context</span><span class="p">.</span><span class="n">group</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">context</span><span class="p">.</span><span class="n">group</span><span class="o">-&gt;</span><span class="n">release</span><span class="p">();</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">_take_job</span><span class="p">(</span><span class="n">detail</span><span class="o">::</span><span class="n">job</span><span class="o">&amp;</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">lock</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lock</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_queue_mutex</span><span class="p">);</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">_take_job</span><span class="p">(</span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_done</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">_queue</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_queue</span><span class="p">.</span><span class="n">end</span><span class="p">();</span>
+<span class="w">                </span><span class="kt">float</span><span class="w"> </span><span class="n">highest_priority</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">FLT_MAX</span><span class="p">;</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_queue</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_queue</span><span class="p">.</span><span class="n">end</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">iter</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">float</span><span class="w"> </span><span class="n">priority</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="o">-&gt;</span><span class="n">ctx</span><span class="p">.</span><span class="n">priority</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="w"> </span><span class="o">?</span>
+<span class="w">                        </span><span class="n">iter</span><span class="o">-&gt;</span><span class="n">ctx</span><span class="p">.</span><span class="n">priority</span><span class="p">()</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                        </span><span class="mf">0.0f</span><span class="p">;</span>
+
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ptr</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">_queue</span><span class="p">.</span><span class="n">end</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">priority</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">highest_priority</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span>
+<span class="w">                        </span><span class="n">highest_priority</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">priority</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ptr</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">_queue</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">                    </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_queue</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+
+<span class="w">                </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="o">*</span><span class="n">ptr</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_queue</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">                    </span><span class="o">*</span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">_queue</span><span class="p">.</span><span class="n">back</span><span class="p">());</span>
+<span class="w">                </span><span class="n">_queue</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">_queue</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+
+<span class="w">                </span><span class="n">_metrics</span><span class="p">.</span><span class="n">pending</span><span class="o">--</span><span class="p">;</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">jobpool</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">concurrency</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">            </span><span class="n">_target_concurrency</span><span class="p">(</span><span class="n">concurrency</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_metrics</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">            </span><span class="n">_metrics</span><span class="p">.</span><span class="n">concurrency</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">            </span><span class="n">_queue</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="mi">256</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">run</span><span class="p">();</span>
+
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">start_threads</span><span class="p">();</span>
+
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">stop_threads</span><span class="p">();</span>
+
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">join_threads</span><span class="p">();</span>
+
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">_can_steal_work</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">detail</span><span class="o">::</span><span class="n">job</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_queue</span><span class="p">;</span>
+<span class="w">        </span><span class="k">mutable</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="w"> </span><span class="n">_queue_mutex</span><span class="p">;</span><span class="w"> </span><span class="c1">// protect access to the queue</span>
+<span class="w">        </span><span class="k">mutable</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="w"> </span><span class="n">_quit_mutex</span><span class="p">;</span><span class="w"> </span><span class="c1">// protects access to _done</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">atomic</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_target_concurrency</span><span class="p">;</span><span class="w"> </span><span class="c1">// target number of concurrent threads in the pool</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">condition_variable_any</span><span class="w"> </span><span class="n">_block</span><span class="p">;</span><span class="w"> </span><span class="c1">// thread waiter block</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">_done</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span><span class="w"> </span><span class="c1">// set to true when threads should exit</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="kr">thread</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_threads</span><span class="p">;</span><span class="w"> </span><span class="c1">// threads in the pool</span>
+<span class="w">        </span><span class="n">metrics_t</span><span class="w"> </span><span class="n">_metrics</span><span class="p">;</span><span class="w"> </span><span class="c1">// metrics for this pool</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">metrics</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">total_pending</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="nf">total_running</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="nf">total_postprocessing</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="nf">total_canceled</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="nf">total</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="k">struct</span><span class="w"> </span><span class="nc">jobpool</span><span class="o">::</span><span class="n">metrics_t</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">all</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">_pools</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="k">struct</span><span class="w"> </span><span class="nc">jobpool</span><span class="o">::</span><span class="n">metrics_t</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">_pools</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">namespace</span><span class="w"> </span><span class="nn">detail</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">runtime</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="n">runtime</span><span class="p">();</span>
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="o">~</span><span class="n">runtime</span><span class="p">();</span>
+<span class="w">            </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">shutdown</span><span class="p">();</span>
+
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="n">_alive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="n">_stealing_allowed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="w"> </span><span class="n">_pools_mutex</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">jobpool</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">_pools</span><span class="p">;</span>
+<span class="w">            </span><span class="n">metrics</span><span class="w"> </span><span class="n">_metrics</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_set_thread_name</span><span class="p">;</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">extern</span><span class="w"> </span><span class="n">WEEJOBS_EXPORT</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">runtime</span><span class="o">&amp;</span><span class="w"> </span><span class="n">instance</span><span class="p">();</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="n">jobpool</span><span class="o">*</span><span class="w"> </span><span class="nf">get_pool</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">pool_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2u</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">instance</span><span class="p">().</span><span class="n">_pools_mutex</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">instance</span><span class="p">().</span><span class="n">_pools</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">name</span><span class="p">)</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">pool</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">new_pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">jobpool</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">pool_size</span><span class="p">);</span>
+<span class="w">        </span><span class="n">instance</span><span class="p">().</span><span class="n">_pools</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">new_pool</span><span class="p">);</span>
+<span class="w">        </span><span class="n">instance</span><span class="p">().</span><span class="n">_metrics</span><span class="p">.</span><span class="n">_pools</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="o">&amp;</span><span class="n">new_pool</span><span class="o">-&gt;</span><span class="n">_metrics</span><span class="p">);</span>
+<span class="w">        </span><span class="n">new_pool</span><span class="o">-&gt;</span><span class="n">start_threads</span><span class="p">();</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">new_pool</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">namespace</span><span class="w"> </span><span class="nn">detail</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// dispatches a function to the appropriate job pool.</span>
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">pool_dispatch</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">bool</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">delegate</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">context</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="n">pool</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">get_pool</span><span class="p">({});</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">_dispatch_delegate</span><span class="p">(</span><span class="n">delegate</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+
+<span class="w">                </span><span class="c1">// if work stealing is enabled, wake up all pools</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">instance</span><span class="p">().</span><span class="n">_stealing_allowed</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">instance</span><span class="p">().</span><span class="n">_pools_mutex</span><span class="p">);</span>
+
+<span class="w">                    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">instance</span><span class="p">().</span><span class="n">_pools</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">_block</span><span class="p">.</span><span class="n">notify_all</span><span class="p">();</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">dispatch</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">task</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">delegate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">task</span><span class="p">]()</span><span class="w"> </span><span class="k">mutable</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">task</span><span class="p">();</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="n">detail</span><span class="o">::</span><span class="n">pool_dispatch</span><span class="p">(</span><span class="n">delegate</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">F</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">detail</span><span class="o">::</span><span class="n">result_of_t</span><span class="o">&lt;</span><span class="n">F</span><span class="p">,</span><span class="w"> </span><span class="n">cancelable</span><span class="o">&amp;&gt;&gt;</span>
+<span class="w">    </span><span class="n">WEEJOBS_NO_DISCARD</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">dispatch</span><span class="p">(</span><span class="n">F</span><span class="w"> </span><span class="n">task</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">future</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">promise</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">can_cancel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="n">can_cancel</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">bool</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">delegate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">task</span><span class="p">,</span><span class="w"> </span><span class="n">promise</span><span class="p">,</span><span class="w"> </span><span class="n">can_cancel</span><span class="p">]()</span><span class="w"> </span><span class="k">mutable</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">bool</span><span class="w"> </span><span class="n">good</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">can_cancel</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">good</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">promise</span><span class="p">.</span><span class="n">canceled</span><span class="p">();</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">good</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">promise</span><span class="p">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">task</span><span class="p">(</span><span class="n">promise</span><span class="p">));</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">cancelable</span><span class="w"> </span><span class="n">dummy</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">promise</span><span class="p">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">task</span><span class="p">(</span><span class="n">dummy</span><span class="p">));</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">good</span><span class="p">;</span>
+<span class="w">            </span><span class="p">};</span>
+
+<span class="w">        </span><span class="n">detail</span><span class="o">::</span><span class="n">pool_dispatch</span><span class="p">(</span><span class="n">delegate</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">promise</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">F</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">detail</span><span class="o">::</span><span class="n">result_of_t</span><span class="o">&lt;</span><span class="n">F</span><span class="p">,</span><span class="w"> </span><span class="n">cancelable</span><span class="o">&amp;&gt;&gt;</span>
+<span class="w">    </span><span class="n">WEEJOBS_NO_DISCARD</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">dispatch</span><span class="p">(</span><span class="n">F</span><span class="w"> </span><span class="n">task</span><span class="p">,</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">promise</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">can_cancel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="p">.</span><span class="n">can_cancel</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">bool</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">delegate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">task</span><span class="p">,</span><span class="w"> </span><span class="n">promise</span><span class="p">,</span><span class="w"> </span><span class="n">can_cancel</span><span class="p">]()</span><span class="w"> </span><span class="k">mutable</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">bool</span><span class="w"> </span><span class="n">run</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">can_cancel</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">promise</span><span class="p">.</span><span class="n">canceled</span><span class="p">();</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">run</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">task</span><span class="p">(</span><span class="n">promise</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">run</span><span class="p">;</span>
+<span class="w">            </span><span class="p">};</span>
+
+<span class="w">        </span><span class="n">detail</span><span class="o">::</span><span class="n">pool_dispatch</span><span class="p">(</span><span class="n">delegate</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">promise</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="n">metrics</span><span class="o">*</span><span class="w"> </span><span class="n">get_metrics</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">&amp;</span><span class="n">instance</span><span class="p">().</span><span class="n">_metrics</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">shutdown</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">instance</span><span class="p">().</span><span class="n">shutdown</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">alive</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">instance</span><span class="p">().</span><span class="n">_alive</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">set_thread_name_function</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">f</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">instance</span><span class="p">().</span><span class="n">_set_thread_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">f</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">set_allow_work_stealing</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">instance</span><span class="p">().</span><span class="n">_stealing_allowed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">runtime</span><span class="o">::</span><span class="n">runtime</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//nop</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">runtime</span><span class="o">::~</span><span class="n">runtime</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">shutdown</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">runtime</span><span class="o">::</span><span class="n">shutdown</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_alive</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">//std::cout &lt;&lt; &quot;stopping &quot; &lt;&lt; _pools.size() &lt;&lt; &quot; threads...&quot; &lt;&lt; std::endl;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_pools</span><span class="p">)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+<span class="w">                </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">stop_threads</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">//std::cout &lt;&lt; &quot;joining &quot; &lt;&lt; _pools.size() &lt;&lt; &quot; threads...&quot; &lt;&lt; std::endl;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_pools</span><span class="p">)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pool</span><span class="p">)</span>
+<span class="w">                </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">join_threads</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">jobpool</span><span class="o">::</span><span class="n">run</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_done</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">detail</span><span class="o">::</span><span class="n">job</span><span class="w"> </span><span class="n">next</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="n">have_next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_can_steal_work</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">instance</span><span class="p">().</span><span class="n">_stealing_allowed</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_queue_mutex</span><span class="p">);</span>
+
+<span class="w">                        </span><span class="c1">// work-stealing enabled: wait until any queue is non-empty</span>
+<span class="w">                        </span><span class="n">_block</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="n">lock</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="k">this</span><span class="p">]()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">get_metrics</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">total_pending</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">_done</span><span class="p">;</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_done</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">_queue</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="n">have_next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_take_job</span><span class="p">(</span><span class="n">next</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                    </span><span class="p">}</span>
+
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_done</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">have_next</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">have_next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">steal_job</span><span class="p">(</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">next</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_queue_mutex</span><span class="p">);</span>
+
+<span class="w">                    </span><span class="c1">// wait until just our local queue is non-empty</span>
+<span class="w">                    </span><span class="n">_block</span><span class="p">.</span><span class="n">wait</span><span class="p">(</span><span class="n">lock</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="k">this</span><span class="p">]</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="n">_queue</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">_done</span><span class="p">;</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_done</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">_queue</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">have_next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_take_job</span><span class="p">(</span><span class="n">next</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">have_next</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_metrics</span><span class="p">.</span><span class="n">running</span><span class="o">++</span><span class="p">;</span>
+
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">t0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">steady_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+
+<span class="w">                </span><span class="kt">bool</span><span class="w"> </span><span class="n">job_executed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">next</span><span class="p">.</span><span class="n">_delegate</span><span class="p">();</span>
+
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">duration</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">steady_clock</span><span class="o">::</span><span class="n">now</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t0</span><span class="p">;</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">job_executed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">_metrics</span><span class="p">.</span><span class="n">canceled</span><span class="o">++</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="c1">// release the group semaphore if necessary</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">next</span><span class="p">.</span><span class="n">ctx</span><span class="p">.</span><span class="n">group</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">next</span><span class="p">.</span><span class="n">ctx</span><span class="p">.</span><span class="n">group</span><span class="o">-&gt;</span><span class="n">release</span><span class="p">();</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="n">_metrics</span><span class="p">.</span><span class="n">running</span><span class="o">--</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// See if we no longer need this thread because the</span>
+<span class="w">            </span><span class="c1">// target concurrency has been reduced</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_quit_mutex</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_target_concurrency</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">_metrics</span><span class="p">.</span><span class="n">concurrency</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_metrics</span><span class="p">.</span><span class="n">concurrency</span><span class="o">--</span><span class="p">;</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">jobpool</span><span class="o">::</span><span class="n">start_threads</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_done</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// Not enough? Start up more</span>
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">_metrics</span><span class="p">.</span><span class="n">concurrency</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">_target_concurrency</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_metrics</span><span class="p">.</span><span class="n">concurrency</span><span class="o">++</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">_threads</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kr">thread</span><span class="p">([</span><span class="k">this</span><span class="p">]</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">instance</span><span class="p">().</span><span class="n">_set_thread_name</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">instance</span><span class="p">().</span><span class="n">_set_thread_name</span><span class="p">(</span><span class="n">_metrics</span><span class="p">.</span><span class="n">name</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="n">run</span><span class="p">();</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">jobpool</span><span class="o">::</span><span class="n">stop_threads</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_done</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// Clear out the queue</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_queue_mutex</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// reset any group semaphores so that JobGroup.join()</span>
+<span class="w">        </span><span class="c1">// will not deadlock.</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">queuedjob</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_queue</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">queuedjob</span><span class="p">.</span><span class="n">ctx</span><span class="p">.</span><span class="n">group</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">queuedjob</span><span class="p">.</span><span class="n">ctx</span><span class="p">.</span><span class="n">group</span><span class="o">-&gt;</span><span class="n">release</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">_queue</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// wake up all threads so they can exit</span>
+<span class="w">        </span><span class="n">_block</span><span class="p">.</span><span class="n">notify_all</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">jobpool</span><span class="o">::</span><span class="n">join_threads</span><span class="p">()</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// wait for them to exit</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">_threads</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_threads</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">joinable</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_threads</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">join</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">_threads</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// steal a job from another jobpool&#39;s queue (other than &quot;thief&quot;).</span>
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">steal_job</span><span class="p">(</span><span class="n">jobpool</span><span class="o">*</span><span class="w"> </span><span class="n">thief</span><span class="p">,</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">job</span><span class="o">&amp;</span><span class="w"> </span><span class="n">stolen</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">jobpool</span><span class="o">*</span><span class="w"> </span><span class="n">pool_with_most_jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">instance</span><span class="p">().</span><span class="n">_pools_mutex</span><span class="p">);</span>
+
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span><span class="w"> </span><span class="n">max_num_jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0u</span><span class="p">;</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">instance</span><span class="p">().</span><span class="n">_pools</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pool</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">thief</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">_queue</span><span class="p">.</span><span class="n">size</span><span class="p">())</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">max_num_jobs</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">max_num_jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">_queue</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+<span class="w">                        </span><span class="n">pool_with_most_jobs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pool</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pool_with_most_jobs</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">pool_with_most_jobs</span><span class="o">-&gt;</span><span class="n">_take_job</span><span class="p">(</span><span class="n">stolen</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">F</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">R</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">then_dispatch</span><span class="p">(</span><span class="n">F</span><span class="w"> </span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">con</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// The future result of F.</span>
+<span class="w">        </span><span class="c1">// In this case, the continuation task will return a value that the system will use to resolve the promise.</span>
+<span class="w">        </span><span class="n">future</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">continuation_promise</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// lock the continuation and set it:</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation_mutex</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span><span class="w"> </span><span class="c1">// only one continuation allowed</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// take a weak ptr to this future&#39;s shared data. If this future goes away we&#39;ll still</span>
+<span class="w">            </span><span class="c1">// have access to its result.</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">weak_ptr</span><span class="o">&lt;</span><span class="n">shared_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">weak_shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_shared</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">context</span><span class="w"> </span><span class="n">copy_of_con</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">con</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="n">copy_of_con</span><span class="p">,</span><span class="w"> </span><span class="n">weak_shared</span><span class="p">,</span><span class="w"> </span><span class="n">continuation_promise</span><span class="p">]()</span><span class="w"> </span><span class="k">mutable</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">weak_shared</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span>
+
+<span class="w">                    </span><span class="c1">// verify the parent&#39;s result is actually available (simulate available())</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">shared</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">shared</span><span class="o">-&gt;</span><span class="n">_ev</span><span class="p">.</span><span class="n">isSet</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="c1">// copy it and dispatch it as the input to a new job:</span>
+<span class="w">                        </span><span class="n">T</span><span class="w"> </span><span class="n">copy_of_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">get</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">shared</span><span class="o">-&gt;</span><span class="n">_obj</span><span class="p">);</span>
+
+<span class="w">                        </span><span class="c1">// Once this wrapper gets created, note that we now have 2 refereces to the continuation_promise.</span>
+<span class="w">                        </span><span class="c1">// To prevent this from hampering cancelation, the continuation fuction is set to nullptr</span>
+<span class="w">                        </span><span class="c1">// immediately after being called.</span>
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">wrapper</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="n">copy_of_value</span><span class="p">,</span><span class="w"> </span><span class="n">continuation_promise</span><span class="p">]()</span><span class="w"> </span><span class="k">mutable</span>
+<span class="w">                            </span><span class="p">{</span>
+<span class="w">                                </span><span class="n">continuation_promise</span><span class="p">.</span><span class="n">resolve</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="n">copy_of_value</span><span class="p">,</span><span class="w"> </span><span class="n">continuation_promise</span><span class="p">));</span>
+<span class="w">                            </span><span class="p">};</span>
+
+<span class="w">                        </span><span class="n">jobs</span><span class="o">::</span><span class="n">dispatch</span><span class="p">(</span><span class="n">wrapper</span><span class="p">,</span><span class="w"> </span><span class="n">copy_of_con</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">};</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// maybe the future is already available?</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">available</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fire_continuation</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">continuation_promise</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">R</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">then_dispatch</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="p">,</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;&amp;</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">con</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// The future we will return to the caller.</span>
+<span class="w">        </span><span class="c1">// Note, the user function &quot;func&quot; is responsible for resolving this promise.</span>
+<span class="w">        </span><span class="n">future</span><span class="o">&lt;</span><span class="n">R</span><span class="o">&gt;</span><span class="w"> </span><span class="n">continuation_promise</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// lock the continuation and set it:</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation_mutex</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span><span class="w"> </span><span class="c1">// only one continuation allowed</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// take a weak ptr to this future&#39;s shared data. If this future goes away we&#39;ll still</span>
+<span class="w">            </span><span class="c1">// have access to its result.</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">weak_ptr</span><span class="o">&lt;</span><span class="n">shared_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">weak_shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_shared</span><span class="p">;</span>
+
+<span class="w">            </span><span class="c1">// The user task is responsible for resolving the promise.</span>
+<span class="w">            </span><span class="c1">// This continuation executes the user function directly instead of dispatching it</span>
+<span class="w">            </span><span class="c1">// to the job pool. This is because we expect the user function to use some external</span>
+<span class="w">            </span><span class="c1">// asynchronous mechanism to resolve the promise.</span>
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="n">weak_shared</span><span class="p">,</span><span class="w"> </span><span class="n">continuation_promise</span><span class="p">]()</span><span class="w"> </span><span class="k">mutable</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">weak_shared</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">shared</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">func</span><span class="p">(</span><span class="n">shared</span><span class="o">-&gt;</span><span class="n">_obj</span><span class="p">,</span><span class="w"> </span><span class="n">continuation_promise</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">};</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">available</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fire_continuation</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">continuation_promise</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">future</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;::</span><span class="n">then_dispatch</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">context</span><span class="o">&amp;</span><span class="w"> </span><span class="n">con</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// lock the continuation and set it:</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation_mutex</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="p">;</span><span class="w"> </span><span class="c1">// only one continuation allowed</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// take a weak ptr to this future&#39;s shared data. If this future goes away we&#39;ll still</span>
+<span class="w">            </span><span class="c1">// have access to its result.</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">weak_ptr</span><span class="o">&lt;</span><span class="n">shared_t</span><span class="o">&gt;</span><span class="w"> </span><span class="n">weak_shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_shared</span><span class="p">;</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">copy_of_con</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">con</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">_shared</span><span class="o">-&gt;</span><span class="n">_continuation</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="n">weak_shared</span><span class="p">,</span><span class="w"> </span><span class="n">copy_of_con</span><span class="p">]()</span><span class="w"> </span><span class="k">mutable</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">shared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">weak_shared</span><span class="p">.</span><span class="n">lock</span><span class="p">();</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">shared</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">copy_of_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">get</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">shared</span><span class="o">-&gt;</span><span class="n">_obj</span><span class="p">);</span>
+
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">fire_and_forget_delegate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">func</span><span class="p">,</span><span class="w"> </span><span class="n">copy_of_value</span><span class="p">]()</span><span class="w"> </span><span class="k">mutable</span>
+<span class="w">                            </span><span class="p">{</span>
+<span class="w">                                </span><span class="n">func</span><span class="p">(</span><span class="n">copy_of_value</span><span class="p">);</span>
+<span class="w">                                </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">                            </span><span class="p">};</span>
+
+<span class="w">                        </span><span class="n">detail</span><span class="o">::</span><span class="n">pool_dispatch</span><span class="p">(</span><span class="n">fire_and_forget_delegate</span><span class="p">,</span><span class="w"> </span><span class="n">copy_of_con</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">};</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">available</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">fire_continuation</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">metrics</span><span class="o">::</span><span class="n">total_pending</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">instance</span><span class="p">().</span><span class="n">_pools_mutex</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_pools</span><span class="p">)</span>
+<span class="w">            </span><span class="n">count</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">pending</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">count</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">metrics</span><span class="o">::</span><span class="n">total_running</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">instance</span><span class="p">().</span><span class="n">_pools_mutex</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_pools</span><span class="p">)</span>
+<span class="w">            </span><span class="n">count</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">running</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">count</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">metrics</span><span class="o">::</span><span class="n">total_postprocessing</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">instance</span><span class="p">().</span><span class="n">_pools_mutex</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_pools</span><span class="p">)</span>
+<span class="w">            </span><span class="n">count</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">postprocessing</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">count</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">metrics</span><span class="o">::</span><span class="n">total_canceled</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">instance</span><span class="p">().</span><span class="n">_pools_mutex</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_pools</span><span class="p">)</span>
+<span class="w">            </span><span class="n">count</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">canceled</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">count</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">metrics</span><span class="o">::</span><span class="n">total</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">lock_guard</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="o">&gt;</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">instance</span><span class="p">().</span><span class="n">_pools_mutex</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_pools</span><span class="p">)</span>
+<span class="w">            </span><span class="n">count</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">pending</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">running</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pool</span><span class="o">-&gt;</span><span class="n">postprocessing</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">count</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Use this macro ONCE in your application in a .cpp file to</span>
+<span class="w">    </span><span class="c1">// instaniate the weejobs runtime singleton.</span>
+<span class="cp">#define WEEJOBS_INSTANCE \</span>
+<span class="cp">    namespace WEEJOBS_NAMESPACE { \</span>
+<span class="cp">        detail::runtime&amp; instance() { \</span>
+<span class="cp">            static detail::runtime runtime_singleton_instance; \</span>
+<span class="cp">            return runtime_singleton_instance; \</span>
+<span class="cp">        } \</span>
+<span class="cp">    }</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

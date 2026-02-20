@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespacerocky_1ad02bf122878724530153b2c117d4a949:
+
+Typedef rocky::TimeStamp
+========================
+
+- Defined in :ref:`file_src_rocky_DateTime.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: rocky::TimeStamp
+   :project: Rocky

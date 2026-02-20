@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespacerocky_1a1aeca3c1309ec88a6d008490e4b73a3b:
+
+Typedef rocky::Future
+=====================
+
+- Defined in :ref:`file_src_rocky_Threading.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: rocky::Future
+   :project: Rocky

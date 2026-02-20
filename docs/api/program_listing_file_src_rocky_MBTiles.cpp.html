@@ -1,0 +1,784 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File MBTiles.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File MBTiles.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_MBTiles.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-mbtiles-cpp">
+<span id="program-listing-file-src-rocky-mbtiles-cpp"></span><h1>Program Listing for File MBTiles.cpp<a class="headerlink" href="#program-listing-for-file-mbtiles-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_MBTiles.cpp.html#file-src-rocky-mbtiles-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/MBTiles.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;MBTiles.h&quot;</span>
+<span class="cp">#ifdef ROCKY_HAS_MBTILES</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Image.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;json.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Context.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;filesystem&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;sqlite3.h&gt;</span>
+<span class="n">ROCKY_ABOUT</span><span class="p">(</span><span class="n">sqlite</span><span class="p">,</span><span class="w"> </span><span class="n">SQLITE_VERSION</span><span class="p">);</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+
+<span class="cp">#undef LC</span>
+<span class="cp">#define LC &quot;[MBTiles] &quot;</span>
+
+
+
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">Driver</span><span class="p">()</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">_minLevel</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_maxLevel</span><span class="p">(</span><span class="mi">19</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_forceRGB</span><span class="p">(</span><span class="nb">false</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_database</span><span class="p">(</span><span class="k">nullptr</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">//nop</span>
+<span class="p">}</span>
+
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::~</span><span class="n">Driver</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">close</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">close</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_database</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">sqlite3</span><span class="o">*</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sqlite3</span><span class="o">*</span><span class="p">)</span><span class="n">_database</span><span class="p">;</span>
+<span class="w">        </span><span class="n">sqlite3_close_v2</span><span class="p">(</span><span class="n">database</span><span class="p">);</span>
+<span class="w">        </span><span class="n">_database</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;&gt;</span>
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">open</span><span class="p">(</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">name</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">MBTiles</span><span class="o">::</span><span class="n">Options</span><span class="o">&amp;</span><span class="w"> </span><span class="n">options</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">isWritingRequested</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Profile</span><span class="o">&amp;</span><span class="w"> </span><span class="n">profile</span><span class="p">,</span>
+<span class="w">    </span><span class="n">DataExtentList</span><span class="o">&amp;</span><span class="w"> </span><span class="n">out_dataExtents</span><span class="p">,</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">fullFilename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="n">uri</span><span class="o">-&gt;</span><span class="n">full</span><span class="p">();</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">readWrite</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">isWritingRequested</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">isNewDatabase</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">readWrite</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">exists</span><span class="p">(</span><span class="n">fullFilename</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isNewDatabase</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// For a NEW database, the profile MUST be set prior to initialization.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ConfigurationError</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;Cannot create database; required Profile is missing&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">options</span><span class="p">.</span><span class="n">format</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ConfigurationError</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;Cannot create database; required format property is missing&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">//Log::info() &lt;&lt; LC &lt;&lt; &quot;Database does not exist; attempting to create it.&quot; &lt;&lt; std::endl;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Try to open (or create) the database. We use SQLITE_OPEN_NOMUTEX to do</span>
+<span class="w">    </span><span class="c1">// our own mutexing.</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">flags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">readWrite</span>
+<span class="w">        </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="n">SQLITE_OPEN_READWRITE</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SQLITE_OPEN_CREATE</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SQLITE_OPEN_NOMUTEX</span><span class="p">)</span>
+<span class="w">        </span><span class="o">:</span><span class="w"> </span><span class="p">(</span><span class="n">SQLITE_OPEN_READONLY</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">SQLITE_OPEN_NOMUTEX</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">sqlite3</span><span class="o">*</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sqlite3</span><span class="o">*</span><span class="p">)</span><span class="n">_database</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// close existing database if open</span>
+<span class="w">    </span><span class="n">close</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">sqlite3</span><span class="o">**</span><span class="w"> </span><span class="n">dbptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sqlite3</span><span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="n">_database</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_open_v2</span><span class="p">(</span><span class="n">fullFilename</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="n">dbptr</span><span class="p">,</span><span class="w"> </span><span class="n">flags</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Database </span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">fullFilename</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// New database setup:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">isNewDatabase</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Make sure we have a readerwriter for the underlying tile format:</span>
+<span class="w">        </span><span class="n">_tileFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="n">format</span><span class="p">.</span><span class="n">value</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// create necessary db tables:</span>
+<span class="w">        </span><span class="n">createTables</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// write profile to metadata:</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">profileJSON</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profile</span><span class="p">.</span><span class="n">to_json</span><span class="p">();</span>
+<span class="w">        </span><span class="n">putMetaData</span><span class="p">(</span><span class="s">&quot;profile&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">profileJSON</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// write format to metadata:</span>
+<span class="w">        </span><span class="n">putMetaData</span><span class="p">(</span><span class="s">&quot;format&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">_tileFormat</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// compression?</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">options</span><span class="p">.</span><span class="n">compress</span><span class="p">.</span><span class="n">has_value</span><span class="p">(</span><span class="nb">true</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">putMetaData</span><span class="p">(</span><span class="s">&quot;compression&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;zlib&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// initialize and update as we write tiles.</span>
+<span class="w">        </span><span class="n">_minLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0u</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_maxLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0u</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// If the database pre-existed, read in the information from the metadata.</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="c1">// !isNewDatabase</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">computeLevels</span><span class="p">();</span>
+<span class="w">        </span><span class="c1">//Log::info() &lt;&lt; &quot;Got levels from database &quot; &lt;&lt; _minLevel &lt;&lt; &quot;, &quot; &lt;&lt; _maxLevel &lt;&lt; std::endl;</span>
+
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">profileStr</span><span class="p">;</span>
+<span class="w">        </span><span class="n">getMetaData</span><span class="p">(</span><span class="s">&quot;profile&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">profileStr</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// The data format (e.g., png, jpg, etc.). Any format passed in</span>
+<span class="w">        </span><span class="c1">// in the options is superseded by the one in the database metadata.</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">metaDataFormat</span><span class="p">;</span>
+<span class="w">        </span><span class="n">getMetaData</span><span class="p">(</span><span class="s">&quot;format&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">metaDataFormat</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">metaDataFormat</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_tileFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">metaDataFormat</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Try to get it from the options.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_tileFormat</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">options</span><span class="p">.</span><span class="n">format</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_tileFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="n">format</span><span class="p">.</span><span class="n">value</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// warn the user if the options format differs from the database format</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">options</span><span class="p">.</span><span class="n">format</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="n">format</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_tileFormat</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Database tile format (&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">_tileFormat</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;) will override the layer options format (&quot;</span>
+<span class="w">                    </span><span class="o">+</span><span class="w"> </span><span class="n">options</span><span class="p">.</span><span class="n">format</span><span class="p">.</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;)&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// By this point, we require a valid tile format.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_tileFormat</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ConfigurationError</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;Required format not in metadata, nor specified in the options.&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// check for compression.</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">compression</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">getMetaData</span><span class="p">(</span><span class="s">&quot;compression&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">compression</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_options</span><span class="p">.</span><span class="n">compress</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">compression</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;zlib&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+
+<span class="w">        </span><span class="c1">// Set the profile</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">profileStr</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// try to parse it as a JSON config</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_json</span><span class="p">(</span><span class="n">profileStr</span><span class="p">);</span>
+<span class="w">                </span><span class="c1">// todo: error check.</span>
+
+<span class="w">                </span><span class="c1">// new style. e.g., &quot;global-geodetic&quot;</span>
+<span class="w">                </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">profile</span><span class="p">);</span>
+
+<span class="w">                </span><span class="c1">// old style. e.g., {&quot;profile&quot;:&quot;global-geodetic&quot;}</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">                    </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;profile&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">profile</span><span class="p">);</span>
+
+<span class="w">                </span><span class="c1">// if that didn&#39;t work, try parsing it directly</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">                    </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Profile</span><span class="p">(</span><span class="n">profileStr</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">profileStr</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Profile </span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">profileStr</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s"> not recognized; defaulting to spherical-mercator&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Profile</span><span class="p">(</span><span class="s">&quot;spherical-mercator&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Check for bounds and populate DataExtents.</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">boundsStr</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">getMetaData</span><span class="p">(</span><span class="s">&quot;bounds&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">boundsStr</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">tokens</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">StringTokenizer</span><span class="p">()</span>
+<span class="w">                </span><span class="p">.</span><span class="n">delim</span><span class="p">(</span><span class="s">&quot;,&quot;</span><span class="p">)</span>
+<span class="w">                </span><span class="p">.</span><span class="n">tokenize</span><span class="p">(</span><span class="n">boundsStr</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tokens</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">minLon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atof</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">c_str</span><span class="p">());</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">minLat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atof</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="mi">1</span><span class="p">].</span><span class="n">c_str</span><span class="p">());</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">maxLon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atof</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="mi">2</span><span class="p">].</span><span class="n">c_str</span><span class="p">());</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">maxLat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atof</span><span class="p">(</span><span class="n">tokens</span><span class="p">[</span><span class="mi">3</span><span class="p">].</span><span class="n">c_str</span><span class="p">());</span>
+
+<span class="w">                </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">extent</span><span class="p">;</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">                    </span><span class="n">extent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">geodeticSRS</span><span class="p">(),</span><span class="w"> </span><span class="n">minLon</span><span class="p">,</span><span class="w"> </span><span class="n">minLat</span><span class="p">,</span><span class="w"> </span><span class="n">maxLon</span><span class="p">,</span><span class="w"> </span><span class="n">maxLat</span><span class="p">);</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                    </span><span class="n">extent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span><span class="w"> </span><span class="n">minLon</span><span class="p">,</span><span class="w"> </span><span class="n">minLat</span><span class="p">,</span><span class="w"> </span><span class="n">maxLon</span><span class="p">,</span><span class="w"> </span><span class="n">maxLat</span><span class="p">);</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">extent</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="c1">// Using 0 for the minLevel is not technically correct, but we use it</span>
+<span class="w">                    </span><span class="c1">// instead of the proper minLevel to force subdivision</span>
+<span class="w">                    </span><span class="c1">// since we don&#39;t really handle DataExtents with minLevels &gt; 0 just yet.</span>
+<span class="w">                    </span><span class="n">out_dataExtents</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">DataExtent</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">_maxLevel</span><span class="p">));</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;MBTiles has invalid bounds &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">extent</span><span class="p">.</span><span class="n">toString</span><span class="p">());</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// Using 0 for the minLevel is not technically correct, but we use it</span>
+<span class="w">            </span><span class="c1">// instead of the proper minLevel to force subdivision</span>
+<span class="w">            </span><span class="c1">// since we don&#39;t really handle DataExtents with minLevels &gt; 0 just yet.</span>
+<span class="w">            </span><span class="n">out_dataExtents</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">DataExtent</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">extent</span><span class="p">(),</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">_maxLevel</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// do we require RGB? for jpeg?</span>
+<span class="w">    </span><span class="n">_forceRGB</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">endsWith</span><span class="p">(</span><span class="n">_tileFormat</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;jpg&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">util</span><span class="o">::</span><span class="n">endsWith</span><span class="p">(</span><span class="n">_tileFormat</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;jpeg&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// make an empty image.</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">256</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_emptyImage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">Image</span><span class="o">::</span><span class="n">R8G8B8A8_UNORM</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_emptyImage</span><span class="o">-&gt;</span><span class="n">fill</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">fvec4</span><span class="p">(</span><span class="mf">0.0</span><span class="p">));</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ResultVoidOK</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;</span><span class="kt">int</span><span class="o">&gt;</span>
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">readMaxLevel</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">sqlite3</span><span class="o">*</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sqlite3</span><span class="o">*</span><span class="p">)</span><span class="n">_database</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">//Get the image</span>
+<span class="w">    </span><span class="n">sqlite3_stmt</span><span class="o">*</span><span class="w"> </span><span class="n">select</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SELECT zoom_level FROM tiles ORDER BY zoom_level DESC LIMIT 1&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_prepare_v2</span><span class="p">(</span><span class="n">database</span><span class="p">,</span><span class="w"> </span><span class="n">query</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to prepare SQL: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;; &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">));</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_GeneralError</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_step</span><span class="p">(</span><span class="n">select</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SQLITE_ROW</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_column_int</span><span class="p">(</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">sqlite3_finalize</span><span class="p">(</span><span class="n">select</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;&gt;</span>
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">read</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_mutex</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">z</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">_minLevel</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_ResourceUnavailable</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">z</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">_maxLevel</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//If we&#39;re at the max level, just return NULL</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_ResourceUnavailable</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">numCols</span><span class="p">,</span><span class="w"> </span><span class="n">numRows</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">profile</span><span class="p">.</span><span class="n">numTiles</span><span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">);</span>
+<span class="w">    </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">numRows</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">sqlite3</span><span class="o">*</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sqlite3</span><span class="o">*</span><span class="p">)</span><span class="n">_database</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">//Get the image</span>
+<span class="w">    </span><span class="n">sqlite3_stmt</span><span class="o">*</span><span class="w"> </span><span class="n">select</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SELECT tile_data from tiles where zoom_level = ? AND tile_column = ? AND tile_row = ?&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_prepare_v2</span><span class="p">(</span><span class="n">database</span><span class="p">,</span><span class="w"> </span><span class="n">query</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">GeneralError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Failed to prepare SQL: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;; &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">z</span><span class="p">);</span>
+<span class="w">    </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">    </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">Image</span><span class="o">::</span><span class="n">Ptr</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">errorMessage</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_step</span><span class="p">(</span><span class="n">select</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SQLITE_ROW</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// the pointer returned from _blob gets freed internally by sqlite, supposedly</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">sqlite3_column_blob</span><span class="p">(</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">dataLen</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_column_bytes</span><span class="p">(</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="nf">dataBuffer</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">dataLen</span><span class="p">);</span>
+
+<span class="cp">#ifdef ROCKY_HAS_ZLIB</span>
+<span class="w">        </span><span class="c1">// decompress if necessary:</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_options</span><span class="p">.</span><span class="n">compress</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">istringstream</span><span class="w"> </span><span class="nf">inputStream</span><span class="p">(</span><span class="n">dataBuffer</span><span class="p">);</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">util</span><span class="o">::</span><span class="n">ZLibCompressor</span><span class="p">().</span><span class="n">decompress</span><span class="p">(</span><span class="n">inputStream</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">))</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">errorMessage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Decompression failed&quot;</span><span class="p">;</span>
+<span class="w">                </span><span class="n">valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">dataBuffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="cp">#endif </span><span class="c1">// ROCKY_HAS_ZLIB</span>
+
+<span class="w">        </span><span class="c1">// decode the raw image data:</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">valid</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">istringstream</span><span class="w"> </span><span class="nf">inputStream</span><span class="p">(</span><span class="n">dataBuffer</span><span class="p">);</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">readImageFromStream</span><span class="p">(</span><span class="n">inputStream</span><span class="p">,</span><span class="w"> </span><span class="p">{},</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">                </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">value</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">sqlite3_finalize</span><span class="p">(</span><span class="n">select</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">GeneralError</span><span class="p">,</span><span class="w"> </span><span class="n">errorMessage</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_GeneralError</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="n">Result</span><span class="o">&lt;&gt;</span>
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">write</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">key</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">input</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_AssertionFailure</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">writeImageToStream</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure_ServiceUnavailable</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_mutex</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// encode the data stream:</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">stringstream</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// convert to RGB if we are storing jpgs (for example)</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">image_to_write</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_forceRGB</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">input</span><span class="o">-&gt;</span><span class="n">pixelFormat</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">R8G8B8A8_UNORM</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">image_to_write</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">Image</span><span class="o">::</span><span class="n">R8G8B8_UNORM</span><span class="p">,</span><span class="w"> </span><span class="n">input</span><span class="o">-&gt;</span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">input</span><span class="o">-&gt;</span><span class="n">height</span><span class="p">(),</span><span class="w"> </span><span class="n">input</span><span class="o">-&gt;</span><span class="n">depth</span><span class="p">());</span>
+
+<span class="w">        </span><span class="n">input</span><span class="o">-&gt;</span><span class="n">eachPixel</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">iter</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">image_to_write</span><span class="o">-&gt;</span><span class="n">write</span><span class="p">(</span><span class="n">input</span><span class="o">-&gt;</span><span class="n">read</span><span class="p">(</span><span class="n">iter</span><span class="p">),</span><span class="w"> </span><span class="n">iter</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">wr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">writeImageToStream</span><span class="p">(</span><span class="n">image_to_write</span><span class="p">,</span><span class="w"> </span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">_options</span><span class="p">.</span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">wr</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">wr</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+
+<span class="cp">#ifdef ROCKY_HAS_ZLIB</span>
+<span class="w">    </span><span class="c1">// compress the buffer if necessary</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_options</span><span class="p">.</span><span class="n">compress</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">ostringstream</span><span class="w"> </span><span class="n">output</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">util</span><span class="o">::</span><span class="n">ZLibCompressor</span><span class="p">().</span><span class="n">compress</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">GeneralError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Compressor failed&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="cp">#endif </span><span class="c1">// ROCKY_HAS_ZLIB</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// flip Y axis</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">numCols</span><span class="p">,</span><span class="w"> </span><span class="n">numRows</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">profile</span><span class="p">.</span><span class="n">numTiles</span><span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">);</span>
+<span class="w">    </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">numRows</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">sqlite3</span><span class="o">*</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sqlite3</span><span class="o">*</span><span class="p">)</span><span class="n">_database</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Prep the insert statement:</span>
+<span class="w">    </span><span class="n">sqlite3_stmt</span><span class="o">*</span><span class="w"> </span><span class="n">insert</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;INSERT OR REPLACE INTO tiles (zoom_level, tile_column, tile_row, tile_data) VALUES (?, ?, ?, ?)&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_prepare_v2</span><span class="p">(</span><span class="n">database</span><span class="p">,</span><span class="w"> </span><span class="n">query</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">insert</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Failed to prepare SQL: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;; &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">GeneralError</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// bind parameters:</span>
+<span class="w">    </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">insert</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">z</span><span class="p">);</span>
+<span class="w">    </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">insert</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">    </span><span class="n">sqlite3_bind_int</span><span class="p">(</span><span class="n">insert</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// bind the data blob:</span>
+<span class="w">    </span><span class="n">sqlite3_bind_blob</span><span class="p">(</span><span class="n">insert</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">value</span><span class="p">.</span><span class="n">length</span><span class="p">(),</span><span class="w"> </span><span class="n">SQLITE_STATIC</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// run the sql.</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">tries</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">do</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_step</span><span class="p">(</span><span class="n">insert</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">++</span><span class="n">tries</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SQLITE_BUSY</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SQLITE_LOCKED</span><span class="p">));</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">SQLITE_OK</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">SQLITE_DONE</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">rc</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Failed query: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;(&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;)&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errstr</span><span class="p">(</span><span class="n">rc</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;; &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">GeneralError</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">);</span>
+<span class="w">        </span><span class="n">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">sqlite3_finalize</span><span class="p">(</span><span class="n">insert</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// adjust the max level if necessary</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">_maxLevel</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_maxLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">_minLevel</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_minLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ResultVoidOK</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">getMetaData</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_mutex</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">sqlite3</span><span class="o">*</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sqlite3</span><span class="o">*</span><span class="p">)</span><span class="n">_database</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">//get the metadata</span>
+<span class="w">    </span><span class="n">sqlite3_stmt</span><span class="o">*</span><span class="w"> </span><span class="n">select</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">NULL</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SELECT value from metadata where name = ?&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_prepare_v2</span><span class="p">(</span><span class="n">database</span><span class="p">,</span><span class="w"> </span><span class="n">query</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to prepare SQL: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;; &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">));</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">keyStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_bind_text</span><span class="p">(</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">keyStr</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">keyStr</span><span class="p">.</span><span class="n">length</span><span class="p">(),</span><span class="w"> </span><span class="n">SQLITE_STATIC</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to bind text: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;; &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">));</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_step</span><span class="p">(</span><span class="n">select</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SQLITE_ROW</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">sqlite3_column_text</span><span class="p">(</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">sqlite3_finalize</span><span class="p">(</span><span class="n">select</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">valid</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">putMetaData</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_mutex</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">sqlite3</span><span class="o">*</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sqlite3</span><span class="o">*</span><span class="p">)</span><span class="n">_database</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// prep the insert statement.</span>
+<span class="w">    </span><span class="n">sqlite3_stmt</span><span class="o">*</span><span class="w"> </span><span class="n">insert</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0L</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;INSERT OR REPLACE INTO metadata (name,value) VALUES (?,?)&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">SQLITE_OK</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">sqlite3_prepare_v2</span><span class="p">(</span><span class="n">database</span><span class="p">,</span><span class="w"> </span><span class="n">query</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">insert</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to prepare SQL: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;; &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">));</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// bind the values:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">SQLITE_OK</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">sqlite3_bind_text</span><span class="p">(</span><span class="n">insert</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">key</span><span class="p">.</span><span class="n">length</span><span class="p">(),</span><span class="w"> </span><span class="n">SQLITE_STATIC</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to bind text: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;; &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">));</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">SQLITE_OK</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">sqlite3_bind_text</span><span class="p">(</span><span class="n">insert</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">value</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">value</span><span class="p">.</span><span class="n">length</span><span class="p">(),</span><span class="w"> </span><span class="n">SQLITE_STATIC</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to bind text: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;; &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">));</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// execute the sql. no idea what a good return value should be :/</span>
+<span class="w">    </span><span class="n">sqlite3_step</span><span class="p">(</span><span class="n">insert</span><span class="p">);</span>
+<span class="w">    </span><span class="n">sqlite3_finalize</span><span class="p">(</span><span class="n">insert</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">computeLevels</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">sqlite3</span><span class="o">*</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sqlite3</span><span class="o">*</span><span class="p">)</span><span class="n">_database</span><span class="p">;</span>
+<span class="w">    </span><span class="n">sqlite3_stmt</span><span class="o">*</span><span class="w"> </span><span class="n">select</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="c1">// Get min and max as separate queries to allow the SQLite query planner to convert it to a fast equivalent.</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SELECT (SELECT min(zoom_level) FROM tiles), (SELECT max(zoom_level) FROM tiles); &quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_prepare_v2</span><span class="p">(</span><span class="n">database</span><span class="p">,</span><span class="w"> </span><span class="n">query</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">SQLITE_OK</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to prepare SQL: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;; &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">sqlite3_errmsg</span><span class="p">(</span><span class="n">database</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">rc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_step</span><span class="p">(</span><span class="n">select</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rc</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">SQLITE_ROW</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_minLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_column_int</span><span class="p">(</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="n">_maxLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqlite3_column_int</span><span class="p">(</span><span class="n">select</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">sqlite3_finalize</span><span class="p">(</span><span class="n">select</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">createTables</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// https://github.com/mapbox/mbtiles-spec/blob/master/1.2/spec.md</span>
+
+<span class="w">    </span><span class="n">sqlite3</span><span class="o">*</span><span class="w"> </span><span class="n">database</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">sqlite3</span><span class="o">*</span><span class="p">)</span><span class="n">_database</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">query</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="s">&quot;CREATE TABLE IF NOT EXISTS metadata (&quot;</span>
+<span class="w">        </span><span class="s">&quot; name text PRIMARY KEY,&quot;</span>
+<span class="w">        </span><span class="s">&quot; value text)&quot;</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">SQLITE_OK</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">sqlite3_exec</span><span class="p">(</span><span class="n">database</span><span class="p">,</span><span class="w"> </span><span class="n">query</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="mf">0L</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to create table [metadata]&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">query</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="s">&quot;CREATE TABLE IF NOT EXISTS tiles (&quot;</span>
+<span class="w">        </span><span class="s">&quot; zoom_level integer,&quot;</span>
+<span class="w">        </span><span class="s">&quot; tile_column integer,&quot;</span>
+<span class="w">        </span><span class="s">&quot; tile_row integer,&quot;</span>
+<span class="w">        </span><span class="s">&quot; tile_data blob)&quot;</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">errorMsg</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0L</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">SQLITE_OK</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">sqlite3_exec</span><span class="p">(</span><span class="n">database</span><span class="p">,</span><span class="w"> </span><span class="n">query</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="mf">0L</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">errorMsg</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to create table [tiles]: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">errorMsg</span><span class="p">));</span>
+<span class="w">        </span><span class="n">sqlite3_free</span><span class="p">(</span><span class="n">errorMsg</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// create an index</span>
+<span class="w">    </span><span class="n">query</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="s">&quot;CREATE UNIQUE INDEX tile_index ON tiles (&quot;</span>
+<span class="w">        </span><span class="s">&quot; zoom_level, tile_column, tile_row)&quot;</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">SQLITE_OK</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">sqlite3_exec</span><span class="p">(</span><span class="n">database</span><span class="p">,</span><span class="w"> </span><span class="n">query</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="mf">0L</span><span class="p">,</span><span class="w"> </span><span class="mf">0L</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">errorMsg</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to create index on table [tiles]: &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">errorMsg</span><span class="p">));</span>
+<span class="w">        </span><span class="n">sqlite3_free</span><span class="p">(</span><span class="n">errorMsg</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">// keep going... non-fatal</span>
+<span class="w">        </span><span class="c1">// return false;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// TODO: support &quot;grids&quot; and &quot;grid_data&quot; tables if necessary.</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">MBTiles</span><span class="o">::</span><span class="n">Driver</span><span class="o">::</span><span class="n">setDataExtents</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">DataExtentList</span><span class="o">&amp;</span><span class="w"> </span><span class="n">values</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_database</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="nb">NULL</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">values</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Get the union of all the extents</span>
+<span class="w">        </span><span class="n">GeoExtent</span><span class="w"> </span><span class="nf">e</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">values</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">e</span><span class="p">.</span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Convert the bounds to geographic</span>
+<span class="w">        </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">bounds</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">isGeodetic</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">bounds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">bounds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">stringstream</span><span class="w"> </span><span class="n">boundsStr</span><span class="p">;</span>
+<span class="w">        </span><span class="n">boundsStr</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">xmin</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;,&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">ymin</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;,&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">xmax</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;,&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">ymax</span><span class="p">();</span>
+<span class="w">        </span><span class="n">putMetaData</span><span class="p">(</span><span class="s">&quot;bounds&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">boundsStr</span><span class="p">.</span><span class="n">str</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="cp">#endif </span><span class="c1">// ROCKY_HAS_MBTILES</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

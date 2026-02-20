@@ -1,0 +1,14 @@
+.. _exhale_variable_namespacerocky_1a7548cf282c49763eed7022ac7c6c4e4c:
+
+Variable rocky::VSG_VIEW_DEPENDENT_LIGHTS_BINDING
+=================================================
+
+- Defined in :ref:`file_src_rocky_vsg_PipelineState.h`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: rocky::VSG_VIEW_DEPENDENT_LIGHTS_BINDING
+   :project: Rocky

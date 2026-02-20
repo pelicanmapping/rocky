@@ -1,0 +1,14 @@
+.. _exhale_define_SkyNode_8cpp_1a5110dfd748e64ce3f47d3944c61461ab:
+
+Define ATMOSPHERE_VERT_SHADER
+=============================
+
+- Defined in :ref:`file_src_rocky_vsg_SkyNode.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ATMOSPHERE_VERT_SHADER
+   :project: Rocky

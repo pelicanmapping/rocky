@@ -1,0 +1,1184 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File GeoExtent.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File GeoExtent.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_GeoExtent.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-geoextent-cpp">
+<span id="program-listing-file-src-rocky-geoextent-cpp"></span><h1>Program Listing for File GeoExtent.cpp<a class="headerlink" href="#program-listing-for-file-geoextent-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_GeoExtent.cpp.html#file-src-rocky-geoextent-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/GeoExtent.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;GeoExtent.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Math.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Context.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iomanip&gt;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="o">::</span><span class="nn">util</span><span class="p">;</span>
+
+<span class="cp">#undef  LC</span>
+<span class="cp">#define LC &quot;[GeoExtent] &quot;</span>
+
+<span class="cp">#undef EPSILON</span>
+<span class="cp">#define EPSILON 1e-6</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kr">inline</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">is_valid</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">isnan</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">            </span><span class="n">n</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">DBL_MAX</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">            </span><span class="n">n</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="o">-</span><span class="n">DBL_MAX</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">GeoExtent</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">::</span><span class="n">INVALID</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">();</span>
+
+
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">GeoExtent</span><span class="p">()</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">_west</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_width</span><span class="p">(</span><span class="mf">-1.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_south</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_height</span><span class="p">(</span><span class="mf">-1.0</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">//NOP - invalid</span>
+<span class="p">}</span>
+
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">GeoExtent</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">_srs</span><span class="p">(</span><span class="n">srs</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_west</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_width</span><span class="p">(</span><span class="mf">-1.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_south</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_height</span><span class="p">(</span><span class="mf">-1.0</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">//NOP - invalid</span>
+<span class="p">}</span>
+
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">GeoExtent</span><span class="p">(</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">west</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">south</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">east</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">north</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+
+<span class="w">    </span><span class="n">_srs</span><span class="p">(</span><span class="n">srs</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_west</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_width</span><span class="p">(</span><span class="mf">-1.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_south</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_height</span><span class="p">(</span><span class="mf">-1.0</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">west</span><span class="p">,</span><span class="w"> </span><span class="n">south</span><span class="p">,</span><span class="w"> </span><span class="n">east</span><span class="p">,</span><span class="w"> </span><span class="n">north</span><span class="p">);</span>
+<span class="p">}</span>
+
+
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">GeoExtent</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Box</span><span class="o">&amp;</span><span class="w"> </span><span class="n">bounds</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">_srs</span><span class="p">(</span><span class="n">srs</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_west</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_width</span><span class="p">(</span><span class="mf">-1.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_south</span><span class="p">(</span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_height</span><span class="p">(</span><span class="mf">-1.0</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">bounds</span><span class="p">.</span><span class="n">xmin</span><span class="p">,</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">ymin</span><span class="p">,</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">xmax</span><span class="p">,</span><span class="w"> </span><span class="n">bounds</span><span class="p">.</span><span class="n">ymax</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">set</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">west</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">south</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">east</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">north</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// Validate input.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">west</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">south</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">east</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">north</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">south</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">north</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_south</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-1.0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// In this method, east is always to the east of west!</span>
+<span class="w">    </span><span class="c1">// If it appears not to be, that means the extent crosses the antimeridian.</span>
+<span class="w">    </span><span class="n">west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">normalizeX</span><span class="p">(</span><span class="n">west</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// ensure east &gt;= west in a geographic frame.</span>
+<span class="w">        </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">east</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">west</span><span class="p">)</span>
+<span class="w">            </span><span class="n">east</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">360.0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">east</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">west</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="n">north</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">south</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">setOriginAndSize</span><span class="p">(</span><span class="n">west</span><span class="p">,</span><span class="w"> </span><span class="n">south</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">setOriginAndSize</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">west</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">south</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">height</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">west</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_south</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">south</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">height</span><span class="p">;</span>
+<span class="w">    </span><span class="n">clamp</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">GeoPoint</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">centroid</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">GeoPoint</span><span class="p">(</span>
+<span class="w">            </span><span class="n">_srs</span><span class="p">,</span>
+<span class="w">            </span><span class="n">normalizeX</span><span class="p">(</span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">width</span><span class="p">()),</span>
+<span class="w">            </span><span class="n">south</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.5</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">height</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">GeoPoint</span><span class="o">::</span><span class="n">INVALID</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">getCentroid</span><span class="p">(</span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">out_x</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="o">&amp;</span><span class="w"> </span><span class="n">out_y</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">GeoPoint</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">centroid</span><span class="p">();</span>
+<span class="w">    </span><span class="n">out_x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">out_y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">valid</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">double</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">width</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Units</span><span class="o">&amp;</span><span class="w"> </span><span class="n">units</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">isProjected</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Units</span><span class="o">::</span><span class="n">convert</span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">units</span><span class="p">(),</span><span class="w"> </span><span class="n">units</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Distance</span><span class="w"> </span><span class="nf">N</span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">ellipsoid</span><span class="p">().</span><span class="n">longitudinalDegreesToMeters</span><span class="p">(</span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">north</span><span class="p">()),</span><span class="w"> </span><span class="n">Units</span><span class="o">::</span><span class="n">METERS</span><span class="p">);</span>
+<span class="w">        </span><span class="n">Distance</span><span class="w"> </span><span class="nf">S</span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">ellipsoid</span><span class="p">().</span><span class="n">longitudinalDegreesToMeters</span><span class="p">(</span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">south</span><span class="p">()),</span><span class="w"> </span><span class="n">Units</span><span class="o">::</span><span class="n">METERS</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Distance</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">S</span><span class="p">.</span><span class="n">as</span><span class="p">(</span><span class="n">Units</span><span class="o">::</span><span class="n">METERS</span><span class="p">),</span><span class="w"> </span><span class="n">N</span><span class="p">.</span><span class="n">as</span><span class="p">(</span><span class="n">Units</span><span class="o">::</span><span class="n">METERS</span><span class="p">)),</span><span class="w"> </span><span class="n">Units</span><span class="o">::</span><span class="n">METERS</span><span class="p">).</span><span class="n">as</span><span class="p">(</span><span class="n">units</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">double</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">height</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Units</span><span class="o">&amp;</span><span class="w"> </span><span class="n">units</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">isProjected</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Units</span><span class="o">::</span><span class="n">convert</span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">units</span><span class="p">(),</span><span class="w"> </span><span class="n">units</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Distance</span><span class="p">(</span>
+<span class="w">            </span><span class="n">srs</span><span class="p">().</span><span class="n">ellipsoid</span><span class="p">().</span><span class="n">longitudinalDegreesToMeters</span><span class="p">(</span><span class="n">height</span><span class="p">(),</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">            </span><span class="n">Units</span><span class="o">::</span><span class="n">METERS</span><span class="p">).</span><span class="n">as</span><span class="p">(</span><span class="n">units</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="k">operator</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="o">!</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">rhs</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="o">!</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">rhs</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// note, ignore the vertical datum since extent is a 2D concept</span>
+<span class="w">    </span><span class="k">return</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">south</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">south</span><span class="p">(),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">height</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">height</span><span class="p">(),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">_srs</span><span class="p">.</span><span class="n">horizontallyEquivalentTo</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">_srs</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="k">operator</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="w"> </span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="p">(</span><span class="w"> </span><span class="o">*</span><span class="k">this</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">rhs</span><span class="w"> </span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">crossesAntimeridian</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">east</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">west</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">splitAcrossAntimeridian</span><span class="p">(</span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">out_west</span><span class="p">,</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">out_east</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">crossesAntimeridian</span><span class="p">()</span><span class="w"> </span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">width_new</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">out_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="k">this</span><span class="p">;</span>
+<span class="w">        </span><span class="n">width_new</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">180.0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">west</span><span class="p">();</span>
+<span class="w">        </span><span class="n">out_west</span><span class="p">.</span><span class="n">setOriginAndSize</span><span class="p">(</span><span class="mf">180.0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">width_new</span><span class="p">,</span><span class="w"> </span><span class="n">south</span><span class="p">(),</span><span class="w"> </span><span class="n">width_new</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">());</span>
+
+<span class="w">        </span><span class="n">out_east</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="k">this</span><span class="p">;</span>
+<span class="w">        </span><span class="n">width_new</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">east</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="mf">-180.0</span><span class="p">);</span>
+<span class="w">        </span><span class="n">out_east</span><span class="p">.</span><span class="n">setOriginAndSize</span><span class="p">(</span><span class="mf">-180.0</span><span class="p">,</span><span class="w"> </span><span class="n">south</span><span class="p">(),</span><span class="w"> </span><span class="n">width_new</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="o">!</span><span class="n">_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">()</span><span class="w"> </span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">//note: may not actually work.</span>
+<span class="w">        </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">latlong_extent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transform</span><span class="p">(</span><span class="n">_srs</span><span class="p">.</span><span class="n">geodeticSRS</span><span class="p">());</span>
+<span class="w">        </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">w</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">latlong_extent</span><span class="p">.</span><span class="n">splitAcrossAntimeridian</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="w"> </span><span class="n">e</span><span class="p">))</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">out_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">_srs</span><span class="p">);</span>
+<span class="w">            </span><span class="n">out_east</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">_srs</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">out_west</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">out_east</span><span class="p">.</span><span class="n">valid</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="cp">#if 0</span>
+<span class="c">namespace</span>
+<span class="c">{</span>
+<span class="c">    bool transformExtentToMBR(</span>
+<span class="c">        const SRS&amp; fromSRS,</span>
+<span class="c">        const SRS&amp; toSRS,</span>
+<span class="c">        double&amp; in_out_xmin,</span>
+<span class="c">        double&amp; in_out_ymin,</span>
+<span class="c">        double&amp; in_out_xmax,</span>
+<span class="c">        double&amp; in_out_ymax)</span>
+<span class="c">    {</span>
+<span class="c">        ROCKY_SOFT_ASSERT_AND_RETURN(fromSRS.valid() &amp;&amp; toSRS.valid(), false);</span>
+
+<span class="c">        // Transform all points and take the maximum bounding rectangle the resulting points</span>
+<span class="c">        std::vector&lt;glm::dvec3&gt; v;</span>
+
+<span class="c">        // Start by clamping to the out_srs&#39; legal bounds, if possible.</span>
+<span class="c">        // TODO: rethink this to be more generic.</span>
+<span class="c">        if (fromSRS.isGeodetic() &amp;&amp; !toSRS.isGeodetic())</span>
+<span class="c">        {</span>
+<span class="c">            auto to_geo = toSRS.to(fromSRS);</span>
+<span class="c">            Box b = toSRS.bounds(); // long,lat degrees</span>
+<span class="c">            glm::dvec3 min(b.xmin, b.ymin, 0);</span>
+<span class="c">            glm::dvec3 max(b.xmax, b.ymax, 0);</span>
+<span class="c">            to_geo(min, min);</span>
+<span class="c">            to_geo(max, max);</span>
+
+<span class="c">            if (b.valid())</span>
+<span class="c">            {</span>
+<span class="c">                in_out_xmin = clamp(in_out_xmin, min.x, max.x);</span>
+<span class="c">                in_out_xmax = clamp(in_out_xmax, min.x, max.x);</span>
+<span class="c">                in_out_ymin = clamp(in_out_ymin, min.y, max.y);</span>
+<span class="c">                in_out_ymax = clamp(in_out_ymax, min.y, max.y);</span>
+<span class="c">            }</span>
+<span class="c">        }</span>
+
+<span class="c">        double height = in_out_ymax - in_out_ymin;</span>
+<span class="c">        double width = in_out_xmax - in_out_xmin;</span>
+
+<span class="c">        // first point is a centroid. This we will use to make sure none of the corner points</span>
+<span class="c">        // wraps around if the target SRS is geographic.</span>
+<span class="c">        v.push_back(glm::dvec3(in_out_xmin + width * 0.5, in_out_ymin + height * 0.5, 0)); // centroid.</span>
+
+<span class="c">        // add the four corners</span>
+<span class="c">        v.push_back(glm::dvec3(in_out_xmin, in_out_ymin, 0)); // ll</span>
+<span class="c">        v.push_back(glm::dvec3(in_out_xmin, in_out_ymax, 0)); // ul</span>
+<span class="c">        v.push_back(glm::dvec3(in_out_xmax, in_out_ymax, 0)); // ur</span>
+<span class="c">        v.push_back(glm::dvec3(in_out_xmax, in_out_ymin, 0)); // lr</span>
+
+<span class="c">        //We also sample along the edges of the bounding box and include them in the</span>
+<span class="c">        //MBR computation in case you are dealing with a projection that will cause the edges</span>
+<span class="c">        //of the bounding box to be expanded.  This was first noticed when dealing with converting</span>
+<span class="c">        //Hotline Oblique Mercator to WGS84</span>
+
+<span class="c">        //Sample the edges</span>
+<span class="c">        unsigned int numSamples = 5;</span>
+<span class="c">        double dWidth = width / (numSamples - 1);</span>
+<span class="c">        double dHeight = height / (numSamples - 1);</span>
+
+<span class="c">        //Left edge</span>
+<span class="c">        for (unsigned int i = 0; i &lt; numSamples; i++)</span>
+<span class="c">        {</span>
+<span class="c">            v.push_back(glm::dvec3(in_out_xmin, in_out_ymin + dHeight * (double)i, 0));</span>
+<span class="c">        }</span>
+
+<span class="c">        //Right edge</span>
+<span class="c">        for (unsigned int i = 0; i &lt; numSamples; i++)</span>
+<span class="c">        {</span>
+<span class="c">            v.push_back(glm::dvec3(in_out_xmax, in_out_ymin + dHeight * (double)i, 0));</span>
+<span class="c">        }</span>
+
+<span class="c">        //Top edge</span>
+<span class="c">        for (unsigned int i = 0; i &lt; numSamples; i++)</span>
+<span class="c">        {</span>
+<span class="c">            v.push_back(glm::dvec3(in_out_xmin + dWidth * (double)i, in_out_ymax, 0));</span>
+<span class="c">        }</span>
+
+<span class="c">        //Bottom edge</span>
+<span class="c">        for (unsigned int i = 0; i &lt; numSamples; i++)</span>
+<span class="c">        {</span>
+<span class="c">            v.push_back(glm::dvec3(in_out_xmin + dWidth * (double)i, in_out_ymin, 0));</span>
+<span class="c">        }</span>
+
+<span class="c">        auto xform = fromSRS.to(toSRS);</span>
+
+<span class="c">        if (xform.transformRange(v.begin(), v.end()))</span>
+<span class="c">        {</span>
+<span class="c">            in_out_xmin = DBL_MAX;</span>
+<span class="c">            in_out_ymin = DBL_MAX;</span>
+<span class="c">            in_out_xmax = -DBL_MAX;</span>
+<span class="c">            in_out_ymax = -DBL_MAX;</span>
+
+<span class="c">            // For a geographic target, make sure the new extents contain the centroid</span>
+<span class="c">            // because they might have wrapped around or run into a precision failure.</span>
+<span class="c">            // v[0]=centroid, v[1]=LL, v[2]=UL, v[3]=UR, v[4]=LR</span>
+<span class="c">            if (toSRS.isGeodetic())</span>
+<span class="c">            {</span>
+<span class="c">                if (v[1].x &gt; v[0].x || v[2].x &gt; v[0].x) in_out_xmin = -180.0;</span>
+<span class="c">                if (v[3].x &lt; v[0].x || v[4].x &lt; v[0].x) in_out_xmax = 180.0;</span>
+<span class="c">            }</span>
+
+<span class="c">            // enforce an MBR:</span>
+<span class="c">            for (unsigned int i = 0; i &lt; v.size(); i++)</span>
+<span class="c">            {</span>
+<span class="c">                in_out_xmin = std::min(v[i].x, in_out_xmin);</span>
+<span class="c">                in_out_ymin = std::min(v[i].y, in_out_ymin);</span>
+<span class="c">                in_out_xmax = std::max(v[i].x, in_out_xmax);</span>
+<span class="c">                in_out_ymax = std::max(v[i].y, in_out_ymax);</span>
+<span class="c">            }</span>
+
+<span class="c">            if (toSRS.isGeodetic())</span>
+<span class="c">            {</span>
+<span class="c">                in_out_xmin = std::max(in_out_xmin, -180.0);</span>
+<span class="c">                in_out_ymin = std::max(in_out_ymin, -90.0);</span>
+<span class="c">                in_out_xmax = std::min(in_out_xmax, 180.0);</span>
+<span class="c">                in_out_ymax = std::min(in_out_ymax, 90.0);</span>
+<span class="c">            }</span>
+
+<span class="c">            volatile int ii = 0;</span>
+
+<span class="c">            return true;</span>
+<span class="c">        }</span>
+
+<span class="c">        return false;</span>
+<span class="c">    }</span>
+<span class="c">}</span>
+<span class="cp">#endif</span>
+
+<span class="n">GeoExtent</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">transform</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">to_srs</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// check for NULL</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">to_srs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">::</span><span class="n">INVALID</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">to_srs</span><span class="p">.</span><span class="n">isGeocentric</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">transform</span><span class="p">(</span><span class="n">to_srs</span><span class="p">.</span><span class="n">geodeticSRS</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">xform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">srs</span><span class="p">().</span><span class="n">to</span><span class="p">(</span><span class="n">to_srs</span><span class="p">);</span>
+<span class="w">    </span><span class="n">Box</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xform</span><span class="p">.</span><span class="n">transformBounds</span><span class="p">(</span><span class="n">Box</span><span class="p">(</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">ymin</span><span class="p">(),</span><span class="w"> </span><span class="n">xmax</span><span class="p">(),</span><span class="w"> </span><span class="n">ymax</span><span class="p">()));</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">to_srs</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">getBounds</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">xmin</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ymin</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">xmax</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ymax</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">xmin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">west</span><span class="p">();</span>
+<span class="w">    </span><span class="n">ymin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">south</span><span class="p">();</span>
+<span class="w">    </span><span class="n">xmax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">width</span><span class="p">();</span>
+<span class="w">    </span><span class="n">ymax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">south</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">height</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">Box</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">bounds</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">west</span><span class="p">,</span><span class="w"> </span><span class="n">east</span><span class="p">,</span><span class="w"> </span><span class="n">south</span><span class="p">,</span><span class="w"> </span><span class="n">north</span><span class="p">;</span>
+<span class="w">    </span><span class="n">getBounds</span><span class="p">(</span><span class="n">west</span><span class="p">,</span><span class="w"> </span><span class="n">south</span><span class="p">,</span><span class="w"> </span><span class="n">east</span><span class="p">,</span><span class="w"> </span><span class="n">north</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">Box</span><span class="p">(</span><span class="w"> </span><span class="n">west</span><span class="p">,</span><span class="w"> </span><span class="n">south</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">east</span><span class="p">,</span><span class="w"> </span><span class="n">north</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">contains</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">xy_srs</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// transform if neccessary:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">xy_srs</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">xy_srs</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">srs</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="w"> </span><span class="nf">temp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">xy_srs</span><span class="p">.</span><span class="n">to</span><span class="p">(</span><span class="n">srs</span><span class="p">()).</span><span class="n">transform</span><span class="p">(</span><span class="n">temp</span><span class="p">,</span><span class="w"> </span><span class="n">temp</span><span class="p">))</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">contains</span><span class="p">(</span><span class="n">temp</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">temp</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">SRS</span><span class="o">::</span><span class="n">EMPTY</span><span class="p">);</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">epsilon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-6</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">lsouth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">south</span><span class="p">();</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">lnorth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">north</span><span class="p">();</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">least</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">east</span><span class="p">();</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">lwest</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">west</span><span class="p">();</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">lwidth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">localx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">localy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Quantize the Y coordinate to account for tiny rounding errors:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fabs</span><span class="p">(</span><span class="n">lsouth</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">localy</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">epsilon</span><span class="p">)</span>
+<span class="w">       </span><span class="n">localy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lsouth</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fabs</span><span class="p">(</span><span class="n">lnorth</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">localy</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">epsilon</span><span class="p">)</span>
+<span class="w">       </span><span class="n">localy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lnorth</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Test the Y coordinate:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">localy</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">lsouth</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">localy</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">lnorth</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Bring the X coordinate into normal range:</span>
+<span class="w">    </span><span class="n">localx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">normalizeX</span><span class="p">(</span><span class="n">localx</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Quantize the X coordinate to account for tiny rounding errors:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fabs</span><span class="p">(</span><span class="n">lwest</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">localx</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">epsilon</span><span class="p">)</span>
+<span class="w">       </span><span class="n">localx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lwest</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fabs</span><span class="p">(</span><span class="n">least</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">localx</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">epsilon</span><span class="p">)</span>
+<span class="w">       </span><span class="n">localx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">least</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// account for the antimeridian wrap-around:</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">a0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lwest</span><span class="p">,</span><span class="w"> </span><span class="n">a1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lwest</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">lwidth</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">b0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">least</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">lwidth</span><span class="p">,</span><span class="w"> </span><span class="n">b1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">least</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">a0</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">localx</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">localx</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">a1</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">b0</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">localx</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">localx</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">b1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">contains</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">GeoPoint</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">contains</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">srs</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">contains</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Box</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span>
+<span class="w">        </span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">rhs</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">contains</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">xmin</span><span class="p">,</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">ymin</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">contains</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">xmax</span><span class="p">,</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">ymax</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">contains</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">center</span><span class="p">().</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">center</span><span class="p">().</span><span class="n">y</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">contains</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span>
+<span class="w">        </span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">rhs</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">contains</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">south</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">srs</span><span class="p">())</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">contains</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">east</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">north</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">srs</span><span class="p">())</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="n">contains</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">centroid</span><span class="p">().</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">centroid</span><span class="p">().</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">srs</span><span class="p">());</span><span class="w">   </span><span class="c1">// this accounts for the antimeridian</span>
+<span class="p">}</span>
+
+<span class="cp">#undef  OVERLAPS</span>
+<span class="cp">#define OVERLAPS(A, B, C, D) (!(B &lt;= C || A &gt;= D))</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">intersects</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="o">!</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">rhs</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Transform the incoming extent if necessary:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_srs</span><span class="p">.</span><span class="n">horizontallyEquivalentTo</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">srs</span><span class="p">()))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// non-contiguous projection? convert to a contiguous one:</span>
+<span class="w">        </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">thisGeo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">transform</span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">geodeticSRS</span><span class="p">());</span>
+<span class="w">        </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">rhsGeo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">geodeticSRS</span><span class="p">());</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">thisGeo</span><span class="p">.</span><span class="n">intersects</span><span class="p">(</span><span class="n">rhsGeo</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Trivial reject: y-dimension does not overlap:</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">y_excl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">south</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">north</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">north</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">south</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">y_excl</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Trivial reject: x-dimension does not overlap in projected SRS:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">x_excl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">east</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">east</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">();</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">x_excl</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// By now we know that Y overlaps and we are in a geographic SRS</span>
+<span class="w">    </span><span class="c1">// and therefore must consider the antimeridian wrap-around in X.</span>
+<span class="w">    </span><span class="c1">// a and b are &quot;this&quot;; c and d are &quot;rhs&quot;:</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">a0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">east</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">a1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">east</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">b0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">b1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">width</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">c0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">east</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">c1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">east</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">d0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">d1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">width</span><span class="p">();</span>
+<span class="w">    </span><span class="k">return</span>
+<span class="w">        </span><span class="n">OVERLAPS</span><span class="p">(</span><span class="n">a0</span><span class="p">,</span><span class="w"> </span><span class="n">a1</span><span class="p">,</span><span class="w"> </span><span class="n">c0</span><span class="p">,</span><span class="w"> </span><span class="n">c1</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">OVERLAPS</span><span class="p">(</span><span class="n">a0</span><span class="p">,</span><span class="w"> </span><span class="n">a1</span><span class="p">,</span><span class="w"> </span><span class="n">d0</span><span class="p">,</span><span class="w"> </span><span class="n">d1</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">OVERLAPS</span><span class="p">(</span><span class="n">b0</span><span class="p">,</span><span class="w"> </span><span class="n">b1</span><span class="p">,</span><span class="w"> </span><span class="n">c0</span><span class="p">,</span><span class="w"> </span><span class="n">c1</span><span class="p">)</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">OVERLAPS</span><span class="p">(</span><span class="n">b0</span><span class="p">,</span><span class="w"> </span><span class="n">b1</span><span class="p">,</span><span class="w"> </span><span class="n">d0</span><span class="p">,</span><span class="w"> </span><span class="n">d1</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">GeoCircle</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">computeBoundingGeoCircle</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">GeoCircle</span><span class="w"> </span><span class="n">circle</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="o">!</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">circle</span><span class="p">.</span><span class="n">setRadius</span><span class="p">(</span><span class="w"> </span><span class="mf">-1.0</span><span class="w"> </span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">GeoPoint</span><span class="w"> </span><span class="n">the_centroid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">centroid</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">srs</span><span class="p">().</span><span class="n">isProjected</span><span class="p">()</span><span class="w"> </span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">ext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="w"> </span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="p">);</span>
+<span class="w">            </span><span class="n">circle</span><span class="p">.</span><span class="n">setRadius</span><span class="p">(</span><span class="w"> </span><span class="mf">0.5</span><span class="o">*</span><span class="n">ext</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1.414121356237</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="cm">/*sqrt(2)*/</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="c1">// isGeographic</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// calculate the radius in meters using the ECEF coordinate system</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">the_centroid</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">the_centroid</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">                </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">south</span><span class="p">(),</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">                </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">east</span><span class="p">(),</span><span class="w"> </span><span class="n">south</span><span class="p">(),</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">                </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">east</span><span class="p">(),</span><span class="w"> </span><span class="n">north</span><span class="p">(),</span><span class="w"> </span><span class="mf">0.0</span><span class="p">),</span>
+<span class="w">                </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">north</span><span class="p">(),</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span>
+<span class="w">            </span><span class="p">};</span>
+
+<span class="w">            </span><span class="n">srs</span><span class="p">().</span><span class="n">to</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">ECEF</span><span class="p">).</span><span class="n">transformRange</span><span class="p">(</span><span class="n">p</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">p</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+<span class="w">            </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">lengthSquared</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[](</span><span class="k">const</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="o">&amp;</span><span class="w"> </span><span class="n">v</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">dot</span><span class="p">(</span><span class="n">v</span><span class="p">,</span><span class="w"> </span><span class="n">v</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">radius2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lengthSquared</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">            </span><span class="n">radius2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">radius2</span><span class="p">,</span><span class="w"> </span><span class="n">lengthSquared</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">p</span><span class="p">[</span><span class="mi">2</span><span class="p">]));</span>
+<span class="w">            </span><span class="n">radius2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">radius2</span><span class="p">,</span><span class="w"> </span><span class="n">lengthSquared</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">p</span><span class="p">[</span><span class="mi">3</span><span class="p">]));</span>
+<span class="w">            </span><span class="n">radius2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">radius2</span><span class="p">,</span><span class="w"> </span><span class="n">lengthSquared</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">p</span><span class="p">[</span><span class="mi">4</span><span class="p">]));</span>
+
+<span class="w">            </span><span class="n">circle</span><span class="p">.</span><span class="n">setRadius</span><span class="p">(</span><span class="n">sqrt</span><span class="p">(</span><span class="n">radius2</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">circle</span><span class="p">.</span><span class="n">setCenter</span><span class="p">(</span><span class="n">the_centroid</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">circle</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">expandToInclude</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// First, bring the X coordinate into the local frame.</span>
+<span class="w">    </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">normalizeX</span><span class="p">(</span><span class="n">x</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Invalid? Set to a point.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">set</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Check each coordinate separately:</span>
+<span class="w">    </span><span class="n">GeoPoint</span><span class="w"> </span><span class="n">the_centroid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">centroid</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">containsX</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contains</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">the_centroid</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">containsY</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contains</span><span class="p">(</span><span class="n">the_centroid</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Expand along the Y axis:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">containsY</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">south</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_height</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="n">_south</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+<span class="w">            </span><span class="n">_south</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">north</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">_south</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Expand along the X axis:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">containsX</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// For geodetic coordinates, we need to consider antimeridian wrap-around</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">current_east</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">east</span><span class="p">();</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">current_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width</span><span class="p">();</span>
+
+<span class="w">            </span><span class="c1">// Calculate the two possible expansions:</span>
+<span class="w">            </span><span class="c1">// 1. Direct expansion (no wrap-around)</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">new_west_direct</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">new_east_direct</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">current_east</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">width_direct</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_east_direct</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">new_west_direct</span><span class="p">;</span>
+
+<span class="w">            </span><span class="c1">// Handle the case where direct expansion would cross 180/-180</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">width_direct</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">180.0</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// Need to consider wrap-around</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">width_wrap</span><span class="p">;</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">new_west_wrap</span><span class="p">;</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">west</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="c1">// Expanding westward past the antimeridian</span>
+<span class="w">                    </span><span class="n">width_wrap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="mf">-180.0</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="mf">180.0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">new_west_wrap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="c1">// Expanding eastward past the antimeridian</span>
+<span class="w">                    </span><span class="n">width_wrap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="mf">-180.0</span><span class="p">))</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="mf">180.0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">west</span><span class="p">());</span>
+<span class="w">                    </span><span class="n">new_west_wrap</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">west</span><span class="p">();</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="c1">// Choose the smaller expansion</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">width_wrap</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">width_direct</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_west_wrap</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width_wrap</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_west_direct</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width_direct</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// Direct expansion is fine</span>
+<span class="w">                </span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_west_direct</span><span class="p">;</span>
+<span class="w">                </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width_direct</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// Projected mode: simple expansion</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">west</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_width</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="n">_west</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">                </span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">east</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">_west</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">containsX</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">containsY</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">clamp</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">expandToInclude</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">rhs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// no SRS? Just assign.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_srs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="o">*</span><span class="k">this</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">rhs</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">horizontallyEquivalentTo</span><span class="p">(</span><span class="n">_srs</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">_srs</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// If this extent is invalid, just assign the RHS</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="o">*</span><span class="k">this</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// For simplicity and correctness, expand to include the four corners</span>
+<span class="w">    </span><span class="c1">// and centroid of the RHS extent. This handles antimeridian cases properly.</span>
+<span class="w">    </span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">south</span><span class="p">());</span>
+<span class="w">    </span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">east</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">south</span><span class="p">());</span>
+<span class="w">    </span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">east</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">north</span><span class="p">());</span>
+<span class="w">    </span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">north</span><span class="p">());</span>
+<span class="w">    </span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">centroid</span><span class="p">().</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">centroid</span><span class="p">().</span><span class="n">y</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">GeoExtent</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">intersectionSameSRS</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">rhs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">::</span><span class="n">INVALID</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// check for basic intersection. Note, we do NOT validate</span>
+<span class="w">    </span><span class="c1">// that they are the same SRS!</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">intersects</span><span class="p">(</span><span class="n">rhs</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">::</span><span class="n">INVALID</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// first check Y.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ymin</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">ymax</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">ymax</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">ymin</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">::</span><span class="n">INVALID</span><span class="p">;</span><span class="w"> </span><span class="c1">// they don&#39;t overlap in Y.</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">result</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">360.0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="p">.</span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_west</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="p">.</span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_width</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mf">360.0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">result</span><span class="p">.</span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_west</span><span class="p">;</span>
+<span class="w">            </span><span class="n">result</span><span class="p">.</span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_width</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">east</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">east</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// simple case, no antimeridian crossing</span>
+<span class="w">                </span><span class="n">result</span><span class="p">.</span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">west</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">());</span>
+<span class="w">                </span><span class="n">result</span><span class="p">.</span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">east</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">east</span><span class="p">())</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">_west</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">lhs_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">west</span><span class="p">();</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">rhs_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">();</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fabs</span><span class="p">(</span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">())</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">180.0</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">())</span>
+<span class="w">                        </span><span class="n">lhs_west</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">360.0</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">else</span>
+<span class="w">                        </span><span class="n">rhs_west</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">360.0</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">new_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">lhs_west</span><span class="p">,</span><span class="w"> </span><span class="n">rhs_west</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="p">.</span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">normalizeX</span><span class="p">(</span><span class="n">new_west</span><span class="p">);</span>
+<span class="w">                </span><span class="n">result</span><span class="p">.</span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">lhs_west</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs_west</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">width</span><span class="p">())</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">new_west</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// projected mode is simple</span>
+<span class="w">        </span><span class="n">result</span><span class="p">.</span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">xmin</span><span class="p">());</span>
+<span class="w">        </span><span class="n">result</span><span class="p">.</span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">xmax</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">xmax</span><span class="p">())</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">_west</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">result</span><span class="p">.</span><span class="n">_south</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">south</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">south</span><span class="p">());</span>
+<span class="w">    </span><span class="n">result</span><span class="p">.</span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">north</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">north</span><span class="p">())</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">_south</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">result</span><span class="p">.</span><span class="n">clamp</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">scale</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">x_scale</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">y_scale</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">x_scale</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">y_scale</span><span class="p">))</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">cx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_west</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.5</span><span class="o">*</span><span class="n">_width</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">cy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_south</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.5</span><span class="o">*</span><span class="n">_height</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">setOriginAndSize</span><span class="p">(</span>
+<span class="w">        </span><span class="n">normalizeX</span><span class="p">(</span><span class="n">cx</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">0.5</span><span class="o">*</span><span class="n">_width</span><span class="o">*</span><span class="n">x_scale</span><span class="p">),</span>
+<span class="w">        </span><span class="n">cy</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">0.5</span><span class="o">*</span><span class="n">_height</span><span class="o">*</span><span class="n">y_scale</span><span class="p">,</span>
+<span class="w">        </span><span class="n">_width</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">x_scale</span><span class="p">,</span>
+<span class="w">        </span><span class="n">_height</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">y_scale</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">expand</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_srs</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">is_valid</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">setOriginAndSize</span><span class="p">(</span>
+<span class="w">        </span><span class="n">normalizeX</span><span class="p">(</span><span class="n">_west</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">0.5</span><span class="o">*</span><span class="n">x</span><span class="p">),</span>
+<span class="w">        </span><span class="n">_south</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mf">0.5</span><span class="o">*</span><span class="n">y</span><span class="p">,</span>
+<span class="w">        </span><span class="n">_width</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="p">,</span>
+<span class="w">        </span><span class="n">_height</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">expand</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Distance</span><span class="o">&amp;</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Distance</span><span class="o">&amp;</span><span class="w"> </span><span class="n">y</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_srs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">latitude</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="n">ymin</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">0.0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">ymin</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">ymax</span><span class="p">())</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">xp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SRS</span><span class="o">::</span><span class="n">transformUnits</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">_srs</span><span class="p">,</span><span class="w"> </span><span class="n">Angle</span><span class="p">(</span><span class="n">latitude</span><span class="p">,</span><span class="w"> </span><span class="n">Units</span><span class="o">::</span><span class="n">DEGREES</span><span class="p">));</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">yp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SRS</span><span class="o">::</span><span class="n">transformUnits</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">_srs</span><span class="p">,</span><span class="w"> </span><span class="n">Angle</span><span class="p">());</span>
+
+<span class="w">    </span><span class="n">expand</span><span class="p">(</span><span class="n">xp</span><span class="p">,</span><span class="w"> </span><span class="n">yp</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">clamp</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">_west</span><span class="p">,</span><span class="w"> </span><span class="n">floor</span><span class="p">(</span><span class="n">_west</span><span class="p">),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">))</span>
+<span class="w">        </span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">floor</span><span class="p">(</span><span class="n">_west</span><span class="p">);</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">_west</span><span class="p">,</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">_west</span><span class="p">),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">))</span>
+<span class="w">        </span><span class="n">_west</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">_west</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">_south</span><span class="p">,</span><span class="w"> </span><span class="n">floor</span><span class="p">(</span><span class="n">_south</span><span class="p">),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">))</span>
+<span class="w">        </span><span class="n">_south</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">floor</span><span class="p">(</span><span class="n">_south</span><span class="p">);</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">_south</span><span class="p">,</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">_south</span><span class="p">),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">))</span>
+<span class="w">        </span><span class="n">_south</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">_south</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">_width</span><span class="p">,</span><span class="w"> </span><span class="n">floor</span><span class="p">(</span><span class="n">_width</span><span class="p">),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">))</span>
+<span class="w">        </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">floor</span><span class="p">(</span><span class="n">_width</span><span class="p">);</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">_width</span><span class="p">,</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">_width</span><span class="p">),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">))</span>
+<span class="w">        </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">_width</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">_height</span><span class="p">,</span><span class="w"> </span><span class="n">floor</span><span class="p">(</span><span class="n">_height</span><span class="p">),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">))</span>
+<span class="w">        </span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">floor</span><span class="p">(</span><span class="n">_height</span><span class="p">);</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">epsilonEqual</span><span class="p">(</span><span class="n">_height</span><span class="p">,</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">_height</span><span class="p">),</span><span class="w"> </span><span class="n">EPSILON</span><span class="p">))</span>
+<span class="w">        </span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ceil</span><span class="p">(</span><span class="n">_height</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">clamp</span><span class="p">(</span><span class="n">_width</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">360.0</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">south</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_height</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="p">(</span><span class="mf">-90.0</span><span class="p">)</span><span class="o">-</span><span class="n">_south</span><span class="p">;</span>
+<span class="w">            </span><span class="n">_south</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-90.0</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">north</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">90.0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_height</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="p">(</span><span class="n">north</span><span class="p">()</span><span class="mf">-90.0</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">clamp</span><span class="p">(</span><span class="n">_height</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="mf">180.0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">double</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">area</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">isProjected</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">srs</span><span class="p">().</span><span class="n">isQSC</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// projected area is width * height in the units of the SRS.</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Distance</span><span class="p">(</span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">srs</span><span class="p">().</span><span class="n">units</span><span class="p">()).</span><span class="n">as</span><span class="p">(</span><span class="n">Units</span><span class="o">::</span><span class="n">METERS</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Distance</span><span class="p">(</span><span class="n">height</span><span class="p">(),</span><span class="w"> </span><span class="n">srs</span><span class="p">().</span><span class="n">units</span><span class="p">()).</span><span class="n">as</span><span class="p">(</span><span class="n">Units</span><span class="o">::</span><span class="n">METERS</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// take the four corners in geodetic coords.</span>
+<span class="w">    </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="w"> </span><span class="n">corners</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">{</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">ymin</span><span class="p">(),</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">xmax</span><span class="p">(),</span><span class="w"> </span><span class="n">ymin</span><span class="p">(),</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">xmax</span><span class="p">(),</span><span class="w"> </span><span class="n">ymax</span><span class="p">(),</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">ymax</span><span class="p">(),</span><span class="w"> </span><span class="mi">0</span><span class="p">}</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">srs</span><span class="p">().</span><span class="n">isGeodetic</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">to_geo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">srs</span><span class="p">().</span><span class="n">to</span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">geodeticSRS</span><span class="p">());</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">corners</span><span class="p">)</span>
+<span class="w">            </span><span class="n">to_geo</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// calculate the ground distance between the corners, and across the diagonal.</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ellip</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">srs</span><span class="p">().</span><span class="n">ellipsoid</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ellip</span><span class="p">.</span><span class="n">geodesicGroundDistance</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">corners</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ellip</span><span class="p">.</span><span class="n">geodesicGroundDistance</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">corners</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ellip</span><span class="p">.</span><span class="n">geodesicGroundDistance</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="n">corners</span><span class="p">[</span><span class="mi">3</span><span class="p">]);</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ellip</span><span class="p">.</span><span class="n">geodesicGroundDistance</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span><span class="w"> </span><span class="n">corners</span><span class="p">[</span><span class="mi">0</span><span class="p">]);</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ellip</span><span class="p">.</span><span class="n">geodesicGroundDistance</span><span class="p">(</span><span class="n">corners</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="n">corners</span><span class="p">[</span><span class="mi">2</span><span class="p">]);</span><span class="w"> </span><span class="c1">// diagonal</span>
+
+<span class="w">    </span><span class="c1">// Calculate the area by adding the area of both triangles formed by the diagonal.</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">s1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">2.0</span><span class="p">;</span><span class="w"> </span><span class="c1">// semi-perimeter of triangle 1</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">s2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">c</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">2.0</span><span class="p">;</span><span class="w"> </span><span class="c1">// semi-perimeter of triangle 2</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">area1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqrt</span><span class="p">(</span><span class="n">s1</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">s1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">s1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">s1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">e</span><span class="p">));</span><span class="w"> </span><span class="c1">// area of triangle 1</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">area2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqrt</span><span class="p">(</span><span class="n">s2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">s2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">s2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">d</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">s2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">e</span><span class="p">));</span><span class="w"> </span><span class="c1">// area of triangle 2</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">area1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">area2</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">double</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">normalizeX</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">is_valid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">EPS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-8</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="mi">-180</span><span class="p">))</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">EPS</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">180</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">EPS</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-180.0</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">-180.0</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="mf">360.0</span><span class="p">;</span>
+<span class="w">            </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mf">180.0</span><span class="p">)</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="mf">360.0</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">//if (x &lt; 0.0 || x &gt;= 360.0)</span>
+<span class="w">        </span><span class="c1">//{</span>
+<span class="w">        </span><span class="c1">//    x = fmod(x, 360.0);</span>
+<span class="w">        </span><span class="c1">//    if (x &lt; 0.0)</span>
+<span class="w">        </span><span class="c1">//        x += 360.0;</span>
+<span class="w">        </span><span class="c1">//}</span>
+<span class="w">        </span><span class="c1">//</span>
+<span class="w">        </span><span class="c1">//if (x &gt; 180.0)</span>
+<span class="w">        </span><span class="c1">//{</span>
+<span class="w">        </span><span class="c1">//    x -= 360.0;</span>
+<span class="w">        </span><span class="c1">//}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">toString</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">stringstream</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="o">!</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="p">)</span>
+<span class="w">        </span><span class="n">buf</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;INVALID&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">        </span><span class="n">buf</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setprecision</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;SW=&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;,&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">south</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot; NE=&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">east</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;,&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">north</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_srs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">buf</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;, SRS=&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_srs</span><span class="p">.</span><span class="n">name</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">buf</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;, SRS=NULL&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">bufStr</span><span class="p">;</span>
+<span class="w">    </span><span class="n">bufStr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">bufStr</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">Sphere</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">createWorldBoundingSphere</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">minElev</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">maxElev</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Sphere</span><span class="w"> </span><span class="n">bs</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">srs</span><span class="p">().</span><span class="n">isProjected</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">bs</span><span class="p">.</span><span class="n">expandBy</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">ymin</span><span class="p">(),</span><span class="w"> </span><span class="n">minElev</span><span class="p">));</span>
+<span class="w">        </span><span class="n">bs</span><span class="p">.</span><span class="n">expandBy</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">xmax</span><span class="p">(),</span><span class="w"> </span><span class="n">ymax</span><span class="p">(),</span><span class="w"> </span><span class="n">maxElev</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="c1">// geocentric</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Sample points along the extent</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">samplePoints</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">samples</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">7</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">xSample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)(</span><span class="n">samples</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">ySample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)(</span><span class="n">samples</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">samples</span><span class="p">;</span><span class="w"> </span><span class="n">c</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">xmin</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">c</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">xSample</span><span class="p">;</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">samples</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ymin</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">r</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">ySample</span><span class="p">;</span>
+
+<span class="w">                </span><span class="n">samplePoints</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">minElev</span><span class="p">);</span>
+<span class="w">                </span><span class="n">samplePoints</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">maxElev</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// transform to world coords:</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">to_world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">srs</span><span class="p">().</span><span class="n">to</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">ECEF</span><span class="p">);</span>
+<span class="w">        </span><span class="n">to_world</span><span class="p">.</span><span class="n">transformRange</span><span class="p">(</span><span class="n">samplePoints</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">samplePoints</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+<span class="w">        </span><span class="c1">// Compute the bounding box of the sample points</span>
+<span class="w">        </span><span class="n">Box</span><span class="w"> </span><span class="n">bb</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">samplePoints</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">bb</span><span class="p">.</span><span class="n">expandBy</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// The center of the bounding sphere is the center of the bounding box</span>
+<span class="w">        </span><span class="n">bs</span><span class="p">.</span><span class="n">center</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">bb</span><span class="p">.</span><span class="n">center</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// Compute the max radius based on the distance from the bounding boxes center.</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">maxRadius2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">DBL_MAX</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">samplePoints</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">r2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">dot</span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">bs</span><span class="p">.</span><span class="n">center</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">bs</span><span class="p">.</span><span class="n">center</span><span class="p">);</span><span class="w"> </span><span class="c1">// glm::distance(p, bs.center);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r2</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxRadius2</span><span class="p">)</span><span class="w"> </span><span class="n">maxRadius2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r2</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">bs</span><span class="p">.</span><span class="n">radius</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqrt</span><span class="p">(</span><span class="n">maxRadius2</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">bs</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GeoExtent</span><span class="o">::</span><span class="n">createScaleBias</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">,</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">dmat4</span><span class="o">&amp;</span><span class="w"> </span><span class="n">output</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">scalex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">width</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">scaley</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">height</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">biasx</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">west</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">west</span><span class="p">())</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">width</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">biasy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">south</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">south</span><span class="p">())</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">height</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// TODO: is the row/column right for GLM?</span>
+<span class="w">    </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Check the dmat4&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">dmat4</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scalex</span><span class="p">;</span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scaley</span><span class="p">;</span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">biasx</span><span class="p">;</span><span class="w">  </span><span class="c1">// [0][3]?</span>
+<span class="w">    </span><span class="n">output</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">biasy</span><span class="p">;</span><span class="w">  </span><span class="c1">// [1][3]?</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;json.h&quot;</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="n">json</span><span class="o">&amp;</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">obj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">obj</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">json</span><span class="o">::</span><span class="n">object</span><span class="p">();</span>
+<span class="w">            </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;srs&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">srs</span><span class="p">());</span>
+<span class="w">            </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;xmin&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">xmin</span><span class="p">());</span>
+<span class="w">            </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ymin&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">ymin</span><span class="p">());</span>
+<span class="w">            </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;xmax&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">xmax</span><span class="p">());</span>
+<span class="w">            </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ymax&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">ymax</span><span class="p">());</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">from_json</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">json</span><span class="o">&amp;</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">obj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">SRS</span><span class="w"> </span><span class="n">srs</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">xmin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">ymin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">xmax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">,</span><span class="w"> </span><span class="n">ymax</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;srs&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">srs</span><span class="p">);</span>
+<span class="w">        </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;xmin&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">xmin</span><span class="p">);</span>
+<span class="w">        </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ymin&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ymin</span><span class="p">);</span>
+<span class="w">        </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;xmax&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">xmax</span><span class="p">);</span>
+<span class="w">        </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ymax&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">ymax</span><span class="p">);</span>
+<span class="w">        </span><span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoExtent</span><span class="p">(</span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="n">xmin</span><span class="p">,</span><span class="w"> </span><span class="n">ymin</span><span class="p">,</span><span class="w"> </span><span class="n">xmax</span><span class="p">,</span><span class="w"> </span><span class="n">ymax</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+.. _exhale_define_weemesh_8h_1a73f318eac0c77684a4abc3c8ea07d431:
+
+Define marker_is_set
+====================
+
+- Defined in :ref:`file_src_rocky_weemesh.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: marker_is_set
+   :project: Rocky

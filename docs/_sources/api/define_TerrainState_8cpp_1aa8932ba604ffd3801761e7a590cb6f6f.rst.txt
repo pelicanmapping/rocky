@@ -1,0 +1,14 @@
+.. _exhale_define_TerrainState_8cpp_1aa8932ba604ffd3801761e7a590cb6f6f:
+
+Define ATTR_VERTEX
+==================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_TerrainState.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ATTR_VERTEX
+   :project: Rocky

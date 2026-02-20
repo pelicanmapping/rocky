@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespaceWEEJOBS__NAMESPACE_1a546f7a6fa7fb39be21d076e4b62d0009:
+
+Typedef WEEJOBS_NAMESPACE::promise
+==================================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: WEEJOBS_NAMESPACE::promise
+   :project: Rocky

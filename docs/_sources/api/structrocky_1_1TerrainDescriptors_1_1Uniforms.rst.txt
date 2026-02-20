@@ -1,0 +1,23 @@
+.. _exhale_struct_structrocky_1_1TerrainDescriptors_1_1Uniforms:
+
+Struct TerrainDescriptors::Uniforms
+===================================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_TerrainState.h`
+
+
+Nested Relationships
+--------------------
+
+This struct is a nested type of :ref:`exhale_struct_structrocky_1_1TerrainDescriptors`.
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::TerrainDescriptors::Uniforms
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

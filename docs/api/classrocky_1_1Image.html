@@ -1,0 +1,949 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class Image &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Class Image::iterator" href="classrocky_1_1Image_1_1iterator.html" />
+    <link rel="prev" title="Class Horizon" href="classrocky_1_1Horizon.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="library_root.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="library_root.html#page-hierarchy">Page Hierarchy</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="library_root.html#full-api">Full API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#namespaces">Namespaces</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="library_root.html#classes-and-structs">Classes and Structs</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="structnlohmann_1_1adl__serializer_3_01rocky_1_1option_3_01T_01_4_01_4.html">Template Struct adl_serializer&lt; rocky::option&lt; T &gt; &gt;</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ActiveState.html">Struct ActiveState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Application_1_1Stats.html">Struct Application::Stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Box.html">Struct Box</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1CallbackSubs.html">Struct CallbackSubs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1CelestialBody.html">Struct CelestialBody</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Component.html">Template Struct Component</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Component_1_1Dirty.html">Struct Component::Dirty</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Content.html">Struct Content</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Declutter.html">Struct Declutter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1DisplayGeoPoint.html">Struct DisplayGeoPoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1DisplayManager_1_1ViewData.html">Struct DisplayManager::ViewData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ElevationSample.html">Struct ElevationSample</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Failure.html">Struct Failure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Feature_1_1FieldValue.html">Struct Feature::FieldValue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureSource_1_1iterator_1_1implementation.html">Struct iterator::implementation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureSource_1_1Metadata.html">Struct FeatureSource::Metadata</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureView_1_1Workspace.html">Struct FeatureView::Workspace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Geometry.html">Struct Geometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1GeometryKey.html">Struct GeometryKey</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1GeometryPool_1_1Settings.html">Struct GeometryPool::Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Hyperlink.html">Struct Hyperlink</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Image_1_1Layout.html">Struct Image::Layout</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1json__parse__result.html">Struct json_parse_result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Label.html">Struct Label</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LabelStyle.html">Struct LabelStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LineGeometry.html">Struct LineGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LineStyle.html">Struct LineStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1Action.html">Struct MapManipulator::Action</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1ActionOption.html">Struct MapManipulator::ActionOption</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1ActionOptions.html">Struct MapManipulator::ActionOptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1InputSpec.html">Struct MapManipulator::InputSpec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1State.html">Struct MapManipulator::State</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1Task.html">Struct MapManipulator::Task</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Mesh.html">Struct Mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshGeometry.html">Struct MeshGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshStyle.html">Struct MeshStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshTexture.html">Struct MeshTexture</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Motion.html">Struct Motion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MotionGreatCircle.html">Struct MotionGreatCircle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NamedFunction.html">Struct NamedFunction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NodeGraph.html">Struct NodeGraph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NodeSystemNode_1_1Drawable.html">Struct NodeSystemNode::Drawable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1option.html">Template Struct option</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PipelineUtils.html">Struct PipelineUtils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PointGeometry.html">Struct PointGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PointStyle.html">Struct PointStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Profile_1_1Data.html">Struct Profile::Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Rect.html">Struct Rect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Impl.html">Struct Registry::Impl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Read.html">Struct Registry::Read</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Write.html">Struct Registry::Write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1RenderingState.html">Struct RenderingState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Sphere.html">Struct Sphere</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1StyleSheet.html">Struct StyleSheet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainDescriptors.html">Struct TerrainDescriptors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainDescriptors_1_1Uniforms.html">Struct TerrainDescriptors::Uniforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainNode_1_1Stats.html">Struct TerrainNode::Stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainState_1_1TextureDef.html">Struct TerrainState::TextureDef</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileDescriptors.html">Struct TerrainTileDescriptors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileDescriptors_1_1Uniforms.html">Struct TerrainTileDescriptors::Uniforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel.html">Struct TerrainTileModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1ColorLayer.html">Struct TerrainTileModel::ColorLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1Elevation.html">Struct TerrainTileModel::Elevation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1MaterialMap.html">Struct TerrainTileModel::MaterialMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1NormalMap.html">Struct TerrainTileModel::NormalMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1Tile.html">Struct TerrainTileModel::Tile</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTilePager_1_1TileInfo.html">Struct TerrainTilePager::TileInfo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileRenderModel.html">Struct TerrainTileRenderModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TextureData.html">Struct TextureData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TileLayer_1_1DataExtentsIndex.html">Struct TileLayer::DataExtentsIndex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1Options.html">Struct Options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileFormat.html">Struct TileFormat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileMap.html">Struct TileMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileMapEntry.html">Struct TileMapEntry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileSet.html">Struct TileSet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Transform.html">Struct Transform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformDetail.html">Struct TransformDetail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformDetail_1_1Cached.html">Struct TransformDetail::Cached</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformViewDetail.html">Struct TransformViewDetail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URI_1_1Context.html">Struct URI::Context</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URI_1_1Stream.html">Struct URI::Stream</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URIResponse.html">Struct URIResponse</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1make__string.html">Struct make_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1PromiseOperation.html">Template Struct PromiseOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map.html">Template Struct vector_map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map_1_1ENTRY.html">Struct vector_map::ENTRY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map__equal.html">Template Struct vector_map_equal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ViewLocal.html">Template Struct ViewLocal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Visibility.html">Struct Visibility</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Branch.html">Struct RTree::Branch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Iterator_1_1StackElement.html">Struct Iterator::StackElement</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1ListNode.html">Struct RTree::ListNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Node.html">Struct RTree::Node</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1PartitionVars.html">Struct RTree::PartitionVars</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Rect.html">Struct RTree::Rect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structstd_1_1hash_3_01rocky_1_1Profile_01_4.html">Template Struct hash&lt; rocky::Profile &gt;</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1context.html">Struct context</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1future_1_1shared__t.html">Struct future::shared_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1jobgroup.html">Struct jobgroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1jobpool_1_1metrics__t.html">Struct jobpool::metrics_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1edge__t.html">Struct edge_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1edgeset__t.html">Struct edgeset_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1graph__t.html">Struct graph_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1mesh__t.html">Struct mesh_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1neighbors__t.html">Struct neighbors_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1node__t.html">Struct node_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1segment__t.html">Struct segment_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1triangle__t.html">Struct triangle_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1vert__t.html">Struct vert_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Angle.html">Class Angle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Application.html">Class Application</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Cache.html">Template Class Cache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Callback.html">Template Class Callback</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Color.html">Class Color</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ContextFactory.html">Class ContextFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ContextImpl.html">Class ContextImpl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DateTime.html">Class DateTime</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DateTimeExtent.html">Class DateTimeExtent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DeclutterSystem.html">Class DeclutterSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DescriptorBufferEx.html">Class DescriptorBufferEx</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DisplayManager.html">Class DisplayManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Distance.html">Class Distance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Duration.html">Class Duration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EarthFileImporter.html">Class EarthFileImporter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSLineSegmentIntersector.html">Class ECSLineSegmentIntersector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSNode.html">Class ECSNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSPolytopeIntersector.html">Class ECSPolytopeIntersector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSVisitor.html">Class ECSVisitor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationLayer.html">Class ElevationLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationSampler.html">Class ElevationSampler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationSession.html">Class ElevationSession</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Ellipsoid.html">Class Ellipsoid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EntityCollectionLayer.html">Class EntityCollectionLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EntityNode.html">Class EntityNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Ephemeris.html">Class Ephemeris</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Feature.html">Class Feature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureSource.html">Class FeatureSource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureSource_1_1iterator.html">Class FeatureSource::iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureView.html">Class FeatureView</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoCircle.html">Class GeoCircle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Geocoder.html">Class Geocoder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoExtent.html">Class GeoExtent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoExtent3D.html">Class GeoExtent3D</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoHeightfield.html">Class GeoHeightfield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoImage.html">Class GeoImage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Geometry_1_1iterator__base.html">Template Class Geometry::iterator_base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeometryPool.html">Class GeometryPool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoPoint.html">Class GeoPoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoTransform.html">Class GeoTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Heightfield.html">Class Heightfield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Horizon.html">Class Horizon</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Class Image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Image_1_1iterator.html">Class Image::iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ImageLayer.html">Class ImageLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ImGuiContextNode.html">Class ImGuiContextNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Inherit.html">Template Class Inherit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1IOOptions.html">Class IOOptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Layer.html">Class Layer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Line.html">Class Line</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1LineGeometryNode.html">Class LineGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1LineSystemNode.html">Class LineSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Map.html">Class Map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapManipulator.html">Class MapManipulator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapManipulator_1_1Settings.html">Class MapManipulator::Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapNode.html">Class MapNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Memory.html">Class Memory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MeshGeometryNode.html">Class MeshGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MeshSystemNode.html">Class MeshSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Mosaic.html">Class Mosaic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MotionSystem.html">Class MotionSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodeLayer.html">Class NodeLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodePager.html">Class NodePager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodeSystemNode.html">Class NodeSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Object.html">Class Object</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PagedNode.html">Class PagedNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PixelScaleTransform.html">Class PixelScaleTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Point.html">Class Point</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PointGeometryNode.html">Class PointGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PointSystemNode.html">Class PointSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Profile.html">Class Profile</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Registry.html">Class Registry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RenderImGui.html">Class RenderImGui</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RenderImGuiContext.html">Class RenderImGuiContext</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Result.html">Template Class Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RTT.html">Class RTT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ScreenSize.html">Class ScreenSize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ScreenSpaceGroup.html">Class ScreenSpaceGroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SendEventsToImGui.html">Class SendEventsToImGui</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SendEventsToImGuiContext.html">Class SendEventsToImGuiContext</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Services.html">Class Services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetColorWriteMask.html">Class SetColorWriteMask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetCullMode.html">Class SetCullMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetDepthWriteEnable.html">Class SetDepthWriteEnable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetPolygonMode.html">Class SetPolygonMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SharedGeometry.html">Class SharedGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SkyNode.html">Class SkyNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Speed.html">Class Speed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SRS.html">Class SRS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SRSOperation.html">Class SRSOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Status.html">Class Status</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1StreamingGPUBuffer.html">Class StreamingGPUBuffer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SurfaceNode.html">Class SurfaceNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1System.html">Class System</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainEngine.html">Class TerrainEngine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainNode.html">Class TerrainNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainProfileNode.html">Class TerrainProfileNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainSettings.html">Class TerrainSettings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainState.html">Class TerrainState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileHost.html">Class TerrainTileHost</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileModelFactory.html">Class TerrainTileModelFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileNode.html">Class TerrainTileNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTilePager.html">Class TerrainTilePager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TileKey.html">Class TileKey</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TileLayer.html">Class TileLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMS_1_1Driver.html">Class Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMSElevationLayer.html">Class TMSElevationLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMSImageLayer.html">Class TMSImageLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TransformSystem.html">Class TransformSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Units.html">Class Units</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1URI.html">Class URI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1BackgroundServices.html">Class BackgroundServices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1LambdaOperation.html">Class LambdaOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1LRUCache.html">Template Class LRUCache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ResidentCache.html">Template Class ResidentCache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ring__buffer.html">Template Class ring_buffer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ring__buffer__with__condition.html">Template Class ring_buffer_with_condition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1SimpleCompiler.html">Class SimpleCompiler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1StreamCompressor.html">Class StreamCompressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1StringTokenizer.html">Class StringTokenizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Viewpoint.html">Class Viewpoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VisibleLayer.html">Class VisibleLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VSGContextFactory.html">Class VSGContextFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VSGContextImpl.html">Class VSGContextImpl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VulkanExtensions.html">Class VulkanExtensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTFileStream.html">Class RTFileStream</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTree.html">Template Class RTree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTree_1_1Iterator.html">Class RTree::Iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1cancelable.html">Class cancelable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1future.html">Template Class future</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1jobpool.html">Class jobpool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1metrics.html">Class metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#enums">Enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#variables">Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#defines">Defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#typedefs">Typedefs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="library_root.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Class Image</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/classrocky_1_1Image.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="class-image">
+<span id="exhale-class-classrocky-1-1image"></span><h1>Class Image<a class="headerlink" href="#class-image" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>Defined in <a class="reference internal" href="file_src_rocky_Image.h.html#file-src-rocky-image-h"><span class="std std-ref">File Image.h</span></a></p></li>
+</ul>
+<section id="nested-relationships">
+<h2>Nested Relationships<a class="headerlink" href="#nested-relationships" title="Link to this heading"></a></h2>
+<section id="nested-types">
+<h3>Nested Types<a class="headerlink" href="#nested-types" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="structrocky_1_1Image_1_1Layout.html#exhale-struct-structrocky-1-1image-1-1layout"><span class="std std-ref">Struct Image::Layout</span></a></p></li>
+<li><p><a class="reference internal" href="classrocky_1_1Image_1_1iterator.html#exhale-class-classrocky-1-1image-1-1iterator"><span class="std std-ref">Class Image::iterator</span></a></p></li>
+</ul>
+</section>
+</section>
+<section id="inheritance-relationships">
+<h2>Inheritance Relationships<a class="headerlink" href="#inheritance-relationships" title="Link to this heading"></a></h2>
+<section id="base-type">
+<h3>Base Type<a class="headerlink" href="#base-type" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">public</span> <span class="pre">rocky::Inherit&lt;</span> <span class="pre">Object,</span> <span class="pre">Image</span> <span class="pre">&gt;</span></code></p></li>
+</ul>
+</section>
+<section id="derived-type">
+<h3>Derived Type<a class="headerlink" href="#derived-type" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">public</span> <span class="pre">rocky::Inherit&lt;</span> <span class="pre">Image,</span> <span class="pre">Mosaic</span> <span class="pre">&gt;</span></code> (<a class="reference internal" href="classrocky_1_1Inherit.html#exhale-class-classrocky-1-1inherit"><span class="std std-ref">Template Class Inherit</span></a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="class-documentation">
+<h2>Class Documentation<a class="headerlink" href="#class-documentation" title="Link to this heading"></a></h2>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5ImageE">
+<span id="_CPPv3N5rocky5ImageE"></span><span id="_CPPv2N5rocky5ImageE"></span><span id="rocky::Image"></span><span class="target" id="classrocky_1_1Image"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Image</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">rocky</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="classrocky_1_1Inherit.html#_CPPv4I00EN5rocky7InheritE" title="rocky::Inherit"><span class="n"><span class="pre">Inherit</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="classrocky_1_1Object.html#_CPPv4N5rocky6ObjectE" title="rocky::Object"><span class="n"><span class="pre">Object</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5ImageE" title="rocky::Image"><span class="n"><span class="pre">Image</span></span></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#_CPPv4N5rocky5ImageE" title="Link to this definition"></a><br /></dt>
+<dd><p>A raster grid. </p>
+<p>The image can hold any data including colors, height samples, coverage values, etc. as long as it’s storable in one of the supported pixel formats. </p>
+<p>Subclassed by <a class="reference internal" href="classrocky_1_1Inherit.html#classrocky_1_1Inherit"><span class="std std-ref">rocky::Inherit&lt; Image, Mosaic &gt;</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
+<dl class="cpp enum">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormatE">
+<span id="_CPPv3N5rocky5Image11PixelFormatE"></span><span id="_CPPv2N5rocky5Image11PixelFormatE"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5f"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">PixelFormat</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormatE" title="Link to this definition"></a><br /></dt>
+<dd><p>Pixel formats. </p>
+<p><em>Values:</em></p>
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat8R8_UNORME">
+<span id="_CPPv3N5rocky5Image11PixelFormat8R8_UNORME"></span><span id="_CPPv2N5rocky5Image11PixelFormat8R8_UNORME"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fa9e08bd3ff2dec16140bafb3aeced9953"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R8_UNORM</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat8R8_UNORME" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat7R8_SRGBE">
+<span id="_CPPv3N5rocky5Image11PixelFormat7R8_SRGBE"></span><span id="_CPPv2N5rocky5Image11PixelFormat7R8_SRGBE"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fa308f96c6f7b4158451b94ff6b8e3b5f5"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R8_SRGB</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat7R8_SRGBE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat10R8G8_UNORME">
+<span id="_CPPv3N5rocky5Image11PixelFormat10R8G8_UNORME"></span><span id="_CPPv2N5rocky5Image11PixelFormat10R8G8_UNORME"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fae7dbce17ae5d10bd5205a5820c21bff8"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R8G8_UNORM</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat10R8G8_UNORME" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat9R8G8_SRGBE">
+<span id="_CPPv3N5rocky5Image11PixelFormat9R8G8_SRGBE"></span><span id="_CPPv2N5rocky5Image11PixelFormat9R8G8_SRGBE"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fa45715f756970b9480acf8284ebcf3aa8"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R8G8_SRGB</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat9R8G8_SRGBE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat12R8G8B8_UNORME">
+<span id="_CPPv3N5rocky5Image11PixelFormat12R8G8B8_UNORME"></span><span id="_CPPv2N5rocky5Image11PixelFormat12R8G8B8_UNORME"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fa99333c7759c75361ca429b2a43b1e7a9"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R8G8B8_UNORM</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat12R8G8B8_UNORME" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat11R8G8B8_SRGBE">
+<span id="_CPPv3N5rocky5Image11PixelFormat11R8G8B8_SRGBE"></span><span id="_CPPv2N5rocky5Image11PixelFormat11R8G8B8_SRGBE"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fae5680e6aa338018d550cd5dcf3f94c8f"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R8G8B8_SRGB</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat11R8G8B8_SRGBE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat14R8G8B8A8_UNORME">
+<span id="_CPPv3N5rocky5Image11PixelFormat14R8G8B8A8_UNORME"></span><span id="_CPPv2N5rocky5Image11PixelFormat14R8G8B8A8_UNORME"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fa1f9efade107541660056e6d0197382ab"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R8G8B8A8_UNORM</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat14R8G8B8A8_UNORME" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat13R8G8B8A8_SRGBE">
+<span id="_CPPv3N5rocky5Image11PixelFormat13R8G8B8A8_SRGBE"></span><span id="_CPPv2N5rocky5Image11PixelFormat13R8G8B8A8_SRGBE"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fa7d69d1ab302b06edcc52de57a67a84c7"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R8G8B8A8_SRGB</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat13R8G8B8A8_SRGBE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat9R16_UNORME">
+<span id="_CPPv3N5rocky5Image11PixelFormat9R16_UNORME"></span><span id="_CPPv2N5rocky5Image11PixelFormat9R16_UNORME"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fadbb2481f9fbad5197ef72aa960bd9648"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R16_UNORM</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat9R16_UNORME" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat10R32_SFLOATE">
+<span id="_CPPv3N5rocky5Image11PixelFormat10R32_SFLOATE"></span><span id="_CPPv2N5rocky5Image11PixelFormat10R32_SFLOATE"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fadcf29e175673b017c7826604767b604c"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R32_SFLOAT</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat10R32_SFLOATE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat10R64_SFLOATE">
+<span id="_CPPv3N5rocky5Image11PixelFormat10R64_SFLOATE"></span><span id="_CPPv2N5rocky5Image11PixelFormat10R64_SFLOATE"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fa340cc1a199fc7cbdb624eccacb70ffc6"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">R64_SFLOAT</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat10R64_SFLOATE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat17NUM_PIXEL_FORMATSE">
+<span id="_CPPv3N5rocky5Image11PixelFormat17NUM_PIXEL_FORMATSE"></span><span id="_CPPv2N5rocky5Image11PixelFormat17NUM_PIXEL_FORMATSE"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fa99f013bbdf8047c591b1a21900f0cbc8"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">NUM_PIXEL_FORMATS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat17NUM_PIXEL_FORMATSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11PixelFormat9UNDEFINEDE">
+<span id="_CPPv3N5rocky5Image11PixelFormat9UNDEFINEDE"></span><span id="_CPPv2N5rocky5Image11PixelFormat9UNDEFINEDE"></span><span class="target" id="classrocky_1_1Image_1ae8858d0e7cbfd1df3e10de1fed511d5fafb2ae3dfb616331c05a527e78307825d"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">UNDEFINED</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image11PixelFormat9UNDEFINEDE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image3PtrE">
+<span id="_CPPv3N5rocky5Image3PtrE"></span><span id="_CPPv2N5rocky5Image3PtrE"></span><span class="target" id="classrocky_1_1Image_1a7c0a26f6a3be8549bd9ab53992f56ec4"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Ptr</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N5rocky5ImageE" title="rocky::Image"><span class="n"><span class="pre">Image</span></span></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image3PtrE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image5PixelE">
+<span id="_CPPv3N5rocky5Image5PixelE"></span><span id="_CPPv2N5rocky5Image5PixelE"></span><span class="target" id="classrocky_1_1Image_1a1633a618d752d33af7a5adef81247d97"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Pixel</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">glm</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">fvec4</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image5PixelE" title="Link to this definition"></a><br /></dt>
+<dd><p>Pixel value. For color data, each channel is assumed to be in linear color space. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image5widthEv">
+<span id="_CPPv3NK5rocky5Image5widthEv"></span><span id="_CPPv2NK5rocky5Image5widthEv"></span><span id="rocky::Image::widthC"></span><span class="target" id="classrocky_1_1Image_1a1c3ecac7c5f1abeffe83c9fc838bfdf1"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">width</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image5widthEv" title="Link to this definition"></a><br /></dt>
+<dd><p>number of colums </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image6heightEv">
+<span id="_CPPv3NK5rocky5Image6heightEv"></span><span id="_CPPv2NK5rocky5Image6heightEv"></span><span id="rocky::Image::heightC"></span><span class="target" id="classrocky_1_1Image_1a3e1260fd39ad6844981af8b5d985aa04"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">height</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image6heightEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Number of rows. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image5depthEv">
+<span id="_CPPv3NK5rocky5Image5depthEv"></span><span id="_CPPv2NK5rocky5Image5depthEv"></span><span id="rocky::Image::depthC"></span><span class="target" id="classrocky_1_1Image_1adf3d431c3e70ac8adbb8cd2a1e014ec0"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">depth</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image5depthEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Number of layers. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image11pixelFormatEv">
+<span id="_CPPv3NK5rocky5Image11pixelFormatEv"></span><span id="_CPPv2NK5rocky5Image11pixelFormatEv"></span><span id="rocky::Image::pixelFormatC"></span><span class="target" id="classrocky_1_1Image_1a6474c4a85225cbd86a2fe36fe114b1d3"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormatE" title="rocky::Image::PixelFormat"><span class="n"><span class="pre">PixelFormat</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">pixelFormat</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image11pixelFormatEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Pixel format (see PixelFormat enum) </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image11noDataValueEv">
+<span id="_CPPv3NK5rocky5Image11noDataValueEv"></span><span id="_CPPv2NK5rocky5Image11noDataValueEv"></span><span id="rocky::Image::noDataValueC"></span><span class="target" id="classrocky_1_1Image_1a969b4dcacf5b8fc3f82f5f11a02e5b40"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">noDataValue</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image11noDataValueEv" title="Link to this definition"></a><br /></dt>
+<dd><p>No-data value (for elevation) </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image15hasAlphaChannelEv">
+<span id="_CPPv3NK5rocky5Image15hasAlphaChannelEv"></span><span id="_CPPv2NK5rocky5Image15hasAlphaChannelEv"></span><span id="rocky::Image::hasAlphaChannelC"></span><span class="target" id="classrocky_1_1Image_1a98abc8210a91a4364fa92cf791e52648"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">hasAlphaChannel</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image15hasAlphaChannelEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Whether there’s an alpha channel. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image5ImageEv">
+<span id="_CPPv3N5rocky5Image5ImageEv"></span><span id="_CPPv2N5rocky5Image5ImageEv"></span><span id="rocky::Image::Image"></span><span class="target" id="classrocky_1_1Image_1aa2bfd6533ba6356bf609ace9908ea5a8"></span><span class="sig-name descname"><span class="n"><span class="pre">Image</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">default</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image5ImageEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Construct an empty (invalid) image. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image5ImageE11PixelFormatjjj">
+<span id="_CPPv3N5rocky5Image5ImageE11PixelFormatjjj"></span><span id="_CPPv2N5rocky5Image5ImageE11PixelFormatjjj"></span><span id="rocky::Image::Image__PixelFormat.unsigned.unsigned.unsigned"></span><span class="target" id="classrocky_1_1Image_1ab14d61117bea307514b6ea08fa1fbbe1"></span><span class="sig-name descname"><span class="n"><span class="pre">Image</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormatE" title="rocky::Image::PixelFormat"><span class="n"><span class="pre">PixelFormat</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">format</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">s</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">r</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Image5ImageE11PixelFormatjjj" title="Link to this definition"></a><br /></dt>
+<dd><p>Construct an image an allocate memory for it, unless data is non-null, in which case use that memory. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image5ImageERK5Image">
+<span id="_CPPv3N5rocky5Image5ImageERK5Image"></span><span id="_CPPv2N5rocky5Image5ImageERK5Image"></span><span id="rocky::Image::Image__ImageCR"></span><span class="target" id="classrocky_1_1Image_1ac5545bfc8402fa871278bf2d56549ed4"></span><span class="sig-name descname"><span class="n"><span class="pre">Image</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image5ImageERK5Image" title="rocky::Image::Image"><span class="n"><span class="pre">Image</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">rhs</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Image5ImageERK5Image" title="Link to this definition"></a><br /></dt>
+<dd><p>Copy constructor. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image5ImageERR5Image">
+<span id="_CPPv3N5rocky5Image5ImageERR5Image"></span><span id="_CPPv2N5rocky5Image5ImageERR5Image"></span><span id="rocky::Image::Image__ImageRR"></span><span class="target" id="classrocky_1_1Image_1ab2305bbebf574109639a17acc22c7e36"></span><span class="sig-name descname"><span class="n"><span class="pre">Image</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5rocky5Image5ImageERR5Image" title="rocky::Image::Image"><span class="n"><span class="pre">Image</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">rhs</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image5ImageERR5Image" title="Link to this definition"></a><br /></dt>
+<dd><p>Move constructor. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5ImageD0Ev">
+<span id="_CPPv3N5rocky5ImageD0Ev"></span><span id="_CPPv2N5rocky5ImageD0Ev"></span><span id="rocky::Image::~Image"></span><span class="target" id="classrocky_1_1Image_1a0294f63700543e11c0f0da85601c7ae5"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~Image</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5ImageD0Ev" title="Link to this definition"></a><br /></dt>
+<dd><p>Destruct and release the data unless it’s not owned. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image5validEv">
+<span id="_CPPv3NK5rocky5Image5validEv"></span><span id="_CPPv2NK5rocky5Image5validEv"></span><span id="rocky::Image::validC"></span><span class="target" id="classrocky_1_1Image_1a4067c61586c1def1dca4cb044c9432df"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">valid</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image5validEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Whether this object contains valid data. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN5rocky5Image4dataEP1Tv">
+<span id="_CPPv3I0EN5rocky5Image4dataEv"></span><span id="_CPPv2I0EN5rocky5Image4dataEv"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classrocky_1_1Image_1a53116b3ec9021f32e130cba339f57a42"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN5rocky5Image4dataEP1Tv" title="rocky::Image::data::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">data</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN5rocky5Image4dataEP1Tv" title="Link to this definition"></a><br /></dt>
+<dd><p>Pointer to the data array (type T). </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0ENK5rocky5Image4dataEPK1Tv">
+<span id="_CPPv3I0ENK5rocky5Image4dataEv"></span><span id="_CPPv2I0ENK5rocky5Image4dataEv"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classrocky_1_1Image_1ae66d8f37d650d683018a680d6eeb304a"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0ENK5rocky5Image4dataEPK1Tv" title="rocky::Image::data::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">data</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4I0ENK5rocky5Image4dataEPK1Tv" title="Link to this definition"></a><br /></dt>
+<dd><p>Const pointer to the data array (type T). </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0ENK5rocky5Image4dataEP1Tjjj">
+<span id="_CPPv3I0ENK5rocky5Image4dataEjjj"></span><span id="_CPPv2I0ENK5rocky5Image4dataEjjj"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classrocky_1_1Image_1a6e1277794a57d9bb6cb9f94eb92fe8b5"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0ENK5rocky5Image4dataEP1Tjjj" title="rocky::Image::data::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">data</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">s</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">layer</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4I0ENK5rocky5Image4dataEP1Tjjj" title="Link to this definition"></a><br /></dt>
+<dd><p>Raw pointer to the data starting at s, t, layer. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0ENK5rocky5Image5valueE1Tjjj">
+<span id="_CPPv3I0ENK5rocky5Image5valueEjjj"></span><span id="_CPPv2I0ENK5rocky5Image5valueEjjj"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classrocky_1_1Image_1abbd7c6df25d98bd56de229fe51eaf7d9"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0ENK5rocky5Image5valueE1Tjjj" title="rocky::Image::value::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">value</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">s</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">layer</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4I0ENK5rocky5Image5valueE1Tjjj" title="Link to this definition"></a><br /></dt>
+<dd><p>Value (type T) at s, t, layer. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN5rocky5Image5valueER1Tjjj">
+<span id="_CPPv3I0EN5rocky5Image5valueEjjj"></span><span id="_CPPv2I0EN5rocky5Image5valueEjjj"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classrocky_1_1Image_1a1d94f8c998427ca68c6c253bc1e3ac8a"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0EN5rocky5Image5valueER1Tjjj" title="rocky::Image::value::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">value</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">s</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">layer</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN5rocky5Image5valueER1Tjjj" title="Link to this definition"></a><br /></dt>
+<dd><p>Mutable reference to the value (type T) at s, t, layer. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0ENK5rocky5Image5valueE1Tj">
+<span id="_CPPv3I0ENK5rocky5Image5valueEj"></span><span id="_CPPv2I0ENK5rocky5Image5valueEj"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">T</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classrocky_1_1Image_1af1ea1e1d8b81277113ad54708057ccd9"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I0ENK5rocky5Image5valueE1Tj" title="rocky::Image::value::T"><span class="n"><span class="pre">T</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">value</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">offset</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4I0ENK5rocky5Image5valueE1Tj" title="Link to this definition"></a><br /></dt>
+<dd><p>Value at the i’th position in the data array. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image4readEjjj">
+<span id="_CPPv3NK5rocky5Image4readEjjj"></span><span id="_CPPv2NK5rocky5Image4readEjjj"></span><span id="rocky::Image::read__unsigned.unsigned.unsignedC"></span><span class="target" id="classrocky_1_1Image_1a966242df0297fd0aa74ebe0fbdb3a24e"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image5PixelE" title="rocky::Image::Pixel"><span class="n"><span class="pre">Pixel</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">read</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">s</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">layer</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image4readEjjj" title="Link to this definition"></a><br /></dt>
+<dd><p>Read the pixel at a column, row, and layer. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pixel</strong> – Output value (in linear color space, if applicable) </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image4readERK8iterator">
+<span id="_CPPv3NK5rocky5Image4readERK8iterator"></span><span id="_CPPv2NK5rocky5Image4readERK8iterator"></span><span id="rocky::Image::read__iteratorCRC"></span><span class="target" id="classrocky_1_1Image_1a52e84c4961777f2c0688f3afe5796b28"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image5PixelE" title="rocky::Image::Pixel"><span class="n"><span class="pre">Pixel</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">read</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image8iteratorE" title="rocky::Image::iterator"><span class="n"><span class="pre">iterator</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">i</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image4readERK8iterator" title="Link to this definition"></a><br /></dt>
+<dd><p>Read the pixel at the location in an iterator. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pixel</strong> – Output value (in linear color space, if applicable) </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image13read_bilinearEffj">
+<span id="_CPPv3NK5rocky5Image13read_bilinearEffj"></span><span id="_CPPv2NK5rocky5Image13read_bilinearEffj"></span><span id="rocky::Image::read_bilinear__float.float.unsignedC"></span><span class="target" id="classrocky_1_1Image_1a199df1f3db8a1bac63d834333a9e0731"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image5PixelE" title="rocky::Image::Pixel"><span class="n"><span class="pre">Pixel</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">read_bilinear</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">u</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">v</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">layer</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image13read_bilinearEffj" title="Link to this definition"></a><br /></dt>
+<dd><p>Read the pixel at UV coordinates with bilinear interpolation. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pixel</strong> – Output value (in linear color space, if applicable) </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image13read_bilinearERK8iterator">
+<span id="_CPPv3NK5rocky5Image13read_bilinearERK8iterator"></span><span id="_CPPv2NK5rocky5Image13read_bilinearERK8iterator"></span><span id="rocky::Image::read_bilinear__iteratorCRC"></span><span class="target" id="classrocky_1_1Image_1a7a3b0600279b2c537020a96e13e53848"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image5PixelE" title="rocky::Image::Pixel"><span class="n"><span class="pre">Pixel</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">read_bilinear</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image8iteratorE" title="rocky::Image::iterator"><span class="n"><span class="pre">iterator</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">i</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image13read_bilinearERK8iterator" title="Link to this definition"></a><br /></dt>
+<dd><p>Read the pixel at UV coordinates with bilinear interpolation at an iterator location. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pixel</strong> – Output value (in linear color space, if applicable) </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image5writeERK5Pixeljjj">
+<span id="_CPPv3N5rocky5Image5writeERK5Pixeljjj"></span><span id="_CPPv2N5rocky5Image5writeERK5Pixeljjj"></span><span id="rocky::Image::write__PixelCR.unsigned.unsigned.unsigned"></span><span class="target" id="classrocky_1_1Image_1aec2fc90c0c8b1a2140877f47860da289"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">write</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image5PixelE" title="rocky::Image::Pixel"><span class="n"><span class="pre">Pixel</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">pixel</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">s</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">layer</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Image5writeERK5Pixeljjj" title="Link to this definition"></a><br /></dt>
+<dd><p>Write the pixel at a column, row, and layer. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pixel</strong> – Value to store (in linear color space, if applicable) </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image5writeERK5PixelRK8iterator">
+<span id="_CPPv3N5rocky5Image5writeERK5PixelRK8iterator"></span><span id="_CPPv2N5rocky5Image5writeERK5PixelRK8iterator"></span><span id="rocky::Image::write__PixelCR.iteratorCR"></span><span class="target" id="classrocky_1_1Image_1acf4e2fa529feaeaa23455ee6008c065f"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">write</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image5PixelE" title="rocky::Image::Pixel"><span class="n"><span class="pre">Pixel</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">pixel</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image8iteratorE" title="rocky::Image::iterator"><span class="n"><span class="pre">iterator</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">i</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Image5writeERK5PixelRK8iterator" title="Link to this definition"></a><br /></dt>
+<dd><p>Write the pixel at the location in an iterator. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pixel</strong> – Value to store (in linear color space, if applicable) </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image11sizeInBytesEv">
+<span id="_CPPv3NK5rocky5Image11sizeInBytesEv"></span><span id="_CPPv2NK5rocky5Image11sizeInBytesEv"></span><span id="rocky::Image::sizeInBytesC"></span><span class="target" id="classrocky_1_1Image_1aa87919289706522a9fa791894710fc42"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sizeInBytes</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image11sizeInBytesEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Size of this image in bytes. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image12sizeInPixelsEv">
+<span id="_CPPv3NK5rocky5Image12sizeInPixelsEv"></span><span id="_CPPv2NK5rocky5Image12sizeInPixelsEv"></span><span id="rocky::Image::sizeInPixelsC"></span><span class="target" id="classrocky_1_1Image_1a6b9b7e712c5fa247b1a22ac419c0263d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sizeInPixels</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image12sizeInPixelsEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Size of this image in pixels. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image14rowSizeInBytesEv">
+<span id="_CPPv3NK5rocky5Image14rowSizeInBytesEv"></span><span id="_CPPv2NK5rocky5Image14rowSizeInBytesEv"></span><span id="rocky::Image::rowSizeInBytesC"></span><span class="target" id="classrocky_1_1Image_1a714a9a8c0258c3f731a69454b71a7c75"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">rowSizeInBytes</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image14rowSizeInBytesEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Size of a row in bytes. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image20componentSizeInBytesEv">
+<span id="_CPPv3NK5rocky5Image20componentSizeInBytesEv"></span><span id="_CPPv2NK5rocky5Image20componentSizeInBytesEv"></span><span id="rocky::Image::componentSizeInBytesC"></span><span class="target" id="classrocky_1_1Image_1a4da2e309a98d60620508d168a2d57b19"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">componentSizeInBytes</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image20componentSizeInBytesEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Size of each pixel component in bytes. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image5cloneEv">
+<span id="_CPPv3NK5rocky5Image5cloneEv"></span><span id="_CPPv2NK5rocky5Image5cloneEv"></span><span id="rocky::Image::cloneC"></span><span class="target" id="classrocky_1_1Image_1af141052e055c9bef6b369972b0401ec2"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N5rocky5ImageE" title="rocky::Image"><span class="n"><span class="pre">Image</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">clone</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image5cloneEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a deep copy of this image. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image7sharpenEf">
+<span id="_CPPv3NK5rocky5Image7sharpenEf"></span><span id="_CPPv2NK5rocky5Image7sharpenEf"></span><span id="rocky::Image::sharpen__floatC"></span><span class="target" id="classrocky_1_1Image_1a753deafffe527528a4995720bf2be90c"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N5rocky5ImageE" title="rocky::Image"><span class="n"><span class="pre">Image</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sharpen</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">strength</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">2.5f</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image7sharpenEf" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a sharpened clone of this image. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>strength</strong> – sharpening kernel strength, 1-5 is typically a reasonable range </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image8convolveEPKf">
+<span id="_CPPv3NK5rocky5Image8convolveEPKf"></span><span id="_CPPv2NK5rocky5Image8convolveEPKf"></span><span id="rocky::Image::convolve__floatCPC"></span><span class="target" id="classrocky_1_1Image_1a6abcc96ac7aaaa6107105dec654e34c0"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N5rocky5ImageE" title="rocky::Image"><span class="n"><span class="pre">Image</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">convolve</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">kernel</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image8convolveEPKf" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a convolved clone of this image. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>kernel</strong> – convolution kernel (9 floats that add up to 1.0f) </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image19flipVerticalInPlaceEv">
+<span id="_CPPv3N5rocky5Image19flipVerticalInPlaceEv"></span><span id="_CPPv2N5rocky5Image19flipVerticalInPlaceEv"></span><span id="rocky::Image::flipVerticalInPlace"></span><span class="target" id="classrocky_1_1Image_1a65e4064412d547468090224f576a2869"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">flipVerticalInPlace</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Image19flipVerticalInPlaceEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Inverts the pixels in the T dimension. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image13numComponentsEv">
+<span id="_CPPv3NK5rocky5Image13numComponentsEv"></span><span id="_CPPv2NK5rocky5Image13numComponentsEv"></span><span id="rocky::Image::numComponentsC"></span><span class="target" id="classrocky_1_1Image_1ad08419b0e56f6bab783e5089bef0b488"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">numComponents</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image13numComponentsEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Nmmber of components in this image’s pixel format. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0ENK5rocky5Image9eachPixelEvRR8CALLABLE">
+<span id="_CPPv3I0ENK5rocky5Image9eachPixelERR8CALLABLE"></span><span id="_CPPv2I0ENK5rocky5Image9eachPixelERR8CALLABLE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CALLABLE</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classrocky_1_1Image_1ae6666e41bab7b16ebabe7b2da6f9a9cd"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">eachPixel</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0ENK5rocky5Image9eachPixelEvRR8CALLABLE" title="rocky::Image::eachPixel::CALLABLE"><span class="n"><span class="pre">CALLABLE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">func</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4I0ENK5rocky5Image9eachPixelEvRR8CALLABLE" title="Link to this definition"></a><br /></dt>
+<dd><p>Iterate each pixel. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image4fillERK5Pixel">
+<span id="_CPPv3N5rocky5Image4fillERK5Pixel"></span><span id="_CPPv2N5rocky5Image4fillERK5Pixel"></span><span id="rocky::Image::fill__PixelCR"></span><span class="target" id="classrocky_1_1Image_1acbffad9dda61d80de88bd1967251f57b"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">fill</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image5PixelE" title="rocky::Image::Pixel"><span class="n"><span class="pre">Pixel</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">pixel</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Image4fillERK5Pixel" title="Link to this definition"></a><br /></dt>
+<dd><p>Fills the entire image with a single value. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pixel</strong> – Value to store (in linear color space, if applicable) </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image11releaseDataEv">
+<span id="_CPPv3N5rocky5Image11releaseDataEv"></span><span id="_CPPv2N5rocky5Image11releaseDataEv"></span><span id="rocky::Image::releaseData"></span><span class="target" id="classrocky_1_1Image_1a2cc633df03e7f610dd048c5e21677e6a"></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">releaseData</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Image11releaseDataEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Releases this image’s data without deleting it. </p>
+<p>Use this to transfer ownership of the raw data to someone else. The inheritor is responsible to deleting the data. This object becomes invalid unless you call <a class="reference internal" href="#classrocky_1_1Image_1a0790346e4957a8990593b5165b006265"><span class="std std-ref">allocate()</span></a> on it again. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image6viewAsEN5Image11PixelFormatE">
+<span id="_CPPv3NK5rocky5Image6viewAsEN5Image11PixelFormatE"></span><span id="_CPPv2NK5rocky5Image6viewAsEN5Image11PixelFormatE"></span><span id="rocky::Image::viewAs__Image::PixelFormatC"></span><span class="target" id="classrocky_1_1Image_1a71cc045aefca96cfb97de1219c2d8fc0"></span><a class="reference internal" href="#_CPPv4N5rocky5ImageE" title="rocky::Image"><span class="n"><span class="pre">Image</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">viewAs</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5rocky5ImageE" title="rocky::Image"><span class="n"><span class="pre">Image</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormatE" title="rocky::Image::PixelFormat"><span class="n"><span class="pre">PixelFormat</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">format</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image6viewAsEN5Image11PixelFormatE" title="Link to this definition"></a><br /></dt>
+<dd><p>Reinterprets this image as having a different pixel format. </p>
+<p>Use this with caution. Only use this as a temporary object. Data ownership is shared between the original and the view, and NO data conversion is performed. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>format</strong> – Pixel format to reinterpret data as </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A new image that shares the data with this one </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-functions">Protected Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image8allocateE11PixelFormatjjj">
+<span id="_CPPv3N5rocky5Image8allocateE11PixelFormatjjj"></span><span id="_CPPv2N5rocky5Image8allocateE11PixelFormatjjj"></span><span id="rocky::Image::allocate__PixelFormat.unsigned.unsigned.unsigned"></span><span class="target" id="classrocky_1_1Image_1a0790346e4957a8990593b5165b006265"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">allocate</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormatE" title="rocky::Image::PixelFormat"><span class="n"><span class="pre">PixelFormat</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">format</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">s</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">t</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">r</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Image8allocateE11PixelFormatjjj" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image15sizeof_miplevelEj">
+<span id="_CPPv3NK5rocky5Image15sizeof_miplevelEj"></span><span id="_CPPv2NK5rocky5Image15sizeof_miplevelEj"></span><span id="rocky::Image::sizeof_miplevel__unsignedC"></span><span class="target" id="classrocky_1_1Image_1a1454f7e17bc9ce3af4f3597dddc19088"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">sizeof_miplevel</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">level</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image15sizeof_miplevelEj" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image16data_at_miplevelEj">
+<span id="_CPPv3N5rocky5Image16data_at_miplevelEj"></span><span id="_CPPv2N5rocky5Image16data_at_miplevelEj"></span><span id="rocky::Image::data_at_miplevel__unsigned"></span><span class="target" id="classrocky_1_1Image_1aab2a32a855f1951bd68747c3f2051925"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">data_at_miplevel</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">level</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Image16data_at_miplevelEj" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-attributes">Protected Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image6_widthE">
+<span id="_CPPv3N5rocky5Image6_widthE"></span><span id="_CPPv2N5rocky5Image6_widthE"></span><span id="rocky::Image::_width__unsigned"></span><span class="target" id="classrocky_1_1Image_1a10ec3218040757ee802d47a84f537fdf"></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_width</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image6_widthE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image7_heightE">
+<span id="_CPPv3N5rocky5Image7_heightE"></span><span id="_CPPv2N5rocky5Image7_heightE"></span><span id="rocky::Image::_height__unsigned"></span><span class="target" id="classrocky_1_1Image_1a64e231c83d082b6b89a538769cc5abe0"></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_height</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image7_heightE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image6_depthE">
+<span id="_CPPv3N5rocky5Image6_depthE"></span><span id="_CPPv2N5rocky5Image6_depthE"></span><span id="rocky::Image::_depth__unsigned"></span><span class="target" id="classrocky_1_1Image_1a813ffd02f98e4a17cc8209bd171f3164"></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_depth</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image6_depthE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image12_pixelFormatE">
+<span id="_CPPv3N5rocky5Image12_pixelFormatE"></span><span id="_CPPv2N5rocky5Image12_pixelFormatE"></span><span id="rocky::Image::_pixelFormat__PixelFormat"></span><span class="target" id="classrocky_1_1Image_1a22d0c70ccfbf4a203e99a5b5f704641a"></span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormatE" title="rocky::Image::PixelFormat"><span class="n"><span class="pre">PixelFormat</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_pixelFormat</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat14R8G8B8A8_UNORME" title="rocky::Image::R8G8B8A8_UNORM"><span class="n"><span class="pre">R8G8B8A8_UNORM</span></span></a><a class="headerlink" href="#_CPPv4N5rocky5Image12_pixelFormatE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image5_dataE">
+<span id="_CPPv3N5rocky5Image5_dataE"></span><span id="_CPPv2N5rocky5Image5_dataE"></span><span id="rocky::Image::_data__unsigned-cP"></span><span class="target" id="classrocky_1_1Image_1a8a94852ab9f48676053ca1facc61db11"></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">_data</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">nullptr</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image5_dataE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image12_noDataValueE">
+<span id="_CPPv3N5rocky5Image12_noDataValueE"></span><span id="_CPPv2N5rocky5Image12_noDataValueE"></span><span id="rocky::Image::_noDataValue__float"></span><span class="target" id="classrocky_1_1Image_1abbcff6584306af67077669e97be2d76d"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_noDataValue</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="o"><span class="pre">-</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">numeric_limits</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">float</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">max</span></span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image12_noDataValueE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image9_ownsDataE">
+<span id="_CPPv3N5rocky5Image9_ownsDataE"></span><span id="_CPPv2N5rocky5Image9_ownsDataE"></span><span id="rocky::Image::_ownsData__b"></span><span class="target" id="classrocky_1_1Image_1a9b207b4feed483bde4216daa46261712"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_ownsData</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">true</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image9_ownsDataE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image9_minValueE">
+<span id="_CPPv3N5rocky5Image9_minValueE"></span><span id="_CPPv2N5rocky5Image9_minValueE"></span><span id="rocky::Image::_minValue__float"></span><span class="target" id="classrocky_1_1Image_1a7229a996974cf53c17b04a0963cedb4a"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_minValue</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.0f</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image9_minValueE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image9_maxValueE">
+<span id="_CPPv3N5rocky5Image9_maxValueE"></span><span id="_CPPv2N5rocky5Image9_maxValueE"></span><span id="rocky::Image::_maxValue__float"></span><span class="target" id="classrocky_1_1Image_1ab039fb4498ff0003dba9ede25b712029"></span><span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_maxValue</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">0.0f</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image9_maxValueE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-static-attributes">Protected Static Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image8_layoutsE">
+<span id="_CPPv3N5rocky5Image8_layoutsE"></span><span id="_CPPv2N5rocky5Image8_layoutsE"></span><span id="rocky::Image::_layouts__LayoutA"></span><span class="target" id="classrocky_1_1Image_1a369b6627db612d564de13e1e72dfe860"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image6LayoutE" title="rocky::Image::Layout"><span class="n"><span class="pre">Layout</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">_layouts</span></span></span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">11</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">UNORM8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">UNORM8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat8R8_UNORME" title="rocky::Image::R8_UNORM"><span class="n"><span class="pre">R8_UNORM</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">SRGB8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">SRGB8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat7R8_SRGBE" title="rocky::Image::R8_SRGB"><span class="n"><span class="pre">R8_SRGB</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">UNORM8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">UNORM8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat10R8G8_UNORME" title="rocky::Image::R8G8_UNORM"><span class="n"><span class="pre">R8G8_UNORM</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">SRGB8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">SRGB8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat9R8G8_SRGBE" title="rocky::Image::R8G8_SRGB"><span class="n"><span class="pre">R8G8_SRGB</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">UNORM8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">UNORM8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">3</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">3</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat12R8G8B8_UNORME" title="rocky::Image::R8G8B8_UNORM"><span class="n"><span class="pre">R8G8B8_UNORM</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">SRGB8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">SRGB8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">3</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">3</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat11R8G8B8_SRGBE" title="rocky::Image::R8G8B8_SRGB"><span class="n"><span class="pre">R8G8B8_SRGB</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">UNORM8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">UNORM8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat14R8G8B8A8_UNORME" title="rocky::Image::R8G8B8A8_UNORM"><span class="n"><span class="pre">R8G8B8A8_UNORM</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">SRGB8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">SRGB8</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">uchar</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat13R8G8B8A8_SRGBE" title="rocky::Image::R8G8B8A8_SRGB"><span class="n"><span class="pre">R8G8B8A8_SRGB</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">UNORM16</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">ushort</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">UNORM16</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">ushort</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat9R16_UNORME" title="rocky::Image::R16_UNORM"><span class="n"><span class="pre">R16_UNORM</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">FLOAT</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">float</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">FLOAT</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">float</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">4</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat10R32_SFLOATE" title="rocky::Image::R32_SFLOAT"><span class="n"><span class="pre">R32_SFLOAT</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">FLOAT</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">read</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="o"><span class="pre">&amp;</span></span><span class="n"><span class="pre">FLOAT</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">double</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">write</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="m"><span class="pre">8</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormat10R64_SFLOATE" title="rocky::Image::R64_SFLOAT"><span class="n"><span class="pre">R64_SFLOAT</span></span></a><span class="p"><span class="pre">}</span></span><span class="p"><span class="pre">}</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image8_layoutsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-friends">Friends</p>
+<dl>
+<dt class="sig sig-object cpp">
+<span class="property"><span class="pre">friend</span> <span class="pre">class</span></span> <span class="pre">Heightfield</span></dt>
+</dl>
+
+</div>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image8iteratorE">
+<span id="_CPPv3N5rocky5Image8iteratorE"></span><span id="_CPPv2N5rocky5Image8iteratorE"></span><span id="rocky::Image::iterator"></span><span class="target" id="classrocky_1_1Image_1_1iterator"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">iterator</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image8iteratorE" title="Link to this definition"></a><br /></dt>
+<dd><p>Iterator for visiting each pixel in the image. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image8iterator8iteratorEPK5Image">
+<span id="_CPPv3N5rocky5Image8iterator8iteratorEPK5Image"></span><span id="_CPPv2N5rocky5Image8iterator8iteratorEPK5Image"></span><span id="rocky::Image::iterator::iterator__ImageCP"></span><span class="target" id="classrocky_1_1Image_1_1iterator_1a41820034fe006c2c362c8210b128523a"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">iterator</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5ImageE" title="rocky::Image"><span class="n"><span class="pre">Image</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">image</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Image8iterator8iteratorEPK5Image" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image8iterator1rEv">
+<span id="_CPPv3NK5rocky5Image8iterator1rEv"></span><span id="_CPPv2NK5rocky5Image8iterator1rEv"></span><span id="rocky::Image::iterator::rC"></span><span class="target" id="classrocky_1_1Image_1_1iterator_1a1e727a82f136401119d82028b4c4eeb0"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">r</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image8iterator1rEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image8iterator1sEv">
+<span id="_CPPv3NK5rocky5Image8iterator1sEv"></span><span id="_CPPv2NK5rocky5Image8iterator1sEv"></span><span id="rocky::Image::iterator::sC"></span><span class="target" id="classrocky_1_1Image_1_1iterator_1a54d1274afe027db17c830610ccd41058"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">s</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image8iterator1sEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image8iterator1tEv">
+<span id="_CPPv3NK5rocky5Image8iterator1tEv"></span><span id="_CPPv2NK5rocky5Image8iterator1tEv"></span><span id="rocky::Image::iterator::tC"></span><span class="target" id="classrocky_1_1Image_1_1iterator_1a52fccb4b11bc898f29e77a687c7f8cd2"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">t</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image8iterator1tEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image8iterator1uEv">
+<span id="_CPPv3NK5rocky5Image8iterator1uEv"></span><span id="_CPPv2NK5rocky5Image8iterator1uEv"></span><span id="rocky::Image::iterator::uC"></span><span class="target" id="classrocky_1_1Image_1_1iterator_1a00089e27d35f988bc5bd12220a470f09"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">u</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image8iterator1uEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Image8iterator1vEv">
+<span id="_CPPv3NK5rocky5Image8iterator1vEv"></span><span id="_CPPv2NK5rocky5Image8iterator1vEv"></span><span id="rocky::Image::iterator::vC"></span><span class="target" id="classrocky_1_1Image_1_1iterator_1ae7a8eed9f55cebdcf9ff2a03b4672bda"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">v</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Image8iterator1vEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0EN5rocky5Image8iterator4eachEvRR8CALLABLE">
+<span id="_CPPv3I0EN5rocky5Image8iterator4eachERR8CALLABLE"></span><span id="_CPPv2I0EN5rocky5Image8iterator4eachERR8CALLABLE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CALLABLE</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classrocky_1_1Image_1_1iterator_1a87c447e9438b5c845e94aab509b49815"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">each</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I0EN5rocky5Image8iterator4eachEvRR8CALLABLE" title="rocky::Image::iterator::each::CALLABLE"><span class="n"><span class="pre">CALLABLE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">func</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4I0EN5rocky5Image8iterator4eachEvRR8CALLABLE" title="Link to this definition"></a><br /></dt>
+<dd><p>Call the user callable for each pixel in the image. </p>
+<p>CALLABLE must have the signature void(const Iterator&amp; i). </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp struct">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image6LayoutE">
+<span id="_CPPv3N5rocky5Image6LayoutE"></span><span id="_CPPv2N5rocky5Image6LayoutE"></span><span id="rocky::Image::Layout"></span><span class="target" id="structrocky_1_1Image_1_1Layout"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Layout</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image6LayoutE" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image6Layout4readE">
+<span id="_CPPv3N5rocky5Image6Layout4readE"></span><span id="_CPPv2N5rocky5Image6Layout4readE"></span><span class="target" id="structrocky_1_1Image_1_1Layout_1a25ae2f841f190f9b48c5037bdc6adfc9"></span><a class="reference internal" href="#_CPPv4N5rocky5Image5PixelE" title="rocky::Image::Pixel"><span class="n"><span class="pre">Pixel</span></span></a><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">read</span></span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">(</span></span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image6Layout4readE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image6Layout5writeE">
+<span id="_CPPv3N5rocky5Image6Layout5writeE"></span><span id="_CPPv2N5rocky5Image6Layout5writeE"></span><span class="target" id="structrocky_1_1Image_1_1Layout_1a13a62aedd932cfad023917810df9af06"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="p"><span class="pre">(</span></span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">write</span></span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">(</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Image5PixelE" title="rocky::Image::Pixel"><span class="n"><span class="pre">Pixel</span></span></a><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="p"><span class="pre">)</span></span><a class="headerlink" href="#_CPPv4N5rocky5Image6Layout5writeE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image6Layout14num_componentsE">
+<span id="_CPPv3N5rocky5Image6Layout14num_componentsE"></span><span id="_CPPv2N5rocky5Image6Layout14num_componentsE"></span><span id="rocky::Image::Layout::num_components__i"></span><span class="target" id="structrocky_1_1Image_1_1Layout_1ad89a8c97d58c58e940b332a15e632e99"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">num_components</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image6Layout14num_componentsE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image6Layout15bytes_per_pixelE">
+<span id="_CPPv3N5rocky5Image6Layout15bytes_per_pixelE"></span><span id="_CPPv2N5rocky5Image6Layout15bytes_per_pixelE"></span><span id="rocky::Image::Layout::bytes_per_pixel__i"></span><span class="target" id="structrocky_1_1Image_1_1Layout_1ac414cb7d648d86795f1b9eed5019ee68"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bytes_per_pixel</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image6Layout15bytes_per_pixelE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Image6Layout6formatE">
+<span id="_CPPv3N5rocky5Image6Layout6formatE"></span><span id="_CPPv2N5rocky5Image6Layout6formatE"></span><span id="rocky::Image::Layout::format__PixelFormat"></span><span class="target" id="structrocky_1_1Image_1_1Layout_1ad13e96d01343f4f08888ddb78557701e"></span><a class="reference internal" href="#_CPPv4N5rocky5Image11PixelFormatE" title="rocky::Image::PixelFormat"><span class="n"><span class="pre">PixelFormat</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">format</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Image6Layout6formatE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="classrocky_1_1Horizon.html" class="btn btn-neutral float-left" title="Class Horizon" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="classrocky_1_1Image_1_1iterator.html" class="btn btn-neutral float-right" title="Class Image::iterator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

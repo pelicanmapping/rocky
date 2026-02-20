@@ -1,0 +1,45 @@
+
+.. _program_listing_file_src_rocky_MBTilesElevationLayer.h:
+
+Program Listing for File MBTilesElevationLayer.h
+================================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_MBTilesElevationLayer.h>` (``src/rocky/MBTilesElevationLayer.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/MBTiles.h>
+   #ifdef ROCKY_HAS_MBTILES
+   
+   #include <rocky/ElevationLayer.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT MBTilesElevationLayer : public Inherit<ElevationLayer, MBTilesElevationLayer>,
+           public MBTiles::Options
+       {
+       public:
+           MBTilesElevationLayer();
+           explicit MBTilesElevationLayer(std::string_view JSON, const IOOptions& io);
+   
+           std::string to_json() const override;
+   
+       protected:
+   
+           Result<GeoImage> createTileImplementation(const TileKey& key, const IOOptions& io) const override;
+   
+           Result<> openImplementation(const IOOptions& io) override;
+   
+           void closeImplementation() override;
+   
+       private:
+           MBTiles::Driver _driver;
+           void construct(std::string_view JSON, const IOOptions& io);
+       };
+   }
+   
+   #endif // ROCKY_HAS_MBTILES

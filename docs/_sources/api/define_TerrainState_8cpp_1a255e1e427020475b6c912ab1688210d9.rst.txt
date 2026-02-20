@@ -1,0 +1,14 @@
+.. _exhale_define_TerrainState_8cpp_1a255e1e427020475b6c912ab1688210d9:
+
+Define COLOR_TEX_NAME
+=====================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_TerrainState.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: COLOR_TEX_NAME
+   :project: Rocky

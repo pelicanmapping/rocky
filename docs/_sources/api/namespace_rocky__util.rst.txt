@@ -1,0 +1,114 @@
+
+.. _namespace_rocky__util:
+
+Namespace rocky::util
+=====================
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1make__string`
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1PromiseOperation`
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1vector__map`
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1vector__map_1_1ENTRY`
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1vector__map__equal`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1BackgroundServices`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1LambdaOperation`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1LRUCache`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1ResidentCache`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1ring__buffer`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1ring__buffer__with__condition`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1SimpleCompiler`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1StreamCompressor`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1StringTokenizer`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ad8479efec937c159be048e7b5b4d2e7c`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ab354be200d5231381876682f923fd13d`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1adc8adaa6fc9264fd6f716489a74a5720`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a2a0230d74d128c02c7881b842a5b5c4e`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1aeb3217af13136c48bfa5d63e661a2ed0`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a3c0e92fe5630f02244d8583fd9bcb277`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a28f469d5889cd263865c25e89cfcf4d0`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a4c2bbda9afacd57dee066bda2661528d`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1abb90ff752eb3df307936f89b4c7de429`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1aba843723ab1e4efba84efe6b9613d98a`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1aac185aadbf09a8979dd497f97cb52dde`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a9bbdbeaf15292ebe79f02498d668e5a8`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a53abbc23dde1976ad12dc191779433d4`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a5edf37654257019e9850ea1285eb921e`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a11f2d085901cdcfc80ef0d1a7c1ca66e`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a6ed56d3e329a51029e78456a12d1ffa9`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1aa259da7b5b73a93a74ea163263208784`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ae2201c767506449b9ab259df179e56f9`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ad51fd7c03a1358e1aa1ecafe26cf9b9f`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a3eaedd170fee901609ec53b60e2569c4`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1aece656d7385eae6b944666b9773d66e4`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a74066cc76a9522c25303d83c251ace57`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ab8fd1d04b82bc8cfa502dd14dbdf305b`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a178aab26dcaef9e13569002d5ed936cc`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a2a8cbc23bea02d13ca16fbe0832e9ac4`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a1ef291e16bc06d92855455fcee3dfbe5`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ab96a72ff571dc7ad8fbf77649e4f7ad1`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a1fd8023fc2203c11a2dfc8b39704b5e6`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable_namespacerocky_1_1util_1a638cb9f1286d83713a69c0b150da5216`

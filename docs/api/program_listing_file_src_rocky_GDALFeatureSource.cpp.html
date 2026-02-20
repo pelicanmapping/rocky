@@ -1,0 +1,734 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File GDALFeatureSource.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File GDALFeatureSource.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_GDALFeatureSource.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-gdalfeaturesource-cpp">
+<span id="program-listing-file-src-rocky-gdalfeaturesource-cpp"></span><h1>Program Listing for File GDALFeatureSource.cpp<a class="headerlink" href="#program-listing-for-file-gdalfeaturesource-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_GDALFeatureSource.cpp.html#file-src-rocky-gdalfeaturesource-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/GDALFeatureSource.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;GDALFeatureSource.h&quot;</span>
+
+<span class="cp">#ifdef ROCKY_HAS_GDAL</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;gdal.h&gt;</span><span class="c1"> // OGR API</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;ogr_spatialref.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cassert&gt;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">OGRLayerH</span><span class="w"> </span><span class="nf">open_OGR_layer</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">ds</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">layerName</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Open a specific layer within the data source, if applicable:</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GDALDatasetGetLayerByName</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="w"> </span><span class="n">layerName</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">handle</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layerName</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">atoi</span><span class="p">(</span><span class="n">layerName</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+<span class="w">            </span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GDALDatasetGetLayer</span><span class="p">(</span><span class="n">ds</span><span class="p">,</span><span class="w"> </span><span class="n">index</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">handle</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">populate</span><span class="p">(</span><span class="n">OGRGeometryH</span><span class="w"> </span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">Geometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">out_geom</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">numPoints</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">out_geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="n">numPoints</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">numPoints</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">            </span><span class="n">OGR_G_GetPoint</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">z</span><span class="p">);</span>
+<span class="w">            </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="w"> </span><span class="n">p</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">z</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">out_geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">out_geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">back</span><span class="p">())</span>
+<span class="w">                </span><span class="n">out_geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">p</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">create_polygon</span><span class="p">(</span><span class="n">OGRGeometryH</span><span class="w"> </span><span class="n">geomHandle</span><span class="p">,</span><span class="w"> </span><span class="n">Geometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">out_geom</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">numParts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetGeometryCount</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">numParts</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">numPoints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetPointCount</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">);</span>
+<span class="w">            </span><span class="n">out_geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">Polygon</span><span class="p">;</span>
+<span class="w">            </span><span class="n">populate</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">,</span><span class="w"> </span><span class="n">out_geom</span><span class="p">,</span><span class="w"> </span><span class="n">numPoints</span><span class="p">);</span>
+
+<span class="cp">#if 0</span>
+<span class="c">            if (rewindPolygons)</span>
+<span class="c">            {</span>
+<span class="c">                output-&gt;open();</span>
+<span class="c">                output-&gt;rewind(Ring::ORIENTATION_CCW);</span>
+<span class="c">            }</span>
+<span class="cp">#endif</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">numParts</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">numParts</span><span class="p">;</span><span class="w"> </span><span class="n">p</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">OGRGeometryH</span><span class="w"> </span><span class="n">partRef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetGeometryRef</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">,</span><span class="w"> </span><span class="n">p</span><span class="p">);</span>
+<span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">numPoints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetPointCount</span><span class="p">(</span><span class="n">partRef</span><span class="p">);</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">p</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">out_geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">Polygon</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">populate</span><span class="p">(</span><span class="n">partRef</span><span class="p">,</span><span class="w"> </span><span class="n">out_geom</span><span class="p">,</span><span class="w"> </span><span class="n">numPoints</span><span class="p">);</span>
+<span class="cp">#if 0</span>
+<span class="c">                    if (rewindPolygons)</span>
+<span class="c">                    {</span>
+<span class="c">                        output-&gt;open();</span>
+<span class="c">                        output-&gt;rewind(Ring::ORIENTATION_CCW);</span>
+<span class="c">                    }</span>
+<span class="cp">#endif</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">out_geom</span><span class="p">.</span><span class="n">parts</span><span class="p">.</span><span class="n">push_back</span><span class="p">({});</span>
+<span class="w">                    </span><span class="n">Geometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">hole</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">out_geom</span><span class="p">.</span><span class="n">parts</span><span class="p">.</span><span class="n">back</span><span class="p">();</span>
+<span class="w">                    </span><span class="n">populate</span><span class="p">(</span><span class="n">partRef</span><span class="p">,</span><span class="w"> </span><span class="n">hole</span><span class="p">,</span><span class="w"> </span><span class="n">numPoints</span><span class="p">);</span>
+<span class="cp">#if 0</span>
+<span class="c">                    if (rewindPolygons)</span>
+<span class="c">                    {</span>
+<span class="c">                        hole-&gt;open();</span>
+<span class="c">                        hole-&gt;rewind(Ring::ORIENTATION_CW);</span>
+<span class="c">                    }</span>
+<span class="c">                    output-&gt;getHoles().push_back(hole);</span>
+<span class="cp">#endif</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">create_geometry</span><span class="p">(</span><span class="n">OGRGeometryH</span><span class="w"> </span><span class="n">geomHandle</span><span class="p">,</span><span class="w"> </span><span class="n">Geometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">out_geom</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">OGRwkbGeometryType</span><span class="w"> </span><span class="n">wkbType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetGeometryType</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">);</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">numPoints</span><span class="p">,</span><span class="w"> </span><span class="n">numGeoms</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">wkbType</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbPolygon</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbPolygon25D</span><span class="p">:</span>
+<span class="cp">#ifdef GDAL_HAS_M_TYPES</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbPolygonM</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbPolygonZM</span><span class="p">:</span>
+<span class="cp">#endif</span>
+<span class="w">            </span><span class="n">create_polygon</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">,</span><span class="w"> </span><span class="n">out_geom</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbLineString</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbLineString25D</span><span class="p">:</span>
+<span class="cp">#ifdef GDAL_HAS_M_TYPES</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbLineStringM</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbLineStringZM</span><span class="p">:</span>
+<span class="cp">#endif</span>
+<span class="w">            </span><span class="n">numPoints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetPointCount</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">);</span>
+<span class="w">            </span><span class="n">out_geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">LineString</span><span class="p">;</span>
+<span class="w">            </span><span class="n">populate</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">,</span><span class="w"> </span><span class="n">out_geom</span><span class="p">,</span><span class="w"> </span><span class="n">numPoints</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbLinearRing</span><span class="p">:</span>
+<span class="w">            </span><span class="n">numPoints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetPointCount</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">);</span>
+<span class="w">            </span><span class="n">out_geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">LineString</span><span class="p">;</span>
+<span class="w">            </span><span class="n">populate</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">,</span><span class="w"> </span><span class="n">out_geom</span><span class="p">,</span><span class="w"> </span><span class="n">numPoints</span><span class="p">);</span>
+<span class="w">            </span><span class="c1">// ringify:</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">out_geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">out_geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">front</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">out_geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">back</span><span class="p">())</span>
+<span class="w">                </span><span class="n">out_geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">out_geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">front</span><span class="p">());</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbPoint</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbPoint25D</span><span class="p">:</span>
+<span class="cp">#ifdef GDAL_HAS_M_TYPES</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbPointM</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbPointZM</span><span class="p">:</span>
+<span class="cp">#endif</span>
+<span class="w">            </span><span class="n">numPoints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetPointCount</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">);</span>
+<span class="w">            </span><span class="n">out_geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">Points</span><span class="p">;</span>
+<span class="w">            </span><span class="c1">//output = new Point(numPoints);</span>
+<span class="w">            </span><span class="n">populate</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">,</span><span class="w"> </span><span class="n">out_geom</span><span class="p">,</span><span class="w"> </span><span class="n">numPoints</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbMultiPoint</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbMultiPoint25D</span><span class="p">:</span>
+<span class="cp">#ifdef GDAL_HAS_M_TYPES</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbMultiPointM</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbMultiPointZM</span><span class="p">:</span>
+<span class="cp">#endif</span>
+<span class="w">            </span><span class="n">numGeoms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetGeometryCount</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">);</span>
+<span class="w">            </span><span class="n">out_geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">Points</span><span class="p">;</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">numGeoms</span><span class="p">;</span><span class="w"> </span><span class="n">n</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">OGRGeometryH</span><span class="w"> </span><span class="n">subGeomRef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetGeometryRef</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">subGeomRef</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">numPoints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetPointCount</span><span class="p">(</span><span class="n">subGeomRef</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">populate</span><span class="p">(</span><span class="n">subGeomRef</span><span class="p">,</span><span class="w"> </span><span class="n">out_geom</span><span class="p">,</span><span class="w"> </span><span class="n">numPoints</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+
+<span class="cp">#ifdef GDAL_HAS_M_TYPES</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbTINZ</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbTIN</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbTINM</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbTINZM</span><span class="p">:</span>
+<span class="w">            </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createTIN</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">);</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbGeometryCollection</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbGeometryCollection25D</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbMultiLineString</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbMultiLineString25D</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbMultiPolygon</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbMultiPolygon25D</span><span class="p">:</span>
+<span class="cp">#ifdef GDAL_HAS_M_TYPES</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbGeometryCollectionM</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbGeometryCollectionZM</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbLineStringM</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbLineStringZM</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbMultiPolygonM</span><span class="p">:</span>
+<span class="w">        </span><span class="k">case</span><span class="w"> </span><span class="no">wkbMultiPolygonZM</span><span class="p">:</span>
+<span class="cp">#endif</span>
+
+<span class="w">            </span><span class="n">numGeoms</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetGeometryCount</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">);</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">n</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">numGeoms</span><span class="p">;</span><span class="w"> </span><span class="n">n</span><span class="o">++</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">OGRGeometryH</span><span class="w"> </span><span class="n">subGeomRef</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_G_GetGeometryRef</span><span class="p">(</span><span class="n">geomHandle</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">subGeomRef</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">out_geom</span><span class="p">.</span><span class="n">parts</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">Geometry</span><span class="p">());</span>
+<span class="w">                    </span><span class="n">Geometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">subgeom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">out_geom</span><span class="p">.</span><span class="n">parts</span><span class="p">.</span><span class="n">back</span><span class="p">();</span>
+<span class="w">                    </span><span class="n">create_geometry</span><span class="p">(</span><span class="n">subGeomRef</span><span class="p">,</span><span class="w"> </span><span class="n">subgeom</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">subgeom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                        </span><span class="n">out_geom</span><span class="p">.</span><span class="n">parts</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">out_geom</span><span class="p">.</span><span class="n">parts</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">out_geom</span><span class="p">.</span><span class="n">parts</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">out_geom</span><span class="p">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">Points</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">out_geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">MultiPoints</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">out_geom</span><span class="p">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">LineString</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">out_geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">MultiLineString</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">out_geom</span><span class="p">.</span><span class="n">parts</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">Polygon</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">out_geom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">out_geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">MultiPolygon</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                    </span><span class="k">else</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">out_geom</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">Polygon</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">create_feature_from_OGR_handle</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">vhandle</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">fieldNames</span><span class="p">,</span><span class="w"> </span><span class="n">Feature</span><span class="o">&amp;</span><span class="w"> </span><span class="n">out_feature</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">OGRFeatureH</span><span class="w"> </span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">OGRFeatureH</span><span class="p">)</span><span class="n">vhandle</span><span class="p">;</span>
+<span class="w">        </span><span class="n">out_feature</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_F_GetFID</span><span class="p">(</span><span class="n">handle</span><span class="p">);</span>
+<span class="w">        </span><span class="n">OGRGeometryH</span><span class="w"> </span><span class="n">geom_handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_F_GetGeometryRef</span><span class="p">(</span><span class="n">handle</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">out_feature</span><span class="p">.</span><span class="n">srs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">srs</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">geom_handle</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">create_geometry</span><span class="p">(</span><span class="n">geom_handle</span><span class="p">,</span><span class="w"> </span><span class="n">out_feature</span><span class="p">.</span><span class="n">geometry</span><span class="p">);</span>
+<span class="w">            </span><span class="n">out_feature</span><span class="p">.</span><span class="n">dirtyExtent</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">numAttrs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_F_GetFieldCount</span><span class="p">(</span><span class="n">handle</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">numAttrs</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">//auto d = OGR_L_GetLayerDefn(handle); // Ensure layer definition is available</span>
+
+<span class="w">            </span><span class="n">OGRFieldDefnH</span><span class="w"> </span><span class="n">field_handle_ref</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_F_GetFieldDefnRef</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">fieldNames</span><span class="p">.</span><span class="n">size</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">fieldNames</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// get the field name and convert to lower case:</span>
+<span class="w">                </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">OGR_Fld_GetNameRef</span><span class="p">(</span><span class="n">field_handle_ref</span><span class="p">));</span>
+<span class="w">                </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">toLower</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// get the field type and set the value appropriately</span>
+<span class="w">            </span><span class="n">OGRFieldType</span><span class="w"> </span><span class="n">field_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_Fld_GetType</span><span class="p">(</span><span class="n">field_handle_ref</span><span class="p">);</span>
+<span class="w">            </span><span class="k">switch</span><span class="w"> </span><span class="p">(</span><span class="n">field_type</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">OFTInteger</span><span class="p">:</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">OGR_F_IsFieldSetAndNotNull</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">))</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_F_GetFieldAsInteger</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">out_feature</span><span class="p">.</span><span class="n">fields</span><span class="p">[</span><span class="n">name</span><span class="p">].</span><span class="n">emplace</span><span class="o">&lt;</span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">value</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">OFTInteger64</span><span class="p">:</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">OGR_F_IsFieldSetAndNotNull</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">))</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_F_GetFieldAsInteger64</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">out_feature</span><span class="p">.</span><span class="n">fields</span><span class="p">[</span><span class="n">name</span><span class="p">].</span><span class="n">emplace</span><span class="o">&lt;</span><span class="kt">long</span><span class="w"> </span><span class="kt">long</span><span class="o">&gt;</span><span class="p">(</span><span class="n">value</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">case</span><span class="w"> </span><span class="no">OFTReal</span><span class="p">:</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">OGR_F_IsFieldSetAndNotNull</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">))</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">double</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_F_GetFieldAsDouble</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">out_feature</span><span class="p">.</span><span class="n">fields</span><span class="p">[</span><span class="n">name</span><span class="p">].</span><span class="n">emplace</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span><span class="p">(</span><span class="n">value</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">break</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">default</span><span class="o">:</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">OGR_F_IsFieldSetAndNotNull</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">))</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_F_GetFieldAsString</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">svalue</span><span class="p">(</span><span class="n">value</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">out_feature</span><span class="p">.</span><span class="n">fields</span><span class="p">[</span><span class="n">name</span><span class="p">].</span><span class="n">emplace</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="p">(</span><span class="n">svalue</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">GDALFeatureSource</span><span class="o">::~</span><span class="n">GDALFeatureSource</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">close</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="o">*</span>
+<span class="n">GDALFeatureSource</span><span class="o">::</span><span class="n">openGDALDataset</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">openFlags</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GDAL_OF_VECTOR</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">GDAL_OF_READONLY</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">log</span><span class="o">::</span><span class="n">level</span><span class="o">::</span><span class="n">info</span><span class="p">)</span>
+<span class="w">        </span><span class="n">openFlags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">GDAL_OF_VERBOSE_ERROR</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">driversCC</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ogrDriver</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">driversCC</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">ogrDriver</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">c_str</span><span class="p">());</span>
+<span class="w">        </span><span class="n">driversCC</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="k">nullptr</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">openOptionsCC</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">openOptions</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">oo</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">openOptions</span><span class="p">)</span>
+<span class="w">            </span><span class="n">openOptionsCC</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">oo</span><span class="p">.</span><span class="n">c_str</span><span class="p">());</span>
+<span class="w">        </span><span class="n">openOptionsCC</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="k">nullptr</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">GDALOpenEx</span><span class="p">(</span>
+<span class="w">        </span><span class="n">_source</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">openFlags</span><span class="p">,</span>
+<span class="w">        </span><span class="n">driversCC</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="k">nullptr</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">driversCC</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">openOptionsCC</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="k">nullptr</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">openOptionsCC</span><span class="p">.</span><span class="n">data</span><span class="p">(),</span>
+<span class="w">        </span><span class="k">nullptr</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">FeatureSource</span><span class="o">::</span><span class="n">iterator</span>
+<span class="n">GDALFeatureSource</span><span class="o">::</span><span class="n">iterate</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">OGRDataSourceH</span><span class="w"> </span><span class="n">dsHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="n">OGRLayerH</span><span class="w"> </span><span class="n">layerHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">OGRLayerH</span><span class="p">)</span><span class="n">externalLayerHandle</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">layerHandle</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">dsHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">OGRDataSourceH</span><span class="p">)</span><span class="n">openGDALDataset</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// open the handles safely:</span>
+<span class="w">        </span><span class="c1">// Each cursor requires its own DS handle so that multi-threaded access will work.</span>
+<span class="w">        </span><span class="c1">// The cursor impl will dispose of the new DS handle.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dsHandle</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">layerHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">open_OGR_layer</span><span class="p">(</span><span class="n">dsHandle</span><span class="p">,</span><span class="w"> </span><span class="n">layerName</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">iterator_impl</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">layerHandle</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">i</span><span class="o">-&gt;</span><span class="n">_source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">;</span>
+<span class="w">        </span><span class="n">i</span><span class="o">-&gt;</span><span class="n">_layerHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">layerHandle</span><span class="p">;</span>
+<span class="w">        </span><span class="n">i</span><span class="o">-&gt;</span><span class="n">_metadata</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">_metadata</span><span class="p">;</span>
+<span class="w">        </span><span class="n">i</span><span class="o">-&gt;</span><span class="n">init</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dsHandle</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">OGRReleaseDataSource</span><span class="p">(</span><span class="n">dsHandle</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">iterator</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+<span class="p">}</span>
+
+
+<span class="kt">void</span>
+<span class="n">GDALFeatureSource</span><span class="o">::</span><span class="n">iterator_impl</span><span class="o">::</span><span class="n">init</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_resultSetEndReached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">_resultSetHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_layerHandle</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_resultSetHandle</span><span class="p">)</span>
+<span class="w">        </span><span class="n">OGR_L_ResetReading</span><span class="p">((</span><span class="n">OGRLayerH</span><span class="p">)</span><span class="n">_resultSetHandle</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">readChunk</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">GDALFeatureSource</span><span class="o">::</span><span class="n">iterator_impl</span><span class="o">::~</span><span class="n">iterator_impl</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_nextHandleToQueue</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">OGR_F_Destroy</span><span class="p">((</span><span class="n">OGRFeatureH</span><span class="p">)</span><span class="n">_nextHandleToQueue</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">GDALFeatureSource</span><span class="o">::</span><span class="n">iterator_impl</span><span class="o">::</span><span class="n">readChunk</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_resultSetHandle</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_source</span><span class="o">-&gt;</span><span class="n">_metadata</span><span class="p">.</span><span class="n">extent</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">?</span>
+<span class="w">        </span><span class="n">_source</span><span class="o">-&gt;</span><span class="n">_metadata</span><span class="p">.</span><span class="n">extent</span><span class="p">.</span><span class="n">srs</span><span class="p">()</span><span class="w"> </span><span class="o">:</span>
+<span class="w">        </span><span class="n">_source</span><span class="o">-&gt;</span><span class="n">externalSRS</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">_queue</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">_chunkSize</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">_resultSetEndReached</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_L_GetNextFeature</span><span class="p">((</span><span class="n">OGRLayerH</span><span class="p">)</span><span class="n">_resultSetHandle</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">handle</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Feature</span><span class="w"> </span><span class="n">feature</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">create_feature_from_OGR_handle</span><span class="p">(</span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="n">_metadata</span><span class="o">-&gt;</span><span class="n">fieldNames</span><span class="p">,</span><span class="w"> </span><span class="n">feature</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">feature</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">feature</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">OGRNullFID</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">feature</span><span class="p">.</span><span class="n">id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_idGenerator</span><span class="o">++</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="n">_queue</span><span class="p">.</span><span class="n">push</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">feature</span><span class="p">));</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="n">OGR_F_Destroy</span><span class="p">(</span><span class="n">handle</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_resultSetEndReached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_chunkSize</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="o">~</span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">OGR_L_ResetReading</span><span class="p">((</span><span class="n">OGRLayerH</span><span class="p">)</span><span class="n">_resultSetHandle</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">GDALFeatureSource</span><span class="o">::</span><span class="n">iterator_impl</span><span class="o">::</span><span class="n">hasMore</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_resultSetHandle</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">_queue</span><span class="p">.</span><span class="n">empty</span><span class="p">();</span>
+<span class="p">};</span>
+
+<span class="n">Feature</span>
+<span class="nf">GDALFeatureSource::iterator_impl::next</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">assert</span><span class="p">(</span><span class="n">hasMore</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_queue</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1u</span><span class="p">)</span>
+<span class="w">        </span><span class="n">readChunk</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// do this in order to hold a reference to the feature we return, so the caller</span>
+<span class="w">    </span><span class="c1">// doesn&#39;t have to. This lets us avoid requiring the caller to use a ref_ptr when</span>
+<span class="w">    </span><span class="c1">// simply iterating over the cursor, making the cursor move convenient to use.</span>
+<span class="w">    </span><span class="n">_lastFeatureReturned</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_queue</span><span class="p">.</span><span class="n">front</span><span class="p">();</span>
+<span class="w">    </span><span class="n">_queue</span><span class="p">.</span><span class="n">pop</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_lastFeatureReturned</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+
+
+<span class="n">Result</span><span class="o">&lt;&gt;</span>
+<span class="n">GDALFeatureSource</span><span class="o">::</span><span class="n">open</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// Pre-existing layer handle?</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">externalLayerHandle</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_layerHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">externalLayerHandle</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Data source at a URL?</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">uri</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">uri</span><span class="o">-&gt;</span><span class="n">full</span><span class="p">();</span>
+
+<span class="w">            </span><span class="c1">// ..inside a zip file?</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">endsWith</span><span class="p">(</span><span class="n">_source</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.zip&quot;</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">_source</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="s">&quot;.zip/&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">::</span><span class="n">npos</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">_source</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">make_string</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;/vsizip/&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_source</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// If nothing was set, we&#39;re done</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_source</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ConfigurationError</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;No URL, connection, or inline geometry provided&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// assume we&#39;re loading from the URL/connection:</span>
+<span class="w">        </span><span class="c1">// remember the thread so we don&#39;t use the handles illegaly.</span>
+<span class="w">        </span><span class="n">_dsHandleThreadId</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="kr">thread</span><span class="o">::</span><span class="n">id</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// this handle may ONLY be used from this thread!</span>
+<span class="w">        </span><span class="c1">// https://github.com/OSGeo/gdal/blob/v2.4.1/gdal/gcore/gdaldataset.cpp#L2577</span>
+<span class="w">        </span><span class="n">_dsHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">openGDALDataset</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_dsHandle</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Failed to open </span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">_source</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Open a specific layer within the data source, if applicable:</span>
+<span class="w">        </span><span class="n">_layerHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">open_OGR_layer</span><span class="p">(</span><span class="n">_dsHandle</span><span class="p">,</span><span class="w"> </span><span class="n">layerName</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_layerHandle</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span>
+<span class="w">                </span><span class="s">&quot;Failed to open layer </span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">layerName</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s"> from </span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">_source</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">_featureCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">OGR_L_GetFeatureCount</span><span class="p">((</span><span class="n">OGRLayerH</span><span class="p">)</span><span class="n">_layerHandle</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// Build the field schema:</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">fetaureDefHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_L_GetLayerDefn</span><span class="p">((</span><span class="n">OGRLayerH</span><span class="p">)</span><span class="n">_layerHandle</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fetaureDefHandle</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">int</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_FD_GetFieldCount</span><span class="p">(</span><span class="n">fetaureDefHandle</span><span class="p">);</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">count</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">fieldDefHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_FD_GetFieldDefn</span><span class="p">(</span><span class="n">fetaureDefHandle</span><span class="p">,</span><span class="w"> </span><span class="n">i</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">fieldDefHandle</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_Fld_GetNameRef</span><span class="p">(</span><span class="n">fieldDefHandle</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">_metadata</span><span class="p">.</span><span class="n">fieldNames</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">toLower</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">name</span><span class="p">)));</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// extract the SRS and Extent:</span>
+<span class="w">        </span><span class="n">OGRSpatialReferenceH</span><span class="w"> </span><span class="n">srHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">OGR_L_GetSpatialRef</span><span class="p">((</span><span class="n">OGRLayerH</span><span class="p">)</span><span class="n">_layerHandle</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">srHandle</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;No spatial reference found in </span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">_source</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">SRS</span><span class="w"> </span><span class="n">srs</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">wktbuf</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">OSRExportToWkt</span><span class="p">(</span><span class="n">srHandle</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">wktbuf</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">OGRERR_NONE</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">srs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SRS</span><span class="p">(</span><span class="n">wktbuf</span><span class="p">);</span>
+<span class="w">            </span><span class="n">CPLFree</span><span class="p">(</span><span class="n">wktbuf</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">srs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Unrecognized SRS found in </span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">_source</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// extract the full extent of the layer:</span>
+<span class="w">        </span><span class="n">OGREnvelope</span><span class="w"> </span><span class="n">env</span><span class="p">;</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">OGR_L_GetExtent</span><span class="p">((</span><span class="n">OGRLayerH</span><span class="p">)</span><span class="n">_layerHandle</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">env</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">OGRERR_NONE</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Invalid extent returned from </span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">_source</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">extent</span><span class="p">(</span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="n">env</span><span class="p">.</span><span class="n">MinX</span><span class="p">,</span><span class="w"> </span><span class="n">env</span><span class="p">.</span><span class="n">MinY</span><span class="p">,</span><span class="w"> </span><span class="n">env</span><span class="p">.</span><span class="n">MaxX</span><span class="p">,</span><span class="w"> </span><span class="n">env</span><span class="p">.</span><span class="n">MaxY</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">extent</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Invalid extent returned from </span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">_source</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Made it!</span>
+<span class="w">        </span><span class="n">_metadata</span><span class="p">.</span><span class="n">extent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extent</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;GDAL features &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">_source</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot; opened OK&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ResultVoidOK</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span>
+<span class="n">GDALFeatureSource</span><span class="o">::</span><span class="n">featureCount</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_featureCount</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">GDALFeatureSource</span><span class="o">::</span><span class="n">close</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_layerHandle</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_layerHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_dsHandle</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">OGRReleaseDataSource</span><span class="p">((</span><span class="n">OGRDataSourceH</span><span class="p">)</span><span class="n">_dsHandle</span><span class="p">);</span>
+<span class="w">        </span><span class="n">_dsHandle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="cp">#endif </span><span class="c1">// ROCKY_HAS_GDAL</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

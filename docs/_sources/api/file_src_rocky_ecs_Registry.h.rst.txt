@@ -1,0 +1,99 @@
+
+.. _file_src_rocky_ecs_Registry.h:
+
+File Registry.h
+===============
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_ecs>` (``src/rocky/ecs``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/ecs/Registry.h``)
+-----------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_ecs_Registry.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``chrono``
+
+- ``entt/entt.hpp``
+
+- ``mutex``
+
+- ``rocky/Common.h`` (:ref:`file_src_rocky_Common.h`)
+
+- ``shared_mutex``
+
+- ``type_traits``
+
+- ``utility``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_ECS.h`
+
+- :ref:`file_src_rocky_ecs_EntityCollectionLayer.h`
+
+- :ref:`file_src_rocky_ecs_Registry.cpp`
+
+- :ref:`file_src_rocky_vsg_Application.h`
+
+- :ref:`file_src_rocky_vsg_ecs_DeclutterSystem.cpp`
+
+- :ref:`file_src_rocky_vsg_ecs_DeclutterSystem.h`
+
+- :ref:`file_src_rocky_vsg_ecs_FeatureView.h`
+
+- :ref:`file_src_rocky_vsg_ecs_MotionSystem.h`
+
+- :ref:`file_src_rocky_vsg_ecs_System.h`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structrocky_1_1Registry_1_1Impl`
+
+- :ref:`exhale_struct_structrocky_1_1Registry_1_1Read`
+
+- :ref:`exhale_struct_structrocky_1_1Registry_1_1Write`
+
+- :ref:`exhale_class_classrocky_1_1Registry`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef_namespacerocky_1a8ce31c79b35ac7411f165b9ffd57b35d`
+

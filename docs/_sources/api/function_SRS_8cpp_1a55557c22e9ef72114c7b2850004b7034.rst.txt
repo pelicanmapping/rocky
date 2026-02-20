@@ -1,0 +1,14 @@
+.. _exhale_function_SRS_8cpp_1a55557c22e9ef72114c7b2850004b7034:
+
+Function ROCKY_ABOUT(proj, std::to_string(PROJ_VERSION_MAJOR)+"."+std::to_string(PROJ_VERSION_MINOR))
+=====================================================================================================
+
+- Defined in :ref:`file_src_rocky_SRS.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ROCKY_ABOUT(proj, std::to_string(PROJ_VERSION_MAJOR)+"."+std::to_string(PROJ_VERSION_MINOR))
+   :project: Rocky

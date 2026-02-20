@@ -1,0 +1,256 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File Common.h &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">File Common.h</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/file_src_rocky_Common.h.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="file-common-h">
+<span id="file-src-rocky-common-h"></span><h1>File Common.h<a class="headerlink" href="#file-common-h" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="dir_src_rocky.html#dir-src-rocky"><span class="std std-ref">Parent directory</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky</span></code>)</p>
+<nav class="contents local" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#definition-src-rocky-common-h" id="id1">Definition (<code class="docutils literal notranslate"><span class="pre">src/rocky/Common.h</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#includes" id="id2">Includes</a></p></li>
+<li><p><a class="reference internal" href="#included-by" id="id3">Included By</a></p></li>
+<li><p><a class="reference internal" href="#namespaces" id="id4">Namespaces</a></p></li>
+<li><p><a class="reference internal" href="#classes" id="id5">Classes</a></p></li>
+<li><p><a class="reference internal" href="#functions" id="id6">Functions</a></p></li>
+<li><p><a class="reference internal" href="#defines" id="id7">Defines</a></p></li>
+<li><p><a class="reference internal" href="#typedefs" id="id8">Typedefs</a></p></li>
+</ul>
+</nav>
+<section id="definition-src-rocky-common-h">
+<h2>Definition (<code class="docutils literal notranslate"><span class="pre">src/rocky/Common.h</span></code>)<a class="headerlink" href="#definition-src-rocky-common-h" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="program_listing_file_src_rocky_Common.h.html">Program Listing for File Common.h</a></li>
+</ul>
+</div>
+</section>
+<section id="includes">
+<h2>Includes<a class="headerlink" href="#includes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cstdint</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cstdlib</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">functional</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">iostream</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">memory</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rocky/Log.h</span></code> (<a class="reference internal" href="file_src_rocky_Log.h.html#file-src-rocky-log-h"><span class="std std-ref">File Log.h</span></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rocky/Version.h</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rocky/option.h</span></code> (<a class="reference internal" href="file_src_rocky_option.h.html#file-src-rocky-option-h"><span class="std std-ref">File option.h</span></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">string</span></code></p></li>
+</ul>
+</section>
+<section id="included-by">
+<h2>Included By<a class="headerlink" href="#included-by" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="file_src_rocky_Cache.h.html#file-src-rocky-cache-h"><span class="std std-ref">File Cache.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Callbacks.h.html#file-src-rocky-callbacks-h"><span class="std std-ref">File Callbacks.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Color.h.html#file-src-rocky-color-h"><span class="std std-ref">File Color.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Context.h.html#file-src-rocky-context-h"><span class="std std-ref">File Context.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_DateTime.h.html#file-src-rocky-datetime-h"><span class="std std-ref">File DateTime.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Ellipsoid.h.html#file-src-rocky-ellipsoid-h"><span class="std std-ref">File Ellipsoid.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Ephemeris.h.html#file-src-rocky-ephemeris-h"><span class="std std-ref">File Ephemeris.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Feature.h.html#file-src-rocky-feature-h"><span class="std std-ref">File Feature.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_GDAL.h.html#file-src-rocky-gdal-h"><span class="std std-ref">File GDAL.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_GDALFeatureSource.h.html#file-src-rocky-gdalfeaturesource-h"><span class="std std-ref">File GDALFeatureSource.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_GeoExtent.h.html#file-src-rocky-geoextent-h"><span class="std std-ref">File GeoExtent.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_GeoImage.h.html#file-src-rocky-geoimage-h"><span class="std std-ref">File GeoImage.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_GeoPoint.h.html#file-src-rocky-geopoint-h"><span class="std std-ref">File GeoPoint.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Geocoder.h.html#file-src-rocky-geocoder-h"><span class="std std-ref">File Geocoder.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Horizon.h.html#file-src-rocky-horizon-h"><span class="std std-ref">File Horizon.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Image.h.html#file-src-rocky-image-h"><span class="std std-ref">File Image.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_ImageLayer.h.html#file-src-rocky-imagelayer-h"><span class="std std-ref">File ImageLayer.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Layer.h.html#file-src-rocky-layer-h"><span class="std std-ref">File Layer.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Log.h.html#file-src-rocky-log-h"><span class="std std-ref">File Log.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_MBTiles.h.html#file-src-rocky-mbtiles-h"><span class="std std-ref">File MBTiles.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Map.h.html#file-src-rocky-map-h"><span class="std std-ref">File Map.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Math.h.html#file-src-rocky-math-h"><span class="std std-ref">File Math.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Memory.h.html#file-src-rocky-memory-h"><span class="std std-ref">File Memory.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Profile.h.html#file-src-rocky-profile-h"><span class="std std-ref">File Profile.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Rendering.h.html#file-src-rocky-rendering-h"><span class="std std-ref">File Rendering.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Result.h.html#file-src-rocky-result-h"><span class="std std-ref">File Result.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_SRS.h.html#file-src-rocky-srs-h"><span class="std std-ref">File SRS.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_SentryTracker.h.html#file-src-rocky-sentrytracker-h"><span class="std std-ref">File SentryTracker.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_TerrainTileModel.h.html#file-src-rocky-terraintilemodel-h"><span class="std std-ref">File TerrainTileModel.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Threading.h.html#file-src-rocky-threading-h"><span class="std std-ref">File Threading.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_TileKey.h.html#file-src-rocky-tilekey-h"><span class="std std-ref">File TileKey.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_TileLayer.h.html#file-src-rocky-tilelayer-h"><span class="std std-ref">File TileLayer.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_URI.h.html#file-src-rocky-uri-h"><span class="std std-ref">File URI.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Units.h.html#file-src-rocky-units-h"><span class="std std-ref">File Units.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_Utils.h.html#file-src-rocky-utils-h"><span class="std std-ref">File Utils.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_contrib_EarthFileImporter.h.html#file-src-rocky-contrib-earthfileimporter-h"><span class="std std-ref">File EarthFileImporter.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_ecs_Component.h.html#file-src-rocky-ecs-component-h"><span class="std std-ref">File Component.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_ecs_Declutter.h.html#file-src-rocky-ecs-declutter-h"><span class="std std-ref">File Declutter.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_ecs_Label.h.html#file-src-rocky-ecs-label-h"><span class="std std-ref">File Label.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_ecs_Motion.h.html#file-src-rocky-ecs-motion-h"><span class="std std-ref">File Motion.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_ecs_Registry.h.html#file-src-rocky-ecs-registry-h"><span class="std std-ref">File Registry.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_ecs_Visibility.h.html#file-src-rocky-ecs-visibility-h"><span class="std std-ref">File Visibility.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_ecs_Widget.h.html#file-src-rocky-ecs-widget-h"><span class="std std-ref">File Widget.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_json.h.html#file-src-rocky-json-h"><span class="std std-ref">File json.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_rocky.h.html#file-src-rocky-rocky-h"><span class="std std-ref">File rocky.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_rocky_imgui.h.html#file-src-rocky-rocky-imgui-h"><span class="std std-ref">File rocky_imgui.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_static.cpp.html#file-src-rocky-static-cpp"><span class="std std-ref">File static.cpp</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_vsg_Common.h.html#file-src-rocky-vsg-common-h"><span class="std std-ref">File Common.h</span></a></p></li>
+<li><p><a class="reference internal" href="file_src_rocky_vsg_json.h.html#file-src-rocky-vsg-json-h"><span class="std std-ref">File json.h</span></a></p></li>
+</ul>
+</section>
+<section id="namespaces">
+<h2>Namespaces<a class="headerlink" href="#namespaces" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="namespace_rocky.html#namespace-rocky"><span class="std std-ref">Namespace rocky</span></a></p></li>
+</ul>
+</section>
+<section id="classes">
+<h2>Classes<a class="headerlink" href="#classes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="structrocky_1_1NamedFunction.html#exhale-struct-structrocky-1-1namedfunction"><span class="std std-ref">Struct NamedFunction</span></a></p></li>
+<li><p><a class="reference internal" href="classrocky_1_1Inherit.html#exhale-class-classrocky-1-1inherit"><span class="std std-ref">Template Class Inherit</span></a></p></li>
+<li><p><a class="reference internal" href="classrocky_1_1Object.html#exhale-class-classrocky-1-1object"><span class="std std-ref">Class Object</span></a></p></li>
+</ul>
+</section>
+<section id="functions">
+<h2>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="function_namespacerocky_1a8d82c29783195912f7dcade0122a9181.html#exhale-function-namespacerocky-1a8d82c29783195912f7dcade0122a9181"><span class="std std-ref">Function rocky::createUID</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespacerocky_1a834e76ca7bb98cd4e6b9592983e02da2.html#exhale-function-namespacerocky-1a834e76ca7bb98cd4e6b9592983e02da2"><span class="std std-ref">Function rocky::json_pretty</span></a></p></li>
+<li><p><a class="reference internal" href="function_namespacerocky_1a913f71972d5f34a8c12b3ce9eae317b2.html#exhale-function-namespacerocky-1a913f71972d5f34a8c12b3ce9eae317b2"><span class="std std-ref">Function rocky::unqualify</span></a></p></li>
+</ul>
+</section>
+<section id="defines">
+<h2>Defines<a class="headerlink" href="#defines" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="define_Common_8h_1a8e77915b9e4527f22dd928ff3fb41039.html#exhale-define-common-8h-1a8e77915b9e4527f22dd928ff3fb41039"><span class="std std-ref">Define ROCKY_ABOUT</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1a93447737c6ab46990483106c23eba1ad.html#exhale-define-common-8h-1a93447737c6ab46990483106c23eba1ad"><span class="std std-ref">Define ROCKY_DEPRECATED</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1a84b682e3800046562adef5d0ea26427d.html#exhale-define-common-8h-1a84b682e3800046562adef5d0ea26427d"><span class="std std-ref">Define ROCKY_EXPORT</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1a3972140ab9c544211145b75f77c47bb0.html#exhale-define-common-8h-1a3972140ab9c544211145b75f77c47bb0"><span class="std std-ref">Define ROCKY_FILE</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1aa24ca6ba47896a51df52e90edf39d00d.html#exhale-define-common-8h-1aa24ca6ba47896a51df52e90edf39d00d"><span class="std std-ref">Define ROCKY_HARD_ASSERT</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1a33ba9272b4c2d1f5bf476623f925bd1c.html#exhale-define-common-8h-1a33ba9272b4c2d1f5bf476623f925bd1c"><span class="std std-ref">Define ROCKY_HARD_ASSERT_STATUS</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1a3d98bf9da4e05febd6fde7757f805531.html#exhale-define-common-8h-1a3d98bf9da4e05febd6fde7757f805531"><span class="std std-ref">Define ROCKY_IF_SOFT_ASSERT</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1a974a00cc09cd755e5a4f1e361c06f46c.html#exhale-define-common-8h-1a974a00cc09cd755e5a4f1e361c06f46c"><span class="std std-ref">Define ROCKY_NAMESPACE</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1a1e056c9ad67d91b362d38e1921ea4174.html#exhale-define-common-8h-1a1e056c9ad67d91b362d38e1921ea4174"><span class="std std-ref">Define ROCKY_QUIET_ASSERT</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1aeb8e649eb29bf55dc04ec0c7bedf9d84.html#exhale-define-common-8h-1aeb8e649eb29bf55dc04ec0c7bedf9d84"><span class="std std-ref">Define ROCKY_SOFT_ASSERT</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1ac3c41dddb68cc56508a3da45463da2d4.html#exhale-define-common-8h-1ac3c41dddb68cc56508a3da45463da2d4"><span class="std std-ref">Define ROCKY_SOFT_ASSERT_AND_RETURN</span></a></p></li>
+<li><p><a class="reference internal" href="define_Common_8h_1aa4fb47a92affd2012b5b05b524ef0580.html#exhale-define-common-8h-1aa4fb47a92affd2012b5b05b524ef0580"><span class="std std-ref">Define ROCKY_TODO</span></a></p></li>
+</ul>
+</section>
+<section id="typedefs">
+<h2>Typedefs<a class="headerlink" href="#typedefs" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="typedef_namespacerocky_1a787bb6294207b80e23bb288034695566.html#exhale-typedef-namespacerocky-1a787bb6294207b80e23bb288034695566"><span class="std std-ref">Typedef rocky::Revision</span></a></p></li>
+<li><p><a class="reference internal" href="typedef_namespacerocky_1a6ae678b1966d6628635a6b4ca1ac8641.html#exhale-typedef-namespacerocky-1a6ae678b1966d6628635a6b4ca1ac8641"><span class="std std-ref">Typedef rocky::UID</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

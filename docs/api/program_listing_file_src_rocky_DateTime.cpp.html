@@ -1,0 +1,464 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File DateTime.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File DateTime.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_DateTime.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-datetime-cpp">
+<span id="program-listing-file-src-rocky-datetime-cpp"></span><h1>Program Listing for File DateTime.cpp<a class="headerlink" href="#program-listing-for-file-datetime-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_DateTime.cpp.html#file-src-rocky-datetime-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/DateTime.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;DateTime.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Utils.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;iomanip&gt;</span>
+
+<span class="c1">// to get the TIXML_SSCANF macro</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;tinyxml/tinyxml.h&quot;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// from RFC 1123, RFC 850</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">rfc_wkday</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s">&quot;Sun&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Mon&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Tue&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Wed&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Thu&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Fri&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Sat&quot;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">rfc_weekday</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s">&quot;Monday&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Tuesday&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Wednesday&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Thursday&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Friday&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Saturday&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Sunday&quot;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">rfc_month</span><span class="p">[</span><span class="mi">12</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s">&quot;Jan&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Feb&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Mar&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Apr&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;May&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Jun&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Jul&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Aug&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Sep&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Oct&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Nov&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Dec&quot;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="nf">timet_to_tm</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="o">::</span><span class="kt">time_t</span><span class="o">&amp;</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="o">::</span><span class="n">tm</span><span class="o">&amp;</span><span class="w"> </span><span class="n">result</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="cp">#ifdef _WIN32</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">::</span><span class="n">gmtime_s</span><span class="p">(</span><span class="o">&amp;</span><span class="n">result</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">t</span><span class="p">);</span>
+<span class="cp">#else</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="o">::</span><span class="n">gmtime_r</span><span class="p">(</span><span class="o">&amp;</span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="cp">#endif</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="p">)</span>
+<span class="w">            </span><span class="o">::</span><span class="n">memset</span><span class="p">(</span><span class="o">&amp;</span><span class="n">result</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">tm</span><span class="p">));</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">//------------------------------------------------------------------------</span>
+
+<span class="n">DateTime</span><span class="o">::</span><span class="n">DateTime</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="o">::</span><span class="n">time</span><span class="p">(</span><span class="w"> </span><span class="o">&amp;</span><span class="n">_time_t</span><span class="w"> </span><span class="p">);</span>
+<span class="w">    </span><span class="n">timet_to_tm</span><span class="p">(</span><span class="n">_time_t</span><span class="p">,</span><span class="w"> </span><span class="n">_tm</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">DateTime</span><span class="o">::</span><span class="n">DateTime</span><span class="p">(</span><span class="n">TimeStamp</span><span class="w"> </span><span class="n">utc</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_time_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">utc</span><span class="p">;</span>
+<span class="w">    </span><span class="n">timet_to_tm</span><span class="p">(</span><span class="n">_time_t</span><span class="p">,</span><span class="w"> </span><span class="n">_tm</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">DateTime</span><span class="o">::</span><span class="n">DateTime</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="o">::</span><span class="n">tm</span><span class="o">&amp;</span><span class="w"> </span><span class="n">in_tm</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">tm</span><span class="w"> </span><span class="n">temptm</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">in_tm</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_time_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">::</span><span class="n">mktime</span><span class="p">(</span><span class="w"> </span><span class="o">&amp;</span><span class="n">temptm</span><span class="w"> </span><span class="p">);</span><span class="w"> </span><span class="c1">// assumes in_tm is in local time</span>
+<span class="w">    </span><span class="n">timet_to_tm</span><span class="p">(</span><span class="n">_time_t</span><span class="p">,</span><span class="w"> </span><span class="n">_tm</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_time_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">timegm</span><span class="p">(</span><span class="o">&amp;</span><span class="n">_tm</span><span class="p">);</span><span class="w"> </span><span class="c1">// back to UTC</span>
+<span class="p">}</span>
+
+<span class="n">DateTime</span><span class="o">::</span><span class="n">DateTime</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">month</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">day</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">hour</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_year</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1900</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mon</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">month</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mday</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">day</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">hour_whole</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">::</span><span class="n">floor</span><span class="p">(</span><span class="n">hour</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_hour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">hour_whole</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">frac</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hour</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_hour</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frac</span><span class="o">*</span><span class="mf">60.0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_min</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="o">::</span><span class="n">floor</span><span class="p">(</span><span class="n">min</span><span class="p">);</span>
+<span class="w">    </span><span class="n">frac</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">min</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_min</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_sec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">frac</span><span class="o">*</span><span class="mf">60.0</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// now go to time_t, and back to tm, to populate the rest of the fields.</span>
+<span class="w">    </span><span class="n">_time_t</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">timegm</span><span class="p">(</span><span class="w"> </span><span class="o">&amp;</span><span class="n">_tm</span><span class="w"> </span><span class="p">);</span>
+<span class="w">    </span><span class="n">timet_to_tm</span><span class="p">(</span><span class="n">_time_t</span><span class="p">,</span><span class="w"> </span><span class="n">_tm</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">DateTime</span><span class="o">::</span><span class="n">DateTime</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">dayOfYear</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">TimeStamp</span><span class="w"> </span><span class="n">utc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DateTime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">).</span><span class="n">asTimeStamp</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)((</span><span class="n">dayOfYear</span><span class="mf">-1.0</span><span class="p">)</span><span class="o">*</span><span class="mf">24.0</span><span class="o">*</span><span class="mf">3600.0</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_time_t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">utc</span><span class="p">;</span>
+<span class="w">    </span><span class="n">timet_to_tm</span><span class="p">(</span><span class="n">_time_t</span><span class="p">,</span><span class="w"> </span><span class="n">_tm</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">DateTime</span><span class="o">::</span><span class="n">DateTime</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">input</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">_time_t</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">parse</span><span class="p">(</span><span class="n">input</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">DateTime</span><span class="o">::</span><span class="n">parse</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">input</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="n">month</span><span class="p">,</span><span class="w"> </span><span class="n">day</span><span class="p">,</span><span class="w"> </span><span class="n">hour</span><span class="p">,</span><span class="w"> </span><span class="n">min</span><span class="p">,</span><span class="w"> </span><span class="n">sec</span><span class="p">;</span>
+
+<span class="w">    </span><span class="o">::</span><span class="n">memset</span><span class="p">(</span><span class="w"> </span><span class="o">&amp;</span><span class="n">_tm</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">tm</span><span class="p">)</span><span class="w"> </span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">TIXML_SSCANF</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;%4d-%2d-%2dT%2d:%2d:%2d&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">month</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">day</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">hour</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">min</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sec</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_year</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1900</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mon</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">month</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mday</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">day</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_hour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hour</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_min</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">min</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_sec</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">sec</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">TIXML_SSCANF</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;%4d-%2d-%2d %2d:%2d:%2d&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">month</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">day</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">hour</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">min</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sec</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_year</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1900</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mon</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">month</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mday</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">day</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_hour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hour</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_min</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">min</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_sec</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">sec</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">TIXML_SSCANF</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;%4d%2d%2dT%2d%2d%2d&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">month</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">day</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">hour</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">min</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sec</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_year</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1900</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mon</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">month</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mday</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">day</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_hour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hour</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_min</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">min</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_sec</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">sec</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">TIXML_SSCANF</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="s">&quot;%4d%2d%2d%2d%2d%2d&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">year</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">month</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">day</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">hour</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">min</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">sec</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">6</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_year</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1900</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mon</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">month</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mday</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">day</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_hour</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hour</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_min</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">min</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_sec</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">sec</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ok</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="n">ok</span><span class="w"> </span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// now go to time_t, and back to tm, to populate the rest of the fields.</span>
+<span class="w">        </span><span class="n">_time_t</span><span class="w"> </span><span class="o">=</span><span class="w">  </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">timegm</span><span class="p">(</span><span class="w"> </span><span class="o">&amp;</span><span class="n">_tm</span><span class="w"> </span><span class="p">);</span>
+<span class="w">        </span><span class="n">timet_to_tm</span><span class="p">(</span><span class="n">_time_t</span><span class="p">,</span><span class="w"> </span><span class="n">_tm</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">DateTime</span><span class="o">::</span><span class="n">DateTime</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">DateTime</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">_tm</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">_tm</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_time_t</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">_time_t</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">//nop</span>
+<span class="p">}</span>
+
+<span class="kt">int</span>
+<span class="n">DateTime</span><span class="o">::</span><span class="n">year</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_year</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1900</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span>
+<span class="n">DateTime</span><span class="o">::</span><span class="n">month</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mon</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span>
+<span class="n">DateTime</span><span class="o">::</span><span class="n">day</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mday</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">double</span>
+<span class="n">DateTime</span><span class="o">::</span><span class="n">hours</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_hour</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">((</span><span class="kt">double</span><span class="p">)</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_min</span><span class="p">)</span><span class="o">/</span><span class="mf">60.</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">((</span><span class="kt">double</span><span class="p">)</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_sec</span><span class="p">)</span><span class="o">/</span><span class="mf">3600.</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span>
+<span class="n">DateTime</span><span class="o">::</span><span class="n">asRFC1123</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">make_string</span><span class="p">()</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">rfc_wkday</span><span class="p">[</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_wday</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;, &quot;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mday</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39; &#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">rfc_month</span><span class="p">[</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mon</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39; &#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="mi">1900</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_year</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39; &#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_hour</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;:&#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_min</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;:&#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_sec</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39; &#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;GMT&quot;</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span>
+<span class="n">DateTime</span><span class="o">::</span><span class="n">asISO8601</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">make_string</span><span class="p">()</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_year</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1900</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;-&#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mon</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;-&#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mday</span><span class="p">)</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;T&#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_hour</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;:&#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_min</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;:&#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_sec</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;Z&#39;</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span>
+<span class="n">DateTime</span><span class="o">::</span><span class="n">asCompactISO8601</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">make_string</span><span class="p">()</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_year</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1900</span><span class="p">)</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mon</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="p">(</span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_mday</span><span class="p">)</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;T&#39;</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_hour</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_min</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setfill</span><span class="p">(</span><span class="sc">&#39;0&#39;</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">setw</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">_tm</span><span class="p">.</span><span class="n">tm_sec</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="sc">&#39;Z&#39;</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="c1">// https://en.wikipedia.org/wiki/Julian_day#Converting_Gregorian_calendar_date_to_Julian_Day_Number</span>
+<span class="kt">double</span>
+<span class="n">DateTime</span><span class="o">::</span><span class="n">getJulianDay</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="mi">1461</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">year</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4800</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">month</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">14</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">12</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="mi">367</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">month</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">12</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">((</span><span class="n">month</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">14</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">12</span><span class="p">)))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">12</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="mi">3</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">((</span><span class="n">year</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">4900</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">month</span><span class="p">()</span><span class="mi">-14</span><span class="p">)</span><span class="o">/</span><span class="mi">12</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span><span class="p">))</span><span class="o">/</span><span class="mi">4</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">day</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">32075</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)(</span><span class="n">d</span><span class="mf">-0.5</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">hours</span><span class="p">()</span><span class="o">/</span><span class="mf">24.0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">//------------------------------------------------------------------------</span>
+
+<span class="cm">/*</span>
+<span class="cm"> * Copyright (c) 2001-2006, NLnet Labs. All rights reserved.</span>
+<span class="cm"> *</span>
+<span class="cm"> * This software is open source.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Redistribution and use in source and binary forms, with or without</span>
+<span class="cm"> * modification, are permitted provided that the following conditions</span>
+<span class="cm"> * are met:</span>
+<span class="cm"> *</span>
+<span class="cm"> * Redistributions of source code must retain the above copyright notice,</span>
+<span class="cm"> * this list of conditions and the following disclaimer.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Redistributions in binary form must reproduce the above copyright notice,</span>
+<span class="cm"> * this list of conditions and the following disclaimer in the documentation</span>
+<span class="cm"> * and/or other materials provided with the distribution.</span>
+<span class="cm"> *</span>
+<span class="cm"> * Neither the name of the NLNET LABS nor the names of its contributors may</span>
+<span class="cm"> * be used to endorse or promote products derived from this software without</span>
+<span class="cm"> * specific prior written permission.</span>
+
+<span class="cm"> * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS</span>
+<span class="cm"> * &quot;AS IS&quot; AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED</span>
+<span class="cm"> * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR</span>
+<span class="cm"> * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE</span>
+<span class="cm"> * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR</span>
+<span class="cm"> * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF</span>
+<span class="cm"> * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS</span>
+<span class="cm"> * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN</span>
+<span class="cm"> * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)</span>
+<span class="cm"> * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE</span>
+<span class="cm"> * POSSIBILITY OF SUCH DAMAGE.</span>
+<span class="cm"> */</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="cm">/* Number of days per month (except for February in leap years). */</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">monoff</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">31</span><span class="p">,</span><span class="w"> </span><span class="mi">59</span><span class="p">,</span><span class="w"> </span><span class="mi">90</span><span class="p">,</span><span class="w"> </span><span class="mi">120</span><span class="p">,</span><span class="w"> </span><span class="mi">151</span><span class="p">,</span><span class="w"> </span><span class="mi">181</span><span class="p">,</span><span class="w"> </span><span class="mi">212</span><span class="p">,</span><span class="w"> </span><span class="mi">243</span><span class="p">,</span><span class="w"> </span><span class="mi">273</span><span class="p">,</span><span class="w"> </span><span class="mi">304</span><span class="p">,</span><span class="w"> </span><span class="mi">334</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">is_leap_year</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">4</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">year</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">100</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">year</span><span class="w"> </span><span class="o">%</span><span class="w"> </span><span class="mi">400</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">leap_days</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">y1</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">y2</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="o">--</span><span class="n">y1</span><span class="p">;</span>
+<span class="w">        </span><span class="o">--</span><span class="n">y2</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">y2</span><span class="o">/</span><span class="mi">4</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y1</span><span class="o">/</span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="n">y2</span><span class="o">/</span><span class="mi">100</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y1</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">y2</span><span class="o">/</span><span class="mi">400</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y1</span><span class="o">/</span><span class="mi">400</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="cm">/*</span>
+<span class="cm">* Code adapted from Python 2.4.1 sources (Lib/calendar.py).</span>
+<span class="cm">*/</span>
+<span class="o">::</span><span class="kt">time_t</span><span class="w"> </span><span class="n">DateTime</span><span class="o">::</span><span class="n">timegm</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">tm</span><span class="o">*</span><span class="w"> </span><span class="n">tm</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">year</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">time_t</span><span class="w"> </span><span class="n">days</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">time_t</span><span class="w"> </span><span class="n">hours</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">time_t</span><span class="w"> </span><span class="n">minutes</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">time_t</span><span class="w"> </span><span class="n">seconds</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">year</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1900</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tm</span><span class="o">-&gt;</span><span class="n">tm_year</span><span class="p">;</span>
+<span class="w">    </span><span class="n">days</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">365</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">year</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1970</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">leap_days</span><span class="p">(</span><span class="mi">1970</span><span class="p">,</span><span class="w"> </span><span class="n">year</span><span class="p">);</span>
+<span class="w">    </span><span class="n">days</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">monoff</span><span class="p">[</span><span class="n">tm</span><span class="o">-&gt;</span><span class="n">tm_mon</span><span class="p">];</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tm</span><span class="o">-&gt;</span><span class="n">tm_mon</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">is_leap_year</span><span class="p">(</span><span class="n">year</span><span class="p">))</span>
+<span class="w">        </span><span class="o">++</span><span class="n">days</span><span class="p">;</span>
+<span class="w">    </span><span class="n">days</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">tm</span><span class="o">-&gt;</span><span class="n">tm_mday</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">hours</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">days</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">24</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tm</span><span class="o">-&gt;</span><span class="n">tm_hour</span><span class="p">;</span>
+<span class="w">    </span><span class="n">minutes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hours</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">60</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tm</span><span class="o">-&gt;</span><span class="n">tm_min</span><span class="p">;</span>
+<span class="w">    </span><span class="n">seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">minutes</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">60</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tm</span><span class="o">-&gt;</span><span class="n">tm_sec</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">seconds</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">DateTime</span>
+<span class="n">DateTime</span><span class="o">::</span><span class="k">operator</span><span class="o">+</span><span class="p">(</span><span class="kt">double</span><span class="w"> </span><span class="n">hours</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">seconds</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">asTimeStamp</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">hours</span><span class="o">*</span><span class="mf">3600.0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">DateTime</span><span class="p">((</span><span class="n">TimeStamp</span><span class="p">)</span><span class="n">seconds</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">DateTimeExtent</span><span class="o">::</span><span class="n">expandBy</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">DateTime</span><span class="o">&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_valid</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">_start</span><span class="p">)</span>
+<span class="w">        </span><span class="n">_start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_valid</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">value</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">_end</span><span class="p">)</span>
+<span class="w">        </span><span class="n">_end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">value</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_valid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;json.h&quot;</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">to_json</span><span class="p">(</span><span class="n">json</span><span class="o">&amp;</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">DateTime</span><span class="o">&amp;</span><span class="w"> </span><span class="n">obj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">obj</span><span class="p">.</span><span class="n">asCompactISO8601</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">from_json</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">json</span><span class="o">&amp;</span><span class="w"> </span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="n">DateTime</span><span class="o">&amp;</span><span class="w"> </span><span class="n">obj</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DateTime</span><span class="p">(</span><span class="n">get_string</span><span class="p">(</span><span class="n">j</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,69 @@
+
+.. _program_listing_file_src_rocky_ImageLayer.h:
+
+Program Listing for File ImageLayer.h
+=====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_ImageLayer.h>` (``src/rocky/ImageLayer.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Common.h>
+   #include <rocky/TileLayer.h>
+   #include <rocky/GeoImage.h>
+   #include <rocky/Color.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT ImageLayer : public Inherit<TileLayer, ImageLayer>
+       {
+       public:
+           option<float> sharpness = 0.0f;
+   
+           option<Color> noDataColor;
+   
+       public:
+           Result<GeoImage> createTile(const TileKey& key, const IOOptions& io) const;
+   
+           std::string to_json() const override;
+   
+       public: // Layer
+   
+           Result<> openImplementation(const IOOptions&) override;
+   
+           void closeImplementation() override;
+   
+       protected:
+   
+           ImageLayer();
+   
+           ImageLayer(std::string_view JSON, const IOOptions& io);
+   
+           virtual Result<GeoImage> createTileImplementation(const TileKey& key, const IOOptions& io) const
+           {
+               return Failure_ResourceUnavailable;
+           }
+   
+       private:
+   
+           // internal construction method
+           void construct(std::string_view, const IOOptions& io);
+   
+           // Creates an image that's in the same profile as the provided key.
+           Result<GeoImage> createTileInKeyProfile(const TileKey& key, const IOOptions& io) const;
+   
+           // Fetches multiple images from the TileSource; mosaics/reprojects/crops as necessary, and
+           // returns a single tile. This is called by createImageFromTileSource() if the key profile
+           // doesn't match the layer profile.
+           std::shared_ptr<Image> assembleTile(const TileKey& key, const IOOptions& io) const;
+   
+           Result<GeoImage> invokeCreateTileImplementation(const TileKey& key, const IOOptions& io) const;
+       };
+   
+   } // namespace ROCKY_NAMESPACE
+   

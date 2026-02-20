@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1aa22e8a098a2f111777fea52c1a5c4b89:
+
+Function rocky::from_json(const json&, Viewpoint&)
+==================================================
+
+- Defined in :ref:`file_src_rocky_Viewpoint.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::from_json(const json&, Viewpoint&)
+   :project: Rocky

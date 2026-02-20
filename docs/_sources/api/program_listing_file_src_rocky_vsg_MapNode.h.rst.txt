@@ -1,0 +1,75 @@
+
+.. _program_listing_file_src_rocky_vsg_MapNode.h:
+
+Program Listing for File MapNode.h
+==================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_MapNode.h>` (``src/rocky/vsg/MapNode.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/vsg/VSGContext.h>
+   #include <rocky/vsg/terrain/TerrainSettings.h>
+   #include <rocky/vsg/terrain/TerrainNode.h>
+   #include <rocky/Horizon.h>
+   #include <rocky/Map.h>
+   #include <rocky/Rendering.h>
+   #include <rocky/GeoPoint.h>
+   #include <rocky/Viewpoint.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT MapNode : public vsg::Inherit<vsg::Group, MapNode>
+       {
+       public: // constructors
+   
+           static vsg::ref_ptr<MapNode> create(VSGContext context);
+   
+       public:
+   
+           Profile profile;
+   
+           Map::Ptr map;
+   
+           vsg::ref_ptr<TerrainNode> terrainNode;
+   
+       public:
+   
+           Viewpoint createViewpoint(const std::vector<GeoPoint>& points, vsg::Camera* camera) const;
+   
+       public:
+   
+           const SRS& srs() const;
+   
+           TerrainSettings& terrainSettings();
+   
+           const TerrainSettings& terrainSettings() const;
+   
+           Result<> from_json(const std::string& JSON, const IOOptions& io);
+   
+           std::string to_json() const;
+   
+           bool update(VSGContext context);
+   
+       public:
+   
+           void traverse(vsg::RecordTraversal&) const override;
+   
+           void traverse(vsg::Visitor&) override;
+   
+           void traverse(vsg::ConstVisitor&) const override;
+   
+       private:
+   
+           MapNode(VSGContext);
+   
+           bool _openedLayers = false;
+   
+           mutable ViewLocal<Horizon> _horizon;
+       };
+   }

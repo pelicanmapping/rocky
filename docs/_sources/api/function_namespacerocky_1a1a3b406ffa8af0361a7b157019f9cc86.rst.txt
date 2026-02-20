@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a1a3b406ffa8af0361a7b157019f9cc86:
+
+Function rocky::Failure_OperationCanceled
+=========================================
+
+- Defined in :ref:`file_src_rocky_Result.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::Failure_OperationCanceled(Failure::OperationCanceled)
+   :project: Rocky

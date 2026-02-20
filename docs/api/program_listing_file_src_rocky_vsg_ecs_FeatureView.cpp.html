@@ -1,0 +1,550 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File FeatureView.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File FeatureView.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_vsg_ecs_FeatureView.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-featureview-cpp">
+<span id="program-listing-file-src-rocky-vsg-ecs-featureview-cpp"></span><h1>Program Listing for File FeatureView.cpp<a class="headerlink" href="#program-listing-for-file-featureview-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_vsg_ecs_FeatureView.cpp.html#file-src-rocky-vsg-ecs-featureview-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/ecs/FeatureView.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;FeatureView.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/ElevationSampler.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/weemesh.h&gt;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="o">::</span><span class="nn">util</span><span class="p">;</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// Transforms a range of points from geographic (long lat) to gnomonic coordinates</span>
+<span class="w">    </span><span class="c1">// around a centroid with an optional scale.</span>
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">T</span><span class="p">,</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ITER</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="n">geo_to_gnomonic</span><span class="p">(</span><span class="n">ITER</span><span class="w"> </span><span class="n">begin</span><span class="p">,</span><span class="w"> </span><span class="n">ITER</span><span class="w"> </span><span class="n">end</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">centroid</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">lon0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">radians</span><span class="p">(</span><span class="n">centroid</span><span class="p">.</span><span class="n">x</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">lat0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">radians</span><span class="p">(</span><span class="n">centroid</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">ITER</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">begin</span><span class="p">;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">end</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">p</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">lon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">radians</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">x</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">radians</span><span class="p">(</span><span class="n">p</span><span class="o">-&gt;</span><span class="n">y</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sin</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">cos</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cos</span><span class="p">(</span><span class="n">lon</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">lon0</span><span class="p">);</span>
+<span class="w">            </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scale</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sin</span><span class="p">(</span><span class="n">lon</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">lon0</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">d</span><span class="p">;</span>
+<span class="w">            </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">scale</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">sin</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cos</span><span class="p">(</span><span class="n">lon</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">lon0</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">d</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Transforms a range of points from gnomonic coordinates around a centroid with a</span>
+<span class="w">    </span><span class="c1">// given scale to geographic (long lat) coordinates.</span>
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">T</span><span class="p">,</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ITER</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="n">gnomonic_to_geo</span><span class="p">(</span><span class="n">ITER</span><span class="w"> </span><span class="n">begin</span><span class="p">,</span><span class="w"> </span><span class="n">ITER</span><span class="w"> </span><span class="n">end</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">centroid</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">lon0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">radians</span><span class="p">(</span><span class="n">centroid</span><span class="p">.</span><span class="n">x</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">lat0</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">radians</span><span class="p">(</span><span class="n">centroid</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">ITER</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">begin</span><span class="p">;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">end</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">p</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">x</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">scale</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">y</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">scale</span><span class="p">;</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">rho</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">atan</span><span class="p">(</span><span class="n">rho</span><span class="p">);</span>
+
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">asin</span><span class="p">(</span><span class="n">cos</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sin</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sin</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cos</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">rho</span><span class="p">));</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">lon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lon0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">atan</span><span class="p">((</span><span class="n">x</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sin</span><span class="p">(</span><span class="n">c</span><span class="p">))</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">rho</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cos</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cos</span><span class="p">(</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sin</span><span class="p">(</span><span class="n">lat0</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">sin</span><span class="p">(</span><span class="n">c</span><span class="p">)));</span>
+
+<span class="w">            </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">degrees</span><span class="p">(</span><span class="n">lon</span><span class="p">);</span>
+<span class="w">            </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">degrees</span><span class="p">(</span><span class="n">lat</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">class</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="n">tessellate_line_segment</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">to</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">input_srs</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">GeodeticInterpolation</span><span class="w"> </span><span class="n">interp</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">max_span</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">add_last_point</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">input_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">(),</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">ellipsoid</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input_srs</span><span class="p">.</span><span class="n">ellipsoid</span><span class="p">();</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">list</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="w"> </span><span class="n">list</span><span class="p">{</span><span class="w"> </span><span class="n">from</span><span class="p">,</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(;;)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">save</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span>
+<span class="w">            </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">iter</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iter</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">            </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">iter</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ellipsoid</span><span class="p">.</span><span class="n">geodesicGroundDistance</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span><span class="w"> </span><span class="n">p2</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">max_span</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">T</span><span class="w"> </span><span class="n">midpoint</span><span class="p">;</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">interp</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">GeodeticInterpolation</span><span class="o">::</span><span class="n">GreatCircle</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">midpoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ellipsoid</span><span class="p">.</span><span class="n">geodesicInterpolate</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span><span class="w"> </span><span class="n">p2</span><span class="p">,</span><span class="w"> </span><span class="mf">0.5</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="c1">// GeodeticInterpolation::RhumbLine</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">midpoint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">p1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">p2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">0.5</span><span class="p">;</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="n">list</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">iter</span><span class="p">,</span><span class="w"> </span><span class="n">midpoint</span><span class="p">);</span>
+<span class="w">                </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">save</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">end</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">iter</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">next</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">iter</span><span class="p">;</span><span class="w"> </span><span class="n">next</span><span class="o">++</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">add_last_point</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">next</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">list</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">                </span><span class="n">output</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="o">*</span><span class="n">iter</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">tessellate_linestring</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">input_srs</span><span class="p">,</span><span class="w"> </span><span class="n">GeodeticInterpolation</span><span class="w"> </span><span class="n">interp</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">max_span</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="o">&gt;</span><span class="w"> </span><span class="n">output</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// only geodetic coordinates get tessellated for now:</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">input_srs</span><span class="p">.</span><span class="n">isGeodetic</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">tessellate_line_segment</span><span class="p">(</span><span class="n">input</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="n">input</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="n">input_srs</span><span class="p">,</span><span class="w"> </span><span class="n">interp</span><span class="p">,</span><span class="w"> </span><span class="n">max_span</span><span class="p">,</span><span class="w"> </span><span class="n">output</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="n">output</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">back</span><span class="p">());</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">output</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">get_max_segment_length</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">input</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">float</span><span class="w"> </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">m</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">glm</span><span class="o">::</span><span class="n">length</span><span class="p">(</span><span class="n">input</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">input</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">]));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="n">compile_feature_to_lines</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Feature</span><span class="o">&amp;</span><span class="w"> </span><span class="n">feature</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">StyleSheet</span><span class="o">&amp;</span><span class="w"> </span><span class="n">styles</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">GeoPoint</span><span class="o">&amp;</span><span class="w"> </span><span class="n">origin</span><span class="p">,</span>
+<span class="w">        </span><span class="n">ElevationSession</span><span class="o">&amp;</span><span class="w"> </span><span class="n">clamper</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">output_srs</span><span class="p">,</span><span class="w"> </span><span class="n">LineGeometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">lineGeom</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">float</span><span class="w"> </span><span class="n">max_span</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">styles</span><span class="p">.</span><span class="n">lineStyle</span><span class="p">.</span><span class="n">resolution</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">float</span><span class="w"> </span><span class="n">final_max_span</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">max_span</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">feature</span><span class="p">.</span><span class="n">geometry</span><span class="p">.</span><span class="n">eachPart</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">Geometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">part</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span>
+<span class="w">                    </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">                </span><span class="c1">// tessellate:</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">tessellated</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tessellate_linestring</span><span class="p">(</span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">,</span><span class="w"> </span><span class="n">feature</span><span class="p">.</span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="n">feature</span><span class="p">.</span><span class="n">interpolation</span><span class="p">,</span><span class="w"> </span><span class="n">max_span</span><span class="p">);</span>
+
+<span class="w">                </span><span class="c1">// clamp:</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">clamper</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">clamper</span><span class="p">.</span><span class="n">clampRange</span><span class="p">(</span><span class="n">tessellated</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">tessellated</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="c1">// transform:</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">feature_to_world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="p">.</span><span class="n">srs</span><span class="p">.</span><span class="n">to</span><span class="p">(</span><span class="n">output_srs</span><span class="p">);</span>
+<span class="w">                </span><span class="n">feature_to_world</span><span class="p">.</span><span class="n">transformRange</span><span class="p">(</span><span class="n">tessellated</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">tessellated</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+<span class="w">                </span><span class="c1">// localize:</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">origin</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">ref_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">origin</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">output_srs</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">tessellated</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">p</span><span class="w"> </span><span class="o">-=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">ref_out</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">ref_out</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">ref_out</span><span class="p">.</span><span class="n">z</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="c1">// Populate the line component based on the topology.</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lineGeom</span><span class="p">.</span><span class="n">topology</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">LineTopology</span><span class="o">::</span><span class="n">Strip</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="c1">// CHECK THIS</span>
+<span class="w">                    </span><span class="n">lineGeom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="n">lineGeom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tessellated</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+<span class="w">                    </span><span class="n">lineGeom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">lineGeom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="w"> </span><span class="n">tessellated</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">tessellated</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">else</span><span class="w"> </span><span class="c1">// Line::Topology::Segments</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span><span class="w"> </span><span class="n">num_points_in_segments</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tessellated</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">lineGeom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+<span class="w">                    </span><span class="n">lineGeom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="n">lineGeom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">num_points_in_segments</span><span class="p">);</span>
+
+<span class="w">                    </span><span class="c1">// convert from a strip to segments</span>
+<span class="w">                    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">tessellated</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">lineGeom</span><span class="p">.</span><span class="n">points</span><span class="p">[</span><span class="n">ptr</span><span class="o">++</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">tessellated</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">tessellated</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">tessellated</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">z</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">lineGeom</span><span class="p">.</span><span class="n">points</span><span class="p">[</span><span class="n">ptr</span><span class="o">++</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">tessellated</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">].</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">tessellated</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">].</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">tessellated</span><span class="p">[</span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">].</span><span class="n">z</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="n">final_max_span</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">final_max_span</span><span class="p">,</span><span class="w"> </span><span class="n">get_max_segment_length</span><span class="p">(</span><span class="n">tessellated</span><span class="p">));</span>
+<span class="w">            </span><span class="p">});</span>
+
+<span class="w">        </span><span class="c1">// max length:</span>
+<span class="w">        </span><span class="n">max_span</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">final_max_span</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">//line.style = styles.line;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="n">compile_polygon_feature_with_weemesh</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Feature</span><span class="o">&amp;</span><span class="w"> </span><span class="n">feature</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">StyleSheet</span><span class="o">&amp;</span><span class="w"> </span><span class="n">styles</span><span class="p">,</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">GeoPoint</span><span class="o">&amp;</span><span class="w"> </span><span class="n">origin</span><span class="p">,</span><span class="w"> </span><span class="n">ElevationSession</span><span class="o">&amp;</span><span class="w"> </span><span class="n">clamper</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">output_srs</span><span class="p">,</span><span class="w"> </span><span class="n">MeshGeometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">meshGeom</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// scales our local gnomonic coordinates so they are the same order of magnitude as</span>
+<span class="w">        </span><span class="c1">// weemesh&#39;s default epsilon values:</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">gnomonic_scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e6</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// Meshed triangles will be at a maximum this many degrees across in size,</span>
+<span class="w">        </span><span class="c1">// to help follow the curvature of the earth.</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">resolution_degrees</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.25</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// apply a fake Z for testing purposes before we attempt depth offsetting</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">fake_z_offset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0</span><span class="p">;</span>
+
+
+<span class="w">        </span><span class="c1">// some conversions we will need:</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">feature_geo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="p">.</span><span class="n">srs</span><span class="p">.</span><span class="n">geodeticSRS</span><span class="p">();</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">feature_to_geo</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="p">.</span><span class="n">srs</span><span class="p">.</span><span class="n">to</span><span class="p">(</span><span class="n">feature_geo</span><span class="p">);</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">geo_to_world</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature_geo</span><span class="p">.</span><span class="n">to</span><span class="p">(</span><span class="n">output_srs</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// centroid for use with the gnomonic projection:</span>
+<span class="w">        </span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="w"> </span><span class="n">centroid</span><span class="p">;</span>
+<span class="w">        </span><span class="n">feature</span><span class="p">.</span><span class="n">extent</span><span class="p">.</span><span class="n">getCentroid</span><span class="p">(</span><span class="n">centroid</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">centroid</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+<span class="w">        </span><span class="n">feature_to_geo</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">centroid</span><span class="p">,</span><span class="w"> </span><span class="n">centroid</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// transform to gnomonic. We are not using SRS/PROJ for the gnomonic projection</span>
+<span class="w">        </span><span class="c1">// because it would require creating a new SRS for each and every feature (because</span>
+<span class="w">        </span><span class="c1">// of the centroid) and that is way too slow.</span>
+<span class="w">        </span><span class="n">Geometry</span><span class="w"> </span><span class="n">local_geom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="p">.</span><span class="n">geometry</span><span class="p">;</span><span class="w"> </span><span class="c1">// working copy</span>
+<span class="w">        </span><span class="n">Box</span><span class="w"> </span><span class="n">local_ex</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// transform the geometry to gnomonic coordinates, and establish the extent.</span>
+<span class="w">        </span><span class="n">local_geom</span><span class="p">.</span><span class="n">eachPart</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">Geometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">part</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">feature_to_geo</span><span class="p">.</span><span class="n">transformRange</span><span class="p">(</span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+<span class="w">                </span><span class="n">geo_to_gnomonic</span><span class="p">(</span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="w"> </span><span class="n">centroid</span><span class="p">,</span><span class="w"> </span><span class="n">gnomonic_scale</span><span class="p">);</span>
+<span class="w">                </span><span class="n">local_ex</span><span class="p">.</span><span class="n">expandBy</span><span class="p">(</span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+<span class="w">            </span><span class="p">});</span>
+
+<span class="w">        </span><span class="c1">// start with a tessellated weemesh covering the feature extent.</span>
+<span class="w">        </span><span class="c1">// The amount of tessellation is determined by the resolution_degrees to account</span>
+<span class="w">        </span><span class="c1">// for the planet&#39;s curvature.</span>
+<span class="w">        </span><span class="n">weemesh</span><span class="o">::</span><span class="n">mesh_t</span><span class="w"> </span><span class="n">m</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">marker</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">xspan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gnomonic_scale</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">resolution_degrees</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">3.14159</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">180.0</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">yspan</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gnomonic_scale</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">resolution_degrees</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">3.14159</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">180.0</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">local_ex</span><span class="p">.</span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">xspan</span><span class="p">));</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)(</span><span class="n">local_ex</span><span class="p">.</span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">yspan</span><span class="p">));</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rows</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">row</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">row</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)(</span><span class="n">rows</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">local_ex</span><span class="p">.</span><span class="n">ymin</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">local_ex</span><span class="p">.</span><span class="n">height</span><span class="p">();</span>
+
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">cols</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">col</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">col</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)(</span><span class="n">cols</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">local_ex</span><span class="p">.</span><span class="n">xmin</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">u</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">local_ex</span><span class="p">.</span><span class="n">width</span><span class="p">();</span>
+
+<span class="w">                </span><span class="n">m</span><span class="p">.</span><span class="n">get_or_create_vertex_from_vec3</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">{</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">marker</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rows</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">row</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">col</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">cols</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">col</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">cols</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">col</span><span class="p">;</span>
+<span class="w">                </span><span class="n">m</span><span class="p">.</span><span class="n">add_triangle</span><span class="p">(</span><span class="n">k</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">cols</span><span class="p">);</span>
+<span class="w">                </span><span class="n">m</span><span class="p">.</span><span class="n">add_triangle</span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">cols</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">k</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">cols</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// next, apply the segments of the polygon to slice the mesh into triangles.</span>
+<span class="w">        </span><span class="n">local_geom</span><span class="p">.</span><span class="n">eachPart</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">Geometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">part</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">m</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">weemesh</span><span class="o">::</span><span class="n">segment_t</span><span class="p">{</span><span class="w"> </span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="w"> </span><span class="n">part</span><span class="p">.</span><span class="n">points</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">marker</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">_has_elevation_marker</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">});</span>
+
+<span class="w">        </span><span class="c1">// next we need to remove all the exterior triangles.</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">weemesh</span><span class="o">::</span><span class="n">triangle_t</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">insiders</span><span class="p">;</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">unordered_set</span><span class="o">&lt;</span><span class="n">weemesh</span><span class="o">::</span><span class="n">triangle_t</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">outsiders</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">Geometry</span><span class="o">::</span><span class="n">const_iterator</span><span class="p">(</span><span class="n">local_geom</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">).</span><span class="n">eachPart</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">Geometry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">part</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tri_iter</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">triangles</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">weemesh</span><span class="o">::</span><span class="n">triangle_t</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tri</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tri_iter</span><span class="p">.</span><span class="n">second</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">c</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">tri</span><span class="p">.</span><span class="n">p0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tri</span><span class="p">.</span><span class="n">p1</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">tri</span><span class="p">.</span><span class="n">p2</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="mf">1.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">3.0</span><span class="p">);</span><span class="w"> </span><span class="c1">// centroid</span>
+<span class="w">                    </span><span class="kt">bool</span><span class="w"> </span><span class="n">inside</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">part</span><span class="p">.</span><span class="n">contains</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">c</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">inside</span><span class="p">)</span>
+<span class="w">                        </span><span class="n">insiders</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tri</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">else</span>
+<span class="w">                        </span><span class="n">outsiders</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="o">&amp;</span><span class="n">tri</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">});</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">tri</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">outsiders</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">insiders</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="n">tri</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">m</span><span class="p">.</span><span class="n">remove_triangle</span><span class="p">(</span><span class="o">*</span><span class="n">tri</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">)</span>
+<span class="w">            </span><span class="n">v</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">fake_z_offset</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// Back to geographic:</span>
+<span class="w">        </span><span class="n">gnomonic_to_geo</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="w"> </span><span class="n">centroid</span><span class="p">,</span><span class="w"> </span><span class="n">gnomonic_scale</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// Clamp any points that are not marked as having elevation.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">clamper</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">clamper</span><span class="p">.</span><span class="n">srs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature_geo</span><span class="p">;</span>
+<span class="w">            </span><span class="n">clamper</span><span class="p">.</span><span class="n">clampRange</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+<span class="w">            </span><span class="c1">//TODO: implement this IF we need it in the future.</span>
+<span class="w">            </span><span class="c1">//clamper.clampRange(m.verts.begin(), m.verts.end(),</span>
+<span class="w">            </span><span class="c1">//    [&amp;](const weemesh::vert_t&amp; p) {</span>
+<span class="w">            </span><span class="c1">//        return (m.get_marker(p) &amp; m._has_elevation_marker) == 0;</span>
+<span class="w">            </span><span class="c1">//    });</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// And into the final projection:</span>
+<span class="w">        </span><span class="n">geo_to_world</span><span class="p">.</span><span class="n">transformRange</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+<span class="w">        </span><span class="c1">// localize:</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">origin</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">ref_out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">origin</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">output_srs</span><span class="p">);</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">weemesh</span><span class="o">::</span><span class="n">vert_t</span><span class="p">(</span><span class="n">ref_out</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">ref_out</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">ref_out</span><span class="p">.</span><span class="n">z</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span>
+<span class="w">            </span><span class="n">styles</span><span class="p">.</span><span class="n">meshColorFunction</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">styles</span><span class="p">.</span><span class="n">meshColorFunction</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">            </span><span class="n">styles</span><span class="p">.</span><span class="n">meshStyle</span><span class="p">.</span><span class="n">color</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tri</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">m</span><span class="p">.</span><span class="n">triangles</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">vertices</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">[</span><span class="n">tri</span><span class="p">.</span><span class="n">second</span><span class="p">.</span><span class="n">i0</span><span class="p">]);</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">vertices</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">[</span><span class="n">tri</span><span class="p">.</span><span class="n">second</span><span class="p">.</span><span class="n">i1</span><span class="p">]);</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">vertices</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">m</span><span class="p">.</span><span class="n">verts</span><span class="p">[</span><span class="n">tri</span><span class="p">.</span><span class="n">second</span><span class="p">.</span><span class="n">i2</span><span class="p">]);</span>
+
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">colors</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">color</span><span class="p">);</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">colors</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">color</span><span class="p">);</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">colors</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">color</span><span class="p">);</span>
+
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">normals</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span><span class="w"> </span><span class="c1">// will be computed later</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">normals</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">normals</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">));</span>
+
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">uvs</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">fvec2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">));</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">uvs</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">fvec2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">));</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">uvs</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">fvec2</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">));</span>
+
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">indices</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">((</span><span class="n">std</span><span class="o">::</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">meshGeom</span><span class="p">.</span><span class="n">vertices</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">indices</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">((</span><span class="n">std</span><span class="o">::</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">meshGeom</span><span class="p">.</span><span class="n">vertices</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">2</span><span class="p">);</span>
+<span class="w">            </span><span class="n">meshGeom</span><span class="p">.</span><span class="n">indices</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">((</span><span class="n">std</span><span class="o">::</span><span class="kt">uint32_t</span><span class="p">)</span><span class="n">meshGeom</span><span class="p">.</span><span class="n">vertices</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="n">entt</span><span class="o">::</span><span class="n">entity</span>
+<span class="n">FeatureView</span><span class="o">::</span><span class="n">generate</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">output_srs</span><span class="p">,</span><span class="w"> </span><span class="n">Registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">registry</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Workspace</span><span class="w"> </span><span class="n">ws</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ws</span><span class="p">.</span><span class="n">lineGeom</span><span class="p">.</span><span class="n">topology</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">LineTopology</span><span class="o">::</span><span class="n">Segments</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">features</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">clamper</span><span class="p">.</span><span class="n">srs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">feature</span><span class="p">.</span><span class="n">srs</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// If the output is geocentric, do all our processing in geodetic coordinates.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">output_srs</span><span class="p">.</span><span class="n">isGeocentric</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">feature</span><span class="p">.</span><span class="n">transformInPlace</span><span class="p">(</span><span class="n">output_srs</span><span class="p">.</span><span class="n">geodeticSRS</span><span class="p">());</span>
+<span class="w">            </span><span class="n">clamper</span><span class="p">.</span><span class="n">srs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">output_srs</span><span class="p">.</span><span class="n">geodeticSRS</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">feature</span><span class="p">.</span><span class="n">geometry</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">LineString</span><span class="w"> </span><span class="o">||</span>
+<span class="w">            </span><span class="n">feature</span><span class="p">.</span><span class="n">geometry</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">MultiLineString</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">compile_feature_to_lines</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span><span class="w"> </span><span class="n">styles</span><span class="p">,</span><span class="w"> </span><span class="n">origin</span><span class="p">,</span><span class="w"> </span><span class="n">clamper</span><span class="p">,</span><span class="w"> </span><span class="n">output_srs</span><span class="p">,</span><span class="w"> </span><span class="n">ws</span><span class="p">.</span><span class="n">lineGeom</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">feature</span><span class="p">.</span><span class="n">geometry</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">Polygon</span><span class="w"> </span><span class="o">||</span>
+<span class="w">            </span><span class="n">feature</span><span class="p">.</span><span class="n">geometry</span><span class="p">.</span><span class="n">type</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">Type</span><span class="o">::</span><span class="n">MultiPolygon</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">compile_polygon_feature_with_weemesh</span><span class="p">(</span><span class="n">feature</span><span class="p">,</span><span class="w"> </span><span class="n">styles</span><span class="p">,</span><span class="w"> </span><span class="n">origin</span><span class="p">,</span><span class="w"> </span><span class="n">clamper</span><span class="p">,</span><span class="w"> </span><span class="n">output_srs</span><span class="p">,</span><span class="w"> </span><span class="n">ws</span><span class="p">.</span><span class="n">meshGeom</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;FeatureView no support for &quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">Geometry</span><span class="o">::</span><span class="n">typeToString</span><span class="p">(</span><span class="n">feature</span><span class="p">.</span><span class="n">geometry</span><span class="p">.</span><span class="n">type</span><span class="p">));</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">entt</span><span class="o">::</span><span class="n">entity</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entity</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ws</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">registry</span><span class="p">.</span><span class="n">write</span><span class="p">([</span><span class="o">&amp;</span><span class="p">](</span><span class="n">entt</span><span class="o">::</span><span class="n">registry</span><span class="o">&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">entt</span><span class="o">::</span><span class="n">null</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">create</span><span class="p">();</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ws</span><span class="p">.</span><span class="n">lineGeom</span><span class="p">.</span><span class="n">points</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">emplace_or_replace</span><span class="o">&lt;</span><span class="n">LineStyle</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">styles</span><span class="p">.</span><span class="n">lineStyle</span><span class="p">));</span>
+<span class="w">                    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">geom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">emplace_or_replace</span><span class="o">&lt;</span><span class="n">LineGeometry</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">ws</span><span class="p">.</span><span class="n">lineGeom</span><span class="p">));</span>
+<span class="w">                    </span><span class="n">r</span><span class="p">.</span><span class="n">emplace_or_replace</span><span class="o">&lt;</span><span class="n">Line</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">,</span><span class="w"> </span><span class="n">style</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">ws</span><span class="p">.</span><span class="n">meshGeom</span><span class="p">.</span><span class="n">vertices</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">style</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">emplace_or_replace</span><span class="o">&lt;</span><span class="n">MeshStyle</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">styles</span><span class="p">.</span><span class="n">meshStyle</span><span class="p">));</span>
+<span class="w">                    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">geom</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">emplace_or_replace</span><span class="o">&lt;</span><span class="n">MeshGeometry</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">ws</span><span class="p">.</span><span class="n">meshGeom</span><span class="p">));</span>
+<span class="w">                    </span><span class="n">r</span><span class="p">.</span><span class="n">emplace_or_replace</span><span class="o">&lt;</span><span class="n">Mesh</span><span class="o">&gt;</span><span class="p">(</span><span class="n">e</span><span class="p">,</span><span class="w"> </span><span class="n">geom</span><span class="p">,</span><span class="w"> </span><span class="n">style</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">e</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

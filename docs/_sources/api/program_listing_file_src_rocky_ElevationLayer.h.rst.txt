@@ -1,0 +1,82 @@
+
+.. _program_listing_file_src_rocky_ElevationLayer.h:
+
+Program Listing for File ElevationLayer.h
+=========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_ElevationLayer.h>` (``src/rocky/ElevationLayer.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/TileLayer.h>
+   #include <rocky/GeoImage.h>
+   #include <rocky/Heightfield.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT ElevationLayer :  public Inherit<TileLayer, ElevationLayer>
+       {
+       public:
+           enum class Encoding
+           {
+               SingleChannel,
+               MapboxRGB,
+               TerrariumRGB
+           };
+   
+           option<bool> offset = false;
+   
+           option<float> noDataValue = NO_DATA_VALUE;
+   
+           option<float> minValidValue = -FLT_MAX;
+   
+           option<float> maxValidValue = FLT_MAX;
+   
+           option<Encoding> encoding = Encoding::SingleChannel;
+   
+           std::string to_json() const override;
+   
+       public:
+   
+           Result<GeoImage> createTile(const TileKey& key, const IOOptions& io) const;
+   
+           std::pair<Distance, Distance> resolution(unsigned level) const;
+   
+       public: // Layer
+   
+           Result<> openImplementation(const IOOptions&) override;
+   
+           void closeImplementation() override;
+   
+       protected:
+   
+           ElevationLayer();
+   
+           explicit ElevationLayer(std::string_view JSON, const IOOptions& io);
+   
+           Result<GeoImage> createTileInKeyProfile(const TileKey& key, const IOOptions& io) const;
+   
+           virtual Result<GeoImage> createTileImplementation(const TileKey& key, const IOOptions& io) const
+           {
+               return Failure_ResourceUnavailable;
+           }
+   
+           std::shared_ptr<Image> decodeRGB(std::shared_ptr<Image> image) const;
+   
+       private:
+           void construct(std::string_view, const IOOptions& io);
+   
+           std::shared_ptr<Image> assembleTile(const TileKey& key, const IOOptions& io) const;
+   
+           void normalizeNoDataValues(Image*) const;
+   
+           Result<GeoImage> createTileImplementation_internal(const TileKey& key, const IOOptions& io) const;
+       };
+   
+   } // namespace
+   

@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1PagedNode:
+
+Class PagedNode
+===============
+
+- Defined in :ref:`file_src_rocky_vsg_NodePager.cpp`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public vsg::Inherit< vsg::CullNode, PagedNode >``
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::PagedNode
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

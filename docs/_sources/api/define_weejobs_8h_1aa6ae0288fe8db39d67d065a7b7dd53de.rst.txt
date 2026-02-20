@@ -1,0 +1,14 @@
+.. _exhale_define_weejobs_8h_1aa6ae0288fe8db39d67d065a7b7dd53de:
+
+Define WEEJOBS_VERSION_REV
+==========================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: WEEJOBS_VERSION_REV
+   :project: Rocky

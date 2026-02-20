@@ -1,0 +1,14 @@
+.. _exhale_define_Ellipsoid_8cpp_1ab15fbd3e0d358ad51256a9634c6c15d5:
+
+Define WGS84_RADIUS_POLAR
+=========================
+
+- Defined in :ref:`file_src_rocky_Ellipsoid.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: WGS84_RADIUS_POLAR
+   :project: Rocky

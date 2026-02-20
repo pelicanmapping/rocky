@@ -1,0 +1,32 @@
+.. _exhale_class_classrocky_1_1ImageLayer:
+
+Class ImageLayer
+================
+
+- Defined in :ref:`file_src_rocky_ImageLayer.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public rocky::Inherit< TileLayer, ImageLayer >``
+
+
+Derived Type
+************
+
+- ``public rocky::Inherit< ImageLayer, TMSImageLayer >`` (:ref:`exhale_class_classrocky_1_1Inherit`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::ImageLayer
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

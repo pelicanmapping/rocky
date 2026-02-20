@@ -1,0 +1,438 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File Image.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File Image.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_Image.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-image-cpp">
+<span id="program-listing-file-src-rocky-image-cpp"></span><h1>Program Listing for File Image.cpp<a class="headerlink" href="#program-listing-for-file-image-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_Image.cpp.html#file-src-rocky-image-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/Image.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Image.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;cstring&gt;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">uchar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="kt">uint8_t</span><span class="p">;</span><span class="w"> </span><span class="c1">// unsigned char;</span>
+<span class="w">    </span><span class="k">using</span><span class="w"> </span><span class="n">ushort</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="kt">uint16_t</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">norm_u8</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">255.0f</span><span class="p">;</span>
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">denorm_u8</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0f</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">norm_u8</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">UNORM8</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">static</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="p">(</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">ptr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">denorm_u8</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">,</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">ptr</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">denorm_u8</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">,</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">ptr</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">denorm_u8</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">,</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">ptr</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">denorm_u8</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">pixel</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="o">*</span><span class="n">ptr</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T</span><span class="p">)(</span><span class="n">pixel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">norm_u8</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">SRGB8</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// RGB are encoded, alpha is direct</span>
+<span class="w">        </span><span class="k">static</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="w"> </span><span class="n">pixel</span><span class="p">;</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="n">pixel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">detail</span><span class="o">::</span><span class="n">sRGB_to_linear</span><span class="p">((</span><span class="kt">float</span><span class="p">)(</span><span class="o">*</span><span class="n">ptr</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">denorm_u8</span><span class="p">);</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="n">pixel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="o">*</span><span class="n">ptr</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">denorm_u8</span><span class="p">;</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="n">pixel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">pixel</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">pixel</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="o">*</span><span class="n">ptr</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T</span><span class="p">)(</span><span class="n">detail</span><span class="o">::</span><span class="n">linear_to_sRGB</span><span class="p">(</span><span class="n">pixel</span><span class="p">[</span><span class="n">i</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">norm_u8</span><span class="p">);</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">n</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">);</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="o">*</span><span class="n">ptr</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T</span><span class="p">)(</span><span class="n">pixel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">norm_u8</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">norm_u16</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">65535.0f</span><span class="p">;</span>
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">denorm_u16</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0f</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">norm_u16</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">UNORM16</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">static</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">T</span><span class="o">*</span><span class="w"> </span><span class="n">sptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T</span><span class="o">*</span><span class="p">)</span><span class="n">ptr</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="p">(</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">sptr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">denorm_u16</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">,</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">sptr</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">denorm_u16</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">,</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">sptr</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">denorm_u16</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">,</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">sptr</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">denorm_u16</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">pixel</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">T</span><span class="o">*</span><span class="w"> </span><span class="n">sptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T</span><span class="o">*</span><span class="p">)</span><span class="n">ptr</span><span class="p">;</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="o">*</span><span class="n">sptr</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T</span><span class="p">)(</span><span class="n">pixel</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">norm_u16</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">FLOAT</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">static</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="w"> </span><span class="nf">read</span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">T</span><span class="o">*</span><span class="w"> </span><span class="n">sptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T</span><span class="o">*</span><span class="p">)</span><span class="n">ptr</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="p">(</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">sptr</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">,</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">sptr</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">,</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">sptr</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">,</span>
+<span class="w">                </span><span class="n">n</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)(</span><span class="n">sptr</span><span class="p">[</span><span class="mi">3</span><span class="p">])</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">write</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">pixel</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">n</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">T</span><span class="o">*</span><span class="w"> </span><span class="n">sptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T</span><span class="o">*</span><span class="p">)</span><span class="n">ptr</span><span class="p">;</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">n</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="o">*</span><span class="n">sptr</span><span class="o">++</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">T</span><span class="p">)</span><span class="n">pixel</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="c1">// static member</span>
+<span class="n">Image</span><span class="o">::</span><span class="n">Layout</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">_layouts</span><span class="p">[</span><span class="mi">11</span><span class="p">]</span><span class="w"> </span><span class="o">=</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">UNORM8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">UNORM8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">R8_UNORM</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">SRGB8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">SRGB8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">R8_SRGB</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">UNORM8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">UNORM8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">R8G8_UNORM</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">SRGB8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">SRGB8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">R8G8_SRGB</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">UNORM8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">UNORM8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">R8G8B8_UNORM</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">SRGB8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">SRGB8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="n">R8G8B8_SRGB</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">UNORM8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">UNORM8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">R8G8B8A8_UNORM</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">SRGB8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">SRGB8</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">R8G8B8A8_SRGB</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">UNORM16</span><span class="o">&lt;</span><span class="n">ushort</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">UNORM16</span><span class="o">&lt;</span><span class="n">ushort</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">R16_UNORM</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">FLOAT</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">FLOAT</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="n">R32_SFLOAT</span><span class="w"> </span><span class="p">},</span>
+<span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="o">&amp;</span><span class="n">FLOAT</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;::</span><span class="n">read</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">FLOAT</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;::</span><span class="n">write</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="n">R64_SFLOAT</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">Image</span><span class="o">::</span><span class="n">Image</span><span class="p">(</span><span class="n">PixelFormat</span><span class="w"> </span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">cols</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">rows</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">depth</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">super</span><span class="p">(),</span>
+<span class="w">    </span><span class="n">_width</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="n">_height</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="n">_depth</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_pixelFormat</span><span class="p">(</span><span class="n">R8G8B8A8_UNORM</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_data</span><span class="p">(</span><span class="k">nullptr</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">allocate</span><span class="p">(</span><span class="n">format</span><span class="p">,</span><span class="w"> </span><span class="n">cols</span><span class="p">,</span><span class="w"> </span><span class="n">rows</span><span class="p">,</span><span class="w"> </span><span class="n">depth</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">Image</span><span class="o">::</span><span class="n">Image</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Image</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">super</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">sizeInBytes</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_data</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">allocate</span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">pixelFormat</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">height</span><span class="p">(),</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">depth</span><span class="p">());</span>
+<span class="w">        </span><span class="n">memcpy</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_data</span><span class="p">,</span><span class="w"> </span><span class="n">sizeInBytes</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Image</span><span class="o">::</span><span class="n">Image</span><span class="p">(</span><span class="n">Image</span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">super</span><span class="p">(</span><span class="n">rhs</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">this</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rhs</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_width</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_height</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_depth</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_pixelFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">_pixelFormat</span><span class="p">;</span>
+<span class="w">        </span><span class="n">_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">releaseData</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Image</span><span class="o">::~</span><span class="n">Image</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_data</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">_ownsData</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">delete</span><span class="p">[]</span><span class="w"> </span><span class="n">_data</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">Image</span><span class="o">::</span><span class="n">hasAlphaChannel</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">pixelFormat</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">R8G8B8A8_UNORM</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">pixelFormat</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">R8G8B8A8_SRGB</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;</span>
+<span class="n">Image</span><span class="o">::</span><span class="n">clone</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">_data</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">clone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">pixelFormat</span><span class="p">(),</span><span class="w"> </span><span class="n">width</span><span class="p">(),</span><span class="w"> </span><span class="n">height</span><span class="p">(),</span><span class="w"> </span><span class="n">depth</span><span class="p">());</span>
+<span class="w">    </span><span class="n">memcpy</span><span class="p">(</span><span class="n">clone</span><span class="o">-&gt;</span><span class="n">data</span><span class="o">&lt;</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(),</span><span class="w"> </span><span class="n">_data</span><span class="p">,</span><span class="w"> </span><span class="n">sizeInBytes</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">clone</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">Image</span><span class="o">::</span><span class="n">allocate</span><span class="p">(</span>
+<span class="w">    </span><span class="n">PixelFormat</span><span class="w"> </span><span class="n">pixelFormat_</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">width_</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">height_</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">depth_</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span>
+<span class="w">        </span><span class="n">width_</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">height_</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">depth_</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span>
+<span class="w">        </span><span class="p">(</span><span class="kt">unsigned</span><span class="p">)</span><span class="n">pixelFormat_</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">pixelFormat_</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">NUM_PIXEL_FORMATS</span><span class="p">,</span>
+<span class="w">        </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">width_</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">height_</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">depth_</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_pixelFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pixelFormat_</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">layout</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_layouts</span><span class="p">[</span><span class="n">pixelFormat</span><span class="p">()];</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_data</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">_ownsData</span><span class="p">)</span>
+<span class="w">        </span><span class="k">delete</span><span class="p">[]</span><span class="w"> </span><span class="n">_data</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="p">[</span><span class="n">sizeInBytes</span><span class="p">()];</span>
+<span class="w">    </span><span class="n">_ownsData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// simple init for one-byte images</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sizeInBytes</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="n">write</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">fvec4</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">),</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span>
+<span class="n">Image</span><span class="o">::</span><span class="n">releaseData</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">released</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_data</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">released</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">Image</span><span class="o">::</span><span class="n">flipVerticalInPlace</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_TODO</span><span class="p">(</span><span class="s">&quot;handle compressed pixel formats&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">layerBytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sizeInBytes</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">depth</span><span class="p">();</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">rowBytes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rowSizeInBytes</span><span class="p">();</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">halfRows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">depth</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">d</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">layerOffset</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">layerBytes</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">row</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">halfRows</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">row</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">antirow</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">row</span><span class="p">;</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">row1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">layerOffset</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">row</span><span class="o">*</span><span class="n">rowBytes</span><span class="p">;</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">row2</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">data</span><span class="o">&lt;</span><span class="n">uchar</span><span class="o">&gt;</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">layerOffset</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">antirow</span><span class="o">*</span><span class="n">rowBytes</span><span class="p">;</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rowBytes</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="o">++</span><span class="n">row1</span><span class="p">,</span><span class="w"> </span><span class="o">++</span><span class="n">row2</span><span class="p">)</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">swap</span><span class="p">(</span><span class="o">*</span><span class="n">row1</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">row2</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">Image</span><span class="o">::</span><span class="n">fill</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Image</span><span class="o">::</span><span class="n">Pixel</span><span class="o">&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">depth</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">r</span><span class="p">)</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">height</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">t</span><span class="p">)</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">width</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">s</span><span class="p">)</span>
+<span class="w">                </span><span class="n">write</span><span class="p">(</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+<span class="p">}</span>
+
+
+<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;</span>
+<span class="n">Image</span><span class="o">::</span><span class="n">convolve</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="o">*</span><span class="w"> </span><span class="n">kernel</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">glm</span><span class="o">::</span><span class="n">fvec4</span><span class="w"> </span><span class="n">samples</span><span class="p">[</span><span class="mi">9</span><span class="p">];</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">clone</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">depth</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">r</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">height</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">t</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">width</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">s</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">t_minus_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">t</span><span class="p">;</span>
+<span class="w">                </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">t_plus_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">height</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">t</span><span class="p">;</span>
+<span class="w">                </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">s_minus_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">s</span><span class="p">;</span>
+<span class="w">                </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">s_plus_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">width</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">s</span><span class="p">;</span>
+
+<span class="w">                </span><span class="n">samples</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">s_minus_1</span><span class="p">,</span><span class="w"> </span><span class="n">t_minus_1</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+<span class="w">                </span><span class="n">samples</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">t_minus_1</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+<span class="w">                </span><span class="n">samples</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">s_plus_1</span><span class="p">,</span><span class="w"> </span><span class="n">t_minus_1</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+
+<span class="w">                </span><span class="n">samples</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">s_minus_1</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+<span class="w">                </span><span class="n">samples</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+<span class="w">                </span><span class="n">samples</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">s_plus_1</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+
+<span class="w">                </span><span class="n">samples</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">s_minus_1</span><span class="p">,</span><span class="w"> </span><span class="n">t_plus_1</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+<span class="w">                </span><span class="n">samples</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">t_plus_1</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+<span class="w">                </span><span class="n">samples</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">s_plus_1</span><span class="p">,</span><span class="w"> </span><span class="n">t_plus_1</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+
+<span class="w">                </span><span class="n">glm</span><span class="o">::</span><span class="n">fvec4</span><span class="w"> </span><span class="nf">pixel</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">9</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">pixel</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="p">(</span><span class="n">samples</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">kernel</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">                </span><span class="n">output</span><span class="o">-&gt;</span><span class="n">write</span><span class="p">(</span><span class="n">clamp</span><span class="p">(</span><span class="n">pixel</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">,</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">),</span><span class="w"> </span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">output</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;</span>
+<span class="n">Image</span><span class="o">::</span><span class="n">sharpen</span><span class="p">(</span><span class="kt">float</span><span class="w"> </span><span class="n">k</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">k</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">,</span><span class="w"> </span><span class="p">{});</span>
+
+<span class="cp">#if 1</span>
+<span class="w">    </span><span class="c1">// box kernel (looks better than gaussian for OSM)</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">k</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">9.0f</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0f</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="mf">8.0f</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">a</span><span class="p">);</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">kernel</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span>
+<span class="w">        </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span>
+<span class="w">        </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="p">};</span>
+<span class="cp">#else</span>
+<span class="w">    </span><span class="c1">// guassian kernel</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">k</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">16.0f</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">float</span><span class="w"> </span><span class="n">b</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0f</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="mf">4.0f</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">a</span><span class="p">);</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">kernel</span><span class="p">[</span><span class="mi">9</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+<span class="w">        </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span>
+<span class="w">        </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">};</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">convolve</span><span class="p">(</span><span class="n">kernel</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">Image</span>
+<span class="n">Image</span><span class="o">::</span><span class="n">viewAs</span><span class="p">(</span><span class="n">Image</span><span class="o">::</span><span class="n">PixelFormat</span><span class="w"> </span><span class="n">format</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Image</span><span class="w"> </span><span class="n">view</span><span class="p">;</span>
+<span class="w">    </span><span class="n">view</span><span class="p">.</span><span class="n">_pixelFormat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">format</span><span class="p">;</span>
+<span class="w">    </span><span class="n">view</span><span class="p">.</span><span class="n">_width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_width</span><span class="p">;</span>
+<span class="w">    </span><span class="n">view</span><span class="p">.</span><span class="n">_height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_height</span><span class="p">;</span>
+<span class="w">    </span><span class="n">view</span><span class="p">.</span><span class="n">_depth</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_depth</span><span class="p">;</span>
+<span class="w">    </span><span class="n">view</span><span class="p">.</span><span class="n">_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_data</span><span class="p">;</span><span class="w"> </span><span class="c1">// share the data</span>
+<span class="w">    </span><span class="n">view</span><span class="p">.</span><span class="n">_ownsData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">view</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

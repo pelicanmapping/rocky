@@ -1,0 +1,26 @@
+.. _exhale_struct_structWEEJOBS__NAMESPACE_1_1jobgroup:
+
+Struct jobgroup
+===============
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public WEEJOBS_NAMESPACE::detail::semaphore``
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: WEEJOBS_NAMESPACE::jobgroup
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

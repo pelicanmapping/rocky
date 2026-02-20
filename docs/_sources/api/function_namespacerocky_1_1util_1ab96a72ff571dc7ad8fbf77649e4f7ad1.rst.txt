@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1ab96a72ff571dc7ad8fbf77649e4f7ad1:
+
+Function rocky::util::wrapImageData
+===================================
+
+- Defined in :ref:`file_src_rocky_vsg_VSGUtils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::wrapImageData(std::shared_ptr<Image>)
+   :project: Rocky

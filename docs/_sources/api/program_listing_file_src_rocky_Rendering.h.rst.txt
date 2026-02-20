@@ -1,0 +1,38 @@
+
+.. _program_listing_file_src_rocky_Rendering.h:
+
+Program Listing for File Rendering.h
+====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_Rendering.h>` (``src/rocky/Rendering.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Common.h>
+   #include <array>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       struct RenderingState
+       {
+           std::uint32_t viewID;
+           std::uint64_t frame;
+       };
+   
+       template<typename T>
+       struct ViewLocal : public std::array<T, ROCKY_MAX_NUMBER_OF_VIEWS>
+       {
+           ViewLocal() = default;
+   
+           explicit ViewLocal(T v) { fill(v); };
+   
+           ViewLocal<T>& operator = (T v) {
+               this->fill(v);
+               return *this;
+           }
+       };
+   }

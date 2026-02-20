@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1PixelScaleTransform:
+
+Class PixelScaleTransform
+=========================
+
+- Defined in :ref:`file_src_rocky_vsg_PixelScaleTransform.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public vsg::Inherit< vsg::Transform, PixelScaleTransform >``
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::PixelScaleTransform
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

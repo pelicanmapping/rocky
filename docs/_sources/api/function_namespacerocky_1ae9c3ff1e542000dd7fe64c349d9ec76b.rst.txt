@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1ae9c3ff1e542000dd7fe64c349d9ec76b:
+
+Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Duration)
+=============================================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Duration)
+   :project: Rocky

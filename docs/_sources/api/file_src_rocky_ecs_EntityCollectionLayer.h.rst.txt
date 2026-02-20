@@ -1,0 +1,62 @@
+
+.. _file_src_rocky_ecs_EntityCollectionLayer.h:
+
+File EntityCollectionLayer.h
+============================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_ecs>` (``src/rocky/ecs``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/ecs/EntityCollectionLayer.h``)
+------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_ecs_EntityCollectionLayer.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``rocky/VisibleLayer.h`` (:ref:`file_src_rocky_VisibleLayer.h`)
+
+- ``rocky/ecs/Registry.h`` (:ref:`file_src_rocky_ecs_Registry.h`)
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_ECS.h`
+
+- :ref:`file_src_rocky_ecs_EntityCollectionLayer.cpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classrocky_1_1EntityCollectionLayer`
+

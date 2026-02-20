@@ -1,0 +1,14 @@
+.. _exhale_define_GeometryPool_8h_1a6965be3afbc7f37fd606041f34b79f51:
+
+Define VERTEX_CONSTRAINT
+========================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_GeometryPool.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: VERTEX_CONSTRAINT
+   :project: Rocky

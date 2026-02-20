@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespacerocky_1a365059057b10d99bf071afe5358c2174:
+
+Typedef rocky::TimeSpan
+=======================
+
+- Defined in :ref:`file_src_rocky_DateTime.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: rocky::TimeSpan
+   :project: Rocky

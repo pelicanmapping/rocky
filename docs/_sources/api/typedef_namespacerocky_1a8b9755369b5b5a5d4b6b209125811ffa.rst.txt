@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespacerocky_1a8b9755369b5b5a5d4b6b209125811ffa:
+
+Typedef rocky::ReadImageStreamService
+=====================================
+
+- Defined in :ref:`file_src_rocky_IOTypes.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: rocky::ReadImageStreamService
+   :project: Rocky

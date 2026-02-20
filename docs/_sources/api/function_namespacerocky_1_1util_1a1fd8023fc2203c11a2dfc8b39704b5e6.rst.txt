@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1a1fd8023fc2203c11a2dfc8b39704b5e6:
+
+Function rocky::util::wrapImageInVSG
+====================================
+
+- Defined in :ref:`file_src_rocky_vsg_VSGUtils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::wrapImageInVSG(std::shared_ptr<Image>)
+   :project: Rocky

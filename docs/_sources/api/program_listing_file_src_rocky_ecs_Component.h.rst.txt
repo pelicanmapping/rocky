@@ -1,0 +1,75 @@
+
+.. _program_listing_file_src_rocky_ecs_Component.h:
+
+Program Listing for File Component.h
+====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_ecs_Component.h>` (``src/rocky/ecs/Component.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Common.h>
+   #include <entt/entt.hpp>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       template<class DERIVED>
+       struct Component
+       {
+           entt::entity owner = entt::null;
+   
+           // NOTE: RELIES on the System to install the Dirty singleton!
+           // NOTE: type of this struct is Component<DERIVED>::Dirty
+           struct Dirty
+           {
+               std::mutex mutex;
+               std::vector<entt::entity> entities;
+           };
+   
+           inline void dirty(entt::registry& r)
+           {
+               ROCKY_SOFT_ASSERT_AND_RETURN(owner != entt::null, void(),
+                   "ComponentBase2::dirty() called on unowned component - on_construct() was probably not installed for this type; "
+                   "you might need to call Application::realize() before creating ECS components");
+   
+               r.view<Dirty>().each([&](auto& dirtyList)
+                   {
+                       std::scoped_lock lock(dirtyList.mutex);
+                       dirtyList.entities.emplace_back(owner);
+                   });
+           }
+   
+           inline static void dirty(entt::registry& r, entt::entity e)
+           {
+               r.get<DERIVED>(e).owner = e;
+               r.get<DERIVED>(e).dirty(r);
+           }
+   
+           template<class CALLABLE>
+           inline static void eachDirty(entt::registry& r, CALLABLE&& func)
+           {
+               static_assert(std::is_invocable_v<CALLABLE, entt::entity>, "CALLABLE must be invocable with (entt::entity)");
+   
+               std::vector<entt::entity> entities;
+               r.view<Dirty>().each([&](auto& dirtyList)
+                   {
+                       std::scoped_lock lock(dirtyList.mutex);
+                       entities.swap(dirtyList.entities);
+                   });
+   
+               for (auto e : entities)
+               {
+                   // must check validity since it is possible the entity was destroyed
+                   // after being put on the dirty list.
+                   if (r.valid(e))
+                   {
+                       func(e);
+                   }
+               }
+           }
+       };
+   }

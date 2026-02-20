@@ -1,0 +1,14 @@
+.. _exhale_define_vsg_2Common_8h_1a9523271b99d0c15e8fc7031c4e183281:
+
+Define VSG_VERSION_INTEGER
+==========================
+
+- Defined in :ref:`file_src_rocky_vsg_Common.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: VSG_VERSION_INTEGER
+   :project: Rocky

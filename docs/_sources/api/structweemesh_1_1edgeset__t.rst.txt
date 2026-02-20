@@ -1,0 +1,17 @@
+.. _exhale_struct_structweemesh_1_1edgeset__t:
+
+Struct edgeset_t
+================
+
+- Defined in :ref:`file_src_rocky_weemesh.h`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: weemesh::edgeset_t
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

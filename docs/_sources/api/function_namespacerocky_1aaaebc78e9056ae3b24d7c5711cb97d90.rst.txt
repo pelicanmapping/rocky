@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1aaaebc78e9056ae3b24d7c5711cb97d90:
+
+Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class GeoPoint)
+=============================================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class GeoPoint)
+   :project: Rocky

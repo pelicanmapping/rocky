@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespacerocky_1aeb1016a7f2f695b0eafad0f9ee9d4668:
+
+Typedef rocky::Logger
+=====================
+
+- Defined in :ref:`file_src_rocky_Log.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: rocky::Logger
+   :project: Rocky

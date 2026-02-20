@@ -1,0 +1,14 @@
+.. _exhale_define_SkyNode_8cpp_1afa4820775115b55d140317812656f21b:
+
+Define ATMOSPHERE_FRAG_SHADER
+=============================
+
+- Defined in :ref:`file_src_rocky_vsg_SkyNode.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ATMOSPHERE_FRAG_SHADER
+   :project: Rocky

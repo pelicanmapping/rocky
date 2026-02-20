@@ -1,0 +1,26 @@
+.. _exhale_struct_structrocky_1_1MeshGeometry:
+
+Struct MeshGeometry
+===================
+
+- Defined in :ref:`file_src_rocky_ecs_Mesh.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public rocky::Component< MeshGeometry >`` (:ref:`exhale_struct_structrocky_1_1Component`)
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::MeshGeometry
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

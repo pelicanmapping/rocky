@@ -1,0 +1,26 @@
+.. _exhale_struct_structweemesh_1_1segment__t:
+
+Struct segment_t
+================
+
+- Defined in :ref:`file_src_rocky_weemesh.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public std::pair< vert_t, vert_t >``
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: weemesh::segment_t
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

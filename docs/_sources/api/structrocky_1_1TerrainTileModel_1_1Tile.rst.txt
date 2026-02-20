@@ -1,0 +1,35 @@
+.. _exhale_struct_structrocky_1_1TerrainTileModel_1_1Tile:
+
+Struct TerrainTileModel::Tile
+=============================
+
+- Defined in :ref:`file_src_rocky_TerrainTileModel.h`
+
+
+Nested Relationships
+--------------------
+
+This struct is a nested type of :ref:`exhale_struct_structrocky_1_1TerrainTileModel`.
+
+
+Inheritance Relationships
+-------------------------
+
+Derived Types
+*************
+
+- ``public rocky::TerrainTileModel::ColorLayer`` (:ref:`exhale_struct_structrocky_1_1TerrainTileModel_1_1ColorLayer`)
+- ``public rocky::TerrainTileModel::Elevation`` (:ref:`exhale_struct_structrocky_1_1TerrainTileModel_1_1Elevation`)
+- ``public rocky::TerrainTileModel::MaterialMap`` (:ref:`exhale_struct_structrocky_1_1TerrainTileModel_1_1MaterialMap`)
+- ``public rocky::TerrainTileModel::NormalMap`` (:ref:`exhale_struct_structrocky_1_1TerrainTileModel_1_1NormalMap`)
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::TerrainTileModel::Tile
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

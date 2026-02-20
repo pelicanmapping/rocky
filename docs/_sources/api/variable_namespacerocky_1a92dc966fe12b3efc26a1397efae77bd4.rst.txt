@@ -1,0 +1,14 @@
+.. _exhale_variable_namespacerocky_1a92dc966fe12b3efc26a1397efae77bd4:
+
+Variable rocky::ResultFail
+==========================
+
+- Defined in :ref:`file_src_rocky_Result.h`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: rocky::ResultFail
+   :project: Rocky

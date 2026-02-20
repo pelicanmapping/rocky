@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1ScreenSpaceGroup:
+
+Class ScreenSpaceGroup
+======================
+
+- Defined in :ref:`file_src_rocky_vsg_PixelScaleTransform.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public vsg::Inherit< vsg::Group, ScreenSpaceGroup >``
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::ScreenSpaceGroup
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

@@ -1,0 +1,18 @@
+
+.. _namespace_vsg:
+
+Namespace vsg
+=============
+
+
+rocky c++ Copyright 2025 Pelican Mapping MIT License 
+
+
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+

@@ -1,0 +1,14 @@
+.. _exhale_define_Common_8h_1a3972140ab9c544211145b75f77c47bb0:
+
+Define ROCKY_FILE
+=================
+
+- Defined in :ref:`file_src_rocky_Common.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ROCKY_FILE
+   :project: Rocky

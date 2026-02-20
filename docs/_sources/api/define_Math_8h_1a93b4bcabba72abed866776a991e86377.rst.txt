@@ -1,0 +1,14 @@
+.. _exhale_define_Math_8h_1a93b4bcabba72abed866776a991e86377:
+
+Define ROCKY_MAT4_IS_NOT_IDENTITY
+=================================
+
+- Defined in :ref:`file_src_rocky_Math.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ROCKY_MAT4_IS_NOT_IDENTITY
+   :project: Rocky

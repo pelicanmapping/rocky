@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1ImGuiContextNode:
+
+Class ImGuiContextNode
+======================
+
+- Defined in :ref:`file_src_rocky_vsg_imgui_ImGuiIntegration.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public vsg::Inherit< vsg::Node, ImGuiContextNode >``
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::ImGuiContextNode
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

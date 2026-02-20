@@ -1,0 +1,27 @@
+.. _exhale_class_classrocky_1_1TerrainProfileNode:
+
+Class TerrainProfileNode
+========================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_TerrainNode.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Types
+**********
+
+- ``public vsg::Inherit< vsg::Group, TerrainProfileNode >``
+- ``public rocky::TerrainTileHost`` (:ref:`exhale_class_classrocky_1_1TerrainTileHost`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::TerrainProfileNode
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

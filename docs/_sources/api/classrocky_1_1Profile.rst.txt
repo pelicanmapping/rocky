@@ -1,0 +1,27 @@
+.. _exhale_class_classrocky_1_1Profile:
+
+Class Profile
+=============
+
+- Defined in :ref:`file_src_rocky_Profile.h`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+- :ref:`exhale_struct_structrocky_1_1Profile_1_1Data`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::Profile
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

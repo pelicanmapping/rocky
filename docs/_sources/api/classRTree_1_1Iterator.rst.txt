@@ -1,0 +1,29 @@
+.. _exhale_class_classRTree_1_1Iterator:
+
+Class RTree::Iterator
+=====================
+
+- Defined in :ref:`file_src_rocky_rtree.h`
+
+
+Nested Relationships
+--------------------
+
+This class is a nested type of :ref:`exhale_class_classRTree`.
+
+
+Nested Types
+************
+
+- :ref:`exhale_struct_structRTree_1_1Iterator_1_1StackElement`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: RTree::Iterator
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

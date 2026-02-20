@@ -1,0 +1,75 @@
+
+.. _file_src_rocky_vsg_ecs_LineSystem.h:
+
+File LineSystem.h
+=================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_vsg_ecs>` (``src/rocky/vsg/ecs``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/vsg/ecs/LineSystem.h``)
+-----------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_vsg_ecs_LineSystem.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``rocky/ecs/Line.h`` (:ref:`file_src_rocky_ecs_Line.h`)
+
+- ``rocky/vsg/ecs/ECSNode.h`` (:ref:`file_src_rocky_vsg_ecs_ECSNode.h`)
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_vsg_Application.cpp`
+
+- :ref:`file_src_rocky_vsg_ecs_ECSNode.cpp`
+
+- :ref:`file_src_rocky_vsg_ecs_LineSystem.cpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+- :ref:`namespace_rocky__detail`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classrocky_1_1LineGeometryNode`
+
+- :ref:`exhale_class_classrocky_1_1LineSystemNode`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef_namespacerocky_1_1detail_1a828f106873f076e3a4ce191acbff5d20`
+

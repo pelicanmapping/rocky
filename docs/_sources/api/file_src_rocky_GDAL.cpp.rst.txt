@@ -1,0 +1,38 @@
+
+.. _file_src_rocky_GDAL.cpp:
+
+File GDAL.cpp
+=============
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/GDAL.cpp``)
+-----------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_GDAL.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``GDAL.h`` (:ref:`file_src_rocky_GDAL.h`)
+
+
+
+
+

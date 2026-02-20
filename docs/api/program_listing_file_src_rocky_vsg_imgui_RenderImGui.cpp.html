@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File RenderImGui.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File RenderImGui.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_vsg_imgui_RenderImGui.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-renderimgui-cpp">
+<span id="program-listing-file-src-rocky-vsg-imgui-renderimgui-cpp"></span><h1>Program Listing for File RenderImGui.cpp<a class="headerlink" href="#program-listing-for-file-renderimgui-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_vsg_imgui_RenderImGui.cpp.html#file-src-rocky-vsg-imgui-renderimgui-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/imgui/RenderImGui.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/* &lt;editor-fold desc=&quot;MIT License&quot;&gt;</span>
+
+<span class="cm">Copyright(c) 2021 Don Burns, Roland Hill and Robert Osfield.</span>
+
+<span class="cm">Permission is hereby granted, free of charge, to any person obtaining a copy of</span>
+<span class="cm">this software and associated documentation files (the &quot;Software&quot;), to deal in</span>
+<span class="cm">the Software without restriction, including without limitation the rights to</span>
+<span class="cm">use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of</span>
+<span class="cm">the Software, and to permit persons to whom the Software is furnished to do so,</span>
+<span class="cm">subject to the following conditions:</span>
+
+<span class="cm">The above copyright notice and this permission notice shall be included in all</span>
+<span class="cm">copies or substantial portions of the Software.</span>
+
+<span class="cm">THE SOFTWARE IS PROVIDED &quot;AS IS&quot;, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR</span>
+<span class="cm">IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS</span>
+<span class="cm">FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR</span>
+<span class="cm">COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER</span>
+<span class="cm">IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN</span>
+<span class="cm">CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.</span>
+
+<span class="cm">&lt;/editor-fold&gt; */</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;RenderImGui.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;imgui_impl_vulkan.h&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vsg/io/Logger.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vsg/utils/CoordinateSpace.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vsg/vk/State.h&gt;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">check_vk_result</span><span class="p">(</span><span class="n">VkResult</span><span class="w"> </span><span class="n">err</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">err</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;[vulkan] Error: VkResult = &quot;</span><span class="p">,</span><span class="w"> </span><span class="n">err</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">ImGuiNode</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="p">,</span><span class="w"> </span><span class="n">ImGuiNode</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="n">ImGuiNode</span><span class="p">(</span><span class="n">RenderImGui</span><span class="o">::</span><span class="n">LegacyFunction</span><span class="w"> </span><span class="n">in_func</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">            </span><span class="n">func</span><span class="p">(</span><span class="n">in_func</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="w">        </span><span class="n">RenderImGui</span><span class="o">::</span><span class="n">LegacyFunction</span><span class="w"> </span><span class="n">func</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">accept</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">RecordTraversal</span><span class="o">&amp;</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">func</span><span class="p">();</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="nf">ImGuiStyle_sRGB_to_linear</span><span class="p">(</span><span class="n">ImGuiStyle</span><span class="o">&amp;</span><span class="w"> </span><span class="n">style</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">ImGuiCol_COUNT</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">ImVec4</span><span class="o">&amp;</span><span class="w"> </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">style</span><span class="p">.</span><span class="n">Colors</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+<span class="w">            </span><span class="n">color</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">sRGB_to_linear</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">color</span><span class="p">.</span><span class="n">x</span><span class="p">);</span>
+<span class="w">            </span><span class="n">color</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">sRGB_to_linear</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">color</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+<span class="w">            </span><span class="n">color</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">sRGB_to_linear</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">color</span><span class="p">.</span><span class="n">z</span><span class="p">);</span>
+<span class="w">            </span><span class="c1">//color = vsg::sRGB_to_linear&lt;float&gt;(color);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="p">}</span>
+
+<span class="n">RenderImGui</span><span class="o">::</span><span class="n">RenderImGui</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Window</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">window</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">useClearAttachments</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_init</span><span class="p">(</span><span class="n">window</span><span class="p">,</span><span class="w"> </span><span class="n">useClearAttachments</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_uploadFonts</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">RenderImGui</span><span class="o">::</span><span class="n">RenderImGui</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Device</span><span class="o">&gt;</span><span class="w"> </span><span class="n">device</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">queueFamily</span><span class="p">,</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">RenderPass</span><span class="o">&gt;</span><span class="w"> </span><span class="n">renderPass</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">minImageCount</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">imageCount</span><span class="p">,</span>
+<span class="w">    </span><span class="n">VkExtent2D</span><span class="w"> </span><span class="n">imageSize</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">useClearAttachments</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_init</span><span class="p">(</span><span class="n">device</span><span class="p">,</span><span class="w"> </span><span class="n">queueFamily</span><span class="p">,</span><span class="w"> </span><span class="n">renderPass</span><span class="p">,</span><span class="w"> </span><span class="n">minImageCount</span><span class="p">,</span><span class="w"> </span><span class="n">imageCount</span><span class="p">,</span><span class="w"> </span><span class="n">imageSize</span><span class="p">,</span><span class="w"> </span><span class="n">useClearAttachments</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_uploadFonts</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">RenderImGui</span><span class="o">::~</span><span class="n">RenderImGui</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ImGui</span><span class="o">::</span><span class="n">SetCurrentContext</span><span class="p">(</span><span class="n">_imguiContext</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ImGui_ImplVulkan_Shutdown</span><span class="p">();</span>
+<span class="w">    </span><span class="c1">//ImPlot::DestroyContext();</span>
+<span class="w">    </span><span class="n">ImGui</span><span class="o">::</span><span class="n">DestroyContext</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">RenderImGui</span><span class="o">::</span><span class="n">add</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">LegacyFunction</span><span class="o">&amp;</span><span class="w"> </span><span class="n">legacyFunc</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">addChild</span><span class="p">(</span><span class="n">ImGuiNode</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">legacyFunc</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">RenderImGui</span><span class="o">::</span><span class="n">_init</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Window</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">window</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">useClearAttachments</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">window</span><span class="o">-&gt;</span><span class="n">getOrCreateDevice</span><span class="p">();</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">physicalDevice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">device</span><span class="o">-&gt;</span><span class="n">getPhysicalDevice</span><span class="p">();</span>
+
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">queueFamily</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">tie</span><span class="p">(</span><span class="n">queueFamily</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">ignore</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">physicalDevice</span><span class="o">-&gt;</span><span class="n">getQueueFamily</span><span class="p">(</span><span class="n">window</span><span class="o">-&gt;</span><span class="n">traits</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">queueFlags</span><span class="p">,</span><span class="w"> </span><span class="n">window</span><span class="o">-&gt;</span><span class="n">getSurface</span><span class="p">());</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">device</span><span class="o">-&gt;</span><span class="n">getQueue</span><span class="p">(</span><span class="n">queueFamily</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">VkSurfaceCapabilitiesKHR</span><span class="w"> </span><span class="n">capabilities</span><span class="p">;</span>
+<span class="w">    </span><span class="n">vkGetPhysicalDeviceSurfaceCapabilitiesKHR</span><span class="p">(</span><span class="o">*</span><span class="n">physicalDevice</span><span class="p">,</span>
+<span class="w">        </span><span class="o">*</span><span class="p">(</span><span class="n">window</span><span class="o">-&gt;</span><span class="n">getSurface</span><span class="p">()),</span>
+<span class="w">        </span><span class="o">&amp;</span><span class="n">capabilities</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">imageCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">3</span><span class="p">;</span>
+<span class="w">    </span><span class="n">imageCount</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">imageCount</span><span class="p">,</span>
+<span class="w">            </span><span class="n">capabilities</span><span class="p">.</span><span class="n">minImageCount</span><span class="p">);</span><span class="w"> </span><span class="c1">// Vulkan spec requires</span>
+<span class="w">    </span><span class="c1">// minImageCount to be 1 or greater</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">capabilities</span><span class="p">.</span><span class="n">maxImageCount</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="n">imageCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span>
+<span class="w">            </span><span class="n">imageCount</span><span class="p">,</span>
+<span class="w">            </span><span class="n">capabilities</span><span class="p">.</span><span class="n">maxImageCount</span><span class="p">);</span><span class="w"> </span><span class="c1">// Vulkan spec specifies 0 as being</span>
+<span class="w">    </span><span class="c1">// unlimited number of images</span>
+
+<span class="w">    </span><span class="n">_init</span><span class="p">(</span><span class="n">device</span><span class="p">,</span><span class="w"> </span><span class="n">queueFamily</span><span class="p">,</span><span class="w"> </span><span class="n">window</span><span class="o">-&gt;</span><span class="n">getOrCreateRenderPass</span><span class="p">(),</span><span class="w"> </span><span class="n">capabilities</span><span class="p">.</span><span class="n">minImageCount</span><span class="p">,</span><span class="w"> </span><span class="n">imageCount</span><span class="p">,</span><span class="w"> </span><span class="n">window</span><span class="o">-&gt;</span><span class="n">extent2D</span><span class="p">(),</span><span class="w"> </span><span class="n">useClearAttachments</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">RenderImGui</span><span class="o">::</span><span class="n">_init</span><span class="p">(</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Device</span><span class="o">&gt;</span><span class="w"> </span><span class="n">device</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">queueFamily</span><span class="p">,</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">RenderPass</span><span class="o">&gt;</span><span class="w"> </span><span class="n">renderPass</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">minImageCount</span><span class="p">,</span><span class="w"> </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">imageCount</span><span class="p">,</span>
+<span class="w">    </span><span class="n">VkExtent2D</span><span class="w"> </span><span class="n">imageSize</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">useClearAttachments</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">IMGUI_CHECKVERSION</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// ROCKY</span>
+<span class="w">    </span><span class="n">_imguiContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">CreateContext</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_imguiContext</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">ImGui</span><span class="o">::</span><span class="n">SetCurrentContext</span><span class="p">(</span><span class="n">_imguiContext</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">sRGB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">attachment</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">renderPass</span><span class="o">-&gt;</span><span class="n">attachments</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">attachment</span><span class="p">.</span><span class="n">finalLayout</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">VK_IMAGE_LAYOUT_PRESENT_SRC_KHR</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">attachment</span><span class="p">.</span><span class="n">finalLayout</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">attachment</span><span class="p">.</span><span class="n">format</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">VK_FORMAT_B8G8R8_SRGB</span><span class="w"> </span><span class="o">||</span>
+<span class="w">                </span><span class="n">attachment</span><span class="p">.</span><span class="n">format</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">VK_FORMAT_B8G8R8A8_SRGB</span><span class="w"> </span><span class="o">||</span>
+<span class="w">                </span><span class="n">attachment</span><span class="p">.</span><span class="n">format</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">VK_FORMAT_R8G8B8_SRGB</span><span class="w"> </span><span class="o">||</span>
+<span class="w">                </span><span class="n">attachment</span><span class="p">.</span><span class="n">format</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">VK_FORMAT_R8G8B8A8_SRGB</span><span class="p">)</span><span class="w"> </span><span class="n">sRGB</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">sRGB</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ImGuiStyle_sRGB_to_linear</span><span class="p">(</span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetStyle</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">//if (!ImPlot::GetCurrentContext()) ImPlot::CreateContext();</span>
+
+<span class="w">    </span><span class="n">VkSampleCountFlagBits</span><span class="w"> </span><span class="n">samples</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VK_SAMPLE_COUNT_1_BIT</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">attachment</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">renderPass</span><span class="o">-&gt;</span><span class="n">attachments</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">attachment</span><span class="p">.</span><span class="n">samples</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">samples</span><span class="p">)</span><span class="w"> </span><span class="n">samples</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">attachment</span><span class="p">.</span><span class="n">samples</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// ImGui may change this later, but ensure the display</span>
+<span class="w">    </span><span class="c1">// size is set to something, to prevent assertions</span>
+<span class="w">    </span><span class="c1">// in ImGui::newFrame.</span>
+<span class="w">    </span><span class="n">ImGuiIO</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetIO</span><span class="p">();</span>
+<span class="w">    </span><span class="n">io</span><span class="p">.</span><span class="n">DisplaySize</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">imageSize</span><span class="p">.</span><span class="n">width</span><span class="p">);</span>
+<span class="w">    </span><span class="n">io</span><span class="p">.</span><span class="n">DisplaySize</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">imageSize</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">_device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">device</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_queueFamily</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">queueFamily</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_device</span><span class="o">-&gt;</span><span class="n">getQueue</span><span class="p">(</span><span class="n">_queueFamily</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">ImGui_ImplVulkan_InitInfo</span><span class="w"> </span><span class="n">init_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{};</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">Instance</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">_device</span><span class="o">-&gt;</span><span class="n">getInstance</span><span class="p">());</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">PhysicalDevice</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">_device</span><span class="o">-&gt;</span><span class="n">getPhysicalDevice</span><span class="p">());</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">Device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">_device</span><span class="p">);</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">QueueFamily</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_queueFamily</span><span class="p">;</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">Queue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">_queue</span><span class="p">);</span><span class="w"> </span><span class="c1">// ImGui doesn&#39;t use the queue so we shouldn&#39;t need to assign it, but it has an IM_ASSERT requiring it during debug build.</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">PipelineCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VK_NULL_HANDLE</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Create Descriptor Pool</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">DescriptorPoolSizes</span><span class="w"> </span><span class="n">pool_sizes</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_SAMPLER</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_STORAGE_IMAGE</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="n">VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT</span><span class="p">,</span><span class="w"> </span><span class="mi">1000</span><span class="p">}</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">    </span><span class="kt">uint32_t</span><span class="w"> </span><span class="n">maxSets</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">1000</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">pool_sizes</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+<span class="w">    </span><span class="n">_descriptorPool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">DescriptorPool</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">_device</span><span class="p">,</span><span class="w"> </span><span class="n">maxSets</span><span class="p">,</span><span class="w"> </span><span class="n">pool_sizes</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">DescriptorPool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">_descriptorPool</span><span class="p">;</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">Allocator</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">MinImageCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">minImageCount</span><span class="p">,</span><span class="w"> </span><span class="mi">2u</span><span class="p">);</span><span class="w"> </span><span class="c1">// ImGui&#39;s Vulkan backend has an assert that requires MinImageCount to be 2 or more.</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">ImageCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">imageCount</span><span class="p">;</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">CheckVkResultFn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">check_vk_result</span><span class="p">;</span>
+
+<span class="cp">#if IMGUI_VERSION_NUM &gt;= 19200</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">PipelineInfoMain</span><span class="p">.</span><span class="n">RenderPass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">renderPass</span><span class="p">;</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">PipelineInfoMain</span><span class="p">.</span><span class="n">MSAASamples</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">samples</span><span class="p">;</span>
+<span class="cp">#else</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">RenderPass</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="n">renderPass</span><span class="p">;</span>
+<span class="w">    </span><span class="n">init_info</span><span class="p">.</span><span class="n">MSAASamples</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">samples</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="n">ImGui_ImplVulkan_Init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">init_info</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">useClearAttachments</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// clear the depth buffer before view2 gets rendered</span>
+<span class="w">        </span><span class="n">VkClearValue</span><span class="w"> </span><span class="n">clearValue</span><span class="p">{};</span>
+<span class="w">        </span><span class="n">clearValue</span><span class="p">.</span><span class="n">depthStencil</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">1.0f</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="n">VkClearAttachment</span><span class="w"> </span><span class="n">attachment</span><span class="p">{</span><span class="w"> </span><span class="n">VK_IMAGE_ASPECT_DEPTH_BIT</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">clearValue</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="n">VkClearRect</span><span class="w"> </span><span class="n">rect</span><span class="p">{</span><span class="w"> </span><span class="n">VkRect2D</span><span class="p">{</span><span class="n">VkOffset2D</span><span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span><span class="w"> </span><span class="n">VkExtent2D</span><span class="p">{</span><span class="n">imageSize</span><span class="p">.</span><span class="n">width</span><span class="p">,</span><span class="w"> </span><span class="n">imageSize</span><span class="p">.</span><span class="n">height</span><span class="p">}},</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="n">_clearAttachments</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ClearAttachments</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ClearAttachments</span><span class="o">::</span><span class="n">Attachments</span><span class="p">{</span><span class="w"> </span><span class="n">attachment</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ClearAttachments</span><span class="o">::</span><span class="n">Rects</span><span class="p">{</span><span class="w"> </span><span class="n">rect</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">RenderImGui</span><span class="o">::</span><span class="n">_uploadFonts</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="cp">#if IMGUI_VERSION_NUM &lt; 19200</span>
+<span class="w">    </span><span class="n">ImGui_ImplVulkan_CreateFontsTexture</span><span class="p">();</span>
+<span class="cp">#endif</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="n">RenderImGui</span><span class="o">::</span><span class="n">traverse</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">RecordTraversal</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rt</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">commandBuffer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="n">rt</span><span class="p">.</span><span class="n">getState</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">_commandBuffer</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_device</span><span class="p">.</span><span class="n">get</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">commandBuffer</span><span class="p">.</span><span class="n">getDevice</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// record all the ImGui commands to ImDrawData container</span>
+<span class="w">    </span><span class="n">ImGui_ImplVulkan_NewFrame</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetIO</span><span class="p">().</span><span class="n">DeltaTime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetIO</span><span class="p">().</span><span class="n">DeltaTime</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">0.0f</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">0.016f</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetIO</span><span class="p">().</span><span class="n">DeltaTime</span><span class="p">;</span>
+<span class="w">    </span><span class="n">ImGui</span><span class="o">::</span><span class="n">NewFrame</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// traverse children</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">Group</span><span class="o">::</span><span class="n">traverse</span><span class="p">(</span><span class="n">rt</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">ImGui</span><span class="o">::</span><span class="n">EndFrame</span><span class="p">();</span>
+<span class="w">    </span><span class="n">ImGui</span><span class="o">::</span><span class="n">Render</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// if ImDrawData has been recorded then we need to clear the frame buffer and do the final record to Vulkan command buffer.</span>
+<span class="w">    </span><span class="n">ImDrawData</span><span class="o">*</span><span class="w"> </span><span class="n">draw_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetDrawData</span><span class="p">();</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">draw_data</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">draw_data</span><span class="o">-&gt;</span><span class="n">CmdListsCount</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_clearAttachments</span><span class="p">)</span><span class="w"> </span><span class="n">_clearAttachments</span><span class="o">-&gt;</span><span class="n">record</span><span class="p">(</span><span class="n">commandBuffer</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">draw_data</span><span class="p">)</span>
+<span class="w">            </span><span class="n">ImGui_ImplVulkan_RenderDrawData</span><span class="p">(</span><span class="n">draw_data</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">(</span><span class="o">*</span><span class="n">commandBuffer</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

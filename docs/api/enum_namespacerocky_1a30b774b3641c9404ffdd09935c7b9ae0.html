@@ -1,0 +1,188 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Enum Interpolation &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Enum LineTopology" href="enum_namespacerocky_1a1c64a26d565d66ba679efddadeca5cee.html" />
+    <link rel="prev" title="Enum GeodeticInterpolation" href="enum_namespacerocky_1aa00be5b88a4787c8dbc23ae0c654c13a.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="library_root.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="library_root.html#page-hierarchy">Page Hierarchy</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="library_root.html#full-api">Full API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#namespaces">Namespaces</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#classes-and-structs">Classes and Structs</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="library_root.html#enums">Enums</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="enum_namespacerocky_1aa00be5b88a4787c8dbc23ae0c654c13a.html">Enum GeodeticInterpolation</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Enum Interpolation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_namespacerocky_1a1c64a26d565d66ba679efddadeca5cee.html">Enum LineTopology</a></li>
+<li class="toctree-l4"><a class="reference internal" href="enum_namespacerocky_1_1TMS_1a9e9c5062c31f122e25a44b44e8320635.html">Enum ProfileType</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#variables">Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#defines">Defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#typedefs">Typedefs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="library_root.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Enum Interpolation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/enum_namespacerocky_1a30b774b3641c9404ffdd09935c7b9ae0.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="enum-interpolation">
+<span id="exhale-enum-namespacerocky-1a30b774b3641c9404ffdd09935c7b9ae0"></span><h1>Enum Interpolation<a class="headerlink" href="#enum-interpolation" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>Defined in <a class="reference internal" href="file_src_rocky_Math.h.html#file-src-rocky-math-h"><span class="std std-ref">File Math.h</span></a></p></li>
+</ul>
+<section id="enum-documentation">
+<h2>Enum Documentation<a class="headerlink" href="#enum-documentation" title="Link to this heading"></a></h2>
+<dl class="cpp enum-class">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky13InterpolationE">
+<span id="_CPPv3N5rocky13InterpolationE"></span><span id="_CPPv2N5rocky13InterpolationE"></span><span class="target" id="namespacerocky_1a30b774b3641c9404ffdd09935c7b9ae0"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">rocky</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">Interpolation</span></span></span><a class="headerlink" href="#_CPPv4N5rocky13InterpolationE" title="Link to this definition"></a><br /></dt>
+<dd><p>Raster interpolation methods. </p>
+<p><em>Values:</em></p>
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky13Interpolation7NearestE">
+<span id="_CPPv3N5rocky13Interpolation7NearestE"></span><span id="_CPPv2N5rocky13Interpolation7NearestE"></span><span class="target" id="namespacerocky_1a30b774b3641c9404ffdd09935c7b9ae0a60494f02d440f316319dd0fad40ad007"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Nearest</span></span></span><a class="headerlink" href="#_CPPv4N5rocky13Interpolation7NearestE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky13Interpolation7AverageE">
+<span id="_CPPv3N5rocky13Interpolation7AverageE"></span><span id="_CPPv2N5rocky13Interpolation7AverageE"></span><span class="target" id="namespacerocky_1a30b774b3641c9404ffdd09935c7b9ae0ab1897515d548a960afe49ecf66a29021"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Average</span></span></span><a class="headerlink" href="#_CPPv4N5rocky13Interpolation7AverageE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky13Interpolation8BilinearE">
+<span id="_CPPv3N5rocky13Interpolation8BilinearE"></span><span id="_CPPv2N5rocky13Interpolation8BilinearE"></span><span class="target" id="namespacerocky_1a30b774b3641c9404ffdd09935c7b9ae0aaf17c98bbd83c27d6426d2ff3fa81d7f"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Bilinear</span></span></span><a class="headerlink" href="#_CPPv4N5rocky13Interpolation8BilinearE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky13Interpolation11TriangulateE">
+<span id="_CPPv3N5rocky13Interpolation11TriangulateE"></span><span id="_CPPv2N5rocky13Interpolation11TriangulateE"></span><span class="target" id="namespacerocky_1a30b774b3641c9404ffdd09935c7b9ae0a7862a2cb2f6887e78b0bce4f6e84e7ac"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Triangulate</span></span></span><a class="headerlink" href="#_CPPv4N5rocky13Interpolation11TriangulateE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky13Interpolation5CubicE">
+<span id="_CPPv3N5rocky13Interpolation5CubicE"></span><span id="_CPPv2N5rocky13Interpolation5CubicE"></span><span class="target" id="namespacerocky_1a30b774b3641c9404ffdd09935c7b9ae0aec6b5414eb175379ff9efc9b3eef5814"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Cubic</span></span></span><a class="headerlink" href="#_CPPv4N5rocky13Interpolation5CubicE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky13Interpolation11CubicSplineE">
+<span id="_CPPv3N5rocky13Interpolation11CubicSplineE"></span><span id="_CPPv2N5rocky13Interpolation11CubicSplineE"></span><span class="target" id="namespacerocky_1a30b774b3641c9404ffdd09935c7b9ae0abc050383dcd36a2e1f9481e562332cfa"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CubicSpline</span></span></span><a class="headerlink" href="#_CPPv4N5rocky13Interpolation11CubicSplineE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="enum_namespacerocky_1aa00be5b88a4787c8dbc23ae0c654c13a.html" class="btn btn-neutral float-left" title="Enum GeodeticInterpolation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="enum_namespacerocky_1a1c64a26d565d66ba679efddadeca5cee.html" class="btn btn-neutral float-right" title="Enum LineTopology" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

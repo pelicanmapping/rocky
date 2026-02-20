@@ -1,0 +1,14 @@
+.. _exhale_variable_namespacerocky_1a0016f00c11808a4b848b6a0b86d132ff:
+
+Variable rocky::NO_DATA_VALUE
+=============================
+
+- Defined in :ref:`file_src_rocky_Heightfield.h`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: rocky::NO_DATA_VALUE
+   :project: Rocky

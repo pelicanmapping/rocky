@@ -1,0 +1,19 @@
+
+.. _program_listing_file_src_rocky_static.cpp:
+
+Program Listing for File static.cpp
+===================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_static.cpp>` (``src/rocky/static.cpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   // A place to initialize statics that require proper ordering
+   #include "Common.h"
+   #include "weejobs.h"
+   
+   // job system definition
+   WEEJOBS_INSTANCE;

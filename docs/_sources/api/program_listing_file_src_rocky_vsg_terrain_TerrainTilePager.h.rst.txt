@@ -1,0 +1,99 @@
+
+.. _program_listing_file_src_rocky_vsg_terrain_TerrainTilePager.h:
+
+Program Listing for File TerrainTilePager.h
+===========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_terrain_TerrainTilePager.h>` (``src/rocky/vsg/terrain/TerrainTilePager.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/vsg/VSGContext.h>
+   #include <rocky/vsg/terrain/TerrainTileNode.h>
+   #include <rocky/SentryTracker.h>
+   #include <chrono>
+   #include <map>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class TerrainSettings;
+   
+       class TerrainTilePager
+       {
+       public:
+           using Ptr = std::shared_ptr<TerrainTilePager>;
+   
+           using Tracker = detail::SentryTracker<TerrainTileNode*>;
+   
+           struct TileInfo
+           {
+               // this needs to be a ref ptr because it's possible for the unloader
+               // to remove a Tile's ancestor from the scene graph, which will turn
+               // this Tile into an orphan. As an orphan it will expire and eventually
+               // be removed anyway, but we need to keep it alive in the meantime...
+               vsg::ref_ptr<TerrainTileNode> tile;
+               void* trackerToken = nullptr;
+               jobs::future<vsg::ref_ptr<vsg::Node>> childrenCreator;
+               jobs::future<bool> dataLoader;
+               jobs::future<bool> dataMerger;
+           };
+   
+           using TileTable = std::map<TileKey, TileInfo>;
+   
+       public:
+           TerrainTilePager(const TerrainSettings& settings, TerrainTileHost* host);
+   
+           ~TerrainTilePager();
+   
+           void ping(
+               TerrainTileNode* tile,
+               const TerrainTileNode* parent,
+               vsg::RecordTraversal&);
+   
+           std::size_t size() const { return _tiles.size(); }
+   
+           void releaseAll();
+   
+           bool update(
+               const vsg::FrameStamp* fs,
+               const IOOptions& io,
+               std::shared_ptr<TerrainEngine> engine);
+   
+           vsg::ref_ptr<TerrainTileNode> getTile(const TileKey& key) const;
+   
+           TileTable _tiles;
+           Tracker _tracker;
+           std::uint64_t _lastUpdate = 0;
+           mutable std::mutex _mutex;
+           TerrainTileHost* _host;
+           const TerrainSettings& _settings;
+   
+           std::vector<TileKey> _createChildren;
+           std::vector<TileKey> _loadData;
+           std::vector<TileKey> _mergeData;
+           std::vector<TileKey> _updateData;
+   
+           unsigned _firstLOD = 0u;
+   
+       private:
+   
+           void requestCreateChildren(
+               TileInfo& info,
+               std::shared_ptr<TerrainEngine> terrain) const;
+   
+           void requestLoadData(
+               TileInfo& info,
+               const IOOptions& io,
+               std::shared_ptr<TerrainEngine> terrain) const;
+   
+           void requestMergeData(
+               TileInfo& info,
+               const IOOptions& io,
+               std::shared_ptr<TerrainEngine> terrain) const;
+       };
+   }

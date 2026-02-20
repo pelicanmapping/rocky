@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1a178aab26dcaef9e13569002d5ed936cc:
+
+Function rocky::util::trim
+==========================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::trim(std::string_view)
+   :project: Rocky

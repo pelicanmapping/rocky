@@ -1,0 +1,16 @@
+
+.. _program_listing_file_src_rocky_ecs_Registry.cpp:
+
+Program Listing for File Registry.cpp
+=====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_ecs_Registry.cpp>` (``src/rocky/ecs/Registry.cpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #include "Registry.h"
+   
+   

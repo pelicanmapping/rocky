@@ -1,0 +1,96 @@
+
+.. _program_listing_file_src_rocky_vsg_NodePager.h:
+
+Program Listing for File NodePager.h
+====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_NodePager.h>` (``src/rocky/vsg/NodePager.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/vsg/VSGContext.h>
+   #include <rocky/Profile.h>
+   #include <rocky/TileKey.h>
+   #include <rocky/IOTypes.h>
+   #include <rocky/SentryTracker.h>
+   #include <rocky/Callbacks.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT NodePager : public vsg::Inherit<vsg::Group, NodePager>
+       {
+       public:
+           enum class RefinePolicy
+           {
+               Replace,
+   
+               Accumulate
+           };
+   
+           using BoundCalculator = std::function<vsg::dsphere(const TileKey& key, const IOOptions& io)>;
+   
+           using PayloadCreator = std::function<vsg::ref_ptr<vsg::Node>(const TileKey& key, const IOOptions& io)>;
+   
+           using SubtileLoader = std::function<vsg::ref_ptr<vsg::Node>(const IOOptions& io)>;
+   
+           using SubtileLoaderFactory = std::function<SubtileLoader(const TileKey& key)>;
+   
+   
+       public:
+           NodePager(const Profile& graphProfile, const SRS& sceneSRS);
+   
+           void initialize(VSGContext&);
+   
+           bool active = false;
+   
+           Profile profile;
+   
+           PayloadCreator createPayload;
+   
+           BoundCalculator calculateBound;
+          
+           Callback<void(vsg::ref_ptr<vsg::Object>)> onExpire;
+   
+           unsigned minLevel = 0;
+   
+           unsigned maxLevel = 18;
+   
+           RefinePolicy refinePolicy = RefinePolicy::Replace;
+   
+           float pixelError = 512.0f; // pixels 
+   
+           std::string poolName = "rocky::nodepager";
+   
+           SubtileLoaderFactory subtileLoaderFactory = nullptr;
+   
+       public:
+   
+           unsigned tiles() const;
+   
+           std::vector<TileKey> tileKeys() const;
+   
+           TileKey debugKey;
+   
+       protected:
+   
+           VSGContext _vsgcontext;
+           mutable detail::SentryTracker<vsg::ref_ptr<vsg::Node>> _sentry;
+           mutable std::mutex _sentry_mutex;
+           CallbackSub _sentryUpdate;
+           std::uint64_t _lastUpdateFrame = 0u;
+           SRS _renderingSRS;
+   
+           friend class PagedNode;
+   
+           vsg::ref_ptr<vsg::Node> createNode(const TileKey& key, const IOOptions& io) const;
+   
+           SubtileLoader createSubtileLoader(const TileKey& key) const;
+   
+           void* touch(vsg::Node*, void*) const;
+   
+       };
+   }

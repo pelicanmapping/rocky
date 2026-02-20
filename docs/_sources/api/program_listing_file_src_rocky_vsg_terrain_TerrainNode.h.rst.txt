@@ -1,0 +1,116 @@
+
+.. _program_listing_file_src_rocky_vsg_terrain_TerrainNode.h:
+
+Program Listing for File TerrainNode.h
+======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_terrain_TerrainNode.h>` (``src/rocky/vsg/terrain/TerrainNode.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/vsg/VSGContext.h>
+   #include <rocky/vsg/terrain/TerrainSettings.h>
+   #include <rocky/vsg/terrain/TerrainTileHost.h>
+   #include <rocky/vsg/terrain/TerrainState.h>
+   #include <rocky/vsg/terrain/TerrainTilePager.h>
+   #include <rocky/Result.h>
+   #include <rocky/Profile.h>
+   #include <rocky/Layer.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class IOOptions;
+       class Map;
+       class TerrainEngine;
+       class GeoPoint;
+       class TerrainNode;
+   
+       class ROCKY_EXPORT TerrainProfileNode : public vsg::Inherit<vsg::Group, TerrainProfileNode>,
+           public TerrainTileHost
+       {
+       public:
+           TerrainProfileNode(const Profile& profile, TerrainNode& terrain);
+   
+           TerrainNode& terrain;
+   
+           Profile profile;
+   
+           void reset(VSGContext context);
+   
+           bool update(VSGContext context);
+   
+           const TerrainEngine& engine() const {
+               return *_engine.get();
+           }
+   
+       public: 
+   
+           void ping(TerrainTileNode*, const TerrainTileNode*, vsg::RecordTraversal&) override;
+   
+           const TerrainSettings& settings() const override;
+   
+           TerrainTilePager& tiles() override {
+               return _tiles;
+           }
+   
+       private:
+   
+           TerrainTilePager _tiles;
+   
+           std::shared_ptr<TerrainEngine> _engine;
+   
+           Result<> createRootTiles(VSGContext);
+       };
+   
+       class ROCKY_EXPORT TerrainNode : public vsg::Inherit<vsg::StateGroup, TerrainNode>,
+           public TerrainSettings
+       {
+       public:
+           
+           Result<GeoPoint> intersect(const GeoPoint& input) const;
+   
+       public:
+           TerrainNode(VSGContext);
+   
+           Result<> setMap(
+               std::shared_ptr<Map> map,
+               const Profile& tilingProfile,
+               const SRS& renderingSRS,
+               VSGContext cx);
+   
+           void reset(VSGContext context);
+   
+           bool update(VSGContext context);
+   
+           std::shared_ptr<const Map> map;
+   
+           Profile profile;
+   
+           SRS renderingSRS;
+   
+           TerrainState terrainState;
+   
+           Status status;
+   
+           Result<> from_json(const std::string& JSON, const IOOptions& io);
+   
+           std::string to_json() const;
+   
+           struct Stats {
+               size_t numResidentTiles = 0;
+               size_t geometryPoolSize = 0;
+           };
+           Stats stats() const;
+   
+       private:
+   
+           Result<> createProfiles(VSGContext);
+           CallbackSubs _callbacks;
+           std::vector<Layer::Ptr> _terrainLayers;
+       };
+   }

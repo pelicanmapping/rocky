@@ -1,0 +1,109 @@
+
+.. _program_listing_file_src_rocky_Ellipsoid.h:
+
+Program Listing for File Ellipsoid.h
+====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_Ellipsoid.h>` (``src/rocky/Ellipsoid.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Common.h>
+   #include <rocky/Math.h>
+   #include <vector>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT Ellipsoid
+       {
+       public:
+           Ellipsoid();
+   
+           Ellipsoid(double semiMajorRadius, double semiMinorRadius);
+   
+           inline double semiMajorAxis() const;
+   
+           inline double semiMinorAxis() const;
+   
+           inline const std::string& name() const;
+   
+           inline void setName(const std::string& value);
+   
+           glm::dmat4 topocentricToGeocentricMatrix(const glm::dvec3& geocPoint) const;
+   
+           glm::dvec3 geocentricToGeodetic(const glm::dvec3& geocPoint) const;
+   
+           glm::dvec3 geodeticToGeocentric(const glm::dvec3& geodPoint) const;
+   
+           double longitudinalDegreesToMeters(double value, double lat_deg = 0.0) const;
+   
+           double metersToLongitudinalDegrees(double value, double lat_deg =0.0) const;
+   
+           double geodesicGroundDistance(
+               const glm::dvec3& longlat1_deg,
+               const glm::dvec3& longlat2_deg) const;
+   
+           glm::dvec3 geodesicInterpolate(
+               const glm::dvec3& longlat1_deg,
+               const glm::dvec3& longlat2_deg,
+               double t) const;
+   
+           bool intersectGeocentricLine(
+               const glm::dvec3& geocStart,
+               const glm::dvec3& geocEnd,
+               glm::dvec3& geocOut) const;
+   
+           glm::dvec3 calculateHorizonPoint(const std::vector<glm::dvec3>& points) const;
+   
+           glm::dvec3 rotationAxis(const glm::dvec3& geocPoint, double initialHeading_deg) const;
+   
+           double heading(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis) const;
+   
+           glm::dvec3 rotate(const glm::dvec3& geocPoint, const glm::dvec3& geocAxis, double angle_deg) const;
+   
+           inline bool operator == (const Ellipsoid& rhs) const;
+   
+           inline bool operator != (const Ellipsoid& rhs) const;
+   
+       private:
+           void set(double er, double pr);
+   
+           double _re, _rp, _ecc2;
+           std::string _name;
+           glm::dvec3 _ellipsoidToUnitSphere;
+           glm::dvec3 _unitSphereToEllipsoid;
+       };
+   
+   
+       // inlines
+       inline double Ellipsoid::semiMajorAxis() const
+       {
+           return _re;
+       }
+       inline double Ellipsoid::semiMinorAxis() const
+       {
+           return _rp;
+       }
+       inline const std::string& Ellipsoid::name() const
+       {
+           return _name;
+       }
+       inline void Ellipsoid::setName(const std::string& value)
+       {
+           _name = value;
+       }
+       inline bool Ellipsoid::operator == (const Ellipsoid& rhs) const
+       {
+           return _re == rhs._re && _rp == rhs._rp && _name == rhs._name;
+       }
+       inline bool Ellipsoid::operator != (const Ellipsoid& rhs) const
+       {
+           return _re != rhs._re || _rp != rhs._rp || _name != rhs._name;
+       }
+   }
+   

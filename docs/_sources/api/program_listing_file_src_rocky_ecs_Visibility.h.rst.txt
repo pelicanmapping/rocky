@@ -1,0 +1,77 @@
+
+.. _program_listing_file_src_rocky_ecs_Visibility.h:
+
+Program Listing for File Visibility.h
+=====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_ecs_Visibility.h>` (``src/rocky/ecs/Visibility.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Common.h>
+   #include <rocky/Rendering.h>
+   #include <cstdint>
+   #include <climits>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       struct ActiveState
+       {
+           bool active = true;
+       };
+   
+       struct Visibility
+       {
+           Visibility() {
+               visible.fill(true);
+               frame.fill(static_cast<std::int64_t>(UINT_MAX));
+           }
+   
+           ViewLocal<bool> visible;
+   
+           ViewLocal<std::int64_t> frame;
+   
+           inline void enableFrameAgeVisibility(bool on) {
+               frame.fill(on ? 0 : static_cast<std::int64_t>(UINT_MAX));
+           }
+       };
+   
+       inline bool visible(const Visibility& vis, RenderingState& rs)
+       {
+           auto delta = (std::int64_t)rs.frame - vis.frame[rs.viewID];
+           return vis.visible[rs.viewID] && delta <= 1;
+       }
+   
+       inline void setVisible(entt::registry& registry, entt::entity e, bool value, int view_index = -1)
+       {
+           ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, void());
+   
+           auto& visibility = registry.get<Visibility>(e);
+   
+           if (view_index >= 0)
+               visibility.visible[view_index] = value;
+           else
+               visibility.visible.fill(value);
+       }
+   
+       template<typename ITER>
+       inline void setVisible(entt::registry& registry, ITER begin, ITER end, bool value, int view_index = -1)
+       {
+           for (auto it = begin; it != end; ++it)
+           {
+               setVisible(registry, *it, value, view_index);
+           }
+       }
+   
+       //inline bool visible(entt::registry& registry, entt::entity e, int view_index)
+       //{
+       //    // assume a readlock on the registry
+       //    ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, false);
+   
+       //    return registry.get<Visibility>(e).visible[view_index];
+       //}
+   }

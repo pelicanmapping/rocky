@@ -1,0 +1,31 @@
+
+.. _program_listing_file_src_rocky_Geocoder.h:
+
+Program Listing for File Geocoder.h
+===================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_Geocoder.h>` (``src/rocky/Geocoder.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Common.h>
+   #include <rocky/Result.h>
+   #include <rocky/IOTypes.h>
+   #include <vector>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class Feature;
+   
+       class ROCKY_EXPORT Geocoder
+       {
+       public:
+           Geocoder() = default;
+   
+           Result<std::vector<Feature>> geocode(const std::string& location, IOOptions& io) const;
+       };
+   }

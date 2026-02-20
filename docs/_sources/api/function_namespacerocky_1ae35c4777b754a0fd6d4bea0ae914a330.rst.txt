@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1ae35c4777b754a0fd6d4bea0ae914a330:
+
+Function rocky::to_json(json&, const GeoPoint&)
+===============================================
+
+- Defined in :ref:`file_src_rocky_GeoPoint.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::to_json(json&, const GeoPoint&)
+   :project: Rocky

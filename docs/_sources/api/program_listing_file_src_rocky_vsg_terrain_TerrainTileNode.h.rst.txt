@@ -1,0 +1,78 @@
+
+.. _program_listing_file_src_rocky_vsg_terrain_TerrainTileNode.h:
+
+Program Listing for File TerrainTileNode.h
+==========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_terrain_TerrainTileNode.h>` (``src/rocky/vsg/terrain/TerrainTileNode.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/vsg/Common.h>
+   #include <rocky/vsg/terrain/TerrainState.h>
+   #include <rocky/vsg/terrain/SurfaceNode.h>
+   #include <rocky/Threading.h>
+   #include <rocky/TileKey.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class CreateTileManifest;
+       class TerrainEngine;
+       class TerrainSettings;
+       class TerrainTileHost;
+   
+       class ROCKY_EXPORT TerrainTileNode : public vsg::Inherit<vsg::CullGroup, TerrainTileNode>
+       {
+       public:
+           TileKey key;
+           bool doNotExpire = false;
+           Revision revision = 0;
+           TerrainTileRenderModel renderModel;       
+           vsg::ref_ptr<SurfaceNode> surface;
+           vsg::ref_ptr<vsg::StateGroup> stategroup;
+           
+           mutable jobs::future<bool> subtilesLoader;
+           mutable std::atomic<uint64_t> lastTraversalFrame = { 0 };
+           mutable std::atomic<vsg::time_point> lastTraversalTime;
+           mutable std::atomic<float> lastTraversalRange = { FLT_MAX };
+   
+           bool update(const vsg::FrameStamp*, const IOOptions&) { return false; }
+   
+       public:
+           void accept(vsg::RecordTraversal& visitor) const override;
+   
+           void accept(vsg::ConstVisitor& visitor) const override;
+           
+       protected:
+   
+           mutable bool needsSubtiles = false;
+           mutable bool needsUpdate = false;
+           TerrainTileHost* host = nullptr;
+   
+           // set the tile's render model equal to the specified parent's
+           // render model, and then apply a scale bias matrix so it
+           // inherits the textures.
+           void inheritFrom(vsg::ref_ptr<TerrainTileNode> parent);
+   
+       private:
+   
+           inline bool subtilesExist() const
+           {
+               return children.size() >= 2;
+           }
+   
+           inline TerrainTileNode* subTile(unsigned i) const
+           {
+               return static_cast<TerrainTileNode*>(
+                   static_cast<vsg::QuadGroup*>(children[1].get())->children[i].get());
+           }
+   
+           friend class TerrainEngine;
+           friend class TerrainTilePager;
+       };
+   }

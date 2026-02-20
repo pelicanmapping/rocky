@@ -1,0 +1,77 @@
+
+.. _file_src_rocky_ecs_Component.h:
+
+File Component.h
+================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_ecs>` (``src/rocky/ecs``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+
+rocky c++ Copyright 2023 Pelican Mapping MIT License 
+
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/ecs/Component.h``)
+------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_ecs_Component.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``entt/entt.hpp``
+
+- ``rocky/Common.h`` (:ref:`file_src_rocky_Common.h`)
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_ecs_Label.h`
+
+- :ref:`file_src_rocky_ecs_Line.h`
+
+- :ref:`file_src_rocky_ecs_Mesh.h`
+
+- :ref:`file_src_rocky_ecs_Point.h`
+
+- :ref:`file_src_rocky_ecs_Transform.h`
+
+- :ref:`file_src_rocky_vsg_ecs_ECSTypes.h`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structrocky_1_1Component`
+
+- :ref:`exhale_struct_structrocky_1_1Component_1_1Dirty`
+

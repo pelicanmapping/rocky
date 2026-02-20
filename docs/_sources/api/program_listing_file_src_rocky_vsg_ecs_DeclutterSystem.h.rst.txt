@@ -1,0 +1,53 @@
+
+.. _program_listing_file_src_rocky_vsg_ecs_DeclutterSystem.h:
+
+Program Listing for File DeclutterSystem.h
+==========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_ecs_DeclutterSystem.h>` (``src/rocky/vsg/ecs/DeclutterSystem.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/vsg/Common.h>
+   #include <rocky/vsg/ecs/System.h>
+   #include <rocky/ecs/Registry.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT DeclutterSystem : public System
+       {
+       public:
+           enum class Sorting
+           {
+               Priority = 0, // sort by priority
+               Distance = 1, // sort by distance to camera
+           };
+   
+           float bufferPixels = 0.0f;
+   
+           Sorting sorting = Sorting::Priority;
+   
+       public:
+           static std::shared_ptr<DeclutterSystem> create(Registry registry) {
+               return std::make_shared<DeclutterSystem>(registry);
+           }
+   
+           DeclutterSystem(Registry r);
+   
+           void update(VSGContext& runtime) override;
+   
+           std::pair<unsigned, unsigned> visibleAndTotal() const;
+   
+       protected:
+   
+           bool _enabled = true;
+           unsigned _visible = 1;
+           unsigned _total = 0;
+           std::size_t _last_max_size = 32;
+       };
+   }

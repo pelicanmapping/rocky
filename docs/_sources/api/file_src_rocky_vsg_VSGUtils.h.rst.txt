@@ -1,0 +1,181 @@
+
+.. _file_src_rocky_vsg_VSGUtils.h:
+
+File VSGUtils.h
+===============
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_vsg>` (``src/rocky/vsg``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/vsg/VSGUtils.h``)
+-----------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_vsg_VSGUtils.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``rocky/Image.h`` (:ref:`file_src_rocky_Image.h`)
+
+- ``rocky/Math.h`` (:ref:`file_src_rocky_Math.h`)
+
+- ``rocky/Result.h`` (:ref:`file_src_rocky_Result.h`)
+
+- ``rocky/Threading.h`` (:ref:`file_src_rocky_Threading.h`)
+
+- ``rocky/vsg/Common.h`` (:ref:`file_src_rocky_vsg_Common.h`)
+
+- ``rocky/weejobs.h`` (:ref:`file_src_rocky_weejobs.h`)
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_vsg_MapManipulator.cpp`
+
+- :ref:`file_src_rocky_vsg_MapNode.cpp`
+
+- :ref:`file_src_rocky_vsg_NodeLayer.cpp`
+
+- :ref:`file_src_rocky_vsg_NodePager.cpp`
+
+- :ref:`file_src_rocky_vsg_SkyNode.cpp`
+
+- :ref:`file_src_rocky_vsg_VSGContext.cpp`
+
+- :ref:`file_src_rocky_vsg_VSGContext.h`
+
+- :ref:`file_src_rocky_vsg_ecs_TransformDetail.cpp`
+
+- :ref:`file_src_rocky_vsg_terrain_GeometryPool.cpp`
+
+- :ref:`file_src_rocky_vsg_terrain_SurfaceNode.cpp`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainNode.cpp`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainState.cpp`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainTileNode.cpp`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainTilePager.cpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+- :ref:`namespace_rocky__detail`
+
+- :ref:`namespace_rocky__util`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1PromiseOperation`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1LambdaOperation`
+
+- :ref:`exhale_class_classrocky_1_1util_1_1SimpleCompiler`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespacerocky_1abd7ee4e41eaff226d877aa500db57cdc`
+
+- :ref:`exhale_function_namespacerocky_1ad2af4eacd1a449bcc19952500b9cd627`
+
+- :ref:`exhale_function_namespacerocky_1a1974b8e8753aa60e06c930e6bf31e3b0`
+
+- :ref:`exhale_function_namespacerocky_1a12aeeaea2172210cfc1655e3c3096161`
+
+- :ref:`exhale_function_namespacerocky_1a8dbf733db8b0b741c30a7d03ca4ed5de`
+
+- :ref:`exhale_function_namespacerocky_1a09e446896fdfe90d6fd87182ccbf0273`
+
+- :ref:`exhale_function_namespacerocky_1a04f6819f8a250099a0dbeb5add9e2aec`
+
+- :ref:`exhale_function_namespacerocky_1acd9c59642dcad115213d922e34f97322`
+
+- :ref:`exhale_function_namespacerocky_1a3bd090534657716288a685b2499c9eba`
+
+- :ref:`exhale_function_namespacerocky_1ab1c1c7276c08c10b6e61353591d7c059`
+
+- :ref:`exhale_function_namespacerocky_1ad446d8603cd7cdf890d3aa33ee8ca689`
+
+- :ref:`exhale_function_namespacerocky_1a4343d2155ce2c6dad720a22c15a763e9`
+
+- :ref:`exhale_function_namespacerocky_1a3353a91eac98dd00088994bfb04cbdea`
+
+- :ref:`exhale_function_namespacerocky_1a6149fa9aa01ac3c9e325714f6502848a`
+
+- :ref:`exhale_function_namespacerocky_1a4762f9c0462291ace72ff25ade7df607`
+
+- :ref:`exhale_function_namespacerocky_1ac20e8e261270b7f3439763fe77eef01b`
+
+- :ref:`exhale_function_namespacerocky_1a2799af1945eeb2f0d0308cbe35ce4a28`
+
+- :ref:`exhale_function_namespacerocky_1a4af7b74d9ce1191cb5dfbf0e00ae7996`
+
+- :ref:`exhale_function_namespacerocky_1adcea95c504a7e1bef35056f44211006a`
+
+- :ref:`exhale_function_namespacerocky_1a098fc5bdcef5a0f7aaa779aa9ac36cf8`
+
+- :ref:`exhale_function_namespacerocky_1a47e72587d513254598682d7e6b03d883`
+
+- :ref:`exhale_function_namespacerocky_1a69627bd84d6266e5eb646206bb4bcfc9`
+
+- :ref:`exhale_function_namespacerocky_1afd176aa2b44713f26c60110f40e52c91`
+
+- :ref:`exhale_function_namespacerocky_1a50e03f1c1f43967b875d01993e16e7c3`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ab354be200d5231381876682f923fd13d`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a2a0230d74d128c02c7881b842a5b5c4e`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1aeb3217af13136c48bfa5d63e661a2ed0`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a28f469d5889cd263865c25e89cfcf4d0`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a9bbdbeaf15292ebe79f02498d668e5a8`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a53abbc23dde1976ad12dc191779433d4`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a5edf37654257019e9850ea1285eb921e`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a11f2d085901cdcfc80ef0d1a7c1ca66e`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a6ed56d3e329a51029e78456a12d1ffa9`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ab8fd1d04b82bc8cfa502dd14dbdf305b`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a1ef291e16bc06d92855455fcee3dfbe5`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1ab96a72ff571dc7ad8fbf77649e4f7ad1`
+
+- :ref:`exhale_function_namespacerocky_1_1util_1a1fd8023fc2203c11a2dfc8b39704b5e6`
+

@@ -1,0 +1,27 @@
+.. _exhale_class_classrocky_1_1TMSElevationLayer:
+
+Class TMSElevationLayer
+=======================
+
+- Defined in :ref:`file_src_rocky_TMSElevationLayer.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Types
+**********
+
+- ``public rocky::Inherit< ElevationLayer, TMSElevationLayer >``
+- ``public rocky::TMS::Options`` (:ref:`exhale_struct_structrocky_1_1TMS_1_1Options`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::TMSElevationLayer
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

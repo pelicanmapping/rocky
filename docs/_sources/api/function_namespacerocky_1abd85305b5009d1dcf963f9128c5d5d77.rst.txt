@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1abd85305b5009d1dcf963f9128c5d5d77:
+
+Template Function rocky::set(json&, const T&)
+=============================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::set(json&, const T&)
+   :project: Rocky

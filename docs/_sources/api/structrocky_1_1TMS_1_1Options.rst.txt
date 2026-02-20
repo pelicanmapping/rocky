@@ -1,0 +1,27 @@
+.. _exhale_struct_structrocky_1_1TMS_1_1Options:
+
+Struct Options
+==============
+
+- Defined in :ref:`file_src_rocky_TMS.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Derived Types
+*************
+
+- ``public rocky::TMSElevationLayer`` (:ref:`exhale_class_classrocky_1_1TMSElevationLayer`)
+- ``public rocky::TMSImageLayer`` (:ref:`exhale_class_classrocky_1_1TMSImageLayer`)
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::TMS::Options
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

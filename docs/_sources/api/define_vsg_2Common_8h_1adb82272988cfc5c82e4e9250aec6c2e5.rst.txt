@@ -1,0 +1,14 @@
+.. _exhale_define_vsg_2Common_8h_1adb82272988cfc5c82e4e9250aec6c2e5:
+
+Define ROCKY_VSG_NAMESPACE
+==========================
+
+- Defined in :ref:`file_src_rocky_vsg_Common.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ROCKY_VSG_NAMESPACE
+   :project: Rocky

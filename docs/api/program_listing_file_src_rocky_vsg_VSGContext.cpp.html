@@ -1,0 +1,786 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File VSGContext.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File VSGContext.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_vsg_VSGContext.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-vsgcontext-cpp">
+<span id="program-listing-file-src-rocky-vsg-vsgcontext-cpp"></span><h1>Program Listing for File VSGContext.cpp<a class="headerlink" href="#program-listing-for-file-vsgcontext-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_vsg_VSGContext.cpp.html#file-src-rocky-vsg-vsgcontext-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/VSGContext.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;VSGContext.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;VSGUtils.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/Image.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/URI.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/GeoExtent.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;filesystem&gt;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;spdlog/sinks/stdout_color_sinks.h&gt;</span>
+
+<span class="n">ROCKY_ABOUT</span><span class="p">(</span><span class="n">vulkanscenegraph</span><span class="p">,</span><span class="w"> </span><span class="n">VSG_VERSION_STRING</span><span class="p">)</span>
+
+<span class="cp">#ifdef ROCKY_HAS_VSGXCHANGE</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;vsgXchange/all.h&gt;</span>
+<span class="n">ROCKY_ABOUT</span><span class="p">(</span><span class="n">vsgxchange</span><span class="p">,</span><span class="w"> </span><span class="n">VSGXCHANGE_VERSION_STRING</span><span class="p">)</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifdef ROCKY_HAS_GDAL</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/GDAL.h&gt;</span>
+<span class="cp">#endif</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// custom VSG logger that redirects to spdlog.</span>
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">VSG_to_Spdlog_Logger</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Logger</span><span class="p">,</span><span class="w"> </span><span class="n">VSG_to_Spdlog_Logger</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">spdlog</span><span class="o">::</span><span class="n">logger</span><span class="o">&gt;</span><span class="w"> </span><span class="n">vsg_logger</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">VSG_to_Spdlog_Logger</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">vsg_logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spdlog</span><span class="o">::</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;vsg&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">vsg_logger</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">spdlog</span><span class="o">::</span><span class="n">stdout_color_mt</span><span class="p">(</span><span class="s">&quot;vsg&quot;</span><span class="p">);</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">set_pattern</span><span class="p">(</span><span class="s">&quot;%^[%n %l]%$ %v&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">protected</span><span class="o">:</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">ignore</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;[rocky.ignore]&quot;</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">debug_implementation</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="o">&amp;</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">ignore</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">());</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">debug</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">info_implementation</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="o">&amp;</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">ignore</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">());</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">warn_implementation</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="o">&amp;</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">ignore</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">());</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">error_implementation</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="o">&amp;</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">ignore</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">());</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">fatal_implementation</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="o">&amp;</span><span class="w"> </span><span class="n">message</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">message</span><span class="p">.</span><span class="n">rfind</span><span class="p">(</span><span class="n">ignore</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">level</span><span class="p">());</span>
+<span class="w">                </span><span class="n">vsg_logger</span><span class="o">-&gt;</span><span class="n">critical</span><span class="p">(</span><span class="n">message</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="c1">// recursive search for a vsg::ReaderWriters that matches the extension</span>
+<span class="w">    </span><span class="c1">// TODO: expand to include &#39;protocols&#39; I guess</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">ReaderWriter</span><span class="o">&gt;</span><span class="w"> </span><span class="n">findReaderWriter</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">extension</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ReaderWriters</span><span class="o">&amp;</span><span class="w"> </span><span class="n">readerWriters</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">ReaderWriter</span><span class="o">&gt;</span><span class="w"> </span><span class="n">output</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rw</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">readerWriters</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">vsg</span><span class="o">::</span><span class="n">ReaderWriter</span><span class="o">::</span><span class="n">Features</span><span class="w"> </span><span class="n">features</span><span class="p">;</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">crw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">CompositeReaderWriter</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">rw</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">crw</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findReaderWriter</span><span class="p">(</span><span class="n">extension</span><span class="p">,</span><span class="w"> </span><span class="n">crw</span><span class="o">-&gt;</span><span class="n">readerWriters</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rw</span><span class="o">-&gt;</span><span class="n">getFeatures</span><span class="p">(</span><span class="n">features</span><span class="p">))</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">features</span><span class="p">.</span><span class="n">extensionFeatureMap</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">extension</span><span class="p">);</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">features</span><span class="p">.</span><span class="n">extensionFeatureMap</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">j</span><span class="o">-&gt;</span><span class="n">second</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ReaderWriter</span><span class="o">::</span><span class="n">FeatureMask</span><span class="o">::</span><span class="n">READ_ISTREAM</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">output</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rw</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+<span class="w">                </span><span class="k">break</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">output</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="cp">#ifdef ROCKY_HAS_GDAL</span>
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">GDAL_VSG_ReaderWriter</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">ReaderWriter</span><span class="p">,</span><span class="w"> </span><span class="n">GDAL_VSG_ReaderWriter</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="n">Features</span><span class="w"> </span><span class="n">_features</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">GDAL_VSG_ReaderWriter</span><span class="p">()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_features</span><span class="p">.</span><span class="n">extensionFeatureMap</span><span class="p">[</span><span class="n">vsg</span><span class="o">::</span><span class="n">Path</span><span class="p">(</span><span class="s">&quot;.webp&quot;</span><span class="p">)]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">READ_ISTREAM</span><span class="p">;</span>
+<span class="w">            </span><span class="n">_features</span><span class="p">.</span><span class="n">extensionFeatureMap</span><span class="p">[</span><span class="n">vsg</span><span class="o">::</span><span class="n">Path</span><span class="p">(</span><span class="s">&quot;.tif&quot;</span><span class="p">)]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">READ_ISTREAM</span><span class="p">;</span>
+<span class="w">            </span><span class="n">_features</span><span class="p">.</span><span class="n">extensionFeatureMap</span><span class="p">[</span><span class="n">vsg</span><span class="o">::</span><span class="n">Path</span><span class="p">(</span><span class="s">&quot;.jpg&quot;</span><span class="p">)]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">READ_ISTREAM</span><span class="p">;</span>
+<span class="w">            </span><span class="n">_features</span><span class="p">.</span><span class="n">extensionFeatureMap</span><span class="p">[</span><span class="n">vsg</span><span class="o">::</span><span class="n">Path</span><span class="p">(</span><span class="s">&quot;.png&quot;</span><span class="p">)]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">READ_ISTREAM</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">getFeatures</span><span class="p">(</span><span class="n">Features</span><span class="o">&amp;</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_features</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">read</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">istream</span><span class="o">&amp;</span><span class="w"> </span><span class="n">in</span><span class="p">,</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Options</span><span class="o">&gt;</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">options</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">_features</span><span class="p">.</span><span class="n">extensionFeatureMap</span><span class="p">.</span><span class="n">count</span><span class="p">(</span><span class="n">options</span><span class="o">-&gt;</span><span class="n">extensionHint</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">stringstream</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span>
+<span class="w">            </span><span class="n">buf</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">in</span><span class="p">.</span><span class="n">rdbuf</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">flush</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">gdal_driver</span><span class="w"> </span><span class="o">=</span>
+<span class="w">                </span><span class="n">options</span><span class="o">-&gt;</span><span class="n">extensionHint</span><span class="p">.</span><span class="n">string</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;.webp&quot;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">&quot;webp&quot;</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                </span><span class="n">options</span><span class="o">-&gt;</span><span class="n">extensionHint</span><span class="p">.</span><span class="n">string</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;.tif&quot;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">&quot;gtiff&quot;</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                </span><span class="n">options</span><span class="o">-&gt;</span><span class="n">extensionHint</span><span class="p">.</span><span class="n">string</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;.jpg&quot;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">&quot;jpeg&quot;</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                </span><span class="n">options</span><span class="o">-&gt;</span><span class="n">extensionHint</span><span class="p">.</span><span class="n">string</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;.png&quot;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="s">&quot;png&quot;</span><span class="w"> </span><span class="o">:</span>
+<span class="w">                </span><span class="s">&quot;&quot;</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GDAL_detail</span><span class="o">::</span><span class="n">readImage</span><span class="p">((</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="p">)</span><span class="n">data</span><span class="p">.</span><span class="n">c_str</span><span class="p">(),</span><span class="w"> </span><span class="n">data</span><span class="p">.</span><span class="n">length</span><span class="p">(),</span><span class="w"> </span><span class="n">gdal_driver</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">moveImageToVSG</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">value</span><span class="p">());</span>
+<span class="w">            </span><span class="k">else</span>
+<span class="w">                </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="nf">inferContentTypeFromStream</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">istream</span><span class="o">&amp;</span><span class="w"> </span><span class="n">stream</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Get the length of the stream</span>
+<span class="w">        </span><span class="n">stream</span><span class="p">.</span><span class="n">seekg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">ios</span><span class="o">::</span><span class="n">end</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">len</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">stream</span><span class="p">.</span><span class="n">tellg</span><span class="p">();</span>
+<span class="w">        </span><span class="n">stream</span><span class="p">.</span><span class="n">seekg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">ios</span><span class="o">::</span><span class="n">beg</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">len</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">        </span><span class="c1">// Read a 16 byte header</span>
+<span class="w">        </span><span class="kt">char</span><span class="w"> </span><span class="n">data</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>
+<span class="w">        </span><span class="n">stream</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// Reset reading</span>
+<span class="w">        </span><span class="n">stream</span><span class="p">.</span><span class="n">seekg</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">ios</span><span class="o">::</span><span class="n">beg</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">URI</span><span class="o">::</span><span class="n">inferContentType</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="mi">16</span><span class="p">));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="nf">foundShaders</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Paths</span><span class="o">&amp;</span><span class="w"> </span><span class="n">searchPaths</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Options</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">        </span><span class="n">options</span><span class="o">-&gt;</span><span class="n">paths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">searchPaths</span><span class="p">;</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">found</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">findFile</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">Path</span><span class="p">(</span><span class="s">&quot;shaders/rocky.terrain.vert&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">options</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="o">!</span><span class="n">found</span><span class="p">.</span><span class="n">empty</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">PriorityUpdateQueue</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Operation</span><span class="p">,</span><span class="w"> </span><span class="n">PriorityUpdateQueue</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">mutex</span><span class="w"> </span><span class="n">_mutex</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">Task</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Operation</span><span class="o">&gt;</span><span class="w"> </span><span class="n">function</span><span class="p">;</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">get_priority</span><span class="p">;</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">Task</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_queue</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// runs one task per frame.</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">run</span><span class="p">()</span><span class="w"> </span><span class="k">override</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_queue</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Task</span><span class="w"> </span><span class="n">task</span><span class="p">;</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="n">lock</span><span class="p">(</span><span class="n">_mutex</span><span class="p">);</span>
+
+<span class="w">                    </span><span class="c1">// sort from low to high priority</span>
+<span class="w">                    </span><span class="n">std</span><span class="o">::</span><span class="n">sort</span><span class="p">(</span><span class="n">_queue</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">_queue</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span>
+<span class="w">                        </span><span class="p">[](</span><span class="k">const</span><span class="w"> </span><span class="n">Task</span><span class="o">&amp;</span><span class="w"> </span><span class="n">lhs</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">Task</span><span class="o">&amp;</span><span class="w"> </span><span class="n">rhs</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">lhs</span><span class="p">.</span><span class="n">get_priority</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">                                </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">                            </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rhs</span><span class="p">.</span><span class="n">get_priority</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">                                </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">                            </span><span class="k">else</span>
+<span class="w">                                </span><span class="k">return</span><span class="w"> </span><span class="n">lhs</span><span class="p">.</span><span class="n">get_priority</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">rhs</span><span class="p">.</span><span class="n">get_priority</span><span class="p">();</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                    </span><span class="p">);</span>
+
+<span class="w">                    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_queue</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="c1">// pop the highest priority off the back.</span>
+<span class="w">                        </span><span class="n">task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_queue</span><span class="p">.</span><span class="n">back</span><span class="p">();</span>
+<span class="w">                        </span><span class="n">_queue</span><span class="p">.</span><span class="n">pop_back</span><span class="p">();</span>
+
+<span class="w">                        </span><span class="c1">// check for cancelation - if the task is already canceled,</span>
+<span class="w">                        </span><span class="c1">// discard it and fetch the next one.</span>
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">po</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">Cancelable</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">task</span><span class="p">.</span><span class="n">function</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">po</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">po</span><span class="o">-&gt;</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">                            </span><span class="k">break</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">else</span>
+<span class="w">                            </span><span class="n">task</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">};</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">task</span><span class="p">.</span><span class="n">function</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">task</span><span class="p">.</span><span class="n">function</span><span class="o">-&gt;</span><span class="n">run</span><span class="p">();</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">SimpleUpdateOperation</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Operation</span><span class="p">,</span><span class="w"> </span><span class="n">SimpleUpdateOperation</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_function</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">SimpleUpdateOperation</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">function</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">            </span><span class="n">_function</span><span class="p">(</span><span class="n">function</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">run</span><span class="p">()</span><span class="w"> </span><span class="k">override</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_function</span><span class="p">();</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="p">}</span>
+
+
+
+
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">VSGContextImpl</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Viewer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">viewer</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">rocky</span><span class="o">::</span><span class="n">ContextImpl</span><span class="p">(),</span>
+<span class="w">    </span><span class="n">_viewer</span><span class="p">(</span><span class="n">viewer</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_viewer</span><span class="p">)</span><span class="w"> </span><span class="n">_viewer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Viewer</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;rocky&quot;</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="n">ctor</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="o">**</span><span class="p">)</span><span class="n">argv</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">VSGContextImpl</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Viewer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">viewer</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&amp;</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">rocky</span><span class="o">::</span><span class="n">ContextImpl</span><span class="p">(),</span>
+<span class="w">    </span><span class="n">_viewer</span><span class="p">(</span><span class="n">viewer</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_viewer</span><span class="p">)</span><span class="w"> </span><span class="n">_viewer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Viewer</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">    </span><span class="n">ctor</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">ctor</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">CommandLine</span><span class="w"> </span><span class="nf">args</span><span class="p">(</span><span class="o">&amp;</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">readerWriterOptions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Options</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">shaderCompileSettings</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderCompileSettings</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+
+<span class="w">    </span><span class="n">_priorityUpdateQueue</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PriorityUpdateQueue</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// initialize the deferred deletion collection.</span>
+<span class="w">    </span><span class="c1">// a large number of frames ensures objects will be safely destroyed and</span>
+<span class="w">    </span><span class="c1">// and we won&#39;t have too many deletions per frame.</span>
+<span class="w">    </span><span class="n">_gc</span><span class="p">.</span><span class="n">resize</span><span class="p">(</span><span class="mi">8</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// big capacity for this so we can copy it without worry about reallocating.</span>
+<span class="w">    </span><span class="n">activeViewIDs</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="mi">128</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">args</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">readerWriterOptions</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// redirect the VSG logger to our spdlog</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">Logger</span><span class="o">::</span><span class="n">instance</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">VSG_to_Spdlog_Logger</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// set the logging level from the command line</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">log_level</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">args</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--log-level&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">log_level</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">log_level</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;debug&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">spdlog</span><span class="o">::</span><span class="n">level</span><span class="o">::</span><span class="n">debug</span><span class="p">);</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">log_level</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;info&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">spdlog</span><span class="o">::</span><span class="n">level</span><span class="o">::</span><span class="n">info</span><span class="p">);</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">log_level</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;warn&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">spdlog</span><span class="o">::</span><span class="n">level</span><span class="o">::</span><span class="n">warn</span><span class="p">);</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">log_level</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;error&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">spdlog</span><span class="o">::</span><span class="n">level</span><span class="o">::</span><span class="n">err</span><span class="p">);</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">log_level</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;critical&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">spdlog</span><span class="o">::</span><span class="n">level</span><span class="o">::</span><span class="n">critical</span><span class="p">);</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">log_level</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s">&quot;off&quot;</span><span class="p">)</span><span class="w"> </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">set_level</span><span class="p">(</span><span class="n">spdlog</span><span class="o">::</span><span class="n">level</span><span class="o">::</span><span class="n">off</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="cp">#ifdef ROCKY_HAS_GDAL</span>
+<span class="w">    </span><span class="n">readerWriterOptions</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">GDAL_VSG_ReaderWriter</span><span class="o">::</span><span class="n">create</span><span class="p">());</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifdef ROCKY_HAS_VSGXCHANGE</span>
+<span class="w">    </span><span class="c1">// Adds all the readerwriters in vsgxchange to the options data.</span>
+<span class="w">    </span><span class="n">readerWriterOptions</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">vsgXchange</span><span class="o">::</span><span class="n">all</span><span class="o">::</span><span class="n">create</span><span class="p">());</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="c1">// For system fonts</span>
+<span class="w">    </span><span class="n">readerWriterOptions</span><span class="o">-&gt;</span><span class="n">paths</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;C:/Windows/Fonts&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">readerWriterOptions</span><span class="o">-&gt;</span><span class="n">paths</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;/usr/share/fonts/truetype&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">readerWriterOptions</span><span class="o">-&gt;</span><span class="n">paths</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;/etc/fonts&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">readerWriterOptions</span><span class="o">-&gt;</span><span class="n">paths</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="s">&quot;/usr/local/share/rocky/data&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// establish search paths for shaders and data:</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">vsgPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">getEnvPaths</span><span class="p">(</span><span class="s">&quot;VSG_FILE_PATH&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">searchPaths</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">searchPaths</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="w"> </span><span class="n">vsgPaths</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">vsgPaths</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">rockyPaths</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">getEnvPaths</span><span class="p">(</span><span class="s">&quot;ROCKY_FILE_PATH&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">searchPaths</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">searchPaths</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="w"> </span><span class="n">rockyPaths</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">rockyPaths</span><span class="p">.</span><span class="n">end</span><span class="p">());</span>
+
+<span class="w">    </span><span class="c1">// add some default places to look for shaders and resources, relative to the executable.</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">relative_paths_to_add</span><span class="p">[]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="s">&quot;../share/rocky&quot;</span><span class="p">,</span><span class="w">                        </span><span class="c1">// running from standard install location</span>
+<span class="w">        </span><span class="s">&quot;../../../../../src/rocky/vsg&quot;</span><span class="p">,</span><span class="w">          </span><span class="c1">// running from visual studio with build folder inside repo</span>
+<span class="w">        </span><span class="s">&quot;../../../../../repo/src/rocky/vsg&quot;</span><span class="p">,</span><span class="w">     </span><span class="c1">// running from visual studio with a repo folder :)</span>
+<span class="w">        </span><span class="s">&quot;../../../../src/rocky/vsg&quot;</span><span class="w">              </span><span class="c1">// running from visual studio with an in-source build :(</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">exec_path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">filesystem</span><span class="o">::</span><span class="n">path</span><span class="p">(</span><span class="n">util</span><span class="o">::</span><span class="n">getExecutableLocation</span><span class="p">());</span>
+<span class="w">    </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Running from: {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">exec_path</span><span class="p">.</span><span class="n">string</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">relative_path</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">relative_paths_to_add</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">exec_path</span><span class="p">.</span><span class="n">remove_filename</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">relative_path</span><span class="p">).</span><span class="n">lexically_normal</span><span class="p">();</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">path</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">            </span><span class="n">searchPaths</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">Path</span><span class="p">(</span><span class="n">path</span><span class="p">.</span><span class="n">generic_string</span><span class="p">()));</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">searchPaths</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="s">&quot;/usr/local/share/rocky&quot;</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">foundShaders</span><span class="p">(</span><span class="n">searchPaths</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Trouble: Rocky may not be able to find its shaders. &quot;</span>
+<span class="w">            </span><span class="s">&quot;Consider setting one of the environment variables VSG_FILE_PATH or ROCKY_FILE_PATH.&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Cannot find shaders - check your ROCKY_FILE_PATH&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Search paths:&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">path</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">searchPaths</span><span class="p">)</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;  {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">path</span><span class="p">.</span><span class="n">string</span><span class="p">());</span>
+
+<span class="w">    </span><span class="c1">// Install a readImage function that uses the VSG facility</span>
+<span class="w">    </span><span class="c1">// for reading data. We may want to subclass Image with something like</span>
+<span class="w">    </span><span class="c1">// NativeImage that just hangs on to the vsg::Data instead of</span>
+<span class="w">    </span><span class="c1">// stripping it out and later converting it back; or that only transcodes</span>
+<span class="w">    </span><span class="c1">// it if it needs to. vsg::read_cast() might do some internal caching</span>
+<span class="w">    </span><span class="c1">// as well -- need to look into that.</span>
+<span class="w">    </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">readImageFromURI</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[](</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">location</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">rocky</span><span class="o">::</span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">URI</span><span class="p">(</span><span class="n">location</span><span class="p">).</span><span class="n">read</span><span class="p">(</span><span class="n">io</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">istringstream</span><span class="w"> </span><span class="nf">buf</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">content</span><span class="p">.</span><span class="n">data</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">readImageFromStream</span><span class="p">(</span><span class="n">buf</span><span class="p">,</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">content</span><span class="p">.</span><span class="n">type</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">Result</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Data is null&quot;</span><span class="p">));</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="c1">// map of mime-types to extensions that VSG can understand</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&gt;</span><span class="w"> </span><span class="n">ext_for_mime_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;image/bmp&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.bmp&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;image/gif&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.gif&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;image/jpg&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.jpg&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;image/jpeg&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.jpg&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;image/png&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.png&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;image/tga&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.tga&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;image/tif&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.tif&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;image/tiff&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.tif&quot;</span><span class="w"> </span><span class="p">},</span>
+<span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;image/webp&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.webp&quot;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="c1">// To read from a stream, we have to search all the VS readerwriters to</span>
+<span class="w">    </span><span class="c1">// find one that matches the &#39;extension&#39; we want. We also have to put that</span>
+<span class="w">    </span><span class="c1">// extension in the options structure as a hint.</span>
+<span class="w">    </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">readImageFromStream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">options</span><span class="p">(</span><span class="n">readerWriterOptions</span><span class="p">)](</span><span class="n">std</span><span class="o">::</span><span class="n">istream</span><span class="o">&amp;</span><span class="w"> </span><span class="n">location</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">contentType</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">rocky</span><span class="o">::</span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">Result</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Image</span><span class="o">&gt;&gt;</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// try the mime-type mapping:</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ext_for_mime_type</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">contentType</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ext_for_mime_type</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">rw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findReaderWriter</span><span class="p">(</span><span class="n">i</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="o">-&gt;</span><span class="n">readerWriters</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rw</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">local_options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Options</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="o">*</span><span class="n">options</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">local_options</span><span class="o">-&gt;</span><span class="n">extensionHint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rw</span><span class="o">-&gt;</span><span class="n">read_cast</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Data</span><span class="o">&gt;</span><span class="p">(</span><span class="n">location</span><span class="p">,</span><span class="w"> </span><span class="n">local_options</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">makeImageFromVSG</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// mime-type didn&#39;t work; try the content type directly as an extension</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">contentType</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">contentTypeAsExtension</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contentType</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="sc">&#39;.&#39;</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="p">(</span><span class="s">&quot;.&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">contentType</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">contentType</span><span class="p">;</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">rw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findReaderWriter</span><span class="p">(</span><span class="n">contentTypeAsExtension</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="o">-&gt;</span><span class="n">readerWriters</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rw</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">local_options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Options</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="o">*</span><span class="n">options</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">local_options</span><span class="o">-&gt;</span><span class="n">extensionHint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">contentTypeAsExtension</span><span class="p">;</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rw</span><span class="o">-&gt;</span><span class="n">read_cast</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Data</span><span class="o">&gt;</span><span class="p">(</span><span class="n">location</span><span class="p">,</span><span class="w"> </span><span class="n">local_options</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">return</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">makeImageFromVSG</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// last resort, try checking the data itself</span>
+<span class="w">            </span><span class="c1">// TODO: maybe this should be a FIRST resort?</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">inferredContentType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">inferContentTypeFromStream</span><span class="p">(</span><span class="n">location</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">inferredContentType</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ext_for_mime_type</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">inferredContentType</span><span class="p">);</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">i</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">ext_for_mime_type</span><span class="p">.</span><span class="n">end</span><span class="p">())</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">rw</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">findReaderWriter</span><span class="p">(</span><span class="n">i</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">,</span><span class="w"> </span><span class="n">options</span><span class="o">-&gt;</span><span class="n">readerWriters</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">rw</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">local_options</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Options</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="o">*</span><span class="n">options</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">local_options</span><span class="o">-&gt;</span><span class="n">extensionHint</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">i</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">;</span>
+<span class="w">                        </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rw</span><span class="o">-&gt;</span><span class="n">read_cast</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Data</span><span class="o">&gt;</span><span class="p">(</span><span class="n">location</span><span class="p">,</span><span class="w"> </span><span class="n">local_options</span><span class="p">);</span>
+<span class="w">                        </span><span class="k">return</span><span class="w"> </span><span class="n">util</span><span class="o">::</span><span class="n">makeImageFromVSG</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ServiceUnavailable</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;No image reader for </span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">contentType</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;</span><span class="se">\&quot;</span><span class="s">&quot;</span><span class="p">);</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">    </span><span class="c1">// caches URI request results</span>
+<span class="w">    </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">contentCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">ContentCache</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">256</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// weak cache of resident image (and elevation) rasters</span>
+<span class="w">    </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">residentImageCache</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">util</span><span class="o">::</span><span class="n">ResidentCache</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">Image</span><span class="p">,</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&gt;&gt;</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// remembers failed URI requests so we don&#39;t repeat them</span>
+<span class="w">    </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">deadpool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">DealpoolService</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">4096</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Device</span><span class="o">&gt;</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">device</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_viewer</span><span class="o">-&gt;</span><span class="n">windows</span><span class="p">().</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">_viewer</span><span class="o">-&gt;</span><span class="n">windows</span><span class="p">().</span><span class="n">front</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">getOrCreateDevice</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">VulkanExtensions</span><span class="o">*</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">ext</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_vulkanExtensions</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_compileMutex</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_vulkanExtensions</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">ROCKY_HARD_ASSERT</span><span class="p">(</span><span class="n">device</span><span class="p">());</span>
+<span class="w">            </span><span class="n">_vulkanExtensions</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VulkanExtensions</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">device</span><span class="p">());</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_vulkanExtensions</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">CommandGraph</span><span class="o">&gt;</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">getComputeCommandGraph</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_computeCommandGraph</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">CommandGraph</span><span class="o">&gt;</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">getOrCreateComputeCommandGraph</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Device</span><span class="o">&gt;</span><span class="w"> </span><span class="n">device</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">queueFamily</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_computeCommandGraph</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">device</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_computeCommandGraph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">CommandGraph</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">device</span><span class="p">,</span><span class="w"> </span><span class="n">queueFamily</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_computeCommandGraph</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">onNextUpdate</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Operation</span><span class="o">&gt;</span><span class="w"> </span><span class="n">function</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">get_priority</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">pq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">dynamic_cast</span><span class="o">&lt;</span><span class="n">PriorityUpdateQueue</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">_priorityUpdateQueue</span><span class="p">.</span><span class="n">get</span><span class="p">());</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pq</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">pq</span><span class="o">-&gt;</span><span class="n">_mutex</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pq</span><span class="o">-&gt;</span><span class="n">referenceCount</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_viewer</span><span class="o">-&gt;</span><span class="n">updateOperations</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">_priorityUpdateQueue</span><span class="p">,</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">UpdateOperations</span><span class="o">::</span><span class="n">ALL_FRAMES</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">pq</span><span class="o">-&gt;</span><span class="n">_queue</span><span class="p">.</span><span class="n">push_back</span><span class="p">({</span><span class="w"> </span><span class="n">function</span><span class="p">,</span><span class="w"> </span><span class="n">get_priority</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">        </span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">onNextUpdate</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">function</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_viewer</span><span class="o">-&gt;</span><span class="n">updateOperations</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">SimpleUpdateOperation</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">function</span><span class="p">));</span>
+
+<span class="w">    </span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">vsg</span><span class="o">::</span><span class="n">CompileResult</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">compile</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">compilable</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">compilable</span><span class="p">.</span><span class="n">valid</span><span class="p">(),</span><span class="w"> </span><span class="p">{});</span>
+
+<span class="w">    </span><span class="c1">// note: this can block (with a fence) until a compile traversal is available.</span>
+<span class="w">    </span><span class="c1">// Be sure to group as many compiles together as possible for maximum performance.</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">cr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_viewer</span><span class="o">-&gt;</span><span class="n">compileManager</span><span class="o">-&gt;</span><span class="n">compile</span><span class="p">(</span><span class="n">compilable</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cr</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// compile results are stored and processed later during update</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_compileMutex</span><span class="p">);</span>
+<span class="w">        </span><span class="n">_compileResult</span><span class="p">.</span><span class="n">add</span><span class="p">(</span><span class="n">cr</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">cr</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">dispose</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Object</span><span class="o">&gt;</span><span class="w"> </span><span class="n">object</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">object</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// if the user installed a custom disposer, use it</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">disposer</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">disposer</span><span class="p">(</span><span class="n">object</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// otherwise use our own</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_gc_mutex</span><span class="p">);</span>
+<span class="w">            </span><span class="n">_gc</span><span class="p">.</span><span class="n">back</span><span class="p">().</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">object</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">upload</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">BufferInfoList</span><span class="o">&amp;</span><span class="w"> </span><span class="n">bufferInfos</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// A way to upload GPU buffers without using the dirty()/DYNAMIC_DATA mechanism,</span>
+<span class="w">    </span><span class="c1">// which gets slow with a large number of buffers.</span>
+<span class="w">    </span><span class="c1">// inspired by: https://github.com/vsg-dev/VulkanSceneGraph/discussions/1572</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">BufferInfoList</span><span class="w"> </span><span class="n">validBufferInfos</span><span class="p">;</span>
+<span class="w">    </span><span class="n">validBufferInfos</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="n">bufferInfos</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">bi</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">bufferInfos</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bi</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">bi</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">bi</span><span class="o">-&gt;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">dirty</span><span class="p">();</span>
+<span class="w">            </span><span class="n">validBufferInfos</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">bi</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">validBufferInfos</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_viewer</span><span class="o">-&gt;</span><span class="n">recordAndSubmitTasks</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">task</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">tasks</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">task</span><span class="o">-&gt;</span><span class="n">transferTask</span><span class="o">-&gt;</span><span class="n">assign</span><span class="p">(</span><span class="n">validBufferInfos</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">upload</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ImageInfoList</span><span class="o">&amp;</span><span class="w"> </span><span class="n">imageInfos</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// A way to upload images without using the dirty()/DYNAMIC_DATA mechanism,</span>
+<span class="w">    </span><span class="c1">// which gets slow with a large number of buffers.</span>
+<span class="w">    </span><span class="c1">// inspired by: https://github.com/vsg-dev/VulkanSceneGraph/discussions/1572</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ImageInfoList</span><span class="w"> </span><span class="n">validImageInfos</span><span class="p">;</span>
+<span class="w">    </span><span class="n">validImageInfos</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="n">imageInfos</span><span class="p">.</span><span class="n">size</span><span class="p">());</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">bi</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">imageInfos</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">bi</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">bi</span><span class="o">-&gt;</span><span class="n">imageView</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">bi</span><span class="o">-&gt;</span><span class="n">imageView</span><span class="o">-&gt;</span><span class="n">image</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">bi</span><span class="o">-&gt;</span><span class="n">imageView</span><span class="o">-&gt;</span><span class="n">image</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">bi</span><span class="o">-&gt;</span><span class="n">imageView</span><span class="o">-&gt;</span><span class="n">image</span><span class="o">-&gt;</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">dirty</span><span class="p">();</span>
+<span class="w">            </span><span class="n">validImageInfos</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">bi</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">validImageInfos</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_viewer</span><span class="o">-&gt;</span><span class="n">recordAndSubmitTasks</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">task</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">tasks</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">task</span><span class="o">-&gt;</span><span class="n">transferTask</span><span class="o">-&gt;</span><span class="n">assign</span><span class="p">(</span><span class="n">validImageInfos</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">requestFrame</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="o">++</span><span class="n">renderRequests</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">VSGContextImpl</span><span class="o">::</span><span class="n">update</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">updates_occurred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Context update callbacks</span>
+<span class="w">    </span><span class="n">onUpdate</span><span class="p">.</span><span class="n">fire</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_compileResult</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_compileMutex</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_compileResult</span><span class="p">.</span><span class="n">requiresViewerUpdate</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">vsg</span><span class="o">::</span><span class="n">updateViewer</span><span class="p">(</span><span class="o">*</span><span class="n">_viewer</span><span class="p">,</span><span class="w"> </span><span class="n">_compileResult</span><span class="p">);</span>
+<span class="w">            </span><span class="n">updates_occurred</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="n">_compileResult</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+
+<span class="w">        </span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// process the garbage collector</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">unique_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_gc_mutex</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">// unref everything in the oldest collection:</span>
+<span class="w">        </span><span class="n">_gc</span><span class="p">.</span><span class="n">front</span><span class="p">().</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">        </span><span class="c1">// move the empty collection to the back:</span>
+<span class="w">        </span><span class="n">_gc</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">_gc</span><span class="p">.</span><span class="n">front</span><span class="p">()));</span>
+<span class="w">        </span><span class="n">_gc</span><span class="p">.</span><span class="n">pop_front</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">updates_occurred</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,185 @@
+
+.. _program_listing_file_src_rocky_vsg_imgui_ImGuiIntegration.h:
+
+Program Listing for File ImGuiIntegration.h
+===========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_imgui_ImGuiIntegration.h>` (``src/rocky/vsg/imgui/ImGuiIntegration.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/vsg/VSGContext.h>
+   #include <rocky/Callbacks.h>
+   #include <rocky/vsg/imgui/SendEventsToImGui.h>
+   #include <rocky/vsg/imgui/RenderImGui.h>
+   #include <imgui.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class Application;
+       class DisplayManager;
+   
+       class ROCKY_EXPORT SendEventsToImGuiContext : public vsg::Inherit<SendEventsToImGui, SendEventsToImGuiContext>
+       {
+       public:
+           SendEventsToImGuiContext(vsg::ref_ptr<vsg::Window> window, ImGuiContext* imguiContext) :
+               _window(window), _imguiContext(imguiContext)
+           {
+               //nop
+           }
+   
+           Callback<void(const vsg::UIEvent&)> onEvent;
+   
+           template<typename E>
+           inline void propagate(E& e)
+           {
+               // only process events for the window we are interested in, and if the event wasn't handled
+               // (say, by another wrapper connected to another view)
+               if (!e.handled && ((_window == nullptr) || (e.window.ref_ptr() == _window)))
+               {
+                   // activate the context associated with this window/view
+                   if (_imguiContext)
+                   {
+                       ImGui::SetCurrentContext(_imguiContext);
+                   }
+   
+                   Inherit::apply(e);
+   
+                   onEvent.fire(e);
+               }
+           }
+   
+           void apply(vsg::ButtonPressEvent& e) override { propagate(e); }
+           void apply(vsg::ButtonReleaseEvent& e) override { propagate(e); }
+           void apply(vsg::ScrollWheelEvent& e) override { propagate(e); }
+           void apply(vsg::KeyPressEvent& e) override { propagate(e); }
+           void apply(vsg::KeyReleaseEvent& e) override { propagate(e); }
+           void apply(vsg::MoveEvent& e) override { propagate(e); }
+           void apply(vsg::ConfigureWindowEvent& e) override { propagate(e); }
+   
+           void apply(vsg::FrameEvent& e) override {
+               if (_imguiContext)
+                   ImGui::SetCurrentContext(_imguiContext);
+               Inherit::apply(e);
+               onEvent.fire(e);
+           }
+   
+       private:
+           vsg::ref_ptr<vsg::Window> _window;
+           VSGContext _vsgContext;
+           ImGuiContext* _imguiContext;
+       };
+   
+       class ROCKY_EXPORT ImGuiContextNode : public vsg::Inherit<vsg::Node, ImGuiContextNode>
+       {
+       public:
+           ImGuiContextNode() = default;
+   
+           inline void traverse(vsg::RecordTraversal& record) const override
+           {
+               ImGuiContext* imguiContext = nullptr;
+               record.getValue("imgui.context", imguiContext);
+               render(imguiContext);
+           }
+   
+           virtual void render(ImGuiContext*) const = 0;
+       };
+   
+       class ROCKY_EXPORT RenderImGuiContext : public vsg::Inherit<RenderImGui, RenderImGuiContext>
+       {
+       public:
+           vsg::ref_ptr<vsg::Window> window;
+           
+           vsg::ref_ptr<vsg::View> view;
+   
+           Callback<void(vsg::ref_ptr<ImGuiContextNode>)> onNodeAdded;
+   
+           bool enableDocking = false;
+   
+           RenderImGuiContext(vsg::ref_ptr<vsg::Window> in_window, vsg::ref_ptr<vsg::View> in_view = {}) :
+               Inherit(in_window), window(in_window), view(in_view)
+           {
+               //nop
+           }
+   
+           void add(vsg::ref_ptr<ImGuiContextNode> node);
+   
+       public:
+   
+           void traverse(vsg::RecordTraversal& record) const override;
+   
+       protected:
+           mutable bool _firstFrame = true;
+       };
+   
+   
+       namespace detail
+       {
+           class ImGuiDispatcher : public vsg::Inherit<vsg::Node, ImGuiDispatcher>
+           {
+           public:
+               ImGuiContext* imguicontext = nullptr;
+               VSGContext vsgcontext;
+   
+               ImGuiDispatcher(ImGuiContext* imguiContext_in, VSGContext vsgContext_in)
+                   : imguicontext(imguiContext_in), vsgcontext(vsgContext_in) {
+               }
+   
+               void traverse(vsg::RecordTraversal& record) const override
+               {
+                   RenderingState rs{
+                       record.getCommandBuffer()->viewID,
+                       record.getFrameStamp()->frameCount
+                   };
+   
+                   for (auto& record_gui : vsgcontext->guiRecorders)
+                   {
+                       record_gui(rs, imguicontext);
+                   }
+               }
+           };
+       }
+   }
+   
+   
+   namespace ImGuiEx
+   {
+       static bool TextOutlined(const ImVec4& outlineColor, unsigned outlinePixels, std::string_view text)
+       {
+           auto dl = ImGui::GetWindowDrawList();
+           auto font = ImGui::GetFont();
+           auto size = ImGui::GetFontSize();
+           auto pos = ImGui::GetCursorScreenPos();
+   
+           ImU32 outline_col = ImGui::ColorConvertFloat4ToU32(outlineColor);
+           ImU32 text_col = ImGui::ColorConvertFloat4ToU32(ImGui::GetStyleColorVec4(ImGuiCol_Text));
+   
+           // Outline passes
+           for (int y = -(int)outlinePixels; y <= (int)outlinePixels; ++y)
+               for (int x = -(int)outlinePixels; x <= (int)outlinePixels; ++x)
+                   if (x != 0 || y != 0) {
+                       ImU32 alpha = 0x00FFFFFF | ((0xFF / (int)pow(2, std::max(0, std::max(std::abs(x) - 1, std::abs(y) - 1)))) << 24);
+                       dl->AddText(font, size, ImVec2(pos.x + x, pos.y + y), alpha & outline_col, &text.front());
+                   }
+   
+           // Center (fill) pass
+           dl->AddText(font, size, pos, text_col, &text.front());
+   
+           // Advance layout so subsequent widgets appear after the text
+           const ImVec2 sz = font->CalcTextSizeA(size, FLT_MAX, 0.0f, &text.front());
+   
+           ImGui::Dummy(ImVec2(sz.x, sz.y));
+   
+           return true;
+       }
+   
+       static bool TextOutlined(const ImVec4& outlineColor, std::string_view text)
+       {
+           return TextOutlined(outlineColor, 1, text);
+       }
+   }

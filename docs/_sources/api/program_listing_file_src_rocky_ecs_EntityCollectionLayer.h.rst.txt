@@ -1,0 +1,45 @@
+
+.. _program_listing_file_src_rocky_ecs_EntityCollectionLayer.h:
+
+Program Listing for File EntityCollectionLayer.h
+================================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_ecs_EntityCollectionLayer.h>` (``src/rocky/ecs/EntityCollectionLayer.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/VisibleLayer.h>
+   #include <rocky/ecs/Registry.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT EntityCollectionLayer : public Inherit<VisibleLayer, EntityCollectionLayer>
+       {
+       public:
+           std::vector<entt::entity> entities;
+   
+       public:
+           EntityCollectionLayer(Registry registry);
+   
+           EntityCollectionLayer(Registry registry, std::string_view JSON);
+   
+       protected:
+   
+           Result<> openImplementation(const IOOptions& io) override;
+   
+           void closeImplementation() override;
+   
+       protected:
+   
+           Registry _registry;
+   
+       private:
+   
+           void construct(std::string_view JSON);
+       };
+   }

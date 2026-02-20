@@ -1,0 +1,133 @@
+
+.. _program_listing_file_src_rocky_Threading.h:
+
+Program Listing for File Threading.h
+====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_Threading.h>` (``src/rocky/Threading.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Common.h>
+   #include <rocky/weejobs.h>
+   #include <vector>
+   #include <list>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       using Cancelable = WEEJOBS_NAMESPACE::cancelable;
+   
+       template<class T>
+       using Future = WEEJOBS_NAMESPACE::future<T>;
+   
+       namespace detail
+       {
+           extern ROCKY_EXPORT void setThreadName(const std::string& name);
+   
+           template<class T>
+           struct ThreadLocal
+           {
+               T& value() {
+                   std::scoped_lock lock(_mutex);
+                   auto id = std::this_thread::get_id();
+                   for(auto& p : _data)
+                       if (p.first == id)
+                           return p.second;
+                   return _data.emplace_back(id, T()).second;
+               }
+   
+               void clear() {
+                   std::scoped_lock lock(_mutex);
+                   _data.clear();
+               }
+   
+           private:
+               std::mutex _mutex;
+               std::list<std::pair<std::thread::id, T>> _data;
+           };
+   
+           template<typename T>
+           class Gate
+           {
+           public:
+               Gate() = default;
+   
+               inline void lock(const T& key)
+               {
+                   std::unique_lock<std::mutex> lock(_m);
+                   for (;;) {
+                       if (emplace(key))
+                           return;
+                       _block.wait(lock);
+                   }
+               }
+   
+               inline void unlock(const T& key)
+               {
+                   std::unique_lock<std::mutex> lock(_m);
+                   _keys.erase(std::remove(_keys.begin(), _keys.end(), key), _keys.end());
+                   _block.notify_all();
+               }
+   
+           private:
+               std::mutex _m;
+               std::condition_variable_any _block;
+               std::vector<T> _keys;
+   
+               inline bool emplace(const T& key)
+               {
+                   for(auto& k : _keys)
+                       if (k == key)
+                           return false;
+                   _keys.emplace_back(key);
+                   return true;
+               }
+           };
+   
+           template<typename T>
+           struct ScopedGate
+           {
+           public:
+               ScopedGate(Gate<T>& gate, const T& key) :
+                   _gate(&gate),
+                   _key(key)
+               {
+                   if (_gate)
+                       _gate->lock(key);
+               }
+   
+               template<typename CALLABLE>
+               ScopedGate(Gate<T>& gate, const T& key, CALLABLE&& pred) :
+                   _gate(pred() ? &gate : nullptr),
+                   _key(key)
+               {
+                   if (_gate)
+                       _gate->lock(_key);
+               }
+   
+               ScopedGate(std::shared_ptr<Gate<T>>& gate, const T& key) :
+                   _gate(gate.get()),
+                   _key(key)
+               {
+                   if (_gate)
+                       _gate->lock(_key);
+               }
+   
+               ~ScopedGate()
+               {
+                   if (_gate)
+                       _gate->unlock(_key);
+               }
+   
+           private:
+               Gate<T>* _gate = nullptr;
+               T _key;
+           };
+       }
+   
+   } // namepsace rocky::util
+   

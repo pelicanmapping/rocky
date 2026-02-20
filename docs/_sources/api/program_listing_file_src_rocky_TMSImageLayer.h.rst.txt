@@ -1,0 +1,45 @@
+
+.. _program_listing_file_src_rocky_TMSImageLayer.h:
+
+Program Listing for File TMSImageLayer.h
+========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_TMSImageLayer.h>` (``src/rocky/TMSImageLayer.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/TMS.h>
+   #include <rocky/ImageLayer.h>
+   #include <rocky/URI.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT TMSImageLayer : public Inherit<ImageLayer, TMSImageLayer>,
+           public TMS::Options
+       {
+       public:
+           TMSImageLayer();
+           TMSImageLayer(std::string_view JSON, const IOOptions& io);
+   
+           std::string to_json() const override;
+   
+           const GeoExtent& extent() const override;
+   
+       protected: // Layer
+   
+           Result<> openImplementation(const IOOptions& io) override;
+   
+           void closeImplementation() override;
+   
+           Result<GeoImage> createTileImplementation(const TileKey& key, const IOOptions& io) const override;
+   
+       private:
+           TMS::Driver _driver;
+   
+           void construct(std::string_view JSON, const IOOptions& io);
+       };
+   }

@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1aa9f1e4142cb93295efd3d881cab4dce5:
+
+Function rocky::from_json(const json&, Profile&)
+================================================
+
+- Defined in :ref:`file_src_rocky_Profile.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::from_json(const json&, Profile&)
+   :project: Rocky

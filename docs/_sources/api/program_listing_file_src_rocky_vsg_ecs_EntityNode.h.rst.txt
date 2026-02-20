@@ -1,0 +1,57 @@
+
+.. _program_listing_file_src_rocky_vsg_ecs_EntityNode.h:
+
+Program Listing for File EntityNode.h
+=====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_ecs_EntityNode.h>` (``src/rocky/vsg/ecs/EntityNode.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/vsg/Common.h>
+   #include <rocky/ECS.h>
+   #include <vector>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class /*ROCKY_EXPORT*/ EntityNode : public vsg::Inherit<vsg::Node, EntityNode>
+       {
+       public:
+           std::vector<entt::entity> entities;
+   
+           bool autoDestroy = true;
+   
+           EntityNode(Registry& reg) :
+               registry(reg)
+           {
+               //nop
+           }
+   
+           virtual ~EntityNode()
+           {
+               if (autoDestroy)
+               {
+                   registry.write()->destroy(entities.begin(), entities.end());
+               }
+           }
+   
+           void traverse(vsg::RecordTraversal& record) const override
+           {
+               auto viewID = record.getCommandBuffer()->viewID;
+               auto frame = record.getFrameStamp()->frameCount;
+   
+               auto [lock, r] = registry.read();
+               for (auto& entity : entities)
+               {
+                   auto& v = r.get<Visibility>(entity);
+                   v.frame[viewID] = frame;
+               }
+           }
+   
+           Registry registry;
+       };
+   }

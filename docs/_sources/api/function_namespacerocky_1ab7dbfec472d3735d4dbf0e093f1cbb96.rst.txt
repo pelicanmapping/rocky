@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1ab7dbfec472d3735d4dbf0e093f1cbb96:
+
+Template Function rocky::quaternion_from_matrix
+===============================================
+
+- Defined in :ref:`file_src_rocky_Math.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::quaternion_from_matrix(const M&)
+   :project: Rocky

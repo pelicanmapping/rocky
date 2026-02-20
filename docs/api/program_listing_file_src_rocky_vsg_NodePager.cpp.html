@@ -1,0 +1,474 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File NodePager.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File NodePager.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_vsg_NodePager.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-nodepager-cpp">
+<span id="program-listing-file-src-rocky-vsg-nodepager-cpp"></span><h1>Program Listing for File NodePager.cpp<a class="headerlink" href="#program-listing-for-file-nodepager-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_vsg_NodePager.cpp.html#file-src-rocky-vsg-nodepager-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/NodePager.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;NodePager.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/vsg/VSGUtils.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;atomic&gt;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">PagedNode</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">CullNode</span><span class="p">,</span><span class="w"> </span><span class="n">PagedNode</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="n">TileKey</span><span class="w"> </span><span class="n">key</span><span class="p">;</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">NodePager</span><span class="o">*</span><span class="w"> </span><span class="n">pager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">        </span><span class="k">mutable</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">canLoadChild</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="k">mutable</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">priority</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">revision</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">mutable</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="kt">atomic_bool</span><span class="w"> </span><span class="n">load_gate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">false</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span><span class="w"> </span><span class="n">payload</span><span class="p">;</span>
+<span class="w">        </span><span class="k">mutable</span><span class="w"> </span><span class="n">jobs</span><span class="o">::</span><span class="n">future</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">child</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">startLoading</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">unload</span><span class="p">(</span><span class="n">VSGContext</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">);</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">traverse</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">Visitor</span><span class="o">&amp;</span><span class="w"> </span><span class="n">visitor</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="w">                </span><span class="n">payload</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">visitor</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">child</span><span class="p">.</span><span class="n">available</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">child</span><span class="p">.</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">                </span><span class="n">temp</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">visitor</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">traverse</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ConstVisitor</span><span class="o">&amp;</span><span class="w"> </span><span class="n">visitor</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="w">                </span><span class="n">payload</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">visitor</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">temp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">child</span><span class="p">.</span><span class="n">available</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">child</span><span class="p">.</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span>
+<span class="w">                </span><span class="n">temp</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">visitor</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="nf">traverse</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">RecordTraversal</span><span class="o">&amp;</span><span class="w"> </span><span class="n">record</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="p">}</span>
+
+
+<span class="n">NodePager</span><span class="o">::</span><span class="n">NodePager</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Profile</span><span class="o">&amp;</span><span class="w"> </span><span class="n">graphProfile</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">sceneSRS</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Group</span><span class="p">,</span><span class="w"> </span><span class="n">NodePager</span><span class="o">&gt;</span><span class="p">(),</span>
+<span class="w">    </span><span class="n">profile</span><span class="p">(</span><span class="n">graphProfile</span><span class="p">),</span>
+<span class="w">    </span><span class="n">_renderingSRS</span><span class="p">(</span><span class="n">sceneSRS</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">());</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">NodePager</span><span class="o">::</span><span class="n">initialize</span><span class="p">(</span><span class="n">VSGContext</span><span class="o">&amp;</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">vsgcontext</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">(),</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">createPayload</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">_vsgcontext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">children</span><span class="p">)</span>
+<span class="w">        </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">dispose</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">children</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// build the root nodes of the profile graph:</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">rootKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profile</span><span class="p">.</span><span class="n">rootKeys</span><span class="p">();</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">rootKeys</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">node</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createNode</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">io</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+<span class="w">            </span><span class="n">addChild</span><span class="p">(</span><span class="n">node</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// install an update operation that will flush the culling sentry each frame,</span>
+<span class="w">    </span><span class="c1">// removing invisible nodes from the scene graph.</span>
+<span class="w">    </span><span class="n">_sentryUpdate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">onUpdate</span><span class="p">([</span><span class="k">this</span><span class="p">,</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">]()</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">viewer</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">getFrameStamp</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">frameCount</span><span class="p">;</span>
+
+<span class="w">            </span><span class="c1">// only if the frame advanced:</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">frame</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">_lastUpdateFrame</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_sentry_mutex</span><span class="p">);</span>
+
+<span class="w">                </span><span class="n">_sentry</span><span class="p">.</span><span class="n">flush</span><span class="p">(</span><span class="o">~</span><span class="mi">0u</span><span class="p">,</span><span class="w"> </span><span class="mi">0u</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="n">vsgcontext</span><span class="p">](</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span><span class="w"> </span><span class="n">node</span><span class="p">)</span><span class="w"> </span><span class="k">mutable</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+<span class="w">                        </span><span class="p">{</span>
+<span class="w">                            </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">paged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">node</span><span class="o">-&gt;</span><span class="n">cast</span><span class="o">&lt;</span><span class="n">PagedNode</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">                            </span><span class="n">paged</span><span class="o">-&gt;</span><span class="n">unload</span><span class="p">(</span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="w">                        </span><span class="p">}</span>
+<span class="w">                        </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">                    </span><span class="p">});</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="n">_lastUpdateFrame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">frame</span><span class="p">;</span>
+<span class="w">        </span><span class="p">});</span>
+
+<span class="w">    </span><span class="n">active</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">NodePager</span><span class="o">::</span><span class="n">SubtileLoader</span>
+<span class="n">NodePager</span><span class="o">::</span><span class="n">createSubtileLoader</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">active</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">    </span><span class="c1">// If the user installed their own factory function, call it.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">subtileLoaderFactory</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">subtileLoaderFactory</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// By default, return a subtile loader that creates quadtile children</span>
+<span class="w">    </span><span class="c1">// of the provided key.</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">observer_ptr</span><span class="o">&lt;</span><span class="n">NodePager</span><span class="o">&gt;</span><span class="w"> </span><span class="n">weak_pager</span><span class="p">(</span><span class="k">const_cast</span><span class="o">&lt;</span><span class="n">NodePager</span><span class="o">*&gt;</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">[</span><span class="n">weak_pager</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Group</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">pager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">weak_pager</span><span class="p">.</span><span class="n">ref_ptr</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// create four quadtree children of the tile key.</span>
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">io</span><span class="p">.</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">                        </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">child_key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">createChildKey</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">createNode</span><span class="p">(</span><span class="n">child_key</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+<span class="w">                    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">child</span><span class="p">)</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">result</span><span class="p">)</span>
+<span class="w">                            </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Group</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+
+<span class="w">                        </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">addChild</span><span class="p">(</span><span class="n">child</span><span class="p">);</span>
+<span class="w">                    </span><span class="p">}</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">_vsgcontext</span><span class="o">-&gt;</span><span class="n">compile</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span>
+<span class="n">NodePager</span><span class="o">::</span><span class="n">createNode</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">mapExtent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">extent</span><span class="p">().</span><span class="n">transform</span><span class="p">(</span><span class="n">_renderingSRS</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">dsphere</span><span class="w"> </span><span class="n">tileBound</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">calculateBound</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">calculateBound</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">        </span><span class="n">to_vsg</span><span class="p">(</span><span class="n">mapExtent</span><span class="p">.</span><span class="n">createWorldBoundingSphere</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">));</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">haveChildren</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">maxLevel</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">mayHavePayload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">minLevel</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// Create the actual drawable data for this tile.</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span><span class="w"> </span><span class="n">payload</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// payload, which may or may not exist at this level:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">mayHavePayload</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">createPayload</span><span class="p">(</span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">io</span><span class="p">.</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">haveChildren</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">p</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PagedNode</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">        </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">key</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">;</span>
+<span class="w">        </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">bound</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tileBound</span><span class="p">;</span>
+<span class="w">        </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">priority</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">;</span>
+<span class="w">        </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">pager</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">this</span><span class="p">;</span>
+<span class="w">        </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">canLoadChild</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="w">            </span><span class="n">p</span><span class="o">-&gt;</span><span class="n">payload</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">payload</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">p</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">payload</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span><span class="o">*</span>
+<span class="n">NodePager</span><span class="o">::</span><span class="n">touch</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">*</span><span class="w"> </span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">token</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">active</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_sentry_mutex</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">token</span><span class="p">)</span>
+<span class="w">        </span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_sentry</span><span class="p">.</span><span class="n">update</span><span class="p">(</span><span class="n">token</span><span class="p">);</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">        </span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_sentry</span><span class="p">.</span><span class="n">emplace</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span><span class="p">(</span><span class="n">node</span><span class="p">));</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">token</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">unsigned</span>
+<span class="n">NodePager</span><span class="o">::</span><span class="n">tiles</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_sentry</span><span class="p">.</span><span class="n">_size</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">TileKey</span><span class="o">&gt;</span>
+<span class="n">NodePager</span><span class="o">::</span><span class="n">tileKeys</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">TileKey</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">    </span><span class="n">result</span><span class="p">.</span><span class="n">reserve</span><span class="p">(</span><span class="n">_sentry</span><span class="p">.</span><span class="n">_size</span><span class="p">);</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">scoped_lock</span><span class="w"> </span><span class="nf">lock</span><span class="p">(</span><span class="n">_sentry_mutex</span><span class="p">);</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">entry</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">_sentry</span><span class="p">.</span><span class="n">_list</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">entry</span><span class="p">.</span><span class="n">_data</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">paged</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">entry</span><span class="p">.</span><span class="n">_data</span><span class="o">-&gt;</span><span class="n">cast</span><span class="o">&lt;</span><span class="n">PagedNode</span><span class="o">&gt;</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">result</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">paged</span><span class="o">-&gt;</span><span class="n">key</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+
+<span class="kt">void</span>
+<span class="n">PagedNode</span><span class="o">::</span><span class="n">startLoading</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">pager</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="n">jobs</span><span class="o">::</span><span class="n">context</span><span class="w"> </span><span class="n">jc</span><span class="p">;</span>
+<span class="w">    </span><span class="n">jc</span><span class="p">.</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+<span class="w">    </span><span class="n">jc</span><span class="p">.</span><span class="n">pool</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jobs</span><span class="o">::</span><span class="n">get_pool</span><span class="p">(</span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">poolName</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">);</span>
+<span class="w">    </span><span class="n">jc</span><span class="p">.</span><span class="n">priority</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">]()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">priority</span><span class="p">;</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">load</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">createSubtileLoader</span><span class="p">(</span><span class="n">key</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">load</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">observer_ptr</span><span class="o">&lt;</span><span class="n">PagedNode</span><span class="o">&gt;</span><span class="w"> </span><span class="n">parent_weak</span><span class="p">(</span><span class="k">const_cast</span><span class="o">&lt;</span><span class="n">PagedNode</span><span class="o">*&gt;</span><span class="p">(</span><span class="k">this</span><span class="p">));</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">load_job</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">load</span><span class="p">,</span><span class="w"> </span><span class="n">parent_weak</span><span class="p">,</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">(</span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">_vsgcontext</span><span class="p">),</span><span class="w"> </span><span class="n">orig_revision</span><span class="p">(</span><span class="n">revision</span><span class="p">),</span><span class="w"> </span><span class="n">io</span><span class="p">(</span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">_vsgcontext</span><span class="o">-&gt;</span><span class="n">io</span><span class="p">)](</span><span class="n">Cancelable</span><span class="o">&amp;</span><span class="w"> </span><span class="n">c</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">load</span><span class="p">(</span><span class="n">io</span><span class="p">.</span><span class="n">with</span><span class="p">(</span><span class="n">c</span><span class="p">));</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">    </span><span class="n">child</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">jobs</span><span class="o">::</span><span class="n">dispatch</span><span class="p">(</span><span class="n">load_job</span><span class="p">,</span><span class="w"> </span><span class="n">jc</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">PagedNode</span><span class="o">::</span><span class="n">traverse</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">RecordTraversal</span><span class="o">&amp;</span><span class="w"> </span><span class="n">record</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">pager</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">canLoadChild</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// check whether the subtiles are in range.</span>
+<span class="w">        </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">vp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">record</span><span class="p">.</span><span class="n">getCommandBuffer</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">viewDependentState</span><span class="o">-&gt;</span><span class="n">viewportData</span><span class="o">-&gt;</span><span class="n">at</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">min_screen_height_ratio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">pixelError</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">vp</span><span class="p">[</span><span class="mi">3</span><span class="p">];</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">d</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">record</span><span class="p">.</span><span class="n">getState</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">lodDistance</span><span class="p">(</span><span class="n">bound</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">child_in_range</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">d</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">(</span><span class="n">bound</span><span class="p">.</span><span class="n">r</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="p">(</span><span class="n">d</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">min_screen_height_ratio</span><span class="p">));</span>
+
+<span class="w">        </span><span class="n">priority</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="n">d</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">debugKey</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Debugging {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">str</span><span class="p">());</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// access once for atomicness</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span><span class="w"> </span><span class="n">child_value</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">child</span><span class="p">.</span><span class="n">available</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">child</span><span class="p">.</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">refinePolicy</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">NodePager</span><span class="o">::</span><span class="n">RefinePolicy</span><span class="o">::</span><span class="n">Accumulate</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">child_in_range</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">child_value</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">payload</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">record</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">child_in_range</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">load_gate</span><span class="p">.</span><span class="n">exchange</span><span class="p">(</span><span class="nb">true</span><span class="p">))</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">startLoading</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">child</span><span class="p">.</span><span class="n">working</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">_vsgcontext</span><span class="o">-&gt;</span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">child</span><span class="p">.</span><span class="n">canceled</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;subtile load for {} was canceled, no subtiles available&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">str</span><span class="p">());</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">child_value</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">child_value</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">record</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// no children allowed (leaf node), just take the payload.</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">payload</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">payload</span><span class="o">-&gt;</span><span class="n">accept</span><span class="p">(</span><span class="n">record</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// let the pager know that this node was visited.</span>
+<span class="w">    </span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">touch</span><span class="p">(</span><span class="k">const_cast</span><span class="o">&lt;</span><span class="n">PagedNode</span><span class="o">*&gt;</span><span class="p">(</span><span class="k">this</span><span class="p">),</span><span class="w"> </span><span class="n">token</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">PagedNode</span><span class="o">::</span><span class="n">unload</span><span class="p">(</span><span class="n">VSGContext</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// expire and dispose of the data</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">child</span><span class="p">.</span><span class="n">available</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">child</span><span class="p">.</span><span class="n">value</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">pager</span><span class="o">-&gt;</span><span class="n">onExpire</span><span class="p">.</span><span class="n">fire</span><span class="p">(</span><span class="n">child</span><span class="p">.</span><span class="n">value</span><span class="p">());</span>
+<span class="w">        </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">dispose</span><span class="p">(</span><span class="n">child</span><span class="p">.</span><span class="n">value</span><span class="p">());</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// reset everything to the initial state.</span>
+<span class="w">    </span><span class="n">child</span><span class="p">.</span><span class="n">reset</span><span class="p">();</span>
+<span class="w">    </span><span class="n">load_gate</span><span class="p">.</span><span class="n">exchange</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+<span class="w">    </span><span class="n">token</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// bump the revision.</span>
+<span class="w">    </span><span class="n">revision</span><span class="o">++</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a969bf1142666ca8b574cbac619466f2c:
+
+Function rocky::Failure_ServiceUnavailable
+==========================================
+
+- Defined in :ref:`file_src_rocky_Result.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::Failure_ServiceUnavailable(Failure::ServiceUnavailable)
+   :project: Rocky

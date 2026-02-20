@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a0206e2148edf646f2dbd59595a94914e:
+
+Function rocky::Failure_GeneralError
+====================================
+
+- Defined in :ref:`file_src_rocky_Result.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::Failure_GeneralError(Failure::GeneralError)
+   :project: Rocky

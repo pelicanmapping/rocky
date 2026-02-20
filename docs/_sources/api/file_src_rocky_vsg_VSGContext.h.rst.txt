@@ -1,0 +1,125 @@
+
+.. _file_src_rocky_vsg_VSGContext.h:
+
+File VSGContext.h
+=================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_vsg>` (``src/rocky/vsg``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/vsg/VSGContext.h``)
+-------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_vsg_VSGContext.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``deque``
+
+- ``rocky/Callbacks.h`` (:ref:`file_src_rocky_Callbacks.h`)
+
+- ``rocky/Context.h`` (:ref:`file_src_rocky_Context.h`)
+
+- ``rocky/Rendering.h`` (:ref:`file_src_rocky_Rendering.h`)
+
+- ``rocky/vsg/Common.h`` (:ref:`file_src_rocky_vsg_Common.h`)
+
+- ``rocky/vsg/Polyfill.h`` (:ref:`file_src_rocky_vsg_Polyfill.h`)
+
+- ``rocky/vsg/VSGUtils.h`` (:ref:`file_src_rocky_vsg_VSGUtils.h`)
+
+- ``vector``
+
+- ``vsg/all.h``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_vsg_Application.h`
+
+- :ref:`file_src_rocky_vsg_DisplayManager.h`
+
+- :ref:`file_src_rocky_vsg_MapManipulator.h`
+
+- :ref:`file_src_rocky_vsg_MapNode.h`
+
+- :ref:`file_src_rocky_vsg_NodeLayer.h`
+
+- :ref:`file_src_rocky_vsg_NodePager.h`
+
+- :ref:`file_src_rocky_vsg_SkyNode.h`
+
+- :ref:`file_src_rocky_vsg_VSGContext.cpp`
+
+- :ref:`file_src_rocky_vsg_ecs_ECSNode.h`
+
+- :ref:`file_src_rocky_vsg_ecs_ECSVisitors.h`
+
+- :ref:`file_src_rocky_vsg_ecs_MeshSystem.h`
+
+- :ref:`file_src_rocky_vsg_ecs_System.h`
+
+- :ref:`file_src_rocky_vsg_ecs_TransformDetail.h`
+
+- :ref:`file_src_rocky_vsg_ecs_TransformSystem.h`
+
+- :ref:`file_src_rocky_vsg_ecs_WidgetSystem.h`
+
+- :ref:`file_src_rocky_vsg_imgui_ImGuiImage.h`
+
+- :ref:`file_src_rocky_vsg_imgui_ImGuiIntegration.h`
+
+- :ref:`file_src_rocky_vsg_terrain_GeometryPool.h`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainEngine.h`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainNode.h`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainState.h`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainTilePager.h`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classrocky_1_1VSGContextFactory`
+
+- :ref:`exhale_class_classrocky_1_1VSGContextImpl`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef_namespacerocky_1a3a615576e61bcfea7255d881deb5e6b2`
+

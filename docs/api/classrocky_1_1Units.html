@@ -1,0 +1,747 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class Units &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Class URI" href="classrocky_1_1URI.html" />
+    <link rel="prev" title="Class TransformSystem" href="classrocky_1_1TransformSystem.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="library_root.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="library_root.html#page-hierarchy">Page Hierarchy</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="library_root.html#full-api">Full API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#namespaces">Namespaces</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="library_root.html#classes-and-structs">Classes and Structs</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="structnlohmann_1_1adl__serializer_3_01rocky_1_1option_3_01T_01_4_01_4.html">Template Struct adl_serializer&lt; rocky::option&lt; T &gt; &gt;</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ActiveState.html">Struct ActiveState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Application_1_1Stats.html">Struct Application::Stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Box.html">Struct Box</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1CallbackSubs.html">Struct CallbackSubs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1CelestialBody.html">Struct CelestialBody</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Component.html">Template Struct Component</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Component_1_1Dirty.html">Struct Component::Dirty</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Content.html">Struct Content</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Declutter.html">Struct Declutter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1DisplayGeoPoint.html">Struct DisplayGeoPoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1DisplayManager_1_1ViewData.html">Struct DisplayManager::ViewData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ElevationSample.html">Struct ElevationSample</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Failure.html">Struct Failure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Feature_1_1FieldValue.html">Struct Feature::FieldValue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureSource_1_1iterator_1_1implementation.html">Struct iterator::implementation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureSource_1_1Metadata.html">Struct FeatureSource::Metadata</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureView_1_1Workspace.html">Struct FeatureView::Workspace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Geometry.html">Struct Geometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1GeometryKey.html">Struct GeometryKey</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1GeometryPool_1_1Settings.html">Struct GeometryPool::Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Hyperlink.html">Struct Hyperlink</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Image_1_1Layout.html">Struct Image::Layout</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1json__parse__result.html">Struct json_parse_result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Label.html">Struct Label</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LabelStyle.html">Struct LabelStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LineGeometry.html">Struct LineGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LineStyle.html">Struct LineStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1Action.html">Struct MapManipulator::Action</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1ActionOption.html">Struct MapManipulator::ActionOption</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1ActionOptions.html">Struct MapManipulator::ActionOptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1InputSpec.html">Struct MapManipulator::InputSpec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1State.html">Struct MapManipulator::State</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1Task.html">Struct MapManipulator::Task</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Mesh.html">Struct Mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshGeometry.html">Struct MeshGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshStyle.html">Struct MeshStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshTexture.html">Struct MeshTexture</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Motion.html">Struct Motion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MotionGreatCircle.html">Struct MotionGreatCircle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NamedFunction.html">Struct NamedFunction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NodeGraph.html">Struct NodeGraph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NodeSystemNode_1_1Drawable.html">Struct NodeSystemNode::Drawable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1option.html">Template Struct option</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PipelineUtils.html">Struct PipelineUtils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PointGeometry.html">Struct PointGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PointStyle.html">Struct PointStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Profile_1_1Data.html">Struct Profile::Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Rect.html">Struct Rect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Impl.html">Struct Registry::Impl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Read.html">Struct Registry::Read</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Write.html">Struct Registry::Write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1RenderingState.html">Struct RenderingState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Sphere.html">Struct Sphere</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1StyleSheet.html">Struct StyleSheet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainDescriptors.html">Struct TerrainDescriptors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainDescriptors_1_1Uniforms.html">Struct TerrainDescriptors::Uniforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainNode_1_1Stats.html">Struct TerrainNode::Stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainState_1_1TextureDef.html">Struct TerrainState::TextureDef</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileDescriptors.html">Struct TerrainTileDescriptors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileDescriptors_1_1Uniforms.html">Struct TerrainTileDescriptors::Uniforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel.html">Struct TerrainTileModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1ColorLayer.html">Struct TerrainTileModel::ColorLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1Elevation.html">Struct TerrainTileModel::Elevation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1MaterialMap.html">Struct TerrainTileModel::MaterialMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1NormalMap.html">Struct TerrainTileModel::NormalMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1Tile.html">Struct TerrainTileModel::Tile</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTilePager_1_1TileInfo.html">Struct TerrainTilePager::TileInfo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileRenderModel.html">Struct TerrainTileRenderModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TextureData.html">Struct TextureData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TileLayer_1_1DataExtentsIndex.html">Struct TileLayer::DataExtentsIndex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1Options.html">Struct Options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileFormat.html">Struct TileFormat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileMap.html">Struct TileMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileMapEntry.html">Struct TileMapEntry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileSet.html">Struct TileSet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Transform.html">Struct Transform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformDetail.html">Struct TransformDetail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformDetail_1_1Cached.html">Struct TransformDetail::Cached</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformViewDetail.html">Struct TransformViewDetail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URI_1_1Context.html">Struct URI::Context</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URI_1_1Stream.html">Struct URI::Stream</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URIResponse.html">Struct URIResponse</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1make__string.html">Struct make_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1PromiseOperation.html">Template Struct PromiseOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map.html">Template Struct vector_map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map_1_1ENTRY.html">Struct vector_map::ENTRY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map__equal.html">Template Struct vector_map_equal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ViewLocal.html">Template Struct ViewLocal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Visibility.html">Struct Visibility</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Branch.html">Struct RTree::Branch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Iterator_1_1StackElement.html">Struct Iterator::StackElement</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1ListNode.html">Struct RTree::ListNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Node.html">Struct RTree::Node</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1PartitionVars.html">Struct RTree::PartitionVars</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Rect.html">Struct RTree::Rect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structstd_1_1hash_3_01rocky_1_1Profile_01_4.html">Template Struct hash&lt; rocky::Profile &gt;</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1context.html">Struct context</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1future_1_1shared__t.html">Struct future::shared_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1jobgroup.html">Struct jobgroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1jobpool_1_1metrics__t.html">Struct jobpool::metrics_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1edge__t.html">Struct edge_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1edgeset__t.html">Struct edgeset_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1graph__t.html">Struct graph_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1mesh__t.html">Struct mesh_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1neighbors__t.html">Struct neighbors_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1node__t.html">Struct node_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1segment__t.html">Struct segment_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1triangle__t.html">Struct triangle_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1vert__t.html">Struct vert_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Angle.html">Class Angle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Application.html">Class Application</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Cache.html">Template Class Cache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Callback.html">Template Class Callback</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Color.html">Class Color</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ContextFactory.html">Class ContextFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ContextImpl.html">Class ContextImpl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DateTime.html">Class DateTime</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DateTimeExtent.html">Class DateTimeExtent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DeclutterSystem.html">Class DeclutterSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DescriptorBufferEx.html">Class DescriptorBufferEx</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DisplayManager.html">Class DisplayManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Distance.html">Class Distance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Duration.html">Class Duration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EarthFileImporter.html">Class EarthFileImporter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSLineSegmentIntersector.html">Class ECSLineSegmentIntersector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSNode.html">Class ECSNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSPolytopeIntersector.html">Class ECSPolytopeIntersector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSVisitor.html">Class ECSVisitor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationLayer.html">Class ElevationLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationSampler.html">Class ElevationSampler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationSession.html">Class ElevationSession</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Ellipsoid.html">Class Ellipsoid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EntityCollectionLayer.html">Class EntityCollectionLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EntityNode.html">Class EntityNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Ephemeris.html">Class Ephemeris</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Feature.html">Class Feature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureSource.html">Class FeatureSource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureSource_1_1iterator.html">Class FeatureSource::iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureView.html">Class FeatureView</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoCircle.html">Class GeoCircle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Geocoder.html">Class Geocoder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoExtent.html">Class GeoExtent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoExtent3D.html">Class GeoExtent3D</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoHeightfield.html">Class GeoHeightfield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoImage.html">Class GeoImage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Geometry_1_1iterator__base.html">Template Class Geometry::iterator_base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeometryPool.html">Class GeometryPool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoPoint.html">Class GeoPoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoTransform.html">Class GeoTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Heightfield.html">Class Heightfield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Horizon.html">Class Horizon</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Image.html">Class Image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Image_1_1iterator.html">Class Image::iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ImageLayer.html">Class ImageLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ImGuiContextNode.html">Class ImGuiContextNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Inherit.html">Template Class Inherit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1IOOptions.html">Class IOOptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Layer.html">Class Layer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Line.html">Class Line</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1LineGeometryNode.html">Class LineGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1LineSystemNode.html">Class LineSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Map.html">Class Map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapManipulator.html">Class MapManipulator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapManipulator_1_1Settings.html">Class MapManipulator::Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapNode.html">Class MapNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Memory.html">Class Memory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MeshGeometryNode.html">Class MeshGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MeshSystemNode.html">Class MeshSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Mosaic.html">Class Mosaic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MotionSystem.html">Class MotionSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodeLayer.html">Class NodeLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodePager.html">Class NodePager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodeSystemNode.html">Class NodeSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Object.html">Class Object</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PagedNode.html">Class PagedNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PixelScaleTransform.html">Class PixelScaleTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Point.html">Class Point</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PointGeometryNode.html">Class PointGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PointSystemNode.html">Class PointSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Profile.html">Class Profile</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Registry.html">Class Registry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RenderImGui.html">Class RenderImGui</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RenderImGuiContext.html">Class RenderImGuiContext</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Result.html">Template Class Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RTT.html">Class RTT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ScreenSize.html">Class ScreenSize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ScreenSpaceGroup.html">Class ScreenSpaceGroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SendEventsToImGui.html">Class SendEventsToImGui</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SendEventsToImGuiContext.html">Class SendEventsToImGuiContext</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Services.html">Class Services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetColorWriteMask.html">Class SetColorWriteMask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetCullMode.html">Class SetCullMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetDepthWriteEnable.html">Class SetDepthWriteEnable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetPolygonMode.html">Class SetPolygonMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SharedGeometry.html">Class SharedGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SkyNode.html">Class SkyNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Speed.html">Class Speed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SRS.html">Class SRS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SRSOperation.html">Class SRSOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Status.html">Class Status</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1StreamingGPUBuffer.html">Class StreamingGPUBuffer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SurfaceNode.html">Class SurfaceNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1System.html">Class System</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainEngine.html">Class TerrainEngine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainNode.html">Class TerrainNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainProfileNode.html">Class TerrainProfileNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainSettings.html">Class TerrainSettings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainState.html">Class TerrainState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileHost.html">Class TerrainTileHost</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileModelFactory.html">Class TerrainTileModelFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileNode.html">Class TerrainTileNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTilePager.html">Class TerrainTilePager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TileKey.html">Class TileKey</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TileLayer.html">Class TileLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMS_1_1Driver.html">Class Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMSElevationLayer.html">Class TMSElevationLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMSImageLayer.html">Class TMSImageLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TransformSystem.html">Class TransformSystem</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Class Units</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1URI.html">Class URI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1BackgroundServices.html">Class BackgroundServices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1LambdaOperation.html">Class LambdaOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1LRUCache.html">Template Class LRUCache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ResidentCache.html">Template Class ResidentCache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ring__buffer.html">Template Class ring_buffer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ring__buffer__with__condition.html">Template Class ring_buffer_with_condition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1SimpleCompiler.html">Class SimpleCompiler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1StreamCompressor.html">Class StreamCompressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1StringTokenizer.html">Class StringTokenizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Viewpoint.html">Class Viewpoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VisibleLayer.html">Class VisibleLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VSGContextFactory.html">Class VSGContextFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VSGContextImpl.html">Class VSGContextImpl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VulkanExtensions.html">Class VulkanExtensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTFileStream.html">Class RTFileStream</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTree.html">Template Class RTree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTree_1_1Iterator.html">Class RTree::Iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1cancelable.html">Class cancelable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1future.html">Template Class future</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1jobpool.html">Class jobpool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1metrics.html">Class metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#enums">Enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#variables">Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#defines">Defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#typedefs">Typedefs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="library_root.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Class Units</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/classrocky_1_1Units.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="class-units">
+<span id="exhale-class-classrocky-1-1units"></span><h1>Class Units<a class="headerlink" href="#class-units" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>Defined in <a class="reference internal" href="file_src_rocky_Units.h.html#file-src-rocky-units-h"><span class="std std-ref">File Units.h</span></a></p></li>
+</ul>
+<section id="class-documentation">
+<h2>Class Documentation<a class="headerlink" href="#class-documentation" title="Link to this heading"></a></h2>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5UnitsE">
+<span id="_CPPv3N5rocky5UnitsE"></span><span id="_CPPv2N5rocky5UnitsE"></span><span id="rocky::Units"></span><span class="target" id="classrocky_1_1Units"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Units</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5UnitsE" title="Link to this definition"></a><br /></dt>
+<dd><div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
+<dl class="cpp enum">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units4TypeE">
+<span id="_CPPv3N5rocky5Units4TypeE"></span><span id="_CPPv2N5rocky5Units4TypeE"></span><span class="target" id="classrocky_1_1Units_1a310c32214da08eb6cf264a2d0c4dd406"></span><span class="k"><span class="pre">enum</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Type</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units4TypeE" title="Link to this definition"></a><br /></dt>
+<dd><p><em>Values:</em></p>
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units4Type11TYPE_LINEARE">
+<span id="_CPPv3N5rocky5Units4Type11TYPE_LINEARE"></span><span id="_CPPv2N5rocky5Units4Type11TYPE_LINEARE"></span><span class="target" id="classrocky_1_1Units_1a310c32214da08eb6cf264a2d0c4dd406adf562542e33ac7c8134e91804382f1c1"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TYPE_LINEAR</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units4Type11TYPE_LINEARE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units4Type12TYPE_ANGULARE">
+<span id="_CPPv3N5rocky5Units4Type12TYPE_ANGULARE"></span><span id="_CPPv2N5rocky5Units4Type12TYPE_ANGULARE"></span><span class="target" id="classrocky_1_1Units_1a310c32214da08eb6cf264a2d0c4dd406abf249530eea331da1464ae942926ced2"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TYPE_ANGULAR</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units4Type12TYPE_ANGULARE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units4Type13TYPE_TEMPORALE">
+<span id="_CPPv3N5rocky5Units4Type13TYPE_TEMPORALE"></span><span id="_CPPv2N5rocky5Units4Type13TYPE_TEMPORALE"></span><span class="target" id="classrocky_1_1Units_1a310c32214da08eb6cf264a2d0c4dd406af1732612bcbcb385d514daa46bf4e57d"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TYPE_TEMPORAL</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units4Type13TYPE_TEMPORALE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units4Type10TYPE_SPEEDE">
+<span id="_CPPv3N5rocky5Units4Type10TYPE_SPEEDE"></span><span id="_CPPv2N5rocky5Units4Type10TYPE_SPEEDE"></span><span class="target" id="classrocky_1_1Units_1a310c32214da08eb6cf264a2d0c4dd406a6cc93c1d535913186f8bc7ddbaeca974"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TYPE_SPEED</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units4Type10TYPE_SPEEDE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units4Type16TYPE_SCREEN_SIZEE">
+<span id="_CPPv3N5rocky5Units4Type16TYPE_SCREEN_SIZEE"></span><span id="_CPPv2N5rocky5Units4Type16TYPE_SCREEN_SIZEE"></span><span class="target" id="classrocky_1_1Units_1a310c32214da08eb6cf264a2d0c4dd406acd354022eef9d7c14cb6a6f0b07c29fc"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TYPE_SCREEN_SIZE</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units4Type16TYPE_SCREEN_SIZEE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units4Type12TYPE_INVALIDE">
+<span id="_CPPv3N5rocky5Units4Type12TYPE_INVALIDE"></span><span id="_CPPv2N5rocky5Units4Type12TYPE_INVALIDE"></span><span class="target" id="classrocky_1_1Units_1a310c32214da08eb6cf264a2d0c4dd406af125643adbe2fde972f656f4f961e2bf"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TYPE_INVALID</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units4Type12TYPE_INVALIDE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units10canConvertERK5Units">
+<span id="_CPPv3NK5rocky5Units10canConvertERK5Units"></span><span id="_CPPv2NK5rocky5Units10canConvertERK5Units"></span><span id="rocky::Units::canConvert__UnitsCRC"></span><span class="target" id="classrocky_1_1Units_1a0b28b73a0c09db828251ab36c7ae82ae"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">canConvert</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">to</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units10canConvertERK5Units" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units9convertToERK5UnitsdRd">
+<span id="_CPPv3NK5rocky5Units9convertToERK5UnitsdRd"></span><span id="_CPPv2NK5rocky5Units9convertToERK5UnitsdRd"></span><span id="rocky::Units::convertTo__UnitsCR.double.doubleRC"></span><span class="target" id="classrocky_1_1Units_1ade842d09e4b254e5b112db3c41df7aca"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">convertTo</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">to</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">input</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">output</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units9convertToERK5UnitsdRd" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units9convertToERK5Unitsd">
+<span id="_CPPv3NK5rocky5Units9convertToERK5Unitsd"></span><span id="_CPPv2NK5rocky5Units9convertToERK5Unitsd"></span><span id="rocky::Units::convertTo__UnitsCR.doubleC"></span><span class="target" id="classrocky_1_1Units_1aabc9839698217fcff50ceedfe131a400"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">convertTo</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">to</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">input</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units9convertToERK5Unitsd" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units7getNameEv">
+<span id="_CPPv3NK5rocky5Units7getNameEv"></span><span id="_CPPv2NK5rocky5Units7getNameEv"></span><span id="rocky::Units::getNameC"></span><span class="target" id="classrocky_1_1Units_1a9f3155321a35550917b86ee1266f6d7d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">getName</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units7getNameEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units7getAbbrEv">
+<span id="_CPPv3NK5rocky5Units7getAbbrEv"></span><span id="_CPPv2NK5rocky5Units7getAbbrEv"></span><span id="rocky::Units::getAbbrC"></span><span class="target" id="classrocky_1_1Units_1af19b2017a00dc7e869379273638f7a40"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">getAbbr</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units7getAbbrEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units7getTypeEv">
+<span id="_CPPv3NK5rocky5Units7getTypeEv"></span><span id="_CPPv2NK5rocky5Units7getTypeEv"></span><span id="rocky::Units::getTypeC"></span><span class="target" id="classrocky_1_1Units_1a4337ac4e988ed8fcfcb960adc6490227"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Units4TypeE" title="rocky::Units::Type"><span class="n"><span class="pre">Type</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">getType</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units7getTypeEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5UnitseqERK5Units">
+<span id="_CPPv3NK5rocky5UnitseqERK5Units"></span><span id="_CPPv2NK5rocky5UnitseqERK5Units"></span><span id="rocky::Units::eq-operator__UnitsCRC"></span><span class="target" id="classrocky_1_1Units_1a6428d41ca0f80f5133037d4f4f61fb28"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">==</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">rhs</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5UnitseqERK5Units" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5UnitsneERK5Units">
+<span id="_CPPv3NK5rocky5UnitsneERK5Units"></span><span id="_CPPv2NK5rocky5UnitsneERK5Units"></span><span id="rocky::Units::neq-operator__UnitsCRC"></span><span class="target" id="classrocky_1_1Units_1a64d8ebce30e2509719bf3f947e5bd8f6"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">!=</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">rhs</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5UnitsneERK5Units" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units8isLinearEv">
+<span id="_CPPv3NK5rocky5Units8isLinearEv"></span><span id="_CPPv2NK5rocky5Units8isLinearEv"></span><span id="rocky::Units::isLinearC"></span><span class="target" id="classrocky_1_1Units_1a666364d72d8a8328d199d6d4dac107b2"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isLinear</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units8isLinearEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units10isDistanceEv">
+<span id="_CPPv3NK5rocky5Units10isDistanceEv"></span><span id="_CPPv2NK5rocky5Units10isDistanceEv"></span><span id="rocky::Units::isDistanceC"></span><span class="target" id="classrocky_1_1Units_1aab53ea2ffdaa5f92386b44bf833770aa"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isDistance</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units10isDistanceEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units9isAngularEv">
+<span id="_CPPv3NK5rocky5Units9isAngularEv"></span><span id="_CPPv2NK5rocky5Units9isAngularEv"></span><span id="rocky::Units::isAngularC"></span><span class="target" id="classrocky_1_1Units_1ab9ba634d26939c4d04216703420dd5e5"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isAngular</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units9isAngularEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units7isAngleEv">
+<span id="_CPPv3NK5rocky5Units7isAngleEv"></span><span id="_CPPv2NK5rocky5Units7isAngleEv"></span><span id="rocky::Units::isAngleC"></span><span class="target" id="classrocky_1_1Units_1a7273f4808539cc876270001e74440f84"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isAngle</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units7isAngleEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units10isTemporalEv">
+<span id="_CPPv3NK5rocky5Units10isTemporalEv"></span><span id="_CPPv2NK5rocky5Units10isTemporalEv"></span><span id="rocky::Units::isTemporalC"></span><span class="target" id="classrocky_1_1Units_1a5cd09e3d5d8a9a037d25d59132f94ee3"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isTemporal</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units10isTemporalEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units6isTimeEv">
+<span id="_CPPv3NK5rocky5Units6isTimeEv"></span><span id="_CPPv2NK5rocky5Units6isTimeEv"></span><span id="rocky::Units::isTimeC"></span><span class="target" id="classrocky_1_1Units_1a3a16108c1a9f08c606f61c980e576388"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isTime</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units6isTimeEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units7isSpeedEv">
+<span id="_CPPv3NK5rocky5Units7isSpeedEv"></span><span id="_CPPv2NK5rocky5Units7isSpeedEv"></span><span id="rocky::Units::isSpeedC"></span><span class="target" id="classrocky_1_1Units_1acb81843e3b9dbe438c388f533e77a5be"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isSpeed</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units7isSpeedEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Units12isScreenSizeEv">
+<span id="_CPPv3NK5rocky5Units12isScreenSizeEv"></span><span id="_CPPv2NK5rocky5Units12isScreenSizeEv"></span><span id="rocky::Units::isScreenSizeC"></span><span class="target" id="classrocky_1_1Units_1af204c7c882cf4967ced871fd64fcade3"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isScreenSize</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Units12isScreenSizeEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5UnitsERKNSt6stringERKNSt6stringERK4Typed">
+<span id="_CPPv3N5rocky5Units5UnitsERKNSt6stringERKNSt6stringERK4Typed"></span><span id="_CPPv2N5rocky5Units5UnitsERKNSt6stringERKNSt6stringERK4Typed"></span><span id="rocky::Units::Units__ssCR.ssCR.TypeCR.double"></span><span class="target" id="classrocky_1_1Units_1ad62e88a31d46a6e593d6eeb6762405e8"></span><span class="sig-name descname"><span class="n"><span class="pre">Units</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">abbr</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Units4TypeE" title="rocky::Units::Type"><span class="n"><span class="pre">Type</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">type</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">toBase</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Units5UnitsERKNSt6stringERKNSt6stringERK4Typed" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5UnitsERKNSt6stringERKNSt6stringERK5UnitsRK5Units">
+<span id="_CPPv3N5rocky5Units5UnitsERKNSt6stringERKNSt6stringERK5UnitsRK5Units"></span><span id="_CPPv2N5rocky5Units5UnitsERKNSt6stringERKNSt6stringERK5UnitsRK5Units"></span><span id="rocky::Units::Units__ssCR.ssCR.UnitsCR.UnitsCR"></span><span class="target" id="classrocky_1_1Units_1a83db0af72ab69a090ccf08c5fb0528f4"></span><span class="sig-name descname"><span class="n"><span class="pre">Units</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">abbr</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Units5UnitsERKNSt6stringERKNSt6stringERK5UnitsRK5Units" title="rocky::Units::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">distance</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5Units5UnitsERKNSt6stringERKNSt6stringERK5UnitsRK5Units" title="rocky::Units::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">time</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Units5UnitsERKNSt6stringERKNSt6stringERK5UnitsRK5Units" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5UnitsEv">
+<span id="_CPPv3N5rocky5Units5UnitsEv"></span><span id="_CPPv2N5rocky5Units5UnitsEv"></span><span id="rocky::Units::Units"></span><span class="target" id="classrocky_1_1Units_1a9c9503bcd1e8ff8bf284084275e9c4cb"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Units</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Units5UnitsEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-functions">Public Static Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5parseERKNSt6stringER5Units">
+<span id="_CPPv3N5rocky5Units5parseERKNSt6stringER5Units"></span><span id="_CPPv2N5rocky5Units5parseERKNSt6stringER5Units"></span><span id="rocky::Units::parse__ssCR.UnitsR"></span><span class="target" id="classrocky_1_1Units_1a172897b7e15baaf5046c88677d9d681f"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">parse</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">input</span></span>, <a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">output</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Units5parseERKNSt6stringER5Units" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5parseERKNSt6stringERdR5UnitsRK5Units">
+<span id="_CPPv3N5rocky5Units5parseERKNSt6stringERdR5UnitsRK5Units"></span><span id="_CPPv2N5rocky5Units5parseERKNSt6stringERdR5UnitsRK5Units"></span><span id="rocky::Units::parse__ssCR.doubleR.UnitsR.UnitsCR"></span><span class="target" id="classrocky_1_1Units_1a1b3c759dc94e1fe36dc3652638384c2e"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">parse</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">input</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">out_value</span></span>, <a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">out_units</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">defaultUnits</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Units5parseERKNSt6stringERdR5UnitsRK5Units" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5parseERKNSt6stringERfR5UnitsRK5Units">
+<span id="_CPPv3N5rocky5Units5parseERKNSt6stringERfR5UnitsRK5Units"></span><span id="_CPPv2N5rocky5Units5parseERKNSt6stringERfR5UnitsRK5Units"></span><span id="rocky::Units::parse__ssCR.floatR.UnitsR.UnitsCR"></span><span class="target" id="classrocky_1_1Units_1a461be0f467eab1d9725bb2bcbf83e47b"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">parse</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">input</span></span>, <span class="kt"><span class="pre">float</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">out_value</span></span>, <a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">out_units</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">defaultUnits</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Units5parseERKNSt6stringERfR5UnitsRK5Units" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units7convertERK5UnitsRK5UnitsdRd">
+<span id="_CPPv3N5rocky5Units7convertERK5UnitsRK5UnitsdRd"></span><span id="_CPPv2N5rocky5Units7convertERK5UnitsRK5UnitsdRd"></span><span id="rocky::Units::convert__UnitsCR.UnitsCR.double.doubleR"></span><span class="target" id="classrocky_1_1Units_1a2e5665cc9334b3d67683c9c7004cb6bd"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">convert</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">from</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">to</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">input</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">output</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Units7convertERK5UnitsRK5UnitsdRd" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units7convertERK5UnitsRK5Unitsd">
+<span id="_CPPv3N5rocky5Units7convertERK5UnitsRK5Unitsd"></span><span id="_CPPv2N5rocky5Units7convertERK5UnitsRK5Unitsd"></span><span id="rocky::Units::convert__UnitsCR.UnitsCR.double"></span><span class="target" id="classrocky_1_1Units_1a5fbb33efc480b1c99f14364f7d475bc0"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">convert</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">from</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">to</span></span>, <span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">input</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Units7convertERK5UnitsRK5Unitsd" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units10canConvertERK5UnitsRK5Units">
+<span id="_CPPv3N5rocky5Units10canConvertERK5UnitsRK5Units"></span><span id="_CPPv2N5rocky5Units10canConvertERK5UnitsRK5Units"></span><span id="rocky::Units::canConvert__UnitsCR.UnitsCR"></span><span class="target" id="classrocky_1_1Units_1aa3a2b4adc1616edec7929082e6c8eee9"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">canConvert</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">from</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">to</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Units10canConvertERK5UnitsRK5Units" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units8unitTestEv">
+<span id="_CPPv3N5rocky5Units8unitTestEv"></span><span id="_CPPv2N5rocky5Units8unitTestEv"></span><span id="rocky::Units::unitTest"></span><span class="target" id="classrocky_1_1Units_1afbc49f80824627e5c2f01b674944cd93"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">unitTest</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Units8unitTestEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-static-attributes">Public Static Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units11CENTIMETERSE">
+<span id="_CPPv3N5rocky5Units11CENTIMETERSE"></span><span id="_CPPv2N5rocky5Units11CENTIMETERSE"></span><span id="rocky::Units::CENTIMETERS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a5d4b1e6e7949eaa6b7a56512d40c8fce"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CENTIMETERS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units11CENTIMETERSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units10DATA_MILESE">
+<span id="_CPPv3N5rocky5Units10DATA_MILESE"></span><span id="_CPPv2N5rocky5Units10DATA_MILESE"></span><span id="rocky::Units::DATA_MILES__UnitsC"></span><span class="target" id="classrocky_1_1Units_1ad20f7cb703865fd2c5ecec0496837d09"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DATA_MILES</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units10DATA_MILESE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units7FATHOMSE">
+<span id="_CPPv3N5rocky5Units7FATHOMSE"></span><span id="_CPPv2N5rocky5Units7FATHOMSE"></span><span id="rocky::Units::FATHOMS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a1b88cfba4c7ffa573a17f17ea729c3a3"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FATHOMS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units7FATHOMSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units4FEETE">
+<span id="_CPPv3N5rocky5Units4FEETE"></span><span id="_CPPv2N5rocky5Units4FEETE"></span><span id="rocky::Units::FEET__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a79896ea24fc39a6a45c2bc993c7e48e1"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FEET</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units4FEETE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units14FEET_US_SURVEYE">
+<span id="_CPPv3N5rocky5Units14FEET_US_SURVEYE"></span><span id="_CPPv2N5rocky5Units14FEET_US_SURVEYE"></span><span id="rocky::Units::FEET_US_SURVEY__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a81157dfecd9b206de793773b5d1efcd8"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FEET_US_SURVEY</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units14FEET_US_SURVEYE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units6INCHESE">
+<span id="_CPPv3N5rocky5Units6INCHESE"></span><span id="_CPPv2N5rocky5Units6INCHESE"></span><span id="rocky::Units::INCHES__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a2da42c8c2ea25a327a9f8d2e558d37d7"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">INCHES</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units6INCHESE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units8KILOFEETE">
+<span id="_CPPv3N5rocky5Units8KILOFEETE"></span><span id="_CPPv2N5rocky5Units8KILOFEETE"></span><span id="rocky::Units::KILOFEET__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a12d2e106091fb1f70dbccacdd4fd704e"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">KILOFEET</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units8KILOFEETE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units10KILOMETERSE">
+<span id="_CPPv3N5rocky5Units10KILOMETERSE"></span><span id="_CPPv2N5rocky5Units10KILOMETERSE"></span><span id="rocky::Units::KILOMETERS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1adb8feada53586a7c0ac2924bec4b7e0c"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">KILOMETERS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units10KILOMETERSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units9KILOYARDSE">
+<span id="_CPPv3N5rocky5Units9KILOYARDSE"></span><span id="_CPPv2N5rocky5Units9KILOYARDSE"></span><span id="rocky::Units::KILOYARDS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a98511044c512003ffaa4b9b810c30f09"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">KILOYARDS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units9KILOYARDSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units6METERSE">
+<span id="_CPPv3N5rocky5Units6METERSE"></span><span id="_CPPv2N5rocky5Units6METERSE"></span><span id="rocky::Units::METERS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a94564859bf2576220d2ba056a1e5c987"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">METERS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units6METERSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5MILESE">
+<span id="_CPPv3N5rocky5Units5MILESE"></span><span id="_CPPv2N5rocky5Units5MILESE"></span><span id="rocky::Units::MILES__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a38ce793848693ae2229804f1255ea72b"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MILES</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units5MILESE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units11MILLIMETERSE">
+<span id="_CPPv3N5rocky5Units11MILLIMETERSE"></span><span id="_CPPv2N5rocky5Units11MILLIMETERSE"></span><span id="rocky::Units::MILLIMETERS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a622aeae6d88d74cc2ce7461b2a86b2dd"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MILLIMETERS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units11MILLIMETERSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units14NAUTICAL_MILESE">
+<span id="_CPPv3N5rocky5Units14NAUTICAL_MILESE"></span><span id="_CPPv2N5rocky5Units14NAUTICAL_MILESE"></span><span id="rocky::Units::NAUTICAL_MILES__UnitsC"></span><span class="target" id="classrocky_1_1Units_1aeed3b38a3e21969260ee2ad04ae9fb7d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">NAUTICAL_MILES</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units14NAUTICAL_MILESE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5YARDSE">
+<span id="_CPPv3N5rocky5Units5YARDSE"></span><span id="_CPPv2N5rocky5Units5YARDSE"></span><span id="rocky::Units::YARDS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1ab00fc2a0ea0d5024f4a802368114d6e1"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">YARDS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units5YARDSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units3BAME">
+<span id="_CPPv3N5rocky5Units3BAME"></span><span id="_CPPv2N5rocky5Units3BAME"></span><span id="rocky::Units::BAM__UnitsC"></span><span class="target" id="classrocky_1_1Units_1ae29067c88f82103df919af53ffbdb8d0"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">BAM</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units3BAME" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units7DEGREESE">
+<span id="_CPPv3N5rocky5Units7DEGREESE"></span><span id="_CPPv2N5rocky5Units7DEGREESE"></span><span id="rocky::Units::DEGREES__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a16be533006b6254a89fd28a82783e68d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DEGREES</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units7DEGREESE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units9NATO_MILSE">
+<span id="_CPPv3N5rocky5Units9NATO_MILSE"></span><span id="_CPPv2N5rocky5Units9NATO_MILSE"></span><span id="rocky::Units::NATO_MILS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1aeab715bbfbe6173cfb49dbd8ea3ba0f7"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">NATO_MILS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units9NATO_MILSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units7RADIANSE">
+<span id="_CPPv3N5rocky5Units7RADIANSE"></span><span id="_CPPv2N5rocky5Units7RADIANSE"></span><span id="rocky::Units::RADIANS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a0cd4dad86a68b638d2de3bfcb36853ec"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">RADIANS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units7RADIANSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units13DECIMAL_HOURSE">
+<span id="_CPPv3N5rocky5Units13DECIMAL_HOURSE"></span><span id="_CPPv2N5rocky5Units13DECIMAL_HOURSE"></span><span id="rocky::Units::DECIMAL_HOURS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a80ae53b8a04824d98dac1dd6b420a7f8"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DECIMAL_HOURS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units13DECIMAL_HOURSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units4DAYSE">
+<span id="_CPPv3N5rocky5Units4DAYSE"></span><span id="_CPPv2N5rocky5Units4DAYSE"></span><span id="rocky::Units::DAYS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1afe77ca61d3589fa4ebd70dc9b98f785d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DAYS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units4DAYSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5HOURSE">
+<span id="_CPPv3N5rocky5Units5HOURSE"></span><span id="_CPPv2N5rocky5Units5HOURSE"></span><span id="rocky::Units::HOURS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a8e4f925831a649e7d0d7cb03a587c798"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">HOURS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units5HOURSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units12MICROSECONDSE">
+<span id="_CPPv3N5rocky5Units12MICROSECONDSE"></span><span id="_CPPv2N5rocky5Units12MICROSECONDSE"></span><span id="rocky::Units::MICROSECONDS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a774818fccce7a2480a6ac7831cdfa2d2"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MICROSECONDS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units12MICROSECONDSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units12MILLISECONDSE">
+<span id="_CPPv3N5rocky5Units12MILLISECONDSE"></span><span id="_CPPv2N5rocky5Units12MILLISECONDSE"></span><span id="rocky::Units::MILLISECONDS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a296f0e2b38438a5cba6d8e8bdea60c93"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MILLISECONDS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units12MILLISECONDSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units7MINUTESE">
+<span id="_CPPv3N5rocky5Units7MINUTESE"></span><span id="_CPPv2N5rocky5Units7MINUTESE"></span><span id="rocky::Units::MINUTES__UnitsC"></span><span class="target" id="classrocky_1_1Units_1aac14680066cf9852d99f7d01331122ad"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MINUTES</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units7MINUTESE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units7SECONDSE">
+<span id="_CPPv3N5rocky5Units7SECONDSE"></span><span id="_CPPv2N5rocky5Units7SECONDSE"></span><span id="rocky::Units::SECONDS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a17ae431b035f45209fc6c236583486b1"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">SECONDS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units7SECONDSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5WEEKSE">
+<span id="_CPPv3N5rocky5Units5WEEKSE"></span><span id="_CPPv2N5rocky5Units5WEEKSE"></span><span id="rocky::Units::WEEKS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1aca022fa760f2557ae681ea825199339a"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">WEEKS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units5WEEKSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units15FEET_PER_SECONDE">
+<span id="_CPPv3N5rocky5Units15FEET_PER_SECONDE"></span><span id="_CPPv2N5rocky5Units15FEET_PER_SECONDE"></span><span id="rocky::Units::FEET_PER_SECOND__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a42ad787b1dff872466649dd03fee4b31"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FEET_PER_SECOND</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units15FEET_PER_SECONDE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units16YARDS_PER_SECONDE">
+<span id="_CPPv3N5rocky5Units16YARDS_PER_SECONDE"></span><span id="_CPPv2N5rocky5Units16YARDS_PER_SECONDE"></span><span id="rocky::Units::YARDS_PER_SECOND__UnitsC"></span><span class="target" id="classrocky_1_1Units_1ac3c776c36d78f4a548a81d62782e9e55"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">YARDS_PER_SECOND</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units16YARDS_PER_SECONDE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units17METERS_PER_SECONDE">
+<span id="_CPPv3N5rocky5Units17METERS_PER_SECONDE"></span><span id="_CPPv2N5rocky5Units17METERS_PER_SECONDE"></span><span id="rocky::Units::METERS_PER_SECOND__UnitsC"></span><span class="target" id="classrocky_1_1Units_1aa2a5230500e00d1c86f07100ff8cc94b"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">METERS_PER_SECOND</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units17METERS_PER_SECONDE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units21KILOMETERS_PER_SECONDE">
+<span id="_CPPv3N5rocky5Units21KILOMETERS_PER_SECONDE"></span><span id="_CPPv2N5rocky5Units21KILOMETERS_PER_SECONDE"></span><span id="rocky::Units::KILOMETERS_PER_SECOND__UnitsC"></span><span class="target" id="classrocky_1_1Units_1ad2ce7e18597fbffeec2fc0c8ac3a149c"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">KILOMETERS_PER_SECOND</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units21KILOMETERS_PER_SECONDE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units19KILOMETERS_PER_HOURE">
+<span id="_CPPv3N5rocky5Units19KILOMETERS_PER_HOURE"></span><span id="_CPPv2N5rocky5Units19KILOMETERS_PER_HOURE"></span><span id="rocky::Units::KILOMETERS_PER_HOUR__UnitsC"></span><span class="target" id="classrocky_1_1Units_1aca8e0826f236622df227ccc725b68a0c"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">KILOMETERS_PER_HOUR</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units19KILOMETERS_PER_HOURE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units14MILES_PER_HOURE">
+<span id="_CPPv3N5rocky5Units14MILES_PER_HOURE"></span><span id="_CPPv2N5rocky5Units14MILES_PER_HOURE"></span><span id="rocky::Units::MILES_PER_HOUR__UnitsC"></span><span class="target" id="classrocky_1_1Units_1add1dbb62be0520aa3da40b01f3da18a0"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MILES_PER_HOUR</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units14MILES_PER_HOURE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units19DATA_MILES_PER_HOURE">
+<span id="_CPPv3N5rocky5Units19DATA_MILES_PER_HOURE"></span><span id="_CPPv2N5rocky5Units19DATA_MILES_PER_HOURE"></span><span id="rocky::Units::DATA_MILES_PER_HOUR__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a24841e2972e3cee4e13dcd4ebfaf2ff6"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DATA_MILES_PER_HOUR</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units19DATA_MILES_PER_HOURE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units5KNOTSE">
+<span id="_CPPv3N5rocky5Units5KNOTSE"></span><span id="_CPPv2N5rocky5Units5KNOTSE"></span><span id="rocky::Units::KNOTS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1a61f5fb67c21124a2c79672c7766ebb2d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">KNOTS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units5KNOTSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Units6PIXELSE">
+<span id="_CPPv3N5rocky5Units6PIXELSE"></span><span id="_CPPv2N5rocky5Units6PIXELSE"></span><span id="rocky::Units::PIXELS__UnitsC"></span><span class="target" id="classrocky_1_1Units_1ae2812c004cfd58bf49ac0f88367b3af2"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5UnitsE" title="rocky::Units"><span class="n"><span class="pre">Units</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">PIXELS</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Units6PIXELSE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="classrocky_1_1TransformSystem.html" class="btn btn-neutral float-left" title="Class TransformSystem" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="classrocky_1_1URI.html" class="btn btn-neutral float-right" title="Class URI" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

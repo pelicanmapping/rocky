@@ -1,0 +1,414 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File SkyNode.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File SkyNode.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_vsg_SkyNode.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-skynode-cpp">
+<span id="program-listing-file-src-rocky-vsg-skynode-cpp"></span><h1>Program Listing for File SkyNode.cpp<a class="headerlink" href="#program-listing-for-file-skynode-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_vsg_SkyNode.cpp.html#file-src-rocky-vsg-skynode-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/SkyNode.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;SkyNode.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;VSGUtils.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;PipelineState.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/Ellipsoid.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/Ephemeris.h&gt;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+
+<span class="cp">#define LC &quot;[SkyNode] &quot;</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Command</span><span class="o">&gt;</span><span class="w"> </span><span class="n">makeEllipsoid</span><span class="p">(</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">worldSRS</span><span class="p">,</span>
+<span class="w">        </span><span class="kt">float</span><span class="w"> </span><span class="n">thickness</span><span class="p">,</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">with_tex_coords</span><span class="p">,</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">with_normals</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">geodeticSRS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">worldSRS</span><span class="p">.</span><span class="n">geodeticSRS</span><span class="p">();</span><span class="w"> </span><span class="c1">// get a long/lat SRS</span>
+<span class="w">        </span><span class="n">SRSOperation</span><span class="w"> </span><span class="n">geodeticToGeocentric</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">geodeticSRS</span><span class="p">.</span><span class="n">to</span><span class="p">(</span><span class="n">worldSRS</span><span class="p">);</span><span class="w"> </span><span class="c1">// and a xform</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">latSegments</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">lonSegments</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">latSegments</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">num_verts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">latSegments</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="n">lonSegments</span><span class="p">);</span>
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">num_indices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">latSegments</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">lonSegments</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">6</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">DataList</span><span class="w"> </span><span class="n">arrays</span><span class="p">;</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">vec3Array</span><span class="o">&gt;</span><span class="w"> </span><span class="n">verts</span><span class="p">,</span><span class="w"> </span><span class="n">normals</span><span class="p">;</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">vec2Array</span><span class="o">&gt;</span><span class="w"> </span><span class="n">uvs</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">verts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">vec3Array</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">num_verts</span><span class="p">);</span>
+<span class="w">        </span><span class="n">arrays</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">verts</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">with_tex_coords</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">uvs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">vec2Array</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">num_verts</span><span class="p">);</span>
+<span class="w">            </span><span class="n">arrays</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">uvs</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">with_normals</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="n">normals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">vec3Array</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">num_verts</span><span class="p">);</span>
+<span class="w">            </span><span class="n">arrays</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">normals</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">indices</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ushortArray</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">num_indices</span><span class="p">);</span>
+
+
+<span class="w">        </span><span class="kt">double</span><span class="w"> </span><span class="n">segmentSize</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">180.0</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">latSegments</span><span class="p">;</span><span class="w"> </span><span class="c1">// degrees</span>
+
+<span class="w">        </span><span class="kt">int</span><span class="w"> </span><span class="n">iptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="n">latSegments</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">y</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">double</span><span class="w"> </span><span class="n">lat</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-90.0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">segmentSize</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">y</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">lonSegments</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">x</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="kt">int</span><span class="w"> </span><span class="n">vptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">lonSegments</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="p">;</span>
+<span class="w">                </span><span class="kt">double</span><span class="w"> </span><span class="n">lon</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">-180.0</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">segmentSize</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">x</span><span class="p">;</span>
+
+<span class="w">                </span><span class="n">vsg</span><span class="o">::</span><span class="n">dvec3</span><span class="w"> </span><span class="n">g</span><span class="p">;</span>
+<span class="w">                </span><span class="n">geodeticToGeocentric</span><span class="p">.</span><span class="n">transform</span><span class="p">(</span><span class="n">glm</span><span class="o">::</span><span class="n">dvec3</span><span class="p">(</span><span class="n">lon</span><span class="p">,</span><span class="w"> </span><span class="n">lat</span><span class="p">,</span><span class="w"> </span><span class="n">thickness</span><span class="p">),</span><span class="w"> </span><span class="n">g</span><span class="p">);</span>
+<span class="w">                </span><span class="n">verts</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">vptr</span><span class="p">,</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">vec3</span><span class="p">(</span><span class="n">g</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">g</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">g</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">with_tex_coords</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">double</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">lon</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">180</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">360.0</span><span class="p">;</span>
+<span class="w">                    </span><span class="kt">double</span><span class="w"> </span><span class="n">t</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">lat</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">90.0</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">180.0</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">uvs</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">vptr</span><span class="p">,</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">vec2</span><span class="p">(</span><span class="n">s</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">));</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">with_normals</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="k">auto</span><span class="w"> </span><span class="n">normal</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">normalize</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">vec3</span><span class="p">(</span><span class="n">g</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">g</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">g</span><span class="p">.</span><span class="n">z</span><span class="p">));</span>
+<span class="w">                    </span><span class="n">normals</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">vptr</span><span class="p">,</span><span class="w"> </span><span class="n">normal</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">y</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">latSegments</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="kt">int</span><span class="w"> </span><span class="n">x_plus_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">lonSegments</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">                    </span><span class="kt">int</span><span class="w"> </span><span class="n">y_plus_1</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">                    </span><span class="n">indices</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">iptr</span><span class="o">++</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">lonSegments</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">indices</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">iptr</span><span class="o">++</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">lonSegments</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x_plus_1</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">indices</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">iptr</span><span class="o">++</span><span class="p">,</span><span class="w"> </span><span class="n">y_plus_1</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">lonSegments</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+
+<span class="w">                    </span><span class="n">indices</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">iptr</span><span class="o">++</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">lonSegments</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x_plus_1</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">indices</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">iptr</span><span class="o">++</span><span class="p">,</span><span class="w"> </span><span class="n">y_plus_1</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">lonSegments</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x_plus_1</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">indices</span><span class="o">-&gt;</span><span class="n">set</span><span class="p">(</span><span class="n">iptr</span><span class="o">++</span><span class="p">,</span><span class="w"> </span><span class="n">y_plus_1</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">lonSegments</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">command</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">VertexIndexDraw</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">        </span><span class="n">command</span><span class="o">-&gt;</span><span class="n">assignArrays</span><span class="p">(</span><span class="n">arrays</span><span class="p">);</span>
+<span class="w">        </span><span class="n">command</span><span class="o">-&gt;</span><span class="n">assignIndices</span><span class="p">(</span><span class="n">indices</span><span class="p">);</span>
+<span class="w">        </span><span class="n">command</span><span class="o">-&gt;</span><span class="n">indexCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">uint32_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">indices</span><span class="o">-&gt;</span><span class="n">size</span><span class="p">());</span>
+<span class="w">        </span><span class="n">command</span><span class="o">-&gt;</span><span class="n">instanceCount</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">command</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="cp">#define ATMOSPHERE_VERT_SHADER &quot;shaders/rocky.atmo.sky.vert&quot;</span>
+<span class="cp">#define ATMOSPHERE_FRAG_SHADER &quot;shaders/rocky.atmo.sky.frag&quot;</span>
+
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderSet</span><span class="o">&gt;</span><span class="w"> </span><span class="n">makeAtmoShaderSet</span><span class="p">(</span><span class="n">VSGContext</span><span class="o">&amp;</span><span class="w"> </span><span class="n">context</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">findFile</span><span class="p">(</span><span class="n">ATMOSPHERE_VERT_SHADER</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">searchPaths</span><span class="p">);</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Loading atmosphere vertex shader from: {}&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="p">.</span><span class="n">string</span><span class="p">());</span>
+
+<span class="w">        </span><span class="c1">// load shaders</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">vertexShader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderStage</span><span class="o">::</span><span class="n">read</span><span class="p">(</span>
+<span class="w">            </span><span class="n">VK_SHADER_STAGE_VERTEX_BIT</span><span class="p">,</span>
+<span class="w">            </span><span class="s">&quot;main&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="n">vsg</span><span class="o">::</span><span class="n">findFile</span><span class="p">(</span><span class="n">ATMOSPHERE_VERT_SHADER</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">searchPaths</span><span class="p">),</span>
+<span class="w">            </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">readerWriterOptions</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">fragmentShader</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderStage</span><span class="o">::</span><span class="n">read</span><span class="p">(</span>
+<span class="w">            </span><span class="n">VK_SHADER_STAGE_FRAGMENT_BIT</span><span class="p">,</span>
+<span class="w">            </span><span class="s">&quot;main&quot;</span><span class="p">,</span>
+<span class="w">            </span><span class="n">vsg</span><span class="o">::</span><span class="n">findFile</span><span class="p">(</span><span class="n">ATMOSPHERE_FRAG_SHADER</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">searchPaths</span><span class="p">),</span>
+<span class="w">            </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">readerWriterOptions</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">vertexShader</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">fragmentShader</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">shaderSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderSet</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ShaderStages</span><span class="p">{</span><span class="w"> </span><span class="n">vertexShader</span><span class="p">,</span><span class="w"> </span><span class="n">fragmentShader</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">        </span><span class="n">shaderSet</span><span class="o">-&gt;</span><span class="n">addAttributeBinding</span><span class="p">(</span><span class="s">&quot;in_vertex&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">VK_FORMAT_R32G32B32_SFLOAT</span><span class="p">,</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">vec3Array</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="mi">1</span><span class="p">));</span>
+
+<span class="w">        </span><span class="c1">// need VSG view-dependent data (lights)</span>
+<span class="w">        </span><span class="n">PipelineUtils</span><span class="o">::</span><span class="n">addViewDependentData</span><span class="p">(</span><span class="n">shaderSet</span><span class="p">,</span><span class="w"> </span><span class="n">VK_SHADER_STAGE_VERTEX_BIT</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// vsg modelview and projection matrix</span>
+<span class="w">        </span><span class="n">shaderSet</span><span class="o">-&gt;</span><span class="n">addPushConstantRange</span><span class="p">(</span><span class="s">&quot;pc&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">VK_SHADER_STAGE_VERTEX_BIT</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">128</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">shaderSet</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">StateGroup</span><span class="o">&gt;</span><span class="w"> </span><span class="n">makeAtmoStateGroup</span><span class="p">(</span><span class="n">VSGContext</span><span class="o">&amp;</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">shaderSet</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makeAtmoShaderSet</span><span class="p">(</span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">shaderSet</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to create shader set!&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Make the pipeline configurator:</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">pipelineConfig</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">GraphicsPipelineConfig</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">shaderSet</span><span class="p">);</span>
+<span class="w">        </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">defines</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pipelineConfig</span><span class="o">-&gt;</span><span class="n">shaderHints</span><span class="o">-&gt;</span><span class="n">defines</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// enable the arrays we think we need</span>
+<span class="w">        </span><span class="n">pipelineConfig</span><span class="o">-&gt;</span><span class="n">enableArray</span><span class="p">(</span><span class="s">&quot;in_vertex&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">VK_VERTEX_INPUT_RATE_VERTEX</span><span class="p">,</span><span class="w"> </span><span class="mi">12</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// activate the packed lights uniform</span>
+<span class="w">        </span><span class="n">PipelineUtils</span><span class="o">::</span><span class="n">enableViewDependentData</span><span class="p">(</span><span class="n">pipelineConfig</span><span class="p">);</span>
+
+
+<span class="w">        </span><span class="k">struct</span><span class="w"> </span><span class="nc">SetPipelineStates</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Visitor</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="kt">void</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">Object</span><span class="o">&amp;</span><span class="w"> </span><span class="n">object</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">object</span><span class="p">.</span><span class="n">traverse</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="kt">void</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">RasterizationState</span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">state</span><span class="p">.</span><span class="n">cullMode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VK_CULL_MODE_FRONT_BIT</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="kt">void</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">DepthStencilState</span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">state</span><span class="p">.</span><span class="n">depthCompareOp</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VK_COMPARE_OP_ALWAYS</span><span class="p">;</span>
+<span class="w">                </span><span class="n">state</span><span class="p">.</span><span class="n">depthWriteEnable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VK_FALSE</span><span class="p">;</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="kt">void</span><span class="w"> </span><span class="nf">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ColorBlendState</span><span class="o">&amp;</span><span class="w"> </span><span class="n">state</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                </span><span class="n">state</span><span class="p">.</span><span class="n">attachments</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ColorBlendState</span><span class="o">::</span><span class="n">ColorBlendAttachments</span><span class="p">{</span>
+<span class="w">                    </span><span class="p">{</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">VK_BLEND_FACTOR_ONE</span><span class="p">,</span><span class="w"> </span><span class="n">VK_BLEND_FACTOR_ONE</span><span class="p">,</span><span class="w"> </span><span class="n">VK_BLEND_OP_ADD</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">VK_BLEND_FACTOR_ONE</span><span class="p">,</span><span class="w"> </span><span class="n">VK_BLEND_FACTOR_ONE</span><span class="p">,</span><span class="w"> </span><span class="n">VK_BLEND_OP_ADD</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">VK_COLOR_COMPONENT_R_BIT</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">VK_COLOR_COMPONENT_G_BIT</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">VK_COLOR_COMPONENT_B_BIT</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">VK_COLOR_COMPONENT_A_BIT</span><span class="w"> </span><span class="p">}</span>
+<span class="w">                </span><span class="p">};</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">visit</span><span class="o">&lt;</span><span class="n">SetPipelineStates</span><span class="o">&gt;</span><span class="p">(</span><span class="n">pipelineConfig</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">sharedObjects</span><span class="p">)</span>
+<span class="w">            </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">sharedObjects</span><span class="o">-&gt;</span><span class="n">share</span><span class="p">(</span><span class="n">pipelineConfig</span><span class="p">,</span><span class="w"> </span><span class="p">[](</span><span class="k">auto</span><span class="w"> </span><span class="n">gpc</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">gpc</span><span class="o">-&gt;</span><span class="n">init</span><span class="p">();</span><span class="w"> </span><span class="p">});</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">            </span><span class="n">pipelineConfig</span><span class="o">-&gt;</span><span class="n">init</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// --- end pipelineconfig setup ---</span>
+
+
+<span class="w">        </span><span class="c1">// set up the state group that will select the new pipeline:</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">stategroup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">StateGroup</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">        </span><span class="n">stategroup</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">pipelineConfig</span><span class="o">-&gt;</span><span class="n">bindGraphicsPipeline</span><span class="p">);</span>
+<span class="w">        </span><span class="c1">//stategroup-&gt;add(PipelineUtils::createViewDependentBindCommand(pipelineConfig, VK_PIPELINE_BIND_POINT_GRAPHICS));</span>
+<span class="w">        </span><span class="n">stategroup</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">BindViewDescriptorSets</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">VK_PIPELINE_BIND_POINT_GRAPHICS</span><span class="p">,</span><span class="w"> </span><span class="n">pipelineConfig</span><span class="o">-&gt;</span><span class="n">layout</span><span class="p">,</span><span class="w"> </span><span class="n">VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX</span><span class="p">));</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">stategroup</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="o">&gt;</span><span class="w"> </span><span class="n">makeAtmosphere</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">thickness</span><span class="p">,</span><span class="w"> </span><span class="n">VSGContext</span><span class="o">&amp;</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// attach the actual atmospheric geometry</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">with_texcoords</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">with_normals</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">stategroup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makeAtmoStateGroup</span><span class="p">(</span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">stategroup</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">warn</span><span class="p">(</span><span class="n">LC</span><span class="w"> </span><span class="s">&quot;Failed to make state group!&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">geometry</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makeEllipsoid</span><span class="p">(</span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="n">thickness</span><span class="p">,</span><span class="w"> </span><span class="n">with_texcoords</span><span class="p">,</span><span class="w"> </span><span class="n">with_normals</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">stategroup</span><span class="o">-&gt;</span><span class="n">addChild</span><span class="p">(</span><span class="n">geometry</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">stategroup</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">SkyNode</span><span class="o">::</span><span class="n">SkyNode</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">VSGContext</span><span class="o">&amp;</span><span class="w"> </span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">_context</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">setWorldSRS</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">ECEF</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">SkyNode</span><span class="o">::</span><span class="n">setWorldSRS</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">SRS</span><span class="o">&amp;</span><span class="w"> </span><span class="n">srs</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">srs</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">children</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// some ambient light:</span>
+<span class="w">        </span><span class="n">ambient</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">AmbientLight</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">        </span><span class="n">ambient</span><span class="o">-&gt;</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Sky Ambient&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ambient</span><span class="o">-&gt;</span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mf">0.03f</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03f</span><span class="p">,</span><span class="w"> </span><span class="mf">0.03f</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="n">addChild</span><span class="p">(</span><span class="n">ambient</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// the sun:</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">sun_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rocky</span><span class="o">::</span><span class="n">Ephemeris</span><span class="p">().</span><span class="n">sunPosition</span><span class="p">(</span><span class="n">rocky</span><span class="o">::</span><span class="n">DateTime</span><span class="p">());</span>
+<span class="w">        </span><span class="n">sun</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">PointLight</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">        </span><span class="n">sun</span><span class="o">-&gt;</span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Sol&quot;</span><span class="p">;</span>
+<span class="w">        </span><span class="n">sun</span><span class="o">-&gt;</span><span class="n">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">sun_data</span><span class="p">.</span><span class="n">geocentric</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">sun_data</span><span class="p">.</span><span class="n">geocentric</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">sun_data</span><span class="p">.</span><span class="n">geocentric</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="n">sun</span><span class="o">-&gt;</span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="p">};</span>
+<span class="w">        </span><span class="n">sun</span><span class="o">-&gt;</span><span class="n">intensity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1.0</span><span class="p">;</span>
+<span class="w">        </span><span class="n">addChild</span><span class="p">(</span><span class="n">sun</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// Tell the shaders that lighting is a go</span>
+<span class="w">        </span><span class="c1">//_context-&gt;shaderCompileSettings-&gt;defines.insert(&quot;ROCKY_LIGHTING&quot;);</span>
+<span class="w">        </span><span class="c1">// TODO: dirty shaders</span>
+
+<span class="w">        </span><span class="c1">// the atmopshere:</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">earth_atmos_thickness</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">50000.0</span><span class="p">;</span><span class="w"> </span><span class="c1">// 96560.0;</span>
+<span class="w">        </span><span class="n">_atmosphere</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">makeAtmosphere</span><span class="p">(</span><span class="n">srs</span><span class="p">,</span><span class="w"> </span><span class="n">earth_atmos_thickness</span><span class="p">,</span><span class="w"> </span><span class="n">_context</span><span class="p">);</span>
+<span class="w">        </span><span class="n">setShowAtmosphere</span><span class="p">(</span><span class="nb">true</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">SkyNode</span><span class="o">::</span><span class="n">setShowAtmosphere</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">show</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_atmosphere</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">find</span><span class="p">(</span><span class="n">children</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">children</span><span class="p">.</span><span class="n">end</span><span class="p">(),</span><span class="w"> </span><span class="n">_atmosphere</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iter</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">children</span><span class="p">.</span><span class="n">end</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">true</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">addChild</span><span class="p">(</span><span class="n">_atmosphere</span><span class="p">);</span>
+
+<span class="w">            </span><span class="c1">// activate in shaders</span>
+<span class="w">            </span><span class="n">_context</span><span class="o">-&gt;</span><span class="n">shaderCompileSettings</span><span class="o">-&gt;</span><span class="n">defines</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="s">&quot;ROCKY_ATMOSPHERE&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="c1">// TODO: dirty shaders</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">iter</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">children</span><span class="p">.</span><span class="n">end</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">show</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">false</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">children</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="n">iter</span><span class="p">);</span>
+
+<span class="w">            </span><span class="c1">// activate in shaders</span>
+<span class="w">            </span><span class="n">_context</span><span class="o">-&gt;</span><span class="n">shaderCompileSettings</span><span class="o">-&gt;</span><span class="n">defines</span><span class="p">.</span><span class="n">erase</span><span class="p">(</span><span class="s">&quot;ROCKY_ATMOSPHERE&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="c1">// TODO: dirty shaders</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">SkyNode</span><span class="o">::</span><span class="n">setDateTime</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">DateTime</span><span class="o">&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">sun_data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rocky</span><span class="o">::</span><span class="n">Ephemeris</span><span class="p">().</span><span class="n">sunPosition</span><span class="p">(</span><span class="n">value</span><span class="p">);</span>
+<span class="w">    </span><span class="n">sun</span><span class="o">-&gt;</span><span class="n">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">sun_data</span><span class="p">.</span><span class="n">geocentric</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">sun_data</span><span class="p">.</span><span class="n">geocentric</span><span class="p">.</span><span class="n">y</span><span class="p">,</span><span class="w"> </span><span class="n">sun_data</span><span class="p">.</span><span class="n">geocentric</span><span class="p">.</span><span class="n">z</span><span class="w"> </span><span class="p">};</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

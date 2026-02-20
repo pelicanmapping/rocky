@@ -1,0 +1,46 @@
+
+.. _program_listing_file_src_rocky_VisibleLayer.cpp:
+
+Program Listing for File VisibleLayer.cpp
+=========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_VisibleLayer.cpp>` (``src/rocky/VisibleLayer.cpp``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #include "VisibleLayer.h"
+   #include "json.h"
+   
+   using namespace ROCKY_NAMESPACE;
+   
+   #define LC "[VisibleLayer] \"" << getName() << "\" "
+   
+   VisibleLayer::VisibleLayer() :
+       super()
+   {
+       construct({});
+   }
+   
+   VisibleLayer::VisibleLayer(std::string_view conf) :
+       super(conf)
+   {
+       construct(conf);
+   }
+   
+   void
+   VisibleLayer::construct(std::string_view conf)
+   {
+       const auto j = parse_json(conf);
+       get_to(j, "opacity", opacity);
+   }
+   
+   std::string
+   VisibleLayer::to_json() const
+   {
+       auto j = parse_json(super::to_json());
+       set(j, "opacity", opacity);
+       return j.dump();
+   }

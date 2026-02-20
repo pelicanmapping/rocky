@@ -1,0 +1,182 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Namespace rocky::detail &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Namespace rocky::TMS" href="namespace_rocky__TMS.html" />
+    <link rel="prev" title="Namespace rocky" href="namespace_rocky.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="library_root.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="library_root.html#page-hierarchy">Page Hierarchy</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="library_root.html#full-api">Full API</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="library_root.html#namespaces">Namespaces</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40104.html">Namespace &#64;104</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%4011.html">Namespace &#64;11</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40112.html">Namespace &#64;112</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40118.html">Namespace &#64;118</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40120.html">Namespace &#64;120</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40122.html">Namespace &#64;122</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40128.html">Namespace &#64;128</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40131.html">Namespace &#64;131</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40140.html">Namespace &#64;140</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40144.html">Namespace &#64;144</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40146.html">Namespace &#64;146</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40151.html">Namespace &#64;151</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40156.html">Namespace &#64;156</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%4016.html">Namespace &#64;16</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40166.html">Namespace &#64;166</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40171.html">Namespace &#64;171</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%4018.html">Namespace &#64;18</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40186.html">Namespace &#64;186</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40188.html">Namespace &#64;188</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40201.html">Namespace &#64;201</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%40205.html">Namespace &#64;205</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%4035.html">Namespace &#64;35</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%4039.html">Namespace &#64;39</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%4041.html">Namespace &#64;41</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%4043.html">Namespace &#64;43</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%4057.html">Namespace &#64;57</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%4066.html">Namespace &#64;66</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_%4098.html">Namespace &#64;98</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_glm.html">Namespace glm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_ImGuiEx.html">Namespace ImGuiEx</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_nlohmann.html">Namespace nlohmann</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_rocky.html">Namespace rocky</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Namespace rocky::detail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_rocky__TMS.html">Namespace rocky::TMS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_rocky__util.html">Namespace rocky::util</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_std.html">Namespace std</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_std__chrono_literals.html">Namespace std::chrono_literals</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_vsg.html">Namespace vsg</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_WEEJOBS_NAMESPACE.html">Namespace WEEJOBS_NAMESPACE</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_WEEJOBS_NAMESPACE__detail.html">Namespace WEEJOBS_NAMESPACE::detail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="namespace_weemesh.html">Namespace weemesh</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#classes-and-structs">Classes and Structs</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#enums">Enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#variables">Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#defines">Defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#typedefs">Typedefs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="library_root.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Namespace rocky::detail</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/namespace_rocky__detail.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="namespace-rocky-detail">
+<span id="id1"></span><h1>Namespace rocky::detail<a class="headerlink" href="#namespace-rocky-detail" title="Link to this heading"></a></h1>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="namespace_rocky.html" class="btn btn-neutral float-left" title="Namespace rocky" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="namespace_rocky__TMS.html" class="btn btn-neutral float-right" title="Namespace rocky::TMS" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

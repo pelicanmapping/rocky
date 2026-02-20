@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1a4c2bbda9afacd57dee066bda2661528d:
+
+Function rocky::util::getEnvVar
+===============================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::getEnvVar(std::string_view)
+   :project: Rocky

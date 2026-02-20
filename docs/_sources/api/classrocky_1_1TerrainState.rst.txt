@@ -1,0 +1,27 @@
+.. _exhale_class_classrocky_1_1TerrainState:
+
+Class TerrainState
+==================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_TerrainState.h`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+- :ref:`exhale_struct_structrocky_1_1TerrainState_1_1TextureDef`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::TerrainState
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

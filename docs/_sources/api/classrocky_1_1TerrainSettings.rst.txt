@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1TerrainSettings:
+
+Class TerrainSettings
+=====================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_TerrainSettings.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Derived Type
+************
+
+- ``public rocky::TerrainNode`` (:ref:`exhale_class_classrocky_1_1TerrainNode`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::TerrainSettings
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

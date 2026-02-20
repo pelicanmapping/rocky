@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1ae86cc39a89c4b564340718a1c8ea8775:
+
+Function rocky::from_json(const json&, Angle&)
+==============================================
+
+- Defined in :ref:`file_src_rocky_Units.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::from_json(const json&, Angle&)
+   :project: Rocky

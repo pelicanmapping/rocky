@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a971e4761d667cdcaa498c14b5d240751:
+
+Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class ScreenSize)
+===============================================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class ScreenSize)
+   :project: Rocky

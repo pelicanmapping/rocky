@@ -1,0 +1,14 @@
+.. _exhale_define_Common_8h_1aa24ca6ba47896a51df52e90edf39d00d:
+
+Define ROCKY_HARD_ASSERT
+========================
+
+- Defined in :ref:`file_src_rocky_Common.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ROCKY_HARD_ASSERT
+   :project: Rocky

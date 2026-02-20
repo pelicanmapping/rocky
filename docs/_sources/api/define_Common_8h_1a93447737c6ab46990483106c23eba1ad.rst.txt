@@ -1,0 +1,14 @@
+.. _exhale_define_Common_8h_1a93447737c6ab46990483106c23eba1ad:
+
+Define ROCKY_DEPRECATED
+=======================
+
+- Defined in :ref:`file_src_rocky_Common.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ROCKY_DEPRECATED
+   :project: Rocky

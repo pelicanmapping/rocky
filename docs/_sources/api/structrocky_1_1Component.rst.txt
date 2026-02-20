@@ -1,0 +1,35 @@
+.. _exhale_struct_structrocky_1_1Component:
+
+Template Struct Component
+=========================
+
+- Defined in :ref:`file_src_rocky_ecs_Component.h`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+- :ref:`exhale_struct_structrocky_1_1Component_1_1Dirty`
+
+
+Template Parameter Order
+------------------------
+
+#. `class <exhale_struct_structrocky_1_1option_>`_
+
+
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::Component
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

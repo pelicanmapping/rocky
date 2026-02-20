@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1a2a8cbc23bea02d13ca16fbe0832e9ac4:
+
+Function rocky::util::trimInPlace
+=================================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::trimInPlace(std::string&)
+   :project: Rocky

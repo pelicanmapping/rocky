@@ -1,0 +1,465 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File TileLayer.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File TileLayer.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_TileLayer.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-tilelayer-cpp">
+<span id="program-listing-file-src-rocky-tilelayer-cpp"></span><h1>Program Listing for File TileLayer.cpp<a class="headerlink" href="#program-listing-for-file-tilelayer-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_TileLayer.cpp.html#file-src-rocky-tilelayer-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/TileLayer.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;TileLayer.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;TileKey.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;json.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;rtree.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;GeoImage.h&quot;</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="o">::</span><span class="nn">util</span><span class="p">;</span>
+
+<span class="cp">#define LC &quot;[TileLayer] \&quot;&quot; &lt;&lt; name().value() &lt;&lt; &quot;\&quot; &quot;</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">ROCKY_NAMESPACE</span><span class="o">::</span><span class="n">TileLayer</span><span class="o">::</span><span class="n">DataExtentsIndex</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">RTree</span><span class="o">&lt;</span><span class="n">DataExtent</span><span class="p">,</span><span class="w"> </span><span class="kt">double</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="o">&gt;</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">//nop</span>
+<span class="p">};</span>
+
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">TileLayer</span><span class="p">()</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">super</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">construct</span><span class="p">({});</span>
+<span class="p">}</span>
+
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">TileLayer</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="w"> </span><span class="n">conf</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">super</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">construct</span><span class="p">(</span><span class="n">conf</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">construct</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="w"> </span><span class="n">conf</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_json</span><span class="p">(</span><span class="n">conf</span><span class="p">);</span>
+<span class="w">    </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;maxLevel&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">maxLevel</span><span class="p">);</span>
+<span class="w">    </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;maxDataLevel&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">maxDataLevel</span><span class="p">);</span>
+<span class="w">    </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;minLevel&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">minLevel</span><span class="p">);</span>
+<span class="w">    </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;tileSize&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">tileSize</span><span class="p">);</span>
+<span class="w">    </span><span class="n">get_to</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;profile&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">_originalProfile</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">to_json</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">j</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">parse_json</span><span class="p">(</span><span class="n">super</span><span class="o">::</span><span class="n">to_json</span><span class="p">());</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;maxLevel&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">maxLevel</span><span class="p">);</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;maxDataLevel&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">maxDataLevel</span><span class="p">);</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;minLevel&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">minLevel</span><span class="p">);</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;tileSize&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">tileSize</span><span class="p">);</span>
+<span class="w">    </span><span class="n">set</span><span class="p">(</span><span class="n">j</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;profile&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">_originalProfile</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">j</span><span class="p">.</span><span class="n">dump</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;&gt;</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">openImplementation</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">super</span><span class="o">::</span><span class="n">openImplementation</span><span class="p">(</span><span class="n">io</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_originalProfile</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_originalProfile</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">closeImplementation</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{};</span>
+<span class="w">    </span><span class="n">_dataExtents</span><span class="p">.</span><span class="n">clear</span><span class="p">();</span>
+<span class="w">    </span><span class="n">_dataExtentsUnion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{};</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_dataExtentsIndex</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_dataExtentsIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">super</span><span class="o">::</span><span class="n">closeImplementation</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">setPermanentProfile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Profile</span><span class="o">&amp;</span><span class="w"> </span><span class="n">perm_profile</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">_originalProfile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">profile</span><span class="p">;</span>
+<span class="w">    </span><span class="n">profile</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">perm_profile</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">isKeyInConfiguredRange</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">in_key</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">in_key</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">!</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">localKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">in_key</span><span class="p">.</span><span class="n">intersectingKeys</span><span class="p">(</span><span class="n">profile</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">localKeys</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">minLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">localKeys</span><span class="p">.</span><span class="n">front</span><span class="p">().</span><span class="n">level</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">minLevel</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">maxLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">localKeys</span><span class="p">.</span><span class="n">front</span><span class="p">().</span><span class="n">level</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxLevel</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">DataExtentList</span><span class="o">&amp;</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">dataExtents</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_dataExtents</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">setDataExtents</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">DataExtentList</span><span class="o">&amp;</span><span class="w"> </span><span class="n">dataExtents</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">(),</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="n">_dataExtents</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dataExtents</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// rebuild the union:</span>
+<span class="w">    </span><span class="n">_dataExtentsUnion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{};</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_dataExtents</span><span class="p">.</span><span class="n">size</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">_dataExtentsUnion</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_dataExtents</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">_dataExtents</span><span class="p">.</span><span class="n">size</span><span class="p">();</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_dataExtentsUnion</span><span class="p">.</span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">_dataExtents</span><span class="p">[</span><span class="n">i</span><span class="p">]);</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_dataExtents</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">minLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span>
+<span class="w">                </span><span class="n">_dataExtentsUnion</span><span class="p">.</span><span class="n">minLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">_dataExtentsUnion</span><span class="p">.</span><span class="n">minLevel</span><span class="p">.</span><span class="n">value</span><span class="p">(),</span><span class="w"> </span><span class="n">_dataExtents</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">minLevel</span><span class="p">.</span><span class="n">value</span><span class="p">());</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_dataExtents</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">maxLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span>
+<span class="w">                </span><span class="n">_dataExtentsUnion</span><span class="p">.</span><span class="n">maxLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">_dataExtentsUnion</span><span class="p">.</span><span class="n">maxLevel</span><span class="p">.</span><span class="n">value</span><span class="p">(),</span><span class="w"> </span><span class="n">_dataExtents</span><span class="p">[</span><span class="n">i</span><span class="p">].</span><span class="n">maxLevel</span><span class="p">.</span><span class="n">value</span><span class="p">());</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// rebuild the index:</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">a_min</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="n">a_max</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span>
+<span class="w">    </span><span class="n">_dataExtentsIndex</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">DataExtentsIndex</span><span class="o">&gt;</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_dataExtents</span><span class="p">.</span><span class="n">begin</span><span class="p">();</span><span class="w"> </span><span class="n">de</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">_dataExtents</span><span class="p">.</span><span class="n">end</span><span class="p">();</span><span class="w"> </span><span class="o">++</span><span class="n">de</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Build the index in the SRS of this layer</span>
+<span class="w">        </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">extentInLayerSRS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">de</span><span class="o">-&gt;</span><span class="n">transform</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">srs</span><span class="p">());</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">extentInLayerSRS</span><span class="p">.</span><span class="n">srs</span><span class="p">().</span><span class="n">isGeodetic</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">extentInLayerSRS</span><span class="p">.</span><span class="n">crossesAntimeridian</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">west</span><span class="p">,</span><span class="w"> </span><span class="n">east</span><span class="p">;</span>
+<span class="w">            </span><span class="n">extentInLayerSRS</span><span class="p">.</span><span class="n">splitAcrossAntimeridian</span><span class="p">(</span><span class="n">west</span><span class="p">,</span><span class="w"> </span><span class="n">east</span><span class="p">);</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">west</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">DataExtent</span><span class="w"> </span><span class="nf">new_de</span><span class="p">(</span><span class="n">west</span><span class="p">);</span>
+<span class="w">                </span><span class="n">new_de</span><span class="p">.</span><span class="n">minLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">de</span><span class="o">-&gt;</span><span class="n">minLevel</span><span class="p">;</span>
+<span class="w">                </span><span class="n">new_de</span><span class="p">.</span><span class="n">maxLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">de</span><span class="o">-&gt;</span><span class="n">maxLevel</span><span class="p">;</span>
+<span class="w">                </span><span class="n">a_min</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_de</span><span class="p">.</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">a_min</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_de</span><span class="p">.</span><span class="n">ymin</span><span class="p">();</span>
+<span class="w">                </span><span class="n">a_max</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_de</span><span class="p">.</span><span class="n">xmax</span><span class="p">(),</span><span class="w"> </span><span class="n">a_max</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_de</span><span class="p">.</span><span class="n">ymax</span><span class="p">();</span>
+<span class="w">                </span><span class="n">_dataExtentsIndex</span><span class="o">-&gt;</span><span class="n">Insert</span><span class="p">(</span><span class="n">a_min</span><span class="p">,</span><span class="w"> </span><span class="n">a_max</span><span class="p">,</span><span class="w"> </span><span class="n">new_de</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">east</span><span class="p">.</span><span class="n">valid</span><span class="p">())</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">DataExtent</span><span class="w"> </span><span class="nf">new_de</span><span class="p">(</span><span class="n">east</span><span class="p">);</span>
+<span class="w">                </span><span class="n">new_de</span><span class="p">.</span><span class="n">minLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">de</span><span class="o">-&gt;</span><span class="n">minLevel</span><span class="p">;</span>
+<span class="w">                </span><span class="n">new_de</span><span class="p">.</span><span class="n">maxLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">de</span><span class="o">-&gt;</span><span class="n">maxLevel</span><span class="p">;</span>
+<span class="w">                </span><span class="n">a_min</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_de</span><span class="p">.</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">a_min</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_de</span><span class="p">.</span><span class="n">ymin</span><span class="p">();</span>
+<span class="w">                </span><span class="n">a_max</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_de</span><span class="p">.</span><span class="n">xmax</span><span class="p">(),</span><span class="w"> </span><span class="n">a_max</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">new_de</span><span class="p">.</span><span class="n">ymax</span><span class="p">();</span>
+<span class="w">                </span><span class="n">_dataExtentsIndex</span><span class="o">-&gt;</span><span class="n">Insert</span><span class="p">(</span><span class="n">a_min</span><span class="p">,</span><span class="w"> </span><span class="n">a_max</span><span class="p">,</span><span class="w"> </span><span class="n">new_de</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">        </span><span class="k">else</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">a_min</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extentInLayerSRS</span><span class="p">.</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">a_min</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extentInLayerSRS</span><span class="p">.</span><span class="n">ymin</span><span class="p">();</span>
+<span class="w">            </span><span class="n">a_max</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extentInLayerSRS</span><span class="p">.</span><span class="n">xmax</span><span class="p">(),</span><span class="w"> </span><span class="n">a_max</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">extentInLayerSRS</span><span class="p">.</span><span class="n">ymax</span><span class="p">();</span>
+<span class="w">            </span><span class="n">_dataExtentsIndex</span><span class="o">-&gt;</span><span class="n">Insert</span><span class="p">(</span><span class="n">a_min</span><span class="p">,</span><span class="w"> </span><span class="n">a_max</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">de</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">DataExtent</span><span class="o">&amp;</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">dataExtentsUnion</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">_dataExtentsUnion</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">const</span><span class="w"> </span><span class="n">GeoExtent</span><span class="o">&amp;</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">extent</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">crop</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">crop</span><span class="p">.</span><span class="n">value</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">dataExtentsUnion</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">TileKey</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">bestAvailableTileKey</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">valid</span><span class="p">(),</span><span class="w"> </span><span class="p">{});</span>
+
+<span class="w">    </span><span class="c1">// find the corresponding keys in the local profile:</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">localKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">intersectingKeys</span><span class="p">(</span><span class="n">profile</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">localKeys</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">localLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">localKeys</span><span class="p">.</span><span class="n">front</span><span class="p">().</span><span class="n">level</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">minLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">localLevel</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">minLevel</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">maxLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">localLevel</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxLevel</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">    </span><span class="c1">// union the local key extents</span>
+<span class="w">    </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">localExtent</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">localKey</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">localKeys</span><span class="p">)</span>
+<span class="w">        </span><span class="n">localExtent</span><span class="p">.</span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">localKey</span><span class="p">.</span><span class="n">extent</span><span class="p">());</span>
+
+<span class="w">    </span><span class="c1">// account for a crop:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">crop</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">localExtent</span><span class="p">.</span><span class="n">intersects</span><span class="p">(</span><span class="n">crop</span><span class="p">.</span><span class="n">value</span><span class="p">()))</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">    </span><span class="c1">// no extents? Just return the input key</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_dataExtents</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">key</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// now we will search the spatial index to find the BEST local level available</span>
+<span class="w">    </span><span class="c1">// for the extents containing the intersecting keys.</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">bestLocalLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">findBestLocalLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">DataExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">de</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">localMinLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">de</span><span class="p">.</span><span class="n">minLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">de</span><span class="p">.</span><span class="n">minLevel</span><span class="p">.</span><span class="n">value</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">localMaxLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">de</span><span class="p">.</span><span class="n">maxLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">min</span><span class="p">(</span><span class="n">de</span><span class="p">.</span><span class="n">maxLevel</span><span class="p">.</span><span class="n">value</span><span class="p">(),</span><span class="w"> </span><span class="n">localLevel</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">localLevel</span><span class="p">;</span>
+
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">localLevel</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">localMinLevel</span><span class="p">)</span>
+<span class="w">                </span><span class="n">bestLocalLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">bestLocalLevel</span><span class="p">,</span><span class="w"> </span><span class="n">localMaxLevel</span><span class="p">);</span>
+
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">bestLocalLevel</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">localLevel</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">RTREE_KEEP_SEARCHING</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">RTREE_STOP_SEARCHING</span><span class="p">;</span>
+<span class="w">        </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">EPS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-12</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">a_min</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">localExtent</span><span class="p">.</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">localExtent</span><span class="p">.</span><span class="n">ymin</span><span class="p">()</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">a_max</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">localExtent</span><span class="p">.</span><span class="n">xmax</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">EPS</span><span class="p">,</span><span class="w"> </span><span class="n">localExtent</span><span class="p">.</span><span class="n">ymax</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">EPS</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">intersections</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_dataExtentsIndex</span><span class="o">-&gt;</span><span class="n">Search</span><span class="p">(</span><span class="n">a_min</span><span class="p">,</span><span class="w"> </span><span class="n">a_max</span><span class="p">,</span><span class="w"> </span><span class="n">findBestLocalLevel</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// no intersections in the spatial index == no data.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">intersections</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">    </span><span class="c1">// Calculate the delta between our best local level, and the profile of the input key.</span>
+<span class="w">    </span><span class="c1">// It might be negative.</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">delta</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">localLevel</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">key</span><span class="p">.</span><span class="n">level</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">bestLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">((</span><span class="kt">int</span><span class="p">)</span><span class="n">bestLocalLevel</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">delta</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">createAncestorKey</span><span class="p">((</span><span class="kt">unsigned</span><span class="p">)</span><span class="n">bestLevel</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">intersects</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">profile</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">valid</span><span class="p">(),</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// find the corresponding keys in the local profile:</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">localKeys</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">intersectingKeys</span><span class="p">(</span><span class="n">profile</span><span class="p">);</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">localKeys</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">localLevel</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">localKeys</span><span class="p">.</span><span class="n">front</span><span class="p">().</span><span class="n">level</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">minLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">localLevel</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">minLevel</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">maxLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">localLevel</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">maxLevel</span><span class="p">)</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// union the local key extents</span>
+<span class="w">    </span><span class="n">GeoExtent</span><span class="w"> </span><span class="n">localExtent</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">localKey</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">localKeys</span><span class="p">)</span>
+<span class="w">        </span><span class="n">localExtent</span><span class="p">.</span><span class="n">expandToInclude</span><span class="p">(</span><span class="n">localKey</span><span class="p">.</span><span class="n">extent</span><span class="p">());</span>
+
+<span class="w">    </span><span class="c1">// first check the union of our data extents, if we have any</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_dataExtentsUnion</span><span class="p">.</span><span class="n">valid</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">_dataExtentsUnion</span><span class="p">.</span><span class="n">intersects</span><span class="p">(</span><span class="n">localExtent</span><span class="p">))</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="p">{};</span>
+
+<span class="w">    </span><span class="c1">// account for a crop:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">crop</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="o">!</span><span class="n">localExtent</span><span class="p">.</span><span class="n">intersects</span><span class="p">(</span><span class="n">crop</span><span class="p">.</span><span class="n">value</span><span class="p">()))</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// no data extents? We did the best we could:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_dataExtents</span><span class="p">.</span><span class="n">empty</span><span class="p">())</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// and search the spatial index.</span>
+<span class="w">    </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">double</span><span class="w"> </span><span class="n">EPS</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">1e-10</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">a_min</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">localExtent</span><span class="p">.</span><span class="n">xmin</span><span class="p">(),</span><span class="w"> </span><span class="n">localExtent</span><span class="p">.</span><span class="n">ymin</span><span class="p">()</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="kt">double</span><span class="w"> </span><span class="n">a_max</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">localExtent</span><span class="p">.</span><span class="n">xmax</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">EPS</span><span class="p">,</span><span class="w"> </span><span class="n">localExtent</span><span class="p">.</span><span class="n">ymax</span><span class="p">()</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">EPS</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">hit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="n">_dataExtentsIndex</span><span class="o">-&gt;</span><span class="n">Search</span><span class="p">(</span><span class="n">a_min</span><span class="p">,</span><span class="w"> </span><span class="n">a_max</span><span class="p">,</span><span class="w"> </span><span class="p">[</span><span class="o">&amp;</span><span class="p">](</span><span class="k">const</span><span class="w"> </span><span class="n">DataExtent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">de</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">de</span><span class="p">.</span><span class="n">minLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">localLevel</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">de</span><span class="p">.</span><span class="n">minLevel</span><span class="p">.</span><span class="n">value</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">RTREE_KEEP_SEARCHING</span><span class="p">;</span><span class="w"> </span><span class="c1">// skip this extent</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">de</span><span class="p">.</span><span class="n">maxLevel</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">localLevel</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="n">de</span><span class="p">.</span><span class="n">maxLevel</span><span class="p">.</span><span class="n">value</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">RTREE_KEEP_SEARCHING</span><span class="p">;</span><span class="w"> </span><span class="c1">// skip this extent</span>
+<span class="w">        </span><span class="n">hit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span><span class="w"> </span><span class="c1">// we have at least one extent that intersects</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">RTREE_STOP_SEARCHING</span><span class="p">;</span><span class="w"> </span><span class="p">});</span><span class="w"> </span><span class="c1">// just check if we have any extents that intersect</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">hit</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">mayHaveData</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="p">(</span><span class="n">key</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">bestAvailableTileKey</span><span class="p">(</span><span class="n">key</span><span class="p">));</span>
+<span class="p">}</span>
+
+<span class="n">Result</span><span class="o">&lt;</span><span class="n">GeoImage</span><span class="o">&gt;</span>
+<span class="n">TileLayer</span><span class="o">::</span><span class="n">getOrCreateTile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TileKey</span><span class="o">&amp;</span><span class="w"> </span><span class="n">key</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">IOOptions</span><span class="o">&amp;</span><span class="w"> </span><span class="n">io</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="n">Result</span><span class="o">&lt;</span><span class="n">GeoImage</span><span class="o">&gt;</span><span class="p">()</span><span class="o">&gt;&amp;&amp;</span><span class="w"> </span><span class="n">create</span><span class="p">)</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">residentImageCache</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">cacheKey</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">key</span><span class="p">.</span><span class="n">str</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="sc">&#39;-&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">key</span><span class="p">.</span><span class="n">profile</span><span class="p">.</span><span class="n">hash</span><span class="p">())</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="sc">&#39;-&#39;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">uid</span><span class="p">())</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;-&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">revision</span><span class="p">());</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">cached</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">residentImageCache</span><span class="o">-&gt;</span><span class="n">get</span><span class="p">(</span><span class="n">cacheKey</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// note: &quot;first&quot; = Image, &quot;second&quot; = GeoExtent</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">cached</span><span class="p">.</span><span class="n">has_value</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">cached</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">first</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">cached</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">second</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">GeoImage</span><span class="p">(</span><span class="n">cached</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="n">cached</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">second</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">create</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">ok</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">image</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">io</span><span class="p">.</span><span class="n">services</span><span class="p">().</span><span class="n">residentImageCache</span><span class="o">-&gt;</span><span class="n">put</span><span class="p">(</span><span class="n">cacheKey</span><span class="p">,</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">image</span><span class="p">(),</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">value</span><span class="p">().</span><span class="n">extent</span><span class="p">());</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">r</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">create</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

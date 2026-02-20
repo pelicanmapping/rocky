@@ -1,0 +1,26 @@
+.. _exhale_struct_structrocky_1_1LineStyle:
+
+Struct LineStyle
+================
+
+- Defined in :ref:`file_src_rocky_ecs_Line.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public rocky::Component< LineStyle >`` (:ref:`exhale_struct_structrocky_1_1Component`)
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::LineStyle
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

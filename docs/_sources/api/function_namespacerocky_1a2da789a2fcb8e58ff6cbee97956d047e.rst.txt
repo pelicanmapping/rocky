@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a2da789a2fcb8e58ff6cbee97956d047e:
+
+Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Distance)
+=============================================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Distance)
+   :project: Rocky

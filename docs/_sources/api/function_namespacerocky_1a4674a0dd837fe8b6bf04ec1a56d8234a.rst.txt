@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a4674a0dd837fe8b6bf04ec1a56d8234a:
+
+Function rocky::to_json(json&, const URI&)
+==========================================
+
+- Defined in :ref:`file_src_rocky_URI.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::to_json(json&, const URI&)
+   :project: Rocky

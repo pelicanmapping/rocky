@@ -1,0 +1,46 @@
+
+.. _program_listing_file_src_rocky_Bing.h:
+
+Program Listing for File Bing.h
+===============================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_Bing.h>` (``src/rocky/Bing.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Version.h>
+   #ifdef ROCKY_HAS_BING
+   
+   #include <rocky/Common.h>
+   #include <rocky/option.h>
+   #include <rocky/URI.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       namespace Bing
+       {
+           struct ImageLayerOptions
+           {
+               option<std::string> apiKey;
+               option<std::string> imagerySet = { "Aerial" };
+               option<URI> imageryMetadataUrl = URI("https://dev.virtualearth.net/REST/v1/Imagery/Metadata");
+           };
+   
+           struct ElevationLayerOptions
+           {
+               option<std::string> apiKey;
+               option<URI> url = URI("http://dev.virtualearth.net/REST/v1/Elevation/Bounds");
+           };
+       }
+   }
+   
+   #else // if !ROCKY_HAS_BING
+     #ifndef ROCKY_BUILDING_SDK
+       #error Bing support is not enabled in Rocky.
+     #endif
+   #endif // ROCKY_HAS_BING

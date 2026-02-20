@@ -1,0 +1,34 @@
+.. _dir_src_rocky_ecs:
+
+
+Directory ecs
+=============
+
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+*Directory path:* ``src/rocky/ecs``
+
+
+Files
+-----
+
+- :ref:`file_src_rocky_ecs_Component.h`
+- :ref:`file_src_rocky_ecs_Declutter.h`
+- :ref:`file_src_rocky_ecs_EntityCollectionLayer.cpp`
+- :ref:`file_src_rocky_ecs_EntityCollectionLayer.h`
+- :ref:`file_src_rocky_ecs_Label.h`
+- :ref:`file_src_rocky_ecs_Line.h`
+- :ref:`file_src_rocky_ecs_Mesh.h`
+- :ref:`file_src_rocky_ecs_Motion.h`
+- :ref:`file_src_rocky_ecs_Point.h`
+- :ref:`file_src_rocky_ecs_Registry.cpp`
+- :ref:`file_src_rocky_ecs_Registry.h`
+- :ref:`file_src_rocky_ecs_Transform.h`
+- :ref:`file_src_rocky_ecs_Visibility.h`
+- :ref:`file_src_rocky_ecs_Widget.h`
+
+

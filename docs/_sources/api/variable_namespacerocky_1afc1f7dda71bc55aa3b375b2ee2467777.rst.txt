@@ -1,0 +1,14 @@
+.. _exhale_variable_namespacerocky_1afc1f7dda71bc55aa3b375b2ee2467777:
+
+Variable rocky::ResultVoidOK
+============================
+
+- Defined in :ref:`file_src_rocky_Result.h`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: rocky::ResultVoidOK
+   :project: Rocky

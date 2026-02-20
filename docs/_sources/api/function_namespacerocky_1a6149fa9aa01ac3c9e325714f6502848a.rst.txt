@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a6149fa9aa01ac3c9e325714f6502848a:
+
+Function rocky::to_vsg(const glm::dvec4&)
+=========================================
+
+- Defined in :ref:`file_src_rocky_vsg_VSGUtils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::to_vsg(const glm::dvec4&)
+   :project: Rocky

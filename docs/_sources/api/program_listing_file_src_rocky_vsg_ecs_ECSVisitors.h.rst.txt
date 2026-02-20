@@ -1,0 +1,93 @@
+
+.. _program_listing_file_src_rocky_vsg_ecs_ECSVisitors.h:
+
+Program Listing for File ECSVisitors.h
+======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_ecs_ECSVisitors.h>` (``src/rocky/vsg/ecs/ECSVisitors.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/ECS.h>
+   #include <rocky/vsg/VSGContext.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT ECSVisitor
+       {
+       public:
+           std::uint32_t viewID = 0;
+           entt::entity currentEntity = entt::null;
+           std::vector<entt::entity> collectedEntities;
+   
+           inline void reset() {
+               collectedEntities.clear();
+               currentEntity = entt::null;
+           }
+   
+       protected:
+           inline ECSVisitor(std::uint32_t in_viewID) :
+               viewID(in_viewID) {
+           }
+       };
+   
+       class ROCKY_EXPORT ECSPolytopeIntersector : public vsg::Inherit<vsg::PolytopeIntersector, ECSPolytopeIntersector>,
+           public ECSVisitor
+       {
+       public:
+           ECSPolytopeIntersector(vsg::View* view, double xMin, double yMin, double xMax, double yMax, vsg::ref_ptr<vsg::ArrayState> initialArrayData = {}) :
+               Inherit(*view->camera, xMin, yMin, xMax, yMax, initialArrayData),
+               ECSVisitor(view->viewID)
+           {
+               //nop
+           }
+   
+           bool intersectDraw(uint32_t firstVertex, uint32_t vertexCount, uint32_t firstInstance, uint32_t instanceCount) override
+           {
+               bool intersects = Inherit::intersectDraw(firstVertex, vertexCount, firstInstance, instanceCount);
+               if (intersects && currentEntity != entt::null)
+                   collectedEntities.emplace_back(currentEntity);
+               return intersects;
+           }
+   
+           bool intersectDrawIndexed(uint32_t firstIndex, uint32_t indexCount, uint32_t firstInstance, uint32_t instanceCount) override
+           {
+               bool intersects = Inherit::intersectDrawIndexed(firstIndex, indexCount, firstInstance, instanceCount);
+               if (intersects && currentEntity != entt::null)
+                   collectedEntities.emplace_back(currentEntity);
+               return intersects;
+           }
+       };
+   
+       class ROCKY_EXPORT ECSLineSegmentIntersector : public vsg::Inherit<vsg::LineSegmentIntersector, ECSLineSegmentIntersector>,
+           public ECSVisitor
+       {
+       public:
+           ECSLineSegmentIntersector(vsg::View* view, int32_t x, int32_t y, vsg::ref_ptr<vsg::ArrayState> initialArrayData = {}) :
+               Inherit(*view->camera, x, y, initialArrayData),
+               ECSVisitor(view->viewID)
+           {
+               //nop
+           }
+   
+           bool intersectDraw(uint32_t firstVertex, uint32_t vertexCount, uint32_t firstInstance, uint32_t instanceCount) override
+           {
+               bool intersects = Inherit::intersectDraw(firstVertex, vertexCount, firstInstance, instanceCount);
+               if (intersects && currentEntity != entt::null)
+                   collectedEntities.emplace_back(currentEntity);
+               return intersects;
+           }
+   
+           bool intersectDrawIndexed(uint32_t firstIndex, uint32_t indexCount, uint32_t firstInstance, uint32_t instanceCount) override
+           {
+               bool intersects = Inherit::intersectDrawIndexed(firstIndex, indexCount, firstInstance, instanceCount);
+               if (intersects && currentEntity != entt::null)
+                   collectedEntities.emplace_back(currentEntity);
+               return intersects;
+           }
+       };
+   }

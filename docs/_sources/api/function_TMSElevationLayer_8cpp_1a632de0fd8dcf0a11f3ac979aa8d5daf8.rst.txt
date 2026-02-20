@@ -1,0 +1,14 @@
+.. _exhale_function_TMSElevationLayer_8cpp_1a632de0fd8dcf0a11f3ac979aa8d5daf8:
+
+Function ROCKY_ADD_OBJECT_FACTORY(TMSElevation, (const std::string&JSON, const IOOptions&io) { return TMSElevationLayer::create(JSON, io);})
+============================================================================================================================================
+
+- Defined in :ref:`file_src_rocky_TMSElevationLayer.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: ROCKY_ADD_OBJECT_FACTORY(TMSElevation, (const std::string&JSON, const IOOptions&io) { return TMSElevationLayer::create(JSON, io);})
+   :project: Rocky

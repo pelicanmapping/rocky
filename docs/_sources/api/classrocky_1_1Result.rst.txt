@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1Result:
+
+Template Class Result
+=====================
+
+- Defined in :ref:`file_src_rocky_Result.h`
+
+
+Template Parameter Order
+------------------------
+
+#. `typename <exhale_struct_structrocky_1_1option_>`_
+#. `typename <exhale_struct_structrocky_1_1option_>`_
+
+
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::Result
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

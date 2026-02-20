@@ -1,0 +1,14 @@
+.. _exhale_define_Utils_8cpp_1a3d0afca01d5835b8319e970dc5ba9f50:
+
+Define STRICMP
+==============
+
+- Defined in :ref:`file_src_rocky_Utils.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: STRICMP
+   :project: Rocky

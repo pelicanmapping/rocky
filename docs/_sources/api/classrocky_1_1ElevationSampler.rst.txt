@@ -1,0 +1,17 @@
+.. _exhale_class_classrocky_1_1ElevationSampler:
+
+Class ElevationSampler
+======================
+
+- Defined in :ref:`file_src_rocky_ElevationSampler.h`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::ElevationSampler
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1ac802505e3b5315deccf3827335072cdc:
+
+Template Function rocky::expandBy(SPHERE&, typename SPHERE::vec_type)
+=====================================================================
+
+- Defined in :ref:`file_src_rocky_Math.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::expandBy(SPHERE&, typename SPHERE::vec_type)
+   :project: Rocky

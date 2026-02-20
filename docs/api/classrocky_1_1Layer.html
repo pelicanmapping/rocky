@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Class Layer &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Class Line" href="classrocky_1_1Line.html" />
+    <link rel="prev" title="Class IOOptions" href="classrocky_1_1IOOptions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="library_root.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="library_root.html#page-hierarchy">Page Hierarchy</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="library_root.html#full-api">Full API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#namespaces">Namespaces</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="library_root.html#classes-and-structs">Classes and Structs</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="structnlohmann_1_1adl__serializer_3_01rocky_1_1option_3_01T_01_4_01_4.html">Template Struct adl_serializer&lt; rocky::option&lt; T &gt; &gt;</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ActiveState.html">Struct ActiveState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Application_1_1Stats.html">Struct Application::Stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Box.html">Struct Box</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1CallbackSubs.html">Struct CallbackSubs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1CelestialBody.html">Struct CelestialBody</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Component.html">Template Struct Component</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Component_1_1Dirty.html">Struct Component::Dirty</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Content.html">Struct Content</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Declutter.html">Struct Declutter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1DisplayGeoPoint.html">Struct DisplayGeoPoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1DisplayManager_1_1ViewData.html">Struct DisplayManager::ViewData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ElevationSample.html">Struct ElevationSample</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Failure.html">Struct Failure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Feature_1_1FieldValue.html">Struct Feature::FieldValue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureSource_1_1iterator_1_1implementation.html">Struct iterator::implementation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureSource_1_1Metadata.html">Struct FeatureSource::Metadata</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureView_1_1Workspace.html">Struct FeatureView::Workspace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Geometry.html">Struct Geometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1GeometryKey.html">Struct GeometryKey</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1GeometryPool_1_1Settings.html">Struct GeometryPool::Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Hyperlink.html">Struct Hyperlink</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Image_1_1Layout.html">Struct Image::Layout</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1json__parse__result.html">Struct json_parse_result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Label.html">Struct Label</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LabelStyle.html">Struct LabelStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LineGeometry.html">Struct LineGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LineStyle.html">Struct LineStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1Action.html">Struct MapManipulator::Action</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1ActionOption.html">Struct MapManipulator::ActionOption</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1ActionOptions.html">Struct MapManipulator::ActionOptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1InputSpec.html">Struct MapManipulator::InputSpec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1State.html">Struct MapManipulator::State</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1Task.html">Struct MapManipulator::Task</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Mesh.html">Struct Mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshGeometry.html">Struct MeshGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshStyle.html">Struct MeshStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshTexture.html">Struct MeshTexture</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Motion.html">Struct Motion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MotionGreatCircle.html">Struct MotionGreatCircle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NamedFunction.html">Struct NamedFunction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NodeGraph.html">Struct NodeGraph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NodeSystemNode_1_1Drawable.html">Struct NodeSystemNode::Drawable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1option.html">Template Struct option</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PipelineUtils.html">Struct PipelineUtils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PointGeometry.html">Struct PointGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PointStyle.html">Struct PointStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Profile_1_1Data.html">Struct Profile::Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Rect.html">Struct Rect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Impl.html">Struct Registry::Impl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Read.html">Struct Registry::Read</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Write.html">Struct Registry::Write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1RenderingState.html">Struct RenderingState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Sphere.html">Struct Sphere</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1StyleSheet.html">Struct StyleSheet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainDescriptors.html">Struct TerrainDescriptors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainDescriptors_1_1Uniforms.html">Struct TerrainDescriptors::Uniforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainNode_1_1Stats.html">Struct TerrainNode::Stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainState_1_1TextureDef.html">Struct TerrainState::TextureDef</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileDescriptors.html">Struct TerrainTileDescriptors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileDescriptors_1_1Uniforms.html">Struct TerrainTileDescriptors::Uniforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel.html">Struct TerrainTileModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1ColorLayer.html">Struct TerrainTileModel::ColorLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1Elevation.html">Struct TerrainTileModel::Elevation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1MaterialMap.html">Struct TerrainTileModel::MaterialMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1NormalMap.html">Struct TerrainTileModel::NormalMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1Tile.html">Struct TerrainTileModel::Tile</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTilePager_1_1TileInfo.html">Struct TerrainTilePager::TileInfo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileRenderModel.html">Struct TerrainTileRenderModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TextureData.html">Struct TextureData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TileLayer_1_1DataExtentsIndex.html">Struct TileLayer::DataExtentsIndex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1Options.html">Struct Options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileFormat.html">Struct TileFormat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileMap.html">Struct TileMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileMapEntry.html">Struct TileMapEntry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileSet.html">Struct TileSet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Transform.html">Struct Transform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformDetail.html">Struct TransformDetail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformDetail_1_1Cached.html">Struct TransformDetail::Cached</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformViewDetail.html">Struct TransformViewDetail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URI_1_1Context.html">Struct URI::Context</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URI_1_1Stream.html">Struct URI::Stream</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URIResponse.html">Struct URIResponse</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1make__string.html">Struct make_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1PromiseOperation.html">Template Struct PromiseOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map.html">Template Struct vector_map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map_1_1ENTRY.html">Struct vector_map::ENTRY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map__equal.html">Template Struct vector_map_equal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ViewLocal.html">Template Struct ViewLocal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Visibility.html">Struct Visibility</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Branch.html">Struct RTree::Branch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Iterator_1_1StackElement.html">Struct Iterator::StackElement</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1ListNode.html">Struct RTree::ListNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Node.html">Struct RTree::Node</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1PartitionVars.html">Struct RTree::PartitionVars</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Rect.html">Struct RTree::Rect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structstd_1_1hash_3_01rocky_1_1Profile_01_4.html">Template Struct hash&lt; rocky::Profile &gt;</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1context.html">Struct context</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1future_1_1shared__t.html">Struct future::shared_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1jobgroup.html">Struct jobgroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1jobpool_1_1metrics__t.html">Struct jobpool::metrics_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1edge__t.html">Struct edge_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1edgeset__t.html">Struct edgeset_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1graph__t.html">Struct graph_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1mesh__t.html">Struct mesh_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1neighbors__t.html">Struct neighbors_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1node__t.html">Struct node_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1segment__t.html">Struct segment_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1triangle__t.html">Struct triangle_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1vert__t.html">Struct vert_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Angle.html">Class Angle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Application.html">Class Application</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Cache.html">Template Class Cache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Callback.html">Template Class Callback</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Color.html">Class Color</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ContextFactory.html">Class ContextFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ContextImpl.html">Class ContextImpl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DateTime.html">Class DateTime</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DateTimeExtent.html">Class DateTimeExtent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DeclutterSystem.html">Class DeclutterSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DescriptorBufferEx.html">Class DescriptorBufferEx</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DisplayManager.html">Class DisplayManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Distance.html">Class Distance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Duration.html">Class Duration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EarthFileImporter.html">Class EarthFileImporter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSLineSegmentIntersector.html">Class ECSLineSegmentIntersector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSNode.html">Class ECSNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSPolytopeIntersector.html">Class ECSPolytopeIntersector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSVisitor.html">Class ECSVisitor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationLayer.html">Class ElevationLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationSampler.html">Class ElevationSampler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationSession.html">Class ElevationSession</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Ellipsoid.html">Class Ellipsoid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EntityCollectionLayer.html">Class EntityCollectionLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EntityNode.html">Class EntityNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Ephemeris.html">Class Ephemeris</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Feature.html">Class Feature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureSource.html">Class FeatureSource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureSource_1_1iterator.html">Class FeatureSource::iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureView.html">Class FeatureView</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoCircle.html">Class GeoCircle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Geocoder.html">Class Geocoder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoExtent.html">Class GeoExtent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoExtent3D.html">Class GeoExtent3D</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoHeightfield.html">Class GeoHeightfield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoImage.html">Class GeoImage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Geometry_1_1iterator__base.html">Template Class Geometry::iterator_base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeometryPool.html">Class GeometryPool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoPoint.html">Class GeoPoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoTransform.html">Class GeoTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Heightfield.html">Class Heightfield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Horizon.html">Class Horizon</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Image.html">Class Image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Image_1_1iterator.html">Class Image::iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ImageLayer.html">Class ImageLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ImGuiContextNode.html">Class ImGuiContextNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Inherit.html">Template Class Inherit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1IOOptions.html">Class IOOptions</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Class Layer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Line.html">Class Line</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1LineGeometryNode.html">Class LineGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1LineSystemNode.html">Class LineSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Map.html">Class Map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapManipulator.html">Class MapManipulator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapManipulator_1_1Settings.html">Class MapManipulator::Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapNode.html">Class MapNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Memory.html">Class Memory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MeshGeometryNode.html">Class MeshGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MeshSystemNode.html">Class MeshSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Mosaic.html">Class Mosaic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MotionSystem.html">Class MotionSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodeLayer.html">Class NodeLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodePager.html">Class NodePager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodeSystemNode.html">Class NodeSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Object.html">Class Object</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PagedNode.html">Class PagedNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PixelScaleTransform.html">Class PixelScaleTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Point.html">Class Point</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PointGeometryNode.html">Class PointGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PointSystemNode.html">Class PointSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Profile.html">Class Profile</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Registry.html">Class Registry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RenderImGui.html">Class RenderImGui</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RenderImGuiContext.html">Class RenderImGuiContext</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Result.html">Template Class Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RTT.html">Class RTT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ScreenSize.html">Class ScreenSize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ScreenSpaceGroup.html">Class ScreenSpaceGroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SendEventsToImGui.html">Class SendEventsToImGui</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SendEventsToImGuiContext.html">Class SendEventsToImGuiContext</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Services.html">Class Services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetColorWriteMask.html">Class SetColorWriteMask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetCullMode.html">Class SetCullMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetDepthWriteEnable.html">Class SetDepthWriteEnable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetPolygonMode.html">Class SetPolygonMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SharedGeometry.html">Class SharedGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SkyNode.html">Class SkyNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Speed.html">Class Speed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SRS.html">Class SRS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SRSOperation.html">Class SRSOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Status.html">Class Status</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1StreamingGPUBuffer.html">Class StreamingGPUBuffer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SurfaceNode.html">Class SurfaceNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1System.html">Class System</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainEngine.html">Class TerrainEngine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainNode.html">Class TerrainNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainProfileNode.html">Class TerrainProfileNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainSettings.html">Class TerrainSettings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainState.html">Class TerrainState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileHost.html">Class TerrainTileHost</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileModelFactory.html">Class TerrainTileModelFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileNode.html">Class TerrainTileNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTilePager.html">Class TerrainTilePager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TileKey.html">Class TileKey</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TileLayer.html">Class TileLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMS_1_1Driver.html">Class Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMSElevationLayer.html">Class TMSElevationLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMSImageLayer.html">Class TMSImageLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TransformSystem.html">Class TransformSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Units.html">Class Units</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1URI.html">Class URI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1BackgroundServices.html">Class BackgroundServices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1LambdaOperation.html">Class LambdaOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1LRUCache.html">Template Class LRUCache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ResidentCache.html">Template Class ResidentCache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ring__buffer.html">Template Class ring_buffer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ring__buffer__with__condition.html">Template Class ring_buffer_with_condition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1SimpleCompiler.html">Class SimpleCompiler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1StreamCompressor.html">Class StreamCompressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1StringTokenizer.html">Class StringTokenizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Viewpoint.html">Class Viewpoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VisibleLayer.html">Class VisibleLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VSGContextFactory.html">Class VSGContextFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VSGContextImpl.html">Class VSGContextImpl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VulkanExtensions.html">Class VulkanExtensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTFileStream.html">Class RTFileStream</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTree.html">Template Class RTree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTree_1_1Iterator.html">Class RTree::Iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1cancelable.html">Class cancelable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1future.html">Template Class future</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1jobpool.html">Class jobpool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1metrics.html">Class metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#enums">Enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#variables">Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#defines">Defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#typedefs">Typedefs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="library_root.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Class Layer</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/classrocky_1_1Layer.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="class-layer">
+<span id="exhale-class-classrocky-1-1layer"></span><h1>Class Layer<a class="headerlink" href="#class-layer" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>Defined in <a class="reference internal" href="file_src_rocky_Layer.h.html#file-src-rocky-layer-h"><span class="std std-ref">File Layer.h</span></a></p></li>
+</ul>
+<section id="inheritance-relationships">
+<h2>Inheritance Relationships<a class="headerlink" href="#inheritance-relationships" title="Link to this heading"></a></h2>
+<section id="base-type">
+<h3>Base Type<a class="headerlink" href="#base-type" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">public</span> <span class="pre">rocky::Inherit&lt;</span> <span class="pre">Object,</span> <span class="pre">Layer</span> <span class="pre">&gt;</span></code></p></li>
+</ul>
+</section>
+<section id="derived-type">
+<h3>Derived Type<a class="headerlink" href="#derived-type" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">public</span> <span class="pre">rocky::Inherit&lt;</span> <span class="pre">Layer,</span> <span class="pre">VisibleLayer</span> <span class="pre">&gt;</span></code> (<a class="reference internal" href="classrocky_1_1Inherit.html#exhale-class-classrocky-1-1inherit"><span class="std std-ref">Template Class Inherit</span></a>)</p></li>
+</ul>
+</section>
+</section>
+<section id="class-documentation">
+<h2>Class Documentation<a class="headerlink" href="#class-documentation" title="Link to this heading"></a></h2>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5LayerE">
+<span id="_CPPv3N5rocky5LayerE"></span><span id="_CPPv2N5rocky5LayerE"></span><span id="rocky::Layer"></span><span class="target" id="classrocky_1_1Layer"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Layer</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">rocky</span></span><span class="p"><span class="pre">::</span></span><a class="reference internal" href="classrocky_1_1Inherit.html#_CPPv4I00EN5rocky7InheritE" title="rocky::Inherit"><span class="n"><span class="pre">Inherit</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="classrocky_1_1Object.html#_CPPv4N5rocky6ObjectE" title="rocky::Object"><span class="n"><span class="pre">Object</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5LayerE" title="rocky::Layer"><span class="n"><span class="pre">Layer</span></span></a><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#_CPPv4N5rocky5LayerE" title="Link to this definition"></a><br /></dt>
+<dd><p>Base class for all <a class="reference internal" href="classrocky_1_1Map.html#classrocky_1_1Map"><span class="std std-ref">Map</span></a> layer types. </p>
+<p>Subclassed by <a class="reference internal" href="classrocky_1_1Inherit.html#classrocky_1_1Inherit"><span class="std std-ref">rocky::Inherit&lt; Layer, VisibleLayer &gt;</span></a></p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5LayerD0Ev">
+<span id="_CPPv3N5rocky5LayerD0Ev"></span><span id="_CPPv2N5rocky5LayerD0Ev"></span><span id="rocky::Layer::~Layer"></span><span class="target" id="classrocky_1_1Layer_1a1b1ba4804451dfe6cc357194e42762ae"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~Layer</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5LayerD0Ev" title="Link to this definition"></a><br /></dt>
+<dd><p>Destructor. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer3uidEv">
+<span id="_CPPv3NK5rocky5Layer3uidEv"></span><span id="_CPPv2NK5rocky5Layer3uidEv"></span><span id="rocky::Layer::uidC"></span><span class="target" id="classrocky_1_1Layer_1ab444f53aa49768a560d195e61d8dd78f"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="typedef_namespacerocky_1a6ae678b1966d6628635a6b4ca1ac8641.html#_CPPv4N5rocky3UIDE" title="rocky::UID"><span class="n"><span class="pre">UID</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">uid</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer3uidEv" title="Link to this definition"></a><br /></dt>
+<dd><p>This layer’s unique ID. </p>
+<p>This value is generated automatically at runtime and is not guaranteed to be the same from one run to the next. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer6statusEv">
+<span id="_CPPv3NK5rocky5Layer6statusEv"></span><span id="_CPPv2NK5rocky5Layer6statusEv"></span><span id="rocky::Layer::statusC"></span><span class="target" id="classrocky_1_1Layer_1a5ff204690223ff6f961775da5f8e7d8a"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classrocky_1_1Status.html#_CPPv4N5rocky6StatusE" title="rocky::Status"><span class="n"><span class="pre">Status</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">status</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer6statusEv" title="Link to this definition"></a><br /></dt>
+<dd><p><a class="reference internal" href="classrocky_1_1Status.html#classrocky_1_1Status"><span class="std std-ref">Status</span></a> of this layer. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer4openERK9IOOptions">
+<span id="_CPPv3N5rocky5Layer4openERK9IOOptions"></span><span id="_CPPv2N5rocky5Layer4openERK9IOOptions"></span><span id="rocky::Layer::open__IOOptionsCR"></span><span class="target" id="classrocky_1_1Layer_1af537845e75110b1227144e621b0fdb02"></span><a class="reference internal" href="classrocky_1_1Result.html#_CPPv4I00EN5rocky6ResultE" title="rocky::Result"><span class="n"><span class="pre">Result</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">open</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classrocky_1_1IOOptions.html#_CPPv4N5rocky9IOOptionsE" title="rocky::IOOptions"><span class="n"><span class="pre">IOOptions</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">options</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Layer4openERK9IOOptions" title="Link to this definition"></a><br /></dt>
+<dd><p>Open a layer. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer5closeEv">
+<span id="_CPPv3N5rocky5Layer5closeEv"></span><span id="_CPPv2N5rocky5Layer5closeEv"></span><span id="rocky::Layer::close"></span><span class="target" id="classrocky_1_1Layer_1ad995a8d1aeb6812ec94e38bad898552e"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">close</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Layer5closeEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Close this layer. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer6isOpenEv">
+<span id="_CPPv3NK5rocky5Layer6isOpenEv"></span><span id="_CPPv2NK5rocky5Layer6isOpenEv"></span><span id="rocky::Layer::isOpenC"></span><span class="target" id="classrocky_1_1Layer_1a4d2c2c0de34053d47bc48624c7e5ae45"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">isOpen</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer6isOpenEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Whether the layer is open without error. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer7to_jsonEv">
+<span id="_CPPv3NK5rocky5Layer7to_jsonEv"></span><span id="_CPPv2NK5rocky5Layer7to_jsonEv"></span><span id="rocky::Layer::to_jsonC"></span><span class="target" id="classrocky_1_1Layer_1a05939cad7010c9c0cfebeaf5a2b344b6"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">to_json</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer7to_jsonEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Serialize this layer into a JSON string. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer6extentEv">
+<span id="_CPPv3NK5rocky5Layer6extentEv"></span><span id="_CPPv2NK5rocky5Layer6extentEv"></span><span id="rocky::Layer::extentC"></span><span class="target" id="classrocky_1_1Layer_1adf87d48a3c44c14bfaf32a35411ec89b"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classrocky_1_1GeoExtent.html#_CPPv4N5rocky9GeoExtentE" title="rocky::GeoExtent"><span class="n"><span class="pre">GeoExtent</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">extent</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer6extentEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Extent of this layer’s data. </p>
+<p>This method may return <a class="reference internal" href="classrocky_1_1GeoExtent.html#classrocky_1_1GeoExtent_1a95debbda8e286dc05f4f052dcc415114"><span class="std std-ref">GeoExtent::INVALID</span></a> which means that the extent is unavailable (not necessarily that there is no data). </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer14dateTimeExtentEv">
+<span id="_CPPv3NK5rocky5Layer14dateTimeExtentEv"></span><span id="_CPPv2NK5rocky5Layer14dateTimeExtentEv"></span><span id="rocky::Layer::dateTimeExtentC"></span><span class="target" id="classrocky_1_1Layer_1ace518eb68223e6ace3c2ece7b3b5caf7"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><a class="reference internal" href="classrocky_1_1DateTimeExtent.html#_CPPv4N5rocky14DateTimeExtentE" title="rocky::DateTimeExtent"><span class="n"><span class="pre">DateTimeExtent</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dateTimeExtent</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer14dateTimeExtentEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Temporal extent of this layer’s data. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer8revisionEv">
+<span id="_CPPv3NK5rocky5Layer8revisionEv"></span><span id="_CPPv2NK5rocky5Layer8revisionEv"></span><span id="rocky::Layer::revisionC"></span><span class="target" id="classrocky_1_1Layer_1adde7144dbf9d30ebfa9533b78d88ea62"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="typedef_namespacerocky_1a787bb6294207b80e23bb288034695566.html#_CPPv4N5rocky8RevisionE" title="rocky::Revision"><span class="n"><span class="pre">Revision</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">revision</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer8revisionEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Revision number of this layer. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer5dirtyEv">
+<span id="_CPPv3N5rocky5Layer5dirtyEv"></span><span id="_CPPv2N5rocky5Layer5dirtyEv"></span><span id="rocky::Layer::dirty"></span><span class="target" id="classrocky_1_1Layer_1aabc0b2b909e1b7d9a4c372ef7fbf6ab2"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">dirty</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Layer5dirtyEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Increment the revision number for this layer, which will invalidate caches. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer16getLayerTypeNameEv">
+<span id="_CPPv3NK5rocky5Layer16getLayerTypeNameEv"></span><span id="_CPPv2NK5rocky5Layer16getLayerTypeNameEv"></span><span id="rocky::Layer::getLayerTypeNameC"></span><span class="target" id="classrocky_1_1Layer_1a1e72001c8cf71929b24fbeb5edd0c5e5"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">getLayerTypeName</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer16getLayerTypeNameEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Name of the layer type for serialization use. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer17openAutomaticallyE">
+<span id="_CPPv3N5rocky5Layer17openAutomaticallyE"></span><span id="_CPPv2N5rocky5Layer17openAutomaticallyE"></span><span id="rocky::Layer::openAutomatically__option:b:"></span><span class="target" id="classrocky_1_1Layer_1a0fcd131d06c24323fd061f243898162a"></span><a class="reference internal" href="structrocky_1_1option.html#_CPPv4I0EN5rocky6optionE" title="rocky::option"><span class="n"><span class="pre">option</span></span></a><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">openAutomatically</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="k"><span class="pre">true</span></span><a class="headerlink" href="#_CPPv4N5rocky5Layer17openAutomaticallyE" title="Link to this definition"></a><br /></dt>
+<dd><p>Whether to automatically open this layer when added to a map. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer11attributionE">
+<span id="_CPPv3N5rocky5Layer11attributionE"></span><span id="_CPPv2N5rocky5Layer11attributionE"></span><span id="rocky::Layer::attribution__option:Hyperlink:"></span><span class="target" id="classrocky_1_1Layer_1a4ca9b0915f9a51f834d02e5f7e5634d8"></span><a class="reference internal" href="structrocky_1_1option.html#_CPPv4I0EN5rocky6optionE" title="rocky::option"><span class="n"><span class="pre">option</span></span></a><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="structrocky_1_1Hyperlink.html#_CPPv4N5rocky9HyperlinkE" title="rocky::Hyperlink"><span class="n"><span class="pre">Hyperlink</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">attribution</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="p"><span class="pre">{</span></span><span class="p"><span class="pre">}</span></span><a class="headerlink" href="#_CPPv4N5rocky5Layer11attributionE" title="Link to this definition"></a><br /></dt>
+<dd><p>Information about the source of this layer’s data. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer13onLayerOpenedE">
+<span id="_CPPv3N5rocky5Layer13onLayerOpenedE"></span><span id="_CPPv2N5rocky5Layer13onLayerOpenedE"></span><span class="target" id="classrocky_1_1Layer_1a98b973e2ae60ced25d4bf7eb7f560234"></span><a class="reference internal" href="classrocky_1_1Callback.html#_CPPv4I0EN5rocky8CallbackE" title="rocky::Callback"><span class="n"><span class="pre">Callback</span></span></a><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">(</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5LayerE" title="rocky::Layer"><span class="n"><span class="pre">Layer</span></span></a><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">onLayerOpened</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Layer13onLayerOpenedE" title="Link to this definition"></a><br /></dt>
+<dd><p>Register a callback for layer open. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer13onLayerClosedE">
+<span id="_CPPv3N5rocky5Layer13onLayerClosedE"></span><span id="_CPPv2N5rocky5Layer13onLayerClosedE"></span><span class="target" id="classrocky_1_1Layer_1a9bc57b02f86139a834c790fab1d91318"></span><a class="reference internal" href="classrocky_1_1Callback.html#_CPPv4I0EN5rocky8CallbackE" title="rocky::Callback"><span class="n"><span class="pre">Callback</span></span></a><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">void</span></span><span class="p"><span class="pre">(</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5rocky5LayerE" title="rocky::Layer"><span class="n"><span class="pre">Layer</span></span></a><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">onLayerClosed</span></span></span><a class="headerlink" href="#_CPPv4N5rocky5Layer13onLayerClosedE" title="Link to this definition"></a><br /></dt>
+<dd><p>Register a callback for layer close. </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-functions">Protected Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer5LayerEv">
+<span id="_CPPv3N5rocky5Layer5LayerEv"></span><span id="_CPPv2N5rocky5Layer5LayerEv"></span><span id="rocky::Layer::Layer"></span><span class="target" id="classrocky_1_1Layer_1a8f623c7c4737dc29ecc86978d243ac6f"></span><span class="sig-name descname"><span class="n"><span class="pre">Layer</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Layer5LayerEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Construct the layer (from a subclass) </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer5LayerENSt11string_viewE">
+<span id="_CPPv3N5rocky5Layer5LayerENSt11string_viewE"></span><span id="_CPPv2N5rocky5Layer5LayerENSt11string_viewE"></span><span id="rocky::Layer::Layer__std::string_view"></span><span class="target" id="classrocky_1_1Layer_1adb8601a3721e22fff6fe8936b3e6d716"></span><span class="sig-name descname"><span class="n"><span class="pre">Layer</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string_view</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">conf</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Layer5LayerENSt11string_viewE" title="Link to this definition"></a><br /></dt>
+<dd><p>Construct a layer (from serialized JSON) </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer18openImplementationERK9IOOptions">
+<span id="_CPPv3N5rocky5Layer18openImplementationERK9IOOptions"></span><span id="_CPPv2N5rocky5Layer18openImplementationERK9IOOptions"></span><span id="rocky::Layer::openImplementation__IOOptionsCR"></span><span class="target" id="classrocky_1_1Layer_1a1fdbedf5b5808e1880944b0b7cddaf2c"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><a class="reference internal" href="classrocky_1_1Result.html#_CPPv4I00EN5rocky6ResultE" title="rocky::Result"><span class="n"><span class="pre">Result</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">openImplementation</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classrocky_1_1IOOptions.html#_CPPv4N5rocky9IOOptionsE" title="rocky::IOOptions"><span class="n"><span class="pre">IOOptions</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">io</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Layer18openImplementationERK9IOOptions" title="Link to this definition"></a><br /></dt>
+<dd><p>Called by <a class="reference internal" href="#classrocky_1_1Layer_1af537845e75110b1227144e621b0fdb02"><span class="std std-ref">open()</span></a> to connect to external resources and return a status. </p>
+<p>MAKE SURE you call superclass <a class="reference internal" href="#classrocky_1_1Layer_1a1fdbedf5b5808e1880944b0b7cddaf2c"><span class="std std-ref">openImplementation()</span></a> if you override this! This is where you will connect to back-end data sources if appropriate. When added to a map, init() is called before <a class="reference internal" href="#classrocky_1_1Layer_1af537845e75110b1227144e621b0fdb02"><span class="std std-ref">open()</span></a> and addedToMap() is called after <a class="reference internal" href="#classrocky_1_1Layer_1af537845e75110b1227144e621b0fdb02"><span class="std std-ref">open()</span></a> if it succeeds. By default, returns STATUS_OK. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer19closeImplementationEv">
+<span id="_CPPv3N5rocky5Layer19closeImplementationEv"></span><span id="_CPPv2N5rocky5Layer19closeImplementationEv"></span><span id="rocky::Layer::closeImplementation"></span><span class="target" id="classrocky_1_1Layer_1a0d41d147a1f92eeeac99e51a81a8e6d4"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">closeImplementation</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Layer19closeImplementationEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Called by <a class="reference internal" href="#classrocky_1_1Layer_1ad995a8d1aeb6812ec94e38bad898552e"><span class="std std-ref">close()</span></a> to shut down the resources associated with a layer. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer4failERK7Failure">
+<span id="_CPPv3NK5rocky5Layer4failERK7Failure"></span><span id="_CPPv2NK5rocky5Layer4failERK7Failure"></span><span id="rocky::Layer::fail__FailureCRC"></span><span class="target" id="classrocky_1_1Layer_1a27a3fcb40e47cb7b2d7cbf557726b2a5"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="structrocky_1_1Failure.html#_CPPv4N5rocky7FailureE" title="rocky::Failure"><span class="n"><span class="pre">Failure</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">fail</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="structrocky_1_1Failure.html#_CPPv4N5rocky7FailureE" title="rocky::Failure"><span class="n"><span class="pre">Failure</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">failure</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer4failERK7Failure" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the status for this layer - internal. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer4failEKN7Failure4TypeENSt11string_viewE">
+<span id="_CPPv3NK5rocky5Layer4failEKN7Failure4TypeENSt11string_viewE"></span><span id="_CPPv2NK5rocky5Layer4failEKN7Failure4TypeENSt11string_viewE"></span><span id="rocky::Layer::fail__Failure::TypeC.std::string_viewC"></span><span class="target" id="classrocky_1_1Layer_1ad362264263ef71e1bb8d1d9bef7e7182"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="structrocky_1_1Failure.html#_CPPv4N5rocky7FailureE" title="rocky::Failure"><span class="n"><span class="pre">Failure</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">fail</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="structrocky_1_1Failure.html#_CPPv4N5rocky7FailureE" title="rocky::Failure"><span class="n"><span class="pre">Failure</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="structrocky_1_1Failure.html#_CPPv4N5rocky7Failure4TypeE" title="rocky::Failure::Type"><span class="n"><span class="pre">Type</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">type</span></span>, <span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string_view</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">message</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer4failEKN7Failure4TypeENSt11string_viewE" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the status for this layer with a message - internal. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer16setLayerTypeNameERKNSt6stringE">
+<span id="_CPPv3N5rocky5Layer16setLayerTypeNameERKNSt6stringE"></span><span id="_CPPv2N5rocky5Layer16setLayerTypeNameERKNSt6stringE"></span><span id="rocky::Layer::setLayerTypeName__ssCR"></span><span class="target" id="classrocky_1_1Layer_1abce836701e4c412c2f214bbdbe604632"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">setLayerTypeName</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&amp;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Layer16setLayerTypeNameERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the name to use for serialization. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5rocky5Layer12bumpRevisionEv">
+<span id="_CPPv3N5rocky5Layer12bumpRevisionEv"></span><span id="_CPPv2N5rocky5Layer12bumpRevisionEv"></span><span id="rocky::Layer::bumpRevision"></span><span class="target" id="classrocky_1_1Layer_1a64b0da950de5d5690b8e4950f05db866"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">bumpRevision</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5rocky5Layer12bumpRevisionEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5rocky5Layer15layerStateMutexEv">
+<span id="_CPPv3NK5rocky5Layer15layerStateMutexEv"></span><span id="_CPPv2NK5rocky5Layer15layerStateMutexEv"></span><span id="rocky::Layer::layerStateMutexC"></span><span class="target" id="classrocky_1_1Layer_1a13f521ad5bfa415fa44bdacb704aae76"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_mutex</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">layerStateMutex</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5rocky5Layer15layerStateMutexEv" title="Link to this definition"></a><br /></dt>
+<dd><p>subclass access to a mutex that serializes the <a class="reference internal" href="#classrocky_1_1Layer"><span class="std std-ref">Layer</span></a> open and close methods with respect to any asynchronous functions that require the layer to remain open </p>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-friends">Friends</p>
+<dl>
+<dt class="sig sig-object cpp">
+<span class="property"><span class="pre">friend</span> <span class="pre">class</span></span> <span class="pre">Map</span></dt>
+</dl>
+
+</div>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="classrocky_1_1IOOptions.html" class="btn btn-neutral float-left" title="Class IOOptions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="classrocky_1_1Line.html" class="btn btn-neutral float-right" title="Class Line" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

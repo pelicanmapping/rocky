@@ -1,0 +1,38 @@
+
+.. _file_src_rocky_GDALImageLayer.cpp:
+
+File GDALImageLayer.cpp
+=======================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/GDALImageLayer.cpp``)
+---------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_GDALImageLayer.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``GDALImageLayer.h`` (:ref:`file_src_rocky_GDALImageLayer.h`)
+
+
+
+
+

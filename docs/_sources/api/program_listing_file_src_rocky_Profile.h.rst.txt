@@ -1,0 +1,143 @@
+
+.. _program_listing_file_src_rocky_Profile.h:
+
+Program Listing for File Profile.h
+==================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_Profile.h>` (``src/rocky/Profile.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Common.h>
+   #include <rocky/GeoExtent.h>
+   #include <vector>
+   #include <string>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class TileKey;
+   
+       class ROCKY_EXPORT Profile
+       {
+       public:
+           Profile();
+   
+           explicit Profile(const std::string& well_known_name);
+   
+           Profile(
+               const SRS& srs,
+               const Box& bounds = Box(),
+               unsigned x_tiles_at_root = 0,
+               unsigned y_tiles_at_root = 0,
+               const Box& geodeticBounds = {},
+               const std::vector<Profile>& subprofiles = {});
+   
+           // copy/move ops
+           Profile(const Profile& rhs) = default;
+           Profile& operator=(const Profile& rhs) = default;
+           // NO move constructors since we use global instances of Profile
+   
+           bool valid() const;
+   
+           const GeoExtent& extent() const;
+   
+           const GeoExtent& geodeticExtent() const;
+           
+           const SRS& srs() const;
+   
+           unsigned levelOfDetailForHorizResolution(double resolution, int tileSize) const;
+   
+           std::vector<TileKey> rootKeys() const;
+   
+           std::vector<TileKey> allKeysAtLOD(unsigned lod) const;
+   
+           GeoExtent tileExtent(
+               unsigned lod,
+               unsigned tileX,
+               unsigned tileY) const;
+   
+           bool equivalentTo(const Profile& rhs) const;
+   
+           bool operator == (const Profile& rhs) const {
+               return equivalentTo(rhs);
+           }
+           bool operator != (const Profile& rhs) const {
+               return !equivalentTo(rhs);
+           }
+   
+           using TileDims = struct { double x, y; };
+           TileDims tileDimensions(unsigned lod) const;
+   
+           using NumTiles = struct { std::uint32_t x, y; };
+           NumTiles numTiles(unsigned lod) const;
+   
+           std::string to_json() const;
+   
+           void from_json(const std::string& json);
+   
+           unsigned levelOfDetail(double tileHeight) const;
+   
+           Profile overrideSRS(const SRS&) const;
+   
+           const std::string& wellKnownName() const;
+   
+           std::string toReadableString() const;
+   
+           inline bool isComposite() const;
+   
+           inline std::vector<Profile>& subprofiles();
+           inline const std::vector<Profile>& subprofiles() const;
+   
+           inline std::size_t hash() const;
+   
+       protected:
+   
+           struct Data
+           {
+               std::string wellKnownName;
+               GeoExtent   extent;
+               GeoExtent   geodeticExtent;
+               unsigned    numTilesBaseX = 1u;
+               unsigned    numTilesBaseY = 1u;
+               std::size_t hash = 0;
+               std::vector<Profile> subprofiles;
+           };
+           std::shared_ptr<Data> _shared;
+   
+           void setup(const std::string& wellKnownName);
+           void setup(const SRS&, const Box& bounds, unsigned dim_x, unsigned dim_y, 
+               const Box& geodeticBounds = {}, const std::vector<Profile> & = {});
+       };
+   
+   
+       // inlines
+       inline auto Profile::hash() const -> std::size_t {
+           return _shared->hash;
+       }
+   
+       inline auto Profile::isComposite() const -> bool {
+           return !_shared->subprofiles.empty();
+       }
+   
+       inline auto Profile::subprofiles() -> std::vector<Profile>& {
+           return _shared->subprofiles;
+       }
+   
+       inline auto Profile::subprofiles() const -> const std::vector<Profile>& {
+           return _shared->subprofiles;
+       }
+   }
+   
+   namespace std {
+       // std::hash specialization for Profile
+       template<> struct hash<rocky::Profile> {
+           inline size_t operator()(const rocky::Profile& value) const {
+               return value.hash();
+           }
+       };
+   }

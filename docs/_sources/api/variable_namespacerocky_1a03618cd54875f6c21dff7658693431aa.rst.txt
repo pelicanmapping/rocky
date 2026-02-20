@@ -1,0 +1,14 @@
+.. _exhale_variable_namespacerocky_1a03618cd54875f6c21dff7658693431aa:
+
+Variable rocky::VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX
+=======================================================
+
+- Defined in :ref:`file_src_rocky_vsg_PipelineState.h`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: rocky::VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX
+   :project: Rocky

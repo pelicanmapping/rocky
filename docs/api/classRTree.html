@@ -1,0 +1,1044 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Template Class RTree &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Class RTree::Iterator" href="classRTree_1_1Iterator.html" />
+    <link rel="prev" title="Class RTFileStream" href="classRTFileStream.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="library_root.html">API Reference</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="library_root.html#page-hierarchy">Page Hierarchy</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="library_root.html#full-api">Full API</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#namespaces">Namespaces</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="library_root.html#classes-and-structs">Classes and Structs</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="structnlohmann_1_1adl__serializer_3_01rocky_1_1option_3_01T_01_4_01_4.html">Template Struct adl_serializer&lt; rocky::option&lt; T &gt; &gt;</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ActiveState.html">Struct ActiveState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Application_1_1Stats.html">Struct Application::Stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Box.html">Struct Box</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1CallbackSubs.html">Struct CallbackSubs</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1CelestialBody.html">Struct CelestialBody</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Component.html">Template Struct Component</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Component_1_1Dirty.html">Struct Component::Dirty</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Content.html">Struct Content</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Declutter.html">Struct Declutter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1DisplayGeoPoint.html">Struct DisplayGeoPoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1DisplayManager_1_1ViewData.html">Struct DisplayManager::ViewData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ElevationSample.html">Struct ElevationSample</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Failure.html">Struct Failure</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Feature_1_1FieldValue.html">Struct Feature::FieldValue</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureSource_1_1iterator_1_1implementation.html">Struct iterator::implementation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureSource_1_1Metadata.html">Struct FeatureSource::Metadata</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1FeatureView_1_1Workspace.html">Struct FeatureView::Workspace</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Geometry.html">Struct Geometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1GeometryKey.html">Struct GeometryKey</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1GeometryPool_1_1Settings.html">Struct GeometryPool::Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Hyperlink.html">Struct Hyperlink</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Image_1_1Layout.html">Struct Image::Layout</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1json__parse__result.html">Struct json_parse_result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Label.html">Struct Label</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LabelStyle.html">Struct LabelStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LineGeometry.html">Struct LineGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1LineStyle.html">Struct LineStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1Action.html">Struct MapManipulator::Action</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1ActionOption.html">Struct MapManipulator::ActionOption</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1ActionOptions.html">Struct MapManipulator::ActionOptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1InputSpec.html">Struct MapManipulator::InputSpec</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1State.html">Struct MapManipulator::State</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MapManipulator_1_1Task.html">Struct MapManipulator::Task</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Mesh.html">Struct Mesh</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshGeometry.html">Struct MeshGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshStyle.html">Struct MeshStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MeshTexture.html">Struct MeshTexture</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Motion.html">Struct Motion</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1MotionGreatCircle.html">Struct MotionGreatCircle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NamedFunction.html">Struct NamedFunction</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NodeGraph.html">Struct NodeGraph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1NodeSystemNode_1_1Drawable.html">Struct NodeSystemNode::Drawable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1option.html">Template Struct option</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PipelineUtils.html">Struct PipelineUtils</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PointGeometry.html">Struct PointGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1PointStyle.html">Struct PointStyle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Profile_1_1Data.html">Struct Profile::Data</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Rect.html">Struct Rect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Impl.html">Struct Registry::Impl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Read.html">Struct Registry::Read</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Registry_1_1Write.html">Struct Registry::Write</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1RenderingState.html">Struct RenderingState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Sphere.html">Struct Sphere</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1StyleSheet.html">Struct StyleSheet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainDescriptors.html">Struct TerrainDescriptors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainDescriptors_1_1Uniforms.html">Struct TerrainDescriptors::Uniforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainNode_1_1Stats.html">Struct TerrainNode::Stats</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainState_1_1TextureDef.html">Struct TerrainState::TextureDef</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileDescriptors.html">Struct TerrainTileDescriptors</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileDescriptors_1_1Uniforms.html">Struct TerrainTileDescriptors::Uniforms</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel.html">Struct TerrainTileModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1ColorLayer.html">Struct TerrainTileModel::ColorLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1Elevation.html">Struct TerrainTileModel::Elevation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1MaterialMap.html">Struct TerrainTileModel::MaterialMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1NormalMap.html">Struct TerrainTileModel::NormalMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileModel_1_1Tile.html">Struct TerrainTileModel::Tile</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTilePager_1_1TileInfo.html">Struct TerrainTilePager::TileInfo</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TerrainTileRenderModel.html">Struct TerrainTileRenderModel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TextureData.html">Struct TextureData</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TileLayer_1_1DataExtentsIndex.html">Struct TileLayer::DataExtentsIndex</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1Options.html">Struct Options</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileFormat.html">Struct TileFormat</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileMap.html">Struct TileMap</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileMapEntry.html">Struct TileMapEntry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TMS_1_1TileSet.html">Struct TileSet</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Transform.html">Struct Transform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformDetail.html">Struct TransformDetail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformDetail_1_1Cached.html">Struct TransformDetail::Cached</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1TransformViewDetail.html">Struct TransformViewDetail</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URI_1_1Context.html">Struct URI::Context</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URI_1_1Stream.html">Struct URI::Stream</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1URIResponse.html">Struct URIResponse</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1make__string.html">Struct make_string</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1PromiseOperation.html">Template Struct PromiseOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map.html">Template Struct vector_map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map_1_1ENTRY.html">Struct vector_map::ENTRY</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1util_1_1vector__map__equal.html">Template Struct vector_map_equal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1ViewLocal.html">Template Struct ViewLocal</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structrocky_1_1Visibility.html">Struct Visibility</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Branch.html">Struct RTree::Branch</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Iterator_1_1StackElement.html">Struct Iterator::StackElement</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1ListNode.html">Struct RTree::ListNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Node.html">Struct RTree::Node</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1PartitionVars.html">Struct RTree::PartitionVars</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structRTree_1_1Rect.html">Struct RTree::Rect</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structstd_1_1hash_3_01rocky_1_1Profile_01_4.html">Template Struct hash&lt; rocky::Profile &gt;</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1context.html">Struct context</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1future_1_1shared__t.html">Struct future::shared_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1jobgroup.html">Struct jobgroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structWEEJOBS__NAMESPACE_1_1jobpool_1_1metrics__t.html">Struct jobpool::metrics_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1edge__t.html">Struct edge_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1edgeset__t.html">Struct edgeset_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1graph__t.html">Struct graph_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1mesh__t.html">Struct mesh_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1neighbors__t.html">Struct neighbors_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1node__t.html">Struct node_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1segment__t.html">Struct segment_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1triangle__t.html">Struct triangle_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="structweemesh_1_1vert__t.html">Struct vert_t</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Angle.html">Class Angle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Application.html">Class Application</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Cache.html">Template Class Cache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Callback.html">Template Class Callback</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Color.html">Class Color</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ContextFactory.html">Class ContextFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ContextImpl.html">Class ContextImpl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DateTime.html">Class DateTime</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DateTimeExtent.html">Class DateTimeExtent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DeclutterSystem.html">Class DeclutterSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DescriptorBufferEx.html">Class DescriptorBufferEx</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1DisplayManager.html">Class DisplayManager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Distance.html">Class Distance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Duration.html">Class Duration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EarthFileImporter.html">Class EarthFileImporter</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSLineSegmentIntersector.html">Class ECSLineSegmentIntersector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSNode.html">Class ECSNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSPolytopeIntersector.html">Class ECSPolytopeIntersector</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ECSVisitor.html">Class ECSVisitor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationLayer.html">Class ElevationLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationSampler.html">Class ElevationSampler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ElevationSession.html">Class ElevationSession</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Ellipsoid.html">Class Ellipsoid</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EntityCollectionLayer.html">Class EntityCollectionLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1EntityNode.html">Class EntityNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Ephemeris.html">Class Ephemeris</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Feature.html">Class Feature</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureSource.html">Class FeatureSource</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureSource_1_1iterator.html">Class FeatureSource::iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1FeatureView.html">Class FeatureView</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoCircle.html">Class GeoCircle</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Geocoder.html">Class Geocoder</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoExtent.html">Class GeoExtent</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoExtent3D.html">Class GeoExtent3D</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoHeightfield.html">Class GeoHeightfield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoImage.html">Class GeoImage</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Geometry_1_1iterator__base.html">Template Class Geometry::iterator_base</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeometryPool.html">Class GeometryPool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoPoint.html">Class GeoPoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1GeoTransform.html">Class GeoTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Heightfield.html">Class Heightfield</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Horizon.html">Class Horizon</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Image.html">Class Image</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Image_1_1iterator.html">Class Image::iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ImageLayer.html">Class ImageLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ImGuiContextNode.html">Class ImGuiContextNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Inherit.html">Template Class Inherit</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1IOOptions.html">Class IOOptions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Layer.html">Class Layer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Line.html">Class Line</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1LineGeometryNode.html">Class LineGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1LineSystemNode.html">Class LineSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Map.html">Class Map</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapManipulator.html">Class MapManipulator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapManipulator_1_1Settings.html">Class MapManipulator::Settings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MapNode.html">Class MapNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Memory.html">Class Memory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MeshGeometryNode.html">Class MeshGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MeshSystemNode.html">Class MeshSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Mosaic.html">Class Mosaic</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1MotionSystem.html">Class MotionSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodeLayer.html">Class NodeLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodePager.html">Class NodePager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1NodeSystemNode.html">Class NodeSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Object.html">Class Object</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PagedNode.html">Class PagedNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PixelScaleTransform.html">Class PixelScaleTransform</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Point.html">Class Point</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PointGeometryNode.html">Class PointGeometryNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1PointSystemNode.html">Class PointSystemNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Profile.html">Class Profile</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Registry.html">Class Registry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RenderImGui.html">Class RenderImGui</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RenderImGuiContext.html">Class RenderImGuiContext</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Result.html">Template Class Result</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1RTT.html">Class RTT</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ScreenSize.html">Class ScreenSize</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1ScreenSpaceGroup.html">Class ScreenSpaceGroup</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SendEventsToImGui.html">Class SendEventsToImGui</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SendEventsToImGuiContext.html">Class SendEventsToImGuiContext</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Services.html">Class Services</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetColorWriteMask.html">Class SetColorWriteMask</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetCullMode.html">Class SetCullMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetDepthWriteEnable.html">Class SetDepthWriteEnable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SetPolygonMode.html">Class SetPolygonMode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SharedGeometry.html">Class SharedGeometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SkyNode.html">Class SkyNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Speed.html">Class Speed</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SRS.html">Class SRS</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SRSOperation.html">Class SRSOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Status.html">Class Status</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1StreamingGPUBuffer.html">Class StreamingGPUBuffer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1SurfaceNode.html">Class SurfaceNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1System.html">Class System</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainEngine.html">Class TerrainEngine</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainNode.html">Class TerrainNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainProfileNode.html">Class TerrainProfileNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainSettings.html">Class TerrainSettings</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainState.html">Class TerrainState</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileHost.html">Class TerrainTileHost</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileModelFactory.html">Class TerrainTileModelFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTileNode.html">Class TerrainTileNode</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TerrainTilePager.html">Class TerrainTilePager</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TileKey.html">Class TileKey</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TileLayer.html">Class TileLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMS_1_1Driver.html">Class Driver</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMSElevationLayer.html">Class TMSElevationLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TMSImageLayer.html">Class TMSImageLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1TransformSystem.html">Class TransformSystem</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Units.html">Class Units</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1URI.html">Class URI</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1BackgroundServices.html">Class BackgroundServices</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1LambdaOperation.html">Class LambdaOperation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1LRUCache.html">Template Class LRUCache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ResidentCache.html">Template Class ResidentCache</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ring__buffer.html">Template Class ring_buffer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1ring__buffer__with__condition.html">Template Class ring_buffer_with_condition</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1SimpleCompiler.html">Class SimpleCompiler</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1StreamCompressor.html">Class StreamCompressor</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1util_1_1StringTokenizer.html">Class StringTokenizer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1Viewpoint.html">Class Viewpoint</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VisibleLayer.html">Class VisibleLayer</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VSGContextFactory.html">Class VSGContextFactory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VSGContextImpl.html">Class VSGContextImpl</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classrocky_1_1VulkanExtensions.html">Class VulkanExtensions</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTFileStream.html">Class RTFileStream</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Template Class RTree</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classRTree_1_1Iterator.html">Class RTree::Iterator</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1cancelable.html">Class cancelable</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1future.html">Template Class future</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1jobpool.html">Class jobpool</a></li>
+<li class="toctree-l4"><a class="reference internal" href="classWEEJOBS__NAMESPACE_1_1metrics.html">Class metrics</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#enums">Enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#functions">Functions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#variables">Variables</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#defines">Defines</a></li>
+<li class="toctree-l3"><a class="reference internal" href="library_root.html#typedefs">Typedefs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="library_root.html">API Reference</a></li>
+      <li class="breadcrumb-item active">Template Class RTree</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/classRTree.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="template-class-rtree">
+<span id="exhale-class-classrtree"></span><h1>Template Class RTree<a class="headerlink" href="#template-class-rtree" title="Link to this heading"></a></h1>
+<ul class="simple">
+<li><p>Defined in <a class="reference internal" href="file_src_rocky_rtree.h.html#file-src-rocky-rtree-h"><span class="std std-ref">File rtree.h</span></a></p></li>
+</ul>
+<section id="nested-relationships">
+<h2>Nested Relationships<a class="headerlink" href="#nested-relationships" title="Link to this heading"></a></h2>
+<section id="nested-types">
+<h3>Nested Types<a class="headerlink" href="#nested-types" title="Link to this heading"></a></h3>
+<ul class="simple">
+<li><p><a class="reference internal" href="structRTree_1_1Branch.html#exhale-struct-structrtree-1-1branch"><span class="std std-ref">Struct RTree::Branch</span></a></p></li>
+<li><p><a class="reference internal" href="classRTree_1_1Iterator.html#exhale-class-classrtree-1-1iterator"><span class="std std-ref">Class RTree::Iterator</span></a></p></li>
+<li><p><a class="reference internal" href="structRTree_1_1Iterator_1_1StackElement.html#exhale-struct-structrtree-1-1iterator-1-1stackelement"><span class="std std-ref">Struct Iterator::StackElement</span></a></p></li>
+<li><p><a class="reference internal" href="structRTree_1_1ListNode.html#exhale-struct-structrtree-1-1listnode"><span class="std std-ref">Struct RTree::ListNode</span></a></p></li>
+<li><p><a class="reference internal" href="structRTree_1_1Node.html#exhale-struct-structrtree-1-1node"><span class="std std-ref">Struct RTree::Node</span></a></p></li>
+<li><p><a class="reference internal" href="structRTree_1_1PartitionVars.html#exhale-struct-structrtree-1-1partitionvars"><span class="std std-ref">Struct RTree::PartitionVars</span></a></p></li>
+<li><p><a class="reference internal" href="structRTree_1_1Rect.html#exhale-struct-structrtree-1-1rect"><span class="std std-ref">Struct RTree::Rect</span></a></p></li>
+</ul>
+</section>
+</section>
+<section id="template-parameter-order">
+<h2>Template Parameter Order<a class="headerlink" href="#template-parameter-order" title="Link to this heading"></a></h2>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">class</span> <span class="pre">DATATYPE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">class</span> <span class="pre">ELEMTYPE</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">NUMDIMS</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">class</span> <span class="pre">ELEMTYPEREAL</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">TMAXNODES</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">int</span> <span class="pre">TMINNODES</span></code></p></li>
+</ol>
+</section>
+<section id="class-documentation">
+<h2>Class Documentation<a class="headerlink" href="#class-documentation" title="Link to this heading"></a></h2>
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4I00_i0_i_iE5RTree">
+<span id="_CPPv3I00_i0_i_iE5RTree"></span><span id="_CPPv2I00_i0_i_iE5RTree"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DATATYPE</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELEMTYPE</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">NUMDIMS</span></span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ELEMTYPEREAL</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TMAXNODES</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="m"><span class="pre">8</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">TMINNODES</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::TMAXNODES"><span class="n"><span class="pre">TMAXNODES</span></span></a><span class="w"> </span><span class="o"><span class="pre">/</span></span><span class="w"> </span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classRTree"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">RTree</span></span></span><a class="headerlink" href="#_CPPv4I00_i0_i_iE5RTree" title="Link to this definition"></a><br /></dt>
+<dd><p>Implementation of <a class="reference internal" href="#classRTree"><span class="std std-ref">RTree</span></a>, a multidimensional bounding rectangle tree. </p>
+<p>Example usage: For a 3-dimensional tree use RTree&lt;Object*, float, 3&gt; myTree;</p>
+<p>This modified, templated C++ version by Greg Douglas at Auran (<a class="reference external" href="http://www.auran.com">http://www.auran.com</a>)</p>
+<p>DATATYPE Referenced data, should be int, void*, obj* etc. no larger than sizeof&lt;void*&gt; and simple type ELEMTYPE Type of element such as int or float NUMDIMS Number of dimensions such as 2 or 3 ELEMTYPEREAL Type of element that allows fractional and large values such as float or double, for use in volume calcs</p>
+<p>NOTES: Inserting and removing data requires the knowledge of its constant Minimal Bounding Rectangle. This version uses new/delete for nodes, I recommend using a fixed size allocator for efficiency. Instead of using a callback function for returned results, I recommend and efficient pre-sized, grow-only memory array similar to MFC CArray or STL Vector for returning search query result. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
+<dl class="cpp enum">
+<dt class="sig sig-object cpp">
+<span class="target" id="classRTree_1ae7f5ec555297efdbbd6834a810236002"></span><span class="sig-name descname"></span></dt>
+<dd><p><em>Values:</em></p>
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree19PhonyNameDueToError8MAXNODESE">
+<span id="_CPPv3N5RTree19PhonyNameDueToError8MAXNODESE"></span><span id="_CPPv2N5RTree19PhonyNameDueToError8MAXNODESE"></span><span class="target" id="classRTree_1ae7f5ec555297efdbbd6834a810236002ac05afe446df73fa67991e5199453a37f"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MAXNODES</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::TMAXNODES"><span class="n"><span class="pre">TMAXNODES</span></span></a><a class="headerlink" href="#_CPPv4N5RTree19PhonyNameDueToError8MAXNODESE" title="Link to this definition"></a><br /></dt>
+<dd><p>Max elements in node. </p>
+</dd></dl>
+
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree19PhonyNameDueToError8MINNODESE">
+<span id="_CPPv3N5RTree19PhonyNameDueToError8MINNODESE"></span><span id="_CPPv2N5RTree19PhonyNameDueToError8MINNODESE"></span><span class="target" id="classRTree_1ae7f5ec555297efdbbd6834a810236002a3be3d8c82fd5bfbd5e5a496e9877d71a"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">MINNODES</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::TMINNODES"><span class="n"><span class="pre">TMINNODES</span></span></a><a class="headerlink" href="#_CPPv4N5RTree19PhonyNameDueToError8MINNODESE" title="Link to this definition"></a><br /></dt>
+<dd><p>Min elements in node. </p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="cpp type">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree19DefaultCallbackTypeE">
+<span id="_CPPv3N5RTree19DefaultCallbackTypeE"></span><span id="_CPPv2N5RTree19DefaultCallbackTypeE"></span><span class="target" id="classRTree_1ae4674f299a41ecb3cf1735bb5545a2ad"></span><span class="k"><span class="pre">using</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DefaultCallbackType</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">function</span></span><span class="p"><span class="pre">&lt;</span></span><span class="kt"><span class="pre">bool</span></span><span class="p"><span class="pre">(</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::DATATYPE"><span class="n"><span class="pre">DATATYPE</span></span></a><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">)</span></span><span class="p"><span class="pre">&gt;</span></span><a class="headerlink" href="#_CPPv4N5RTree19DefaultCallbackTypeE" title="Link to this definition"></a><br /></dt>
+<dd><p>Find all within search rectangle. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Param a_min<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Min of search bounding rect </p>
+</dd>
+<dt class="field-even">Param a_max<span class="colon">:</span></dt>
+<dd class="field-even"><p>Max of search bounding rect </p>
+</dd>
+<dt class="field-odd">Param a_searchResult<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Search result array. Caller should set grow size. Function will reset, not append to array. </p>
+</dd>
+<dt class="field-even">Param a_resultCallback<span class="colon">:</span></dt>
+<dd class="field-even"><p>Callback function to return result. Callback should return ‘true’ to continue searching </p>
+</dd>
+<dt class="field-odd">Param a_context<span class="colon">:</span></dt>
+<dd class="field-odd"><p>User context to pass as parameter to a_resultCallback </p>
+</dd>
+<dt class="field-even">Return<span class="colon">:</span></dt>
+<dd class="field-even"><p>Returns the number of entries found </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree5RTreeEv">
+<span id="_CPPv3N5RTree5RTreeEv"></span><span id="_CPPv2N5RTree5RTreeEv"></span><span id="RTree::RTree"></span><span class="target" id="classRTree_1a09630e761ba4e88a94a4a80ad40c0700"></span><span class="sig-name descname"><span class="n"><span class="pre">RTree</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree5RTreeEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree5RTreeERK5RTree">
+<span id="_CPPv3N5RTree5RTreeERK5RTree"></span><span id="_CPPv2N5RTree5RTreeERK5RTree"></span><span id="RTree::RTree__RTreeCR"></span><span class="target" id="classRTree_1ad725314141631faaa59b421bc03c14ef"></span><span class="sig-name descname"><span class="n"><span class="pre">RTree</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree5RTreeERK5RTree" title="RTree::RTree"><span class="n"><span class="pre">RTree</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">other</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree5RTreeERK5RTree" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTreeD0Ev">
+<span id="_CPPv3N5RTreeD0Ev"></span><span id="_CPPv2N5RTreeD0Ev"></span><span id="RTree::~RTree"></span><span class="target" id="classRTree_1aad9b714d15f488cd1747cdb619f6b7ee"></span><span class="k"><span class="pre">virtual</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~RTree</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTreeD0Ev" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree6InsertEA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPERK8DATATYPE">
+<span id="_CPPv3N5RTree6InsertEA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPERK8DATATYPE"></span><span id="_CPPv2N5RTree6InsertEANUMDIMS_K8ELEMTYPEANUMDIMS_K8ELEMTYPERK8DATATYPE"></span><span id="RTree::Insert__ELEMTYPECA.ELEMTYPECA.DATATYPECR"></span><span class="target" id="classRTree_1a98d1f0a325921db826b2a2d5a407c9be"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Insert</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">a_min</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">a_max</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::DATATYPE"><span class="n"><span class="pre">DATATYPE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_dataId</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree6InsertEA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPERK8DATATYPE" title="Link to this definition"></a><br /></dt>
+<dd><p>Insert entry. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a_min</strong> – Min of bounding rect </p></li>
+<li><p><strong>a_max</strong> – Max of bounding rect </p></li>
+<li><p><strong>a_dataId</strong> – Positive Id of data. Maybe zero, but negative numbers not allowed. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree6RemoveEA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPERK8DATATYPE">
+<span id="_CPPv3N5RTree6RemoveEA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPERK8DATATYPE"></span><span id="_CPPv2N5RTree6RemoveEANUMDIMS_K8ELEMTYPEANUMDIMS_K8ELEMTYPERK8DATATYPE"></span><span id="RTree::Remove__ELEMTYPECA.ELEMTYPECA.DATATYPECR"></span><span class="target" id="classRTree_1a1b4b6b4c73bc47029ba696c49265c043"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Remove</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">a_min</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">a_max</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::DATATYPE"><span class="n"><span class="pre">DATATYPE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_dataId</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree6RemoveEA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPERK8DATATYPE" title="Link to this definition"></a><br /></dt>
+<dd><p>Remove entry. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a_min</strong> – Min of bounding rect </p></li>
+<li><p><strong>a_max</strong> – Max of bounding rect </p></li>
+<li><p><strong>a_dataId</strong> – Positive Id of data. Maybe zero, but negative numbers not allowed. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0ENK5RTree6SearchEiA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPERR13CALLBACK_TYPE">
+<span id="_CPPv3I0ENK5RTree6SearchEA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPERR13CALLBACK_TYPE"></span><span id="_CPPv2I0ENK5RTree6SearchEANUMDIMS_K8ELEMTYPEANUMDIMS_K8ELEMTYPERR13CALLBACK_TYPE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CALLBACK_TYPE</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree19DefaultCallbackTypeE" title="RTree::DefaultCallbackType"><span class="n"><span class="pre">DefaultCallbackType</span></span></a><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classRTree_1a76cc047b7864614efa193683b4cab075"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Search</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">a_min</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">a_max</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span>, <a class="reference internal" href="#_CPPv4I0ENK5RTree6SearchEiA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPERR13CALLBACK_TYPE" title="RTree::Search::CALLBACK_TYPE"><span class="n"><span class="pre">CALLBACK_TYPE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">callback</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><code class="docutils literal notranslate"><span class="pre">[](const</span> <span class="pre">DATATYPE</span> <span class="pre">&amp;)</span> <span class="pre">{</span> <span class="pre">return</span> <span class="pre">true;}</span></code><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4I0ENK5RTree6SearchEiA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPERR13CALLBACK_TYPE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5RTree10IntersectsEA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPE">
+<span id="_CPPv3NK5RTree10IntersectsEA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPE"></span><span id="_CPPv2NK5RTree10IntersectsEANUMDIMS_K8ELEMTYPEANUMDIMS_K8ELEMTYPE"></span><span id="RTree::Intersects__ELEMTYPECA.ELEMTYPECAC"></span><span class="target" id="classRTree_1a090505834b89e877f784977cbd71a18e"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Intersects</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">a_min</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">a_max</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5RTree10IntersectsEA7NUMDIMS_K8ELEMTYPEA7NUMDIMS_K8ELEMTYPE" title="Link to this definition"></a><br /></dt>
+<dd><p>True if the input intersects any data in the tree. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree9RemoveAllEv">
+<span id="_CPPv3N5RTree9RemoveAllEv"></span><span id="_CPPv2N5RTree9RemoveAllEv"></span><span id="RTree::RemoveAll"></span><span class="target" id="classRTree_1a396f1031eb2c8224715741fd0b77349d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">RemoveAll</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree9RemoveAllEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Remove all entries from tree. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree5CountEv">
+<span id="_CPPv3N5RTree5CountEv"></span><span id="_CPPv2N5RTree5CountEv"></span><span id="RTree::Count"></span><span class="target" id="classRTree_1a813cdf63ce3e3e255821d9ba4bc9e7df"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Count</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree5CountEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Count the data elements in this container. This is slow as no internal counter is maintained. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4LoadEPKc">
+<span id="_CPPv3N5RTree4LoadEPKc"></span><span id="_CPPv2N5RTree4LoadEPKc"></span><span id="RTree::Load__cCP"></span><span class="target" id="classRTree_1adbd1f87715d22ed75b2b8be738583fc2"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Load</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_fileName</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree4LoadEPKc" title="Link to this definition"></a><br /></dt>
+<dd><p>Load tree contents from file. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4LoadER12RTFileStream">
+<span id="_CPPv3N5RTree4LoadER12RTFileStream"></span><span id="_CPPv2N5RTree4LoadER12RTFileStream"></span><span id="RTree::Load__RTFileStreamR"></span><span class="target" id="classRTree_1ad02dc25a34d9b5b291c8ff3f1b002b09"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Load</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="classRTFileStream.html#_CPPv412RTFileStream" title="RTFileStream"><span class="n"><span class="pre">RTFileStream</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_stream</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree4LoadER12RTFileStream" title="Link to this definition"></a><br /></dt>
+<dd><p>Load tree contents from stream. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4SaveEPKc">
+<span id="_CPPv3N5RTree4SaveEPKc"></span><span id="_CPPv2N5RTree4SaveEPKc"></span><span id="RTree::Save__cCP"></span><span class="target" id="classRTree_1a6817692e1e8e416843be1ea628f7a074"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Save</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_fileName</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree4SaveEPKc" title="Link to this definition"></a><br /></dt>
+<dd><p>Save tree contents to file. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4SaveER12RTFileStream">
+<span id="_CPPv3N5RTree4SaveER12RTFileStream"></span><span id="_CPPv2N5RTree4SaveER12RTFileStream"></span><span id="RTree::Save__RTFileStreamR"></span><span class="target" id="classRTree_1a7066ea753180537a3a870c84e4fcefce"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Save</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="classRTFileStream.html#_CPPv412RTFileStream" title="RTFileStream"><span class="n"><span class="pre">RTFileStream</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_stream</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree4SaveER12RTFileStream" title="Link to this definition"></a><br /></dt>
+<dd><p>Save tree contents to stream. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8GetFirstER8Iterator">
+<span id="_CPPv3N5RTree8GetFirstER8Iterator"></span><span id="_CPPv2N5RTree8GetFirstER8Iterator"></span><span id="RTree::GetFirst__IteratorR"></span><span class="target" id="classRTree_1acbcbd987b4f6549cd53e373e01b74efa"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">GetFirst</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree8IteratorE" title="RTree::Iterator"><span class="n"><span class="pre">Iterator</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_it</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8GetFirstER8Iterator" title="Link to this definition"></a><br /></dt>
+<dd><p>Get ‘first’ for iteration. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree7GetNextER8Iterator">
+<span id="_CPPv3N5RTree7GetNextER8Iterator"></span><span id="_CPPv2N5RTree7GetNextER8Iterator"></span><span id="RTree::GetNext__IteratorR"></span><span class="target" id="classRTree_1a41da97d27b44e7d7e852150ced23a610"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">GetNext</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree8IteratorE" title="RTree::Iterator"><span class="n"><span class="pre">Iterator</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_it</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree7GetNextER8Iterator" title="Link to this definition"></a><br /></dt>
+<dd><p>Get Next for iteration. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree6IsNullER8Iterator">
+<span id="_CPPv3N5RTree6IsNullER8Iterator"></span><span id="_CPPv2N5RTree6IsNullER8Iterator"></span><span id="RTree::IsNull__IteratorR"></span><span class="target" id="classRTree_1a8b8c51698e5b8df1e715650a43aad7f4"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">IsNull</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree8IteratorE" title="RTree::Iterator"><span class="n"><span class="pre">Iterator</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_it</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree6IsNullER8Iterator" title="Link to this definition"></a><br /></dt>
+<dd><p>Is iterator NULL, or at end? </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree5GetAtER8Iterator">
+<span id="_CPPv3N5RTree5GetAtER8Iterator"></span><span id="_CPPv2N5RTree5GetAtER8Iterator"></span><span id="RTree::GetAt__IteratorR"></span><span class="target" id="classRTree_1a9199a66bf611567cd2b7b0229ecbc301"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::DATATYPE"><span class="n"><span class="pre">DATATYPE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="n"><span class="pre">GetAt</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree8IteratorE" title="RTree::Iterator"><span class="n"><span class="pre">Iterator</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_it</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree5GetAtER8Iterator" title="Link to this definition"></a><br /></dt>
+<dd><p>Get object at iterator position. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5RTree8ListTreeEv">
+<span id="_CPPv3NK5RTree8ListTreeEv"></span><span id="_CPPv2NK5RTree8ListTreeEv"></span><span id="RTree::ListTreeC"></span><span class="target" id="classRTree_1accd0e13b9ca39d9e490786f981700101"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ListTree</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5RTree8ListTreeEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-functions">Protected Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree9AllocNodeEv">
+<span id="_CPPv3N5RTree9AllocNodeEv"></span><span id="_CPPv2N5RTree9AllocNodeEv"></span><span id="RTree::AllocNode"></span><span class="target" id="classRTree_1a7aa64637696dac88438ebbdf3895106e"></span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">AllocNode</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree9AllocNodeEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8FreeNodeEP4Node">
+<span id="_CPPv3N5RTree8FreeNodeEP4Node"></span><span id="_CPPv2N5RTree8FreeNodeEP4Node"></span><span id="RTree::FreeNode__NodeP"></span><span class="target" id="classRTree_1a6b5438d9cb74dbfc63f3bfff275f506b"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FreeNode</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8FreeNodeEP4Node" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8InitNodeEP4Node">
+<span id="_CPPv3N5RTree8InitNodeEP4Node"></span><span id="_CPPv2N5RTree8InitNodeEP4Node"></span><span id="RTree::InitNode__NodeP"></span><span class="target" id="classRTree_1aa24d93770aaa1042136daeabfdb8de3e"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">InitNode</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8InitNodeEP4Node" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8InitRectEP4Rect">
+<span id="_CPPv3N5RTree8InitRectEP4Rect"></span><span id="_CPPv2N5RTree8InitRectEP4Rect"></span><span id="RTree::InitRect__RectP"></span><span class="target" id="classRTree_1aa065e71784e5cac81acd16c07c6abe5e"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">InitRect</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rect</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8InitRectEP4Rect" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13InsertRectRecERK6BranchP4NodePP4Nodei">
+<span id="_CPPv3N5RTree13InsertRectRecERK6BranchP4NodePP4Nodei"></span><span id="_CPPv2N5RTree13InsertRectRecERK6BranchP4NodePP4Nodei"></span><span id="RTree::InsertRectRec__BranchCR.NodeP.NodePP.i"></span><span class="target" id="classRTree_1af8e10a4e616414ddf6c0ee40a6c95664"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">InsertRectRec</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree6BranchE" title="RTree::Branch"><span class="n"><span class="pre">Branch</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_branch</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_newNode</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">a_level</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree13InsertRectRecERK6BranchP4NodePP4Nodei" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree10InsertRectERK6BranchPP4Nodei">
+<span id="_CPPv3N5RTree10InsertRectERK6BranchPP4Nodei"></span><span id="_CPPv2N5RTree10InsertRectERK6BranchPP4Nodei"></span><span id="RTree::InsertRect__BranchCR.NodePP.i"></span><span class="target" id="classRTree_1a0a9b36fceaa83240e41d67b7665f6d3d"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">InsertRect</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree6BranchE" title="RTree::Branch"><span class="n"><span class="pre">Branch</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_branch</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_root</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">a_level</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree10InsertRectERK6BranchPP4Nodei" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree9NodeCoverEP4Node">
+<span id="_CPPv3N5RTree9NodeCoverEP4Node"></span><span id="_CPPv2N5RTree9NodeCoverEP4Node"></span><span id="RTree::NodeCover__NodeP"></span><span class="target" id="classRTree_1a19dc96034d7a3230ba877953247457e1"></span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">NodeCover</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree9NodeCoverEP4Node" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree9AddBranchEPK6BranchP4NodePP4Node">
+<span id="_CPPv3N5RTree9AddBranchEPK6BranchP4NodePP4Node"></span><span id="_CPPv2N5RTree9AddBranchEPK6BranchP4NodePP4Node"></span><span id="RTree::AddBranch__BranchCP.NodeP.NodePP"></span><span class="target" id="classRTree_1a1028d814e1f54328cf58371ea4f9f9bf"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">AddBranch</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree6BranchE" title="RTree::Branch"><span class="n"><span class="pre">Branch</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_branch</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_newNode</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree9AddBranchEPK6BranchP4NodePP4Node" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree16DisconnectBranchEP4Nodei">
+<span id="_CPPv3N5RTree16DisconnectBranchEP4Nodei"></span><span id="_CPPv2N5RTree16DisconnectBranchEP4Nodei"></span><span id="RTree::DisconnectBranch__NodeP.i"></span><span class="target" id="classRTree_1adcdcac926b2de35cc1f4f07e02b70bf6"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">DisconnectBranch</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">a_index</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree16DisconnectBranchEP4Nodei" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree10PickBranchEPK4RectP4Node">
+<span id="_CPPv3N5RTree10PickBranchEPK4RectP4Node"></span><span id="_CPPv2N5RTree10PickBranchEPK4RectP4Node"></span><span id="RTree::PickBranch__RectCP.NodeP"></span><span class="target" id="classRTree_1a142464629cd61c2541d6d0e0cc7d2d80"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">PickBranch</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rect</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree10PickBranchEPK4RectP4Node" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree11CombineRectEPK4RectPK4Rect">
+<span id="_CPPv3N5RTree11CombineRectEPK4RectPK4Rect"></span><span id="_CPPv2N5RTree11CombineRectEPK4RectPK4Rect"></span><span id="RTree::CombineRect__RectCP.RectCP"></span><span class="target" id="classRTree_1a295ad765615975e4b848592e424a5ca2"></span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CombineRect</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rectA</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rectB</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree11CombineRectEPK4RectPK4Rect" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree11CombineRectEPK4RectPK4RectP4Rect">
+<span id="_CPPv3N5RTree11CombineRectEPK4RectPK4RectP4Rect"></span><span id="_CPPv2N5RTree11CombineRectEPK4RectPK4RectP4Rect"></span><span id="RTree::CombineRect__RectCP.RectCP.RectP"></span><span class="target" id="classRTree_1a0e6a7ca4afc9fb1cba0f8bad00bbc603"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CombineRect</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rectA</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rectB</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_result</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree11CombineRectEPK4RectPK4RectP4Rect" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree9SplitNodeEP4NodePK6BranchPP4Node">
+<span id="_CPPv3N5RTree9SplitNodeEP4NodePK6BranchPP4Node"></span><span id="_CPPv2N5RTree9SplitNodeEP4NodePK6BranchPP4Node"></span><span id="RTree::SplitNode__NodeP.BranchCP.NodePP"></span><span class="target" id="classRTree_1aec268045161713d5225ed8151c5068dd"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">SplitNode</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree6BranchE" title="RTree::Branch"><span class="n"><span class="pre">Branch</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_branch</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_newNode</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree9SplitNodeEP4NodePK6BranchPP4Node" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree19RectSphericalVolumeEP4Rect">
+<span id="_CPPv3N5RTree19RectSphericalVolumeEP4Rect"></span><span id="_CPPv2N5RTree19RectSphericalVolumeEP4Rect"></span><span id="RTree::RectSphericalVolume__RectP"></span><span class="target" id="classRTree_1a7958e17fc046e5d648d8e23ffc82e849"></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPEREAL"><span class="n"><span class="pre">ELEMTYPEREAL</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">RectSphericalVolume</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rect</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree19RectSphericalVolumeEP4Rect" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree10RectVolumeEP4Rect">
+<span id="_CPPv3N5RTree10RectVolumeEP4Rect"></span><span id="_CPPv2N5RTree10RectVolumeEP4Rect"></span><span id="RTree::RectVolume__RectP"></span><span class="target" id="classRTree_1af9f63fef551a4c3a42cd915618a9917a"></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPEREAL"><span class="n"><span class="pre">ELEMTYPEREAL</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">RectVolume</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rect</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree10RectVolumeEP4Rect" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree14CalcRectVolumeEP4Rect">
+<span id="_CPPv3N5RTree14CalcRectVolumeEP4Rect"></span><span id="_CPPv2N5RTree14CalcRectVolumeEP4Rect"></span><span id="RTree::CalcRectVolume__RectP"></span><span class="target" id="classRTree_1a224ba0af4dcb435dbb016327307d664b"></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPEREAL"><span class="n"><span class="pre">ELEMTYPEREAL</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CalcRectVolume</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rect</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree14CalcRectVolumeEP4Rect" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree11GetBranchesEP4NodePK6BranchP13PartitionVars">
+<span id="_CPPv3N5RTree11GetBranchesEP4NodePK6BranchP13PartitionVars"></span><span id="_CPPv2N5RTree11GetBranchesEP4NodePK6BranchP13PartitionVars"></span><span id="RTree::GetBranches__NodeP.BranchCP.PartitionVarsP"></span><span class="target" id="classRTree_1a3b8fdb0a33793dba49f9870868a95a43"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">GetBranches</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4N5RTree6BranchE" title="RTree::Branch"><span class="n"><span class="pre">Branch</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_branch</span></span>, <a class="reference internal" href="#_CPPv4N5RTree13PartitionVarsE" title="RTree::PartitionVars"><span class="n"><span class="pre">PartitionVars</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_parVars</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree11GetBranchesEP4NodePK6BranchP13PartitionVars" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree15ChoosePartitionEP13PartitionVarsi">
+<span id="_CPPv3N5RTree15ChoosePartitionEP13PartitionVarsi"></span><span id="_CPPv2N5RTree15ChoosePartitionEP13PartitionVarsi"></span><span id="RTree::ChoosePartition__PartitionVarsP.i"></span><span class="target" id="classRTree_1a282f6ef6b93f714d8a8eca3c4d587cbd"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ChoosePartition</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree13PartitionVarsE" title="RTree::PartitionVars"><span class="n"><span class="pre">PartitionVars</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_parVars</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">a_minFill</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree15ChoosePartitionEP13PartitionVarsi" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree9LoadNodesEP4NodeP4NodeP13PartitionVars">
+<span id="_CPPv3N5RTree9LoadNodesEP4NodeP4NodeP13PartitionVars"></span><span id="_CPPv2N5RTree9LoadNodesEP4NodeP4NodeP13PartitionVars"></span><span id="RTree::LoadNodes__NodeP.NodeP.PartitionVarsP"></span><span class="target" id="classRTree_1a88e9eef4ad30d4dee0c783df5e6840a0"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">LoadNodes</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_nodeA</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_nodeB</span></span>, <a class="reference internal" href="#_CPPv4N5RTree13PartitionVarsE" title="RTree::PartitionVars"><span class="n"><span class="pre">PartitionVars</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_parVars</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree9LoadNodesEP4NodeP4NodeP13PartitionVars" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree11InitParVarsEP13PartitionVarsii">
+<span id="_CPPv3N5RTree11InitParVarsEP13PartitionVarsii"></span><span id="_CPPv2N5RTree11InitParVarsEP13PartitionVarsii"></span><span id="RTree::InitParVars__PartitionVarsP.i.i"></span><span class="target" id="classRTree_1aac207d4389fcca1aa0b72361d84117ec"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">InitParVars</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree13PartitionVarsE" title="RTree::PartitionVars"><span class="n"><span class="pre">PartitionVars</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_parVars</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">a_maxRects</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">a_minFill</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree11InitParVarsEP13PartitionVarsii" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree9PickSeedsEP13PartitionVars">
+<span id="_CPPv3N5RTree9PickSeedsEP13PartitionVars"></span><span id="_CPPv2N5RTree9PickSeedsEP13PartitionVars"></span><span id="RTree::PickSeeds__PartitionVarsP"></span><span class="target" id="classRTree_1af4232dd5fd978fcce12ce32f9df20f58"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">PickSeeds</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree13PartitionVarsE" title="RTree::PartitionVars"><span class="n"><span class="pre">PartitionVars</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_parVars</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree9PickSeedsEP13PartitionVars" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree15PickSeedsLinearEP13PartitionVars">
+<span id="_CPPv3N5RTree15PickSeedsLinearEP13PartitionVars"></span><span id="_CPPv2N5RTree15PickSeedsLinearEP13PartitionVars"></span><span id="RTree::PickSeedsLinear__PartitionVarsP"></span><span class="target" id="classRTree_1ac6b3799f2b8f166ee7c558636a608781"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">PickSeedsLinear</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree13PartitionVarsE" title="RTree::PartitionVars"><span class="n"><span class="pre">PartitionVars</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_parVars</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree15PickSeedsLinearEP13PartitionVars" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8ClassifyEiiP13PartitionVars">
+<span id="_CPPv3N5RTree8ClassifyEiiP13PartitionVars"></span><span id="_CPPv2N5RTree8ClassifyEiiP13PartitionVars"></span><span id="RTree::Classify__i.i.PartitionVarsP"></span><span class="target" id="classRTree_1a5da8614a152145988f010a0b7ff9cb4d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Classify</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">a_index</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">a_group</span></span>, <a class="reference internal" href="#_CPPv4N5RTree13PartitionVarsE" title="RTree::PartitionVars"><span class="n"><span class="pre">PartitionVars</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_parVars</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8ClassifyEiiP13PartitionVars" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree10RemoveRectEP4RectRK8DATATYPEPP4Node">
+<span id="_CPPv3N5RTree10RemoveRectEP4RectRK8DATATYPEPP4Node"></span><span id="_CPPv2N5RTree10RemoveRectEP4RectRK8DATATYPEPP4Node"></span><span id="RTree::RemoveRect__RectP.DATATYPECR.NodePP"></span><span class="target" id="classRTree_1a64a1092e85775014ce01e1bb6bc8a938"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">RemoveRect</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rect</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::DATATYPE"><span class="n"><span class="pre">DATATYPE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_id</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_root</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree10RemoveRectEP4RectRK8DATATYPEPP4Node" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13RemoveRectRecEP4RectRK8DATATYPEP4NodePP8ListNode">
+<span id="_CPPv3N5RTree13RemoveRectRecEP4RectRK8DATATYPEP4NodePP8ListNode"></span><span id="_CPPv2N5RTree13RemoveRectRecEP4RectRK8DATATYPEP4NodePP8ListNode"></span><span id="RTree::RemoveRectRec__RectP.DATATYPECR.NodeP.ListNodePP"></span><span class="target" id="classRTree_1a519d3084a57b45ed4e4167b382bc977e"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">RemoveRectRec</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rect</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::DATATYPE"><span class="n"><span class="pre">DATATYPE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_id</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <a class="reference internal" href="#_CPPv4N5RTree8ListNodeE" title="RTree::ListNode"><span class="n"><span class="pre">ListNode</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_listNode</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree13RemoveRectRecEP4RectRK8DATATYPEP4NodePP8ListNode" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13AllocListNodeEv">
+<span id="_CPPv3N5RTree13AllocListNodeEv"></span><span id="_CPPv2N5RTree13AllocListNodeEv"></span><span id="RTree::AllocListNode"></span><span class="target" id="classRTree_1acbaff3ca628e775aeba3ab9c6c3e6123"></span><a class="reference internal" href="#_CPPv4N5RTree8ListNodeE" title="RTree::ListNode"><span class="n"><span class="pre">ListNode</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">AllocListNode</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree13AllocListNodeEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree12FreeListNodeEP8ListNode">
+<span id="_CPPv3N5RTree12FreeListNodeEP8ListNode"></span><span id="_CPPv2N5RTree12FreeListNodeEP8ListNode"></span><span id="RTree::FreeListNode__ListNodeP"></span><span class="target" id="classRTree_1a0c92660832f03d899608d73b994e95a5"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">FreeListNode</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree8ListNodeE" title="RTree::ListNode"><span class="n"><span class="pre">ListNode</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_listNode</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree12FreeListNodeEP8ListNode" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5RTree7OverlapEP4RectP4Rect">
+<span id="_CPPv3NK5RTree7OverlapEP4RectP4Rect"></span><span id="_CPPv2NK5RTree7OverlapEP4RectP4Rect"></span><span id="RTree::Overlap__RectP.RectPC"></span><span class="target" id="classRTree_1ac873c3cd745b8665eb57283c3bb57a0d"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Overlap</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rectA</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rectB</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5RTree7OverlapEP4RectP4Rect" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8ReInsertEP4NodePP8ListNode">
+<span id="_CPPv3N5RTree8ReInsertEP4NodePP8ListNode"></span><span id="_CPPv2N5RTree8ReInsertEP4NodePP8ListNode"></span><span id="RTree::ReInsert__NodeP.ListNodePP"></span><span class="target" id="classRTree_1a5d2b072588eae9e9058224942ae0294f"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ReInsert</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <a class="reference internal" href="#_CPPv4N5RTree8ListNodeE" title="RTree::ListNode"><span class="n"><span class="pre">ListNode</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_listNode</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8ReInsertEP4NodePP8ListNode" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4I0ENK5RTree6SearchEbP4NodeP4RectRiRR13CALLBACK_TYPE">
+<span id="_CPPv3I0ENK5RTree6SearchEP4NodeP4RectRiRR13CALLBACK_TYPE"></span><span id="_CPPv2I0ENK5RTree6SearchEP4NodeP4RectRiRR13CALLBACK_TYPE"></span><span class="k"><span class="pre">template</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">typename</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CALLBACK_TYPE</span></span></span><span class="p"><span class="pre">&gt;</span></span><br /><span class="target" id="classRTree_1afefec46c670e2cec4620eef062b3d285"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Search</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_rect</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_foundCount</span></span>, <a class="reference internal" href="#_CPPv4I0ENK5RTree6SearchEbP4NodeP4RectRiRR13CALLBACK_TYPE" title="RTree::Search::CALLBACK_TYPE"><span class="n"><span class="pre">CALLBACK_TYPE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">callback</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4I0ENK5RTree6SearchEbP4NodeP4RectRiRR13CALLBACK_TYPE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree12RemoveAllRecEP4Node">
+<span id="_CPPv3N5RTree12RemoveAllRecEP4Node"></span><span id="_CPPv2N5RTree12RemoveAllRecEP4Node"></span><span id="RTree::RemoveAllRec__NodeP"></span><span class="target" id="classRTree_1a5045d833566114335162fda10d58081d"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">RemoveAllRec</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree12RemoveAllRecEP4Node" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree5ResetEv">
+<span id="_CPPv3N5RTree5ResetEv"></span><span id="_CPPv2N5RTree5ResetEv"></span><span id="RTree::Reset"></span><span class="target" id="classRTree_1a2508b9d85f5b5f553b313356c05c6e0c"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Reset</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree5ResetEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8CountRecEP4NodeRi">
+<span id="_CPPv3N5RTree8CountRecEP4NodeRi"></span><span id="_CPPv2N5RTree8CountRecEP4NodeRi"></span><span id="RTree::CountRec__NodeP.iR"></span><span class="target" id="classRTree_1a22345d494c1d6bf907444f17802bd864"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CountRec</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_count</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8CountRecEP4NodeRi" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree7SaveRecEP4NodeR12RTFileStream">
+<span id="_CPPv3N5RTree7SaveRecEP4NodeR12RTFileStream"></span><span id="_CPPv2N5RTree7SaveRecEP4NodeR12RTFileStream"></span><span id="RTree::SaveRec__NodeP.RTFileStreamR"></span><span class="target" id="classRTree_1a53a8af8a04a9a4a9eb93a6a0792fea95"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">SaveRec</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <a class="reference internal" href="classRTFileStream.html#_CPPv412RTFileStream" title="RTFileStream"><span class="n"><span class="pre">RTFileStream</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_stream</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree7SaveRecEP4NodeR12RTFileStream" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree7LoadRecEP4NodeR12RTFileStream">
+<span id="_CPPv3N5RTree7LoadRecEP4NodeR12RTFileStream"></span><span id="_CPPv2N5RTree7LoadRecEP4NodeR12RTFileStream"></span><span id="RTree::LoadRec__NodeP.RTFileStreamR"></span><span class="target" id="classRTree_1aa432ad1d5dfc151c1f8eac388af41968"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">LoadRec</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">a_node</span></span>, <a class="reference internal" href="classRTFileStream.html#_CPPv412RTFileStream" title="RTFileStream"><span class="n"><span class="pre">RTFileStream</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">a_stream</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree7LoadRecEP4NodeR12RTFileStream" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree7CopyRecEP4NodeP4Node">
+<span id="_CPPv3N5RTree7CopyRecEP4NodeP4Node"></span><span id="_CPPv2N5RTree7CopyRecEP4NodeP4Node"></span><span id="RTree::CopyRec__NodeP.NodeP"></span><span class="target" id="classRTree_1aa2d9c8b258ab38f37f10cabf6018bab0"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CopyRec</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">current</span></span>, <a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n sig-param"><span class="pre">other</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree7CopyRecEP4NodeP4Node" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-protected-attributes">Protected Attributes</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree6m_rootE">
+<span id="_CPPv3N5RTree6m_rootE"></span><span id="_CPPv2N5RTree6m_rootE"></span><span id="RTree::m_root__NodeP"></span><span class="target" id="classRTree_1a5028f4e28918519bc70cb1f615316582"></span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">m_root</span></span></span><a class="headerlink" href="#_CPPv4N5RTree6m_rootE" title="Link to this definition"></a><br /></dt>
+<dd><p>Root of tree. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree18m_unitSphereVolumeE">
+<span id="_CPPv3N5RTree18m_unitSphereVolumeE"></span><span id="_CPPv2N5RTree18m_unitSphereVolumeE"></span><span id="RTree::m_unitSphereVolume__ELEMTYPEREAL"></span><span class="target" id="classRTree_1af26d4beb8ce3a381ee75eabeec4727e3"></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPEREAL"><span class="n"><span class="pre">ELEMTYPEREAL</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_unitSphereVolume</span></span></span><a class="headerlink" href="#_CPPv4N5RTree18m_unitSphereVolumeE" title="Link to this definition"></a><br /></dt>
+<dd><p>Unit sphere constant for required number of dimensions. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree11m_freeNodesE">
+<span id="_CPPv3N5RTree11m_freeNodesE"></span><span id="_CPPv2N5RTree11m_freeNodesE"></span><span id="RTree::m_freeNodes__std::vector:NodeP:"></span><span class="target" id="classRTree_1a3be6309fa68e4d12cbc5c96cb012fb0d"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_freeNodes</span></span></span><a class="headerlink" href="#_CPPv4N5RTree11m_freeNodesE" title="Link to this definition"></a><br /></dt>
+<dd><p>Pool of free nodes for reuse. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree15m_freeListNodesE">
+<span id="_CPPv3N5RTree15m_freeListNodesE"></span><span id="_CPPv2N5RTree15m_freeListNodesE"></span><span id="RTree::m_freeListNodes__std::vector:ListNodeP:"></span><span class="target" id="classRTree_1a2e9fe57f89cd6f0dc449e66050f9edcf"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><a class="reference internal" href="#_CPPv4N5RTree8ListNodeE" title="RTree::ListNode"><span class="n"><span class="pre">ListNode</span></span></a><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_freeListNodes</span></span></span><a class="headerlink" href="#_CPPv4N5RTree15m_freeListNodesE" title="Link to this definition"></a><br /></dt>
+<dd><p>Pool of free list nodes for reuse. </p>
+</dd></dl>
+
+</div>
+<dl class="cpp struct">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree6BranchE">
+<span id="_CPPv3N5RTree6BranchE"></span><span id="_CPPv2N5RTree6BranchE"></span><span id="RTree::Branch"></span><span class="target" id="structRTree_1_1Branch"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Branch</span></span></span><a class="headerlink" href="#_CPPv4N5RTree6BranchE" title="Link to this definition"></a><br /></dt>
+<dd><p>May be data or may be another subtree The parents level determines this. </p>
+<p>If the parents level is 0, then this is data </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree6Branch6m_rectE">
+<span id="_CPPv3N5RTree6Branch6m_rectE"></span><span id="_CPPv2N5RTree6Branch6m_rectE"></span><span id="RTree::Branch::m_rect__Rect"></span><span class="target" id="structRTree_1_1Branch_1a7e98e0d7fb6afd18ec243450b22d9abe"></span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_rect</span></span></span><a class="headerlink" href="#_CPPv4N5RTree6Branch6m_rectE" title="Link to this definition"></a><br /></dt>
+<dd><p>Bounds. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree6Branch7m_childE">
+<span id="_CPPv3N5RTree6Branch7m_childE"></span><span id="_CPPv2N5RTree6Branch7m_childE"></span><span id="RTree::Branch::m_child__NodeP"></span><span class="target" id="structRTree_1_1Branch_1aa15f22000d06c726372eb84f46db0fa0"></span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">m_child</span></span></span><a class="headerlink" href="#_CPPv4N5RTree6Branch7m_childE" title="Link to this definition"></a><br /></dt>
+<dd><p>Child node. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree6Branch6m_dataE">
+<span id="_CPPv3N5RTree6Branch6m_dataE"></span><span id="_CPPv2N5RTree6Branch6m_dataE"></span><span id="RTree::Branch::m_data__DATATYPE"></span><span class="target" id="structRTree_1_1Branch_1afc1aee31a1a62ad4e800a536a3a9d665"></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::DATATYPE"><span class="n"><span class="pre">DATATYPE</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_data</span></span></span><a class="headerlink" href="#_CPPv4N5RTree6Branch6m_dataE" title="Link to this definition"></a><br /></dt>
+<dd><p>Data Id. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp class">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8IteratorE">
+<span id="_CPPv3N5RTree8IteratorE"></span><span id="_CPPv2N5RTree8IteratorE"></span><span id="RTree::Iterator"></span><span class="target" id="classRTree_1_1Iterator"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Iterator</span></span></span><a class="headerlink" href="#_CPPv4N5RTree8IteratorE" title="Link to this definition"></a><br /></dt>
+<dd><p><a class="reference internal" href="classRTree_1_1Iterator.html#classRTree_1_1Iterator"><span class="std std-ref">Iterator</span></a> is not remove safe. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8Iterator8IteratorEv">
+<span id="_CPPv3N5RTree8Iterator8IteratorEv"></span><span id="_CPPv2N5RTree8Iterator8IteratorEv"></span><span id="RTree::Iterator::Iterator"></span><span class="target" id="classRTree_1_1Iterator_1a59b2600d21bebdbfd5406ae42612ef7f"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Iterator</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8Iterator8IteratorEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8IteratorD0Ev">
+<span id="_CPPv3N5RTree8IteratorD0Ev"></span><span id="_CPPv2N5RTree8IteratorD0Ev"></span><span id="RTree::Iterator::~Iterator"></span><span class="target" id="classRTree_1_1Iterator_1a4823daecb48994f28175139ccbd763d8"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">~Iterator</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8IteratorD0Ev" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8Iterator6IsNullEv">
+<span id="_CPPv3N5RTree8Iterator6IsNullEv"></span><span id="_CPPv2N5RTree8Iterator6IsNullEv"></span><span id="RTree::Iterator::IsNull"></span><span class="target" id="classRTree_1_1Iterator_1a23f756ac37acc2b162b61230c27732b3"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">IsNull</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8Iterator6IsNullEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Is iterator invalid. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8Iterator9IsNotNullEv">
+<span id="_CPPv3N5RTree8Iterator9IsNotNullEv"></span><span id="_CPPv2N5RTree8Iterator9IsNotNullEv"></span><span id="RTree::Iterator::IsNotNull"></span><span class="target" id="classRTree_1_1Iterator_1a8cd6bf4fa228497ac736e8d7993e7daf"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">IsNotNull</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8Iterator9IsNotNullEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Is iterator pointing to valid data. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8IteratormlEv">
+<span id="_CPPv3N5RTree8IteratormlEv"></span><span id="_CPPv2N5RTree8IteratormlEv"></span><span id="RTree::Iterator::mul-operator"></span><span class="target" id="classRTree_1_1Iterator_1aa1321ced0bfd9ef4b4004238dec438c5"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::DATATYPE"><span class="n"><span class="pre">DATATYPE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">*</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8IteratormlEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Access the current data element. Caller must be sure iterator is not NULL first. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK5RTree8IteratormlEv">
+<span id="_CPPv3NK5RTree8IteratormlEv"></span><span id="_CPPv2NK5RTree8IteratormlEv"></span><span id="RTree::Iterator::mul-operatorC"></span><span class="target" id="classRTree_1_1Iterator_1a865e4f60b6656520b9d95196ee7f081d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::DATATYPE"><span class="n"><span class="pre">DATATYPE</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">*</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK5RTree8IteratormlEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Access the current data element. Caller must be sure iterator is not NULL first. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8IteratorppEv">
+<span id="_CPPv3N5RTree8IteratorppEv"></span><span id="_CPPv2N5RTree8IteratorppEv"></span><span id="RTree::Iterator::inc-operator"></span><span class="target" id="classRTree_1_1Iterator_1ad578bac71cfc7d324b84595032feda21"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="k"><span class="pre">operator</span></span><span class="o"><span class="pre">++</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8IteratorppEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Find the next data element. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8Iterator9GetBoundsEA7NUMDIMS_8ELEMTYPEA7NUMDIMS_8ELEMTYPE">
+<span id="_CPPv3N5RTree8Iterator9GetBoundsEA7NUMDIMS_8ELEMTYPEA7NUMDIMS_8ELEMTYPE"></span><span id="_CPPv2N5RTree8Iterator9GetBoundsEANUMDIMS_8ELEMTYPEANUMDIMS_8ELEMTYPE"></span><span id="RTree::Iterator::GetBounds__ELEMTYPEA.ELEMTYPEA"></span><span class="target" id="classRTree_1_1Iterator_1a65121f5016c2b1bf4696797748092709"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">GetBounds</span></span></span><span class="sig-paren">(</span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">a_min</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span>, <a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">a_max</span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree8Iterator9GetBoundsEA7NUMDIMS_8ELEMTYPEA7NUMDIMS_8ELEMTYPE" title="Link to this definition"></a><br /></dt>
+<dd><p>Get the bounds for this node. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp struct">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8ListNodeE">
+<span id="_CPPv3N5RTree8ListNodeE"></span><span id="_CPPv2N5RTree8ListNodeE"></span><span id="RTree::ListNode"></span><span class="target" id="structRTree_1_1ListNode"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">ListNode</span></span></span><a class="headerlink" href="#_CPPv4N5RTree8ListNodeE" title="Link to this definition"></a><br /></dt>
+<dd><p>A link list of nodes for reinsertion after a delete operation. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8ListNode6m_nextE">
+<span id="_CPPv3N5RTree8ListNode6m_nextE"></span><span id="_CPPv2N5RTree8ListNode6m_nextE"></span><span id="RTree::ListNode::m_next__ListNodeP"></span><span class="target" id="structRTree_1_1ListNode_1a9812899d8953b03f1772522b668942e3"></span><a class="reference internal" href="#_CPPv4N5RTree8ListNodeE" title="RTree::ListNode"><span class="n"><span class="pre">ListNode</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">m_next</span></span></span><a class="headerlink" href="#_CPPv4N5RTree8ListNode6m_nextE" title="Link to this definition"></a><br /></dt>
+<dd><p>Next in list. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree8ListNode6m_nodeE">
+<span id="_CPPv3N5RTree8ListNode6m_nodeE"></span><span id="_CPPv2N5RTree8ListNode6m_nodeE"></span><span id="RTree::ListNode::m_node__NodeP"></span><span class="target" id="structRTree_1_1ListNode_1ade4b7e322e04e0a71b4e14cde8e73dca"></span><a class="reference internal" href="#_CPPv4N5RTree4NodeE" title="RTree::Node"><span class="n"><span class="pre">Node</span></span></a><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-name descname"><span class="n"><span class="pre">m_node</span></span></span><a class="headerlink" href="#_CPPv4N5RTree8ListNode6m_nodeE" title="Link to this definition"></a><br /></dt>
+<dd><p><a class="reference internal" href="structRTree_1_1Node.html#structRTree_1_1Node"><span class="std std-ref">Node</span></a>. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp struct">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4NodeE">
+<span id="_CPPv3N5RTree4NodeE"></span><span id="_CPPv2N5RTree4NodeE"></span><span id="RTree::Node"></span><span class="target" id="structRTree_1_1Node"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Node</span></span></span><a class="headerlink" href="#_CPPv4N5RTree4NodeE" title="Link to this definition"></a><br /></dt>
+<dd><p><a class="reference internal" href="structRTree_1_1Node.html#structRTree_1_1Node"><span class="std std-ref">Node</span></a> for each branch level. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4Node14IsInternalNodeEv">
+<span id="_CPPv3N5RTree4Node14IsInternalNodeEv"></span><span id="_CPPv2N5RTree4Node14IsInternalNodeEv"></span><span id="RTree::Node::IsInternalNode"></span><span class="target" id="structRTree_1_1Node_1a6a330138c4d6e2280ac16770cdfcaf09"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">IsInternalNode</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree4Node14IsInternalNodeEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4Node6IsLeafEv">
+<span id="_CPPv3N5RTree4Node6IsLeafEv"></span><span id="_CPPv2N5RTree4Node6IsLeafEv"></span><span id="RTree::Node::IsLeaf"></span><span class="target" id="structRTree_1_1Node_1a3e34e35a8482978d456885d4bac76de4"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">IsLeaf</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N5RTree4Node6IsLeafEv" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4Node7m_countE">
+<span id="_CPPv3N5RTree4Node7m_countE"></span><span id="_CPPv2N5RTree4Node7m_countE"></span><span id="RTree::Node::m_count__i"></span><span class="target" id="structRTree_1_1Node_1ab2393bb1bfe7c8baa84ec4f205d990ed"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_count</span></span></span><a class="headerlink" href="#_CPPv4N5RTree4Node7m_countE" title="Link to this definition"></a><br /></dt>
+<dd><p>Count. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4Node7m_levelE">
+<span id="_CPPv3N5RTree4Node7m_levelE"></span><span id="_CPPv2N5RTree4Node7m_levelE"></span><span id="RTree::Node::m_level__i"></span><span class="target" id="structRTree_1_1Node_1a894162b955540567f0519bbbc33a6bf5"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_level</span></span></span><a class="headerlink" href="#_CPPv4N5RTree4Node7m_levelE" title="Link to this definition"></a><br /></dt>
+<dd><p>Leaf is zero, others positive. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4Node8m_branchE">
+<span id="_CPPv3N5RTree4Node8m_branchE"></span><span id="_CPPv2N5RTree4Node8m_branchE"></span><span id="RTree::Node::m_branch__BranchA"></span><span class="target" id="structRTree_1_1Node_1abc3b3eb3c889a004ca5a30628dd8775a"></span><a class="reference internal" href="#_CPPv4N5RTree6BranchE" title="RTree::Branch"><span class="n"><span class="pre">Branch</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_branch</span></span></span><span class="p"><span class="pre">[</span></span><span class="n"><span class="pre">MAXNODES</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#_CPPv4N5RTree4Node8m_branchE" title="Link to this definition"></a><br /></dt>
+<dd><p><a class="reference internal" href="structRTree_1_1Branch.html#structRTree_1_1Branch"><span class="std std-ref">Branch</span></a>. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp struct">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVarsE">
+<span id="_CPPv3N5RTree13PartitionVarsE"></span><span id="_CPPv2N5RTree13PartitionVarsE"></span><span id="RTree::PartitionVars"></span><span class="target" id="structRTree_1_1PartitionVars"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">PartitionVars</span></span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVarsE" title="Link to this definition"></a><br /></dt>
+<dd><p>Variables for finding a split partition. </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-types">Public Types</p>
+<dl class="cpp enum">
+<dt class="sig sig-object cpp">
+<span class="target" id="structRTree_1_1PartitionVars_1ab279765d874a405349fb3796cf1c0a96"></span><span class="sig-name descname"></span></dt>
+<dd><p><em>Values:</em></p>
+<dl class="cpp enumerator">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars19PhonyNameDueToError9NOT_TAKENE">
+<span id="_CPPv3N5RTree13PartitionVars19PhonyNameDueToError9NOT_TAKENE"></span><span id="_CPPv2N5RTree13PartitionVars19PhonyNameDueToError9NOT_TAKENE"></span><span class="target" id="structRTree_1_1PartitionVars_1ab279765d874a405349fb3796cf1c0a96acff1a730449e4b3de500024b4b6b6175"></span><span class="k"><span class="pre">enumerator</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">NOT_TAKEN</span></span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="o"><span class="pre">-</span></span><span class="m"><span class="pre">1</span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars19PhonyNameDueToError9NOT_TAKENE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars11m_partitionE">
+<span id="_CPPv3N5RTree13PartitionVars11m_partitionE"></span><span id="_CPPv2N5RTree13PartitionVars11m_partitionE"></span><span id="RTree::PartitionVars::m_partition__iA"></span><span class="target" id="structRTree_1_1PartitionVars_1a15b570f93f49884ccd637731d033da51"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_partition</span></span></span><span class="p"><span class="pre">[</span></span><span class="n"><span class="pre">MAXNODES</span></span><span class="w"> </span><span class="o"><span class="pre">+</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars11m_partitionE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars7m_totalE">
+<span id="_CPPv3N5RTree13PartitionVars7m_totalE"></span><span id="_CPPv2N5RTree13PartitionVars7m_totalE"></span><span id="RTree::PartitionVars::m_total__i"></span><span class="target" id="structRTree_1_1PartitionVars_1a145b95cd4210c8e2dbb2015d379906e4"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_total</span></span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars7m_totalE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars9m_minFillE">
+<span id="_CPPv3N5RTree13PartitionVars9m_minFillE"></span><span id="_CPPv2N5RTree13PartitionVars9m_minFillE"></span><span id="RTree::PartitionVars::m_minFill__i"></span><span class="target" id="structRTree_1_1PartitionVars_1a150d1fb0e446df4172c68eafbd0fc00d"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_minFill</span></span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars9m_minFillE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars7m_countE">
+<span id="_CPPv3N5RTree13PartitionVars7m_countE"></span><span id="_CPPv2N5RTree13PartitionVars7m_countE"></span><span id="RTree::PartitionVars::m_count__iA"></span><span class="target" id="structRTree_1_1PartitionVars_1acbf70d46606cebe104471635d1c06c56"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_count</span></span></span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars7m_countE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars7m_coverE">
+<span id="_CPPv3N5RTree13PartitionVars7m_coverE"></span><span id="_CPPv2N5RTree13PartitionVars7m_coverE"></span><span id="RTree::PartitionVars::m_cover__RectA"></span><span class="target" id="structRTree_1_1PartitionVars_1ab59894eefb7f3f6cc7254bbc90cd2570"></span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_cover</span></span></span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars7m_coverE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars6m_areaE">
+<span id="_CPPv3N5RTree13PartitionVars6m_areaE"></span><span id="_CPPv2N5RTree13PartitionVars6m_areaE"></span><span id="RTree::PartitionVars::m_area__ELEMTYPEREALA"></span><span class="target" id="structRTree_1_1PartitionVars_1aadf67cd0f0c071993f47b77b1e7a3b78"></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPEREAL"><span class="n"><span class="pre">ELEMTYPEREAL</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_area</span></span></span><span class="p"><span class="pre">[</span></span><span class="m"><span class="pre">2</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars6m_areaE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars11m_branchBufE">
+<span id="_CPPv3N5RTree13PartitionVars11m_branchBufE"></span><span id="_CPPv2N5RTree13PartitionVars11m_branchBufE"></span><span id="RTree::PartitionVars::m_branchBuf__BranchA"></span><span class="target" id="structRTree_1_1PartitionVars_1a73b5e398b4073ff923afaa765367958b"></span><a class="reference internal" href="#_CPPv4N5RTree6BranchE" title="RTree::Branch"><span class="n"><span class="pre">Branch</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_branchBuf</span></span></span><span class="p"><span class="pre">[</span></span><span class="n"><span class="pre">MAXNODES</span></span><span class="w"> </span><span class="o"><span class="pre">+</span></span><span class="w"> </span><span class="m"><span class="pre">1</span></span><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars11m_branchBufE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars13m_branchCountE">
+<span id="_CPPv3N5RTree13PartitionVars13m_branchCountE"></span><span id="_CPPv2N5RTree13PartitionVars13m_branchCountE"></span><span id="RTree::PartitionVars::m_branchCount__i"></span><span class="target" id="structRTree_1_1PartitionVars_1abaaed8bac2d71bc6debadc5136078a0b"></span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_branchCount</span></span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars13m_branchCountE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars12m_coverSplitE">
+<span id="_CPPv3N5RTree13PartitionVars12m_coverSplitE"></span><span id="_CPPv2N5RTree13PartitionVars12m_coverSplitE"></span><span id="RTree::PartitionVars::m_coverSplit__Rect"></span><span class="target" id="structRTree_1_1PartitionVars_1a61d9eaaae4128365146d923123f4b8d1"></span><a class="reference internal" href="#_CPPv4N5RTree4RectE" title="RTree::Rect"><span class="n"><span class="pre">Rect</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_coverSplit</span></span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars12m_coverSplitE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree13PartitionVars16m_coverSplitAreaE">
+<span id="_CPPv3N5RTree13PartitionVars16m_coverSplitAreaE"></span><span id="_CPPv2N5RTree13PartitionVars16m_coverSplitAreaE"></span><span id="RTree::PartitionVars::m_coverSplitArea__ELEMTYPEREAL"></span><span class="target" id="structRTree_1_1PartitionVars_1ada65c4c4ae559f43f3b632bda1b7b7f2"></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPEREAL"><span class="n"><span class="pre">ELEMTYPEREAL</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_coverSplitArea</span></span></span><a class="headerlink" href="#_CPPv4N5RTree13PartitionVars16m_coverSplitAreaE" title="Link to this definition"></a><br /></dt>
+<dd></dd></dl>
+
+</div>
+</dd></dl>
+
+<dl class="cpp struct">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4RectE">
+<span id="_CPPv3N5RTree4RectE"></span><span id="_CPPv2N5RTree4RectE"></span><span id="RTree::Rect"></span><span class="target" id="structRTree_1_1Rect"></span><span class="k"><span class="pre">struct</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Rect</span></span></span><a class="headerlink" href="#_CPPv4N5RTree4RectE" title="Link to this definition"></a><br /></dt>
+<dd><p>Minimal bounding rectangle (n-dimensional) </p>
+<div class="breathe-sectiondef docutils container">
+<p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-members">Public Members</p>
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4Rect5m_minE">
+<span id="_CPPv3N5RTree4Rect5m_minE"></span><span id="_CPPv2N5RTree4Rect5m_minE"></span><span id="RTree::Rect::m_min__ELEMTYPEA"></span><span class="target" id="structRTree_1_1Rect_1a2b5b254493aba27b30fe6fc8df151ed5"></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_min</span></span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#_CPPv4N5RTree4Rect5m_minE" title="Link to this definition"></a><br /></dt>
+<dd><p>Min dimensions of bounding box. </p>
+</dd></dl>
+
+<dl class="cpp var">
+<dt class="sig sig-object cpp" id="_CPPv4N5RTree4Rect5m_maxE">
+<span id="_CPPv3N5RTree4Rect5m_maxE"></span><span id="_CPPv2N5RTree4Rect5m_maxE"></span><span id="RTree::Rect::m_max__ELEMTYPEA"></span><span class="target" id="structRTree_1_1Rect_1a6570c2a5a16b19b0d08cd1eaa224961b"></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::ELEMTYPE"><span class="n"><span class="pre">ELEMTYPE</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">m_max</span></span></span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#_CPPv4I00_i0_i_iE5RTree" title="RTree::NUMDIMS"><span class="n"><span class="pre">NUMDIMS</span></span></a><span class="p"><span class="pre">]</span></span><a class="headerlink" href="#_CPPv4N5RTree4Rect5m_maxE" title="Link to this definition"></a><br /></dt>
+<dd><p>Max dimensions of bounding box. </p>
+</dd></dl>
+
+</div>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="classRTFileStream.html" class="btn btn-neutral float-left" title="Class RTFileStream" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="classRTree_1_1Iterator.html" class="btn btn-neutral float-right" title="Class RTree::Iterator" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

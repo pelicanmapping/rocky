@@ -1,0 +1,23 @@
+.. _exhale_struct_structrocky_1_1Profile_1_1Data:
+
+Struct Profile::Data
+====================
+
+- Defined in :ref:`file_src_rocky_Profile.h`
+
+
+Nested Relationships
+--------------------
+
+This struct is a nested type of :ref:`exhale_class_classrocky_1_1Profile`.
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::Profile::Data
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

@@ -1,0 +1,106 @@
+
+.. _program_listing_file_src_rocky_vsg_DisplayManager.h:
+
+Program Listing for File DisplayManager.h
+=========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_DisplayManager.h>` (``src/rocky/vsg/DisplayManager.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/vsg/VSGContext.h>
+   #include <rocky/vsg/MapManipulator.h>
+   #include <rocky/Utils.h>
+   #include <rocky/Callbacks.h>
+   #include <vector>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class Application;
+   
+       struct DisplayGeoPoint
+       {
+           vsg::ref_ptr<vsg::Window> window;
+           vsg::ref_ptr<vsg::View> view;
+           GeoPoint point;
+       };
+   
+       extern ROCKY_EXPORT Result<GeoPoint> pointAtWindowCoords(vsg::ref_ptr<vsg::View> view, int x, int y);
+   
+       extern ROCKY_EXPORT Result<DisplayGeoPoint> pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, int y);
+   
+       extern ROCKY_EXPORT void visit(vsg::ConstVisitor* visitor, vsg::View* view, vsg::Object* object = nullptr);
+   
+   
+       class ROCKY_EXPORT DisplayManager
+       {
+       public:
+           DisplayManager() = default;
+   
+           void initialize(Application& app);
+   
+           void initialize(VSGContext context);
+   
+           vsg::ref_ptr<vsg::Window> addWindow(vsg::ref_ptr<vsg::WindowTraits> traits);
+   
+           void addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view = {});
+   
+           void removeWindow(vsg::ref_ptr<vsg::Window> window);
+   
+           void addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::Window> window, bool addManipulator);
+   
+           void removeView(vsg::ref_ptr<vsg::View> view);
+   
+           void refreshView(vsg::ref_ptr<vsg::View> view);
+   
+           void setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::ref_ptr<vsg::View> view) const;
+   
+           std::vector<vsg::ref_ptr<vsg::View>> views(vsg::ref_ptr<vsg::Window> window) const;
+   
+           vsg::ref_ptr<vsg::View> viewAtWindowCoords(vsg::ref_ptr<vsg::Window> window, double x, double y) const;
+   
+           vsg::ref_ptr<vsg::CommandGraph> commandGraph(vsg::ref_ptr<vsg::Window> window) const;
+   
+           vsg::ref_ptr<vsg::RenderGraph> renderGraph(vsg::ref_ptr<vsg::View> view) const;
+   
+           vsg::ref_ptr<vsg::Window> windowContainingView(vsg::ref_ptr<vsg::View> view) const;
+   
+           vsg::ref_ptr<vsg::Device> sharedDevice() const;
+   
+           vsg::ref_ptr<vsg::Window> mainWindow() const;
+   
+           Result<GeoPoint> pointAtWindowCoords(vsg::ref_ptr<vsg::Window> window, int x, int y) const;
+   
+           void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window) const;
+   
+       public:
+   
+           VSGContext vsgcontext;
+   
+       protected:
+   
+           using WindowsAndViews = std::map<vsg::ref_ptr<vsg::Window>, std::vector<vsg::ref_ptr<vsg::View>>>;
+   
+           WindowsAndViews windowsAndViews;
+   
+           struct ViewData
+           {
+               vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;
+               vsg::ref_ptr<vsg::Group> guiContextGroup;
+               vsg::ref_ptr<vsg::Visitor> guiEventVisitor;
+               std::shared_ptr<std::function<void()>> guiIdleEventProcessor;
+           };
+           util::vector_map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
+   
+           Application* _app = nullptr;
+           bool _debugCallbackInstalled = false;
+           std::map<vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::CommandGraph>> _commandGraphByWindow;
+   
+           friend class Application;
+           friend struct ImGuiIntegration;
+       };
+   }

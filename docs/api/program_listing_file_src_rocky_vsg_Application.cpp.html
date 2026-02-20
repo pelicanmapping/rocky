@@ -1,0 +1,738 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File Application.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File Application.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_vsg_Application.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-application-cpp">
+<span id="program-listing-file-src-rocky-vsg-application-cpp"></span><h1>Program Listing for File Application.cpp<a class="headerlink" href="#program-listing-for-file-application-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_vsg_Application.cpp.html#file-src-rocky-vsg-application-cpp"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/Application.cpp</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;Application.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ecs/MeshSystem.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ecs/LineSystem.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ecs/PointSystem.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ecs/LabelSystem.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ecs/WidgetSystem.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ecs/TransformSystem.h&quot;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&quot;ecs/NodeGraphSystem.h&quot;</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/contrib/EarthFileImporter.h&gt;</span>
+
+<span class="cp">#ifdef ROCKY_HAS_IMGUI</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/rocky_imgui.h&gt;</span>
+<span class="cp">#endif</span>
+
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span><span class="p">;</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Result</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">loadMapFile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">location</span><span class="p">,</span><span class="w"> </span><span class="n">MapNode</span><span class="o">&amp;</span><span class="w"> </span><span class="n">mapNode</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">map_file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">URI</span><span class="p">(</span><span class="n">location</span><span class="p">).</span><span class="n">read</span><span class="p">(</span><span class="n">context</span><span class="o">-&gt;</span><span class="n">io</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">map_file</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">map_file</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapNode</span><span class="p">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">map_file</span><span class="o">-&gt;</span><span class="n">content</span><span class="p">.</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">io</span><span class="p">.</span><span class="n">from</span><span class="p">(</span><span class="n">location</span><span class="p">));</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">ResultVoidOK</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">Result</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="n">importEarthFile</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">infile</span><span class="p">,</span><span class="w"> </span><span class="n">MapNode</span><span class="o">&amp;</span><span class="w"> </span><span class="n">mapNode</span><span class="p">,</span><span class="w"> </span><span class="n">Context</span><span class="w"> </span><span class="n">context</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">io</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">io</span><span class="p">.</span><span class="n">from</span><span class="p">(</span><span class="n">infile</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">EarthFileImporter</span><span class="w"> </span><span class="n">importer</span><span class="p">;</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">result</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">importer</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">result</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">count</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapNode</span><span class="p">.</span><span class="n">map</span><span class="o">-&gt;</span><span class="n">layers</span><span class="p">().</span><span class="n">size</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mapNode</span><span class="p">.</span><span class="n">from_json</span><span class="p">(</span><span class="n">result</span><span class="p">.</span><span class="n">value</span><span class="p">(),</span><span class="w"> </span><span class="n">io</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">count</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">mapNode</span><span class="p">.</span><span class="n">map</span><span class="o">-&gt;</span><span class="n">layers</span><span class="p">().</span><span class="n">size</span><span class="p">())</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="n">Failure</span><span class="p">(</span><span class="n">Failure</span><span class="o">::</span><span class="n">ResourceUnavailable</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;No layers imported from earth file&quot;</span><span class="p">);</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">ResultVoidOK</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">Application</span><span class="o">::</span><span class="n">Application</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;rocky&quot;</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="n">ctor</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="o">**</span><span class="p">)</span><span class="n">argv</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">Application</span><span class="o">::</span><span class="n">Application</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Viewer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">viewer_</span><span class="p">)</span>
+<span class="w">    </span><span class="o">:</span><span class="w"> </span><span class="n">viewer</span><span class="p">(</span><span class="n">viewer_</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="s">&quot;rocky&quot;</span><span class="w"> </span><span class="p">};</span>
+<span class="w">    </span><span class="n">ctor</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="p">(</span><span class="kt">char</span><span class="o">**</span><span class="p">)</span><span class="n">argv</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">Application</span><span class="o">::</span><span class="n">Application</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ctor</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">Application</span><span class="o">::</span><span class="n">Application</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Viewer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">viewer_</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="o">&amp;</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">    </span><span class="n">viewer</span><span class="p">(</span><span class="n">viewer_</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ctor</span><span class="p">(</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">Application</span><span class="o">::</span><span class="n">ctor</span><span class="p">(</span><span class="kt">int</span><span class="o">&amp;</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">viewer</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">viewer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Viewer</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// new VSG context</span>
+<span class="w">    </span><span class="n">vsgcontext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">VSGContextFactory</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">viewer</span><span class="p">,</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;Cannot create rocky context: {}&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">status</span><span class="p">.</span><span class="n">error</span><span class="p">().</span><span class="n">message</span><span class="p">);</span>
+<span class="w">        </span><span class="k">return</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// new display manager</span>
+<span class="w">    </span><span class="n">display</span><span class="p">.</span><span class="n">initialize</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// parse the command line</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">CommandLine</span><span class="w"> </span><span class="nf">commandLine</span><span class="p">(</span><span class="o">&amp;</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+<span class="w">    </span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">readerWriterOptions</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_debuglayerUnique</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--debug-once&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_debuglayer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">_debuglayerUnique</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--debug&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_apilayer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--api&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_vsync</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">!</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">({</span><span class="w"> </span><span class="s">&quot;--novsync&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;--no-vsync&quot;</span><span class="w"> </span><span class="p">});</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--pause&quot;</span><span class="p">))</span><span class="w"> </span><span class="o">::</span><span class="n">getchar</span><span class="p">();</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--version&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;rocky &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ROCKY_VERSION_STRING</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">        </span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--version-all&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">about</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">        </span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--help&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;rocky &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">ROCKY_VERSION_STRING</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;    [--map &lt;filename&gt;]        // load a JSON map file&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;    [--earth-file &lt;filename&gt;] // import an osgEarth earth file&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;    [--no-vsync]              // disable vertical sync&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;    [--continuous]            // render frames continuously (instead of only when needed)&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;    [--log-level &lt;level&gt;]     // set the log level (debug, info, warn, error, critical, off)&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;    [--sky]                   // install a rudimentary lighting model&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;    [--version]               // print the version&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;    [--version-all]           // print all dependency versions&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;    [--debug]                 // activate the Vulkan debug validation layer&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;    [--api]                   // activate the Vulkan API validation layer (mega-verbose)&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span>
+<span class="w">            </span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">root</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Group</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">    </span><span class="n">mainScene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Group</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+<span class="w">    </span><span class="n">root</span><span class="o">-&gt;</span><span class="n">addChild</span><span class="p">(</span><span class="n">mainScene</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">mapNode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rocky</span><span class="o">::</span><span class="n">MapNode</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">vsgcontext</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// the sun</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--sky&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">skyNode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">rocky</span><span class="o">::</span><span class="n">SkyNode</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="w">        </span><span class="n">mainScene</span><span class="o">-&gt;</span><span class="n">addChild</span><span class="p">(</span><span class="n">skyNode</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// if the user didn&#39;t disable terrain lighting...enable it.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">mapNode</span><span class="o">-&gt;</span><span class="n">terrainSettings</span><span class="p">().</span><span class="n">lighting</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span>
+<span class="w">            </span><span class="n">mapNode</span><span class="o">-&gt;</span><span class="n">terrainSettings</span><span class="p">().</span><span class="n">lighting</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// set on-demand rendering mode from the command line</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--on-demand&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">renderContinuously</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--continuous&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">renderContinuously</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// a node to render the map/terrain</span>
+<span class="w">    </span><span class="n">mainScene</span><span class="o">-&gt;</span><span class="n">addChild</span><span class="p">(</span><span class="n">mapNode</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// No idea what this actually does :)</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--mt&quot;</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">setupThreading</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">sharedObjects</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">SharedObjects</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// read map from file:</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">infile</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">(</span><span class="s">&quot;--map&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">infile</span><span class="p">))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadMapFile</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">mapNode</span><span class="p">,</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">            </span><span class="n">commandLineStatus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// import map from an osgEarth earth file:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">({</span><span class="w"> </span><span class="s">&quot;--earthfile&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;--earth-file&quot;</span><span class="w"> </span><span class="p">},</span><span class="w"> </span><span class="n">infile</span><span class="p">)</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">commandLineStatus</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">importEarthFile</span><span class="p">(</span><span class="n">infile</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">mapNode</span><span class="p">,</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">            </span><span class="n">commandLineStatus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">indirect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">read</span><span class="p">({</span><span class="w"> </span><span class="s">&quot;--indirect&quot;</span><span class="w"> </span><span class="p">}))</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">indirect</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// if there are any command-line arguments remaining, assume the first is a map file.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">commandLine</span><span class="p">.</span><span class="n">argc</span><span class="p">()</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">commandLineStatus</span><span class="p">.</span><span class="n">ok</span><span class="p">())</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">r</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">loadMapFile</span><span class="p">(</span><span class="n">commandLine</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="o">*</span><span class="n">mapNode</span><span class="p">,</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">r</span><span class="p">.</span><span class="n">failed</span><span class="p">())</span>
+<span class="w">            </span><span class="n">commandLineStatus</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">r</span><span class="p">.</span><span class="n">error</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// Create the ECS system manager and all its default systems.</span>
+<span class="w">    </span><span class="n">ecsNode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ECSNode</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">registry</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Responds to changes in Transform components by updating the scene graph</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">xform_system</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TransformSystem</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">registry</span><span class="p">);</span>
+<span class="w">    </span><span class="n">_subs</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">xform_system</span><span class="o">-&gt;</span><span class="n">onChanges</span><span class="p">([</span><span class="o">&amp;</span><span class="p">]()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">requestFrame</span><span class="p">();</span><span class="w"> </span><span class="p">});</span>
+<span class="w">    </span><span class="n">ecsNode</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">xform_system</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Rendering components:</span>
+<span class="w">    </span><span class="n">ecsNode</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">NodeSystemNode</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">registry</span><span class="p">));</span>
+<span class="w">    </span><span class="n">ecsNode</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">MeshSystemNode</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">registry</span><span class="p">));</span>
+<span class="w">    </span><span class="n">ecsNode</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">LineSystemNode</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">registry</span><span class="p">));</span>
+<span class="w">    </span><span class="n">ecsNode</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">PointSystemNode</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">registry</span><span class="p">));</span>
+
+<span class="w">    </span><span class="c1">//if (indirect)</span>
+<span class="w">    </span><span class="c1">//    ecsNode-&gt;add(IconSystem2Node::create(registry));</span>
+<span class="w">    </span><span class="c1">//else</span>
+<span class="w">    </span><span class="c1">//    ecsNode-&gt;add(IconSystemNode::create(registry));</span>
+
+<span class="w">    </span><span class="n">ecsNode</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">LabelSystem</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">registry</span><span class="p">));</span>
+
+<span class="cp">#ifdef ROCKY_HAS_IMGUI</span>
+<span class="w">    </span><span class="n">ecsNode</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">WidgetSystemNode</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">registry</span><span class="p">));</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="n">mainScene</span><span class="o">-&gt;</span><span class="n">addChild</span><span class="p">(</span><span class="n">ecsNode</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="n">Application</span><span class="o">::~</span><span class="n">Application</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Quitting background services...&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">background</span><span class="p">.</span><span class="n">quit</span><span class="p">();</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">Application</span><span class="o">::</span><span class="n">onNextUpdate</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="n">func</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">onNextUpdate</span><span class="p">(</span><span class="n">func</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">Application</span><span class="o">::</span><span class="n">setupViewer</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Viewer</span><span class="o">&gt;</span><span class="w"> </span><span class="n">viewer</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// share the same queue family as the graphics command graph for now.</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">computeCommandGraph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">getOrCreateComputeCommandGraph</span><span class="p">(</span>
+<span class="w">        </span><span class="n">display</span><span class="p">.</span><span class="n">sharedDevice</span><span class="p">(),</span>
+<span class="w">        </span><span class="n">display</span><span class="p">.</span><span class="n">_commandGraphByWindow</span><span class="p">.</span><span class="n">begin</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">second</span><span class="o">-&gt;</span><span class="n">queueFamily</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Initialize the ECS subsystem:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ecsNode</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">ecsNode</span><span class="o">-&gt;</span><span class="n">initialize</span><span class="p">(</span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="c1">// respond to the X or to hitting ESC</span>
+<span class="w">    </span><span class="c1">// TODO: refactor this so it responds to individual windows and not the whole app?</span>
+<span class="w">    </span><span class="c1">//viewer-&gt;addEventHandler(vsg::CloseHandler::create(viewer));</span>
+
+<span class="w">    </span><span class="c1">// This sets up the internal tasks that will, for each command graph, record</span>
+<span class="w">    </span><span class="c1">// a scene graph and submit the results to the renderer each frame. Also sets</span>
+<span class="w">    </span><span class="c1">// up whatever&#39;s necessary to present the resulting swapchain to the device.</span>
+<span class="w">    </span><span class="n">vsg</span><span class="o">::</span><span class="n">CommandGraphs</span><span class="w"> </span><span class="n">commandGraphs</span><span class="p">{</span><span class="w"> </span><span class="n">computeCommandGraph</span><span class="w"> </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="w"> </span><span class="n">iter</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">display</span><span class="p">.</span><span class="n">_commandGraphByWindow</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">commandGraphs</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">iter</span><span class="p">.</span><span class="n">second</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">assignRecordAndSubmitTaskAndPresentation</span><span class="p">(</span><span class="n">commandGraphs</span><span class="p">);</span>
+
+<span class="cp">#if 1</span>
+<span class="w">    </span><span class="c1">// Configure a descriptor pool size that&#39;s appropriate for terrain</span>
+<span class="w">    </span><span class="c1">// https://groups.google.com/g/vsg-users/c/JJQZ-RN7jC0/m/tyX8nT39BAAJ</span>
+<span class="w">    </span><span class="c1">// https://www.reddit.com/r/vulkan/comments/8u9zqr/having_trouble_understanding_descriptor_pool/</span>
+<span class="w">    </span><span class="c1">// Since VSG dynamic allocates descriptor pools as it needs them,</span>
+<span class="w">    </span><span class="c1">// this is not strictly necessary. But if you know something about the</span>
+<span class="w">    </span><span class="c1">// types of descriptor sets you are going to use it will increase</span>
+<span class="w">    </span><span class="c1">// performance (?) to pre-allocate some pools like this.</span>
+<span class="w">    </span><span class="c1">// There is a big trade-off since pre-allocating these pools takes up</span>
+<span class="w">    </span><span class="c1">// a significant amount of memory.</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">resourceHints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ResourceHints</span><span class="o">::</span><span class="n">create</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// max number of descriptor sets per pool, regardless of type:</span>
+<span class="w">    </span><span class="c1">//resourceHints-&gt;numDescriptorSets = 1;</span>
+
+<span class="w">    </span><span class="c1">//#if VSG_API_VERSION_GREATER_EQUAL(1,1,8)</span>
+<span class="w">    </span><span class="c1">//    resourceHints-&gt;numDatabasePagerReadThreads = 8;</span>
+<span class="w">    </span><span class="c1">//#endif</span>
+
+<span class="w">    </span><span class="c1">// max number of descriptor sets of a specific type per pool:</span>
+<span class="w">    </span><span class="c1">//resourceHints-&gt;descriptorPoolSizes.push_back(</span>
+<span class="w">    </span><span class="c1">//    VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 });</span>
+
+<span class="w">    </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">compile</span><span class="p">(</span><span class="n">resourceHints</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// Force VSG to install a DatabasePager.</span>
+<span class="w">    </span><span class="c1">//vsg::CompileResult result;</span>
+<span class="w">    </span><span class="c1">//result.containsPagedLOD = true;</span>
+<span class="w">    </span><span class="c1">//vsg::updateTasks(viewer-&gt;recordAndSubmitTasks, viewer-&gt;compileManager, result);</span>
+
+<span class="cp">#else</span>
+<span class="w">    </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">compile</span><span class="p">();</span>
+<span class="cp">#endif</span>
+<span class="p">}</span>
+
+<span class="cp">#if 0</span>
+<span class="c">void</span>
+<span class="c">Application::recreateViewer()</span>
+<span class="c">{</span>
+<span class="c">    ROCKY_SOFT_ASSERT_AND_RETURN(viewer, void());</span>
+
+<span class="c">    // Makes a new viewer, copying settings from the old viewer.</span>
+<span class="c">    vsg::EventHandlers handlers = viewer-&gt;getEventHandlers();</span>
+
+<span class="c">    // before we destroy it,</span>
+<span class="c">    // wait until the device is idle to avoid changing state while it&#39;s being used.</span>
+<span class="c">    viewer-&gt;deviceWaitIdle();</span>
+
+<span class="c">    viewer = createViewer();</span>
+
+<span class="c">    instance-&gt;viewer = viewer;</span>
+
+<span class="c">    for (auto i : displayConfiguration.windows)</span>
+<span class="c">        viewer-&gt;addWindow(i.first);</span>
+
+<span class="c">    for (auto&amp; j : handlers)</span>
+<span class="c">        viewer-&gt;addEventHandler(j);</span>
+
+<span class="c">    setupViewer(viewer);</span>
+<span class="c">}</span>
+<span class="cp">#endif</span>
+
+<span class="k">namespace</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">AppUpdateOperation</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Operation</span><span class="p">,</span><span class="w"> </span><span class="n">AppUpdateOperation</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="n">Application</span><span class="o">&amp;</span><span class="w"> </span><span class="n">app</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">AppUpdateOperation</span><span class="p">(</span><span class="n">Application</span><span class="o">&amp;</span><span class="w"> </span><span class="n">in_app</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">app</span><span class="p">(</span><span class="n">in_app</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">run</span><span class="p">()</span><span class="w"> </span><span class="k">override</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// ECS updates - rendering or modifying entities</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">app</span><span class="p">.</span><span class="n">ecsNode</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">app</span><span class="p">.</span><span class="n">ecsNode</span><span class="o">-&gt;</span><span class="n">update</span><span class="p">(</span><span class="n">app</span><span class="p">.</span><span class="n">vsgcontext</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="c1">// keep the frames running if the pager is active</span>
+<span class="w">            </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">app</span><span class="p">.</span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">recordAndSubmitTasks</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">tasks</span><span class="p">.</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">databasePager</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">databasePager</span><span class="o">-&gt;</span><span class="n">numActiveRequests</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">app</span><span class="p">.</span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">};</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="n">Application</span><span class="o">::</span><span class="n">realize</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">_viewerRealized</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// Make a window if the user didn&#39;t.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">windows</span><span class="p">().</span><span class="n">empty</span><span class="p">()</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">autoCreateWindow</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">traits</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">WindowTraits</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="mi">1920</span><span class="p">,</span><span class="w"> </span><span class="mi">1080</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Main Window&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="n">traits</span><span class="o">-&gt;</span><span class="n">queueFlags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">VK_QUEUE_COMPUTE_BIT</span><span class="p">;</span>
+<span class="w">            </span><span class="n">traits</span><span class="o">-&gt;</span><span class="n">synchronizationLayer</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">            </span><span class="n">display</span><span class="p">.</span><span class="n">addWindow</span><span class="p">(</span><span class="n">traits</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">setupViewer</span><span class="p">(</span><span class="n">viewer</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// install our frame update operation</span>
+<span class="w">        </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">updateOperations</span><span class="o">-&gt;</span><span class="n">add</span><span class="p">(</span><span class="n">AppUpdateOperation</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">),</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">UpdateOperations</span><span class="o">::</span><span class="n">ALL_FRAMES</span><span class="p">);</span>
+
+<span class="w">        </span><span class="c1">// mark the viewer ready so that subsequent changes will know to</span>
+<span class="w">        </span><span class="c1">// use an asynchronous path.</span>
+<span class="w">        </span><span class="n">_viewerRealized</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="n">std</span><span class="o">::</span><span class="kt">uint64_t</span>
+<span class="n">Application</span><span class="o">::</span><span class="n">frameCount</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">viewer</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">getFrameStamp</span><span class="p">(),</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">getFrameStamp</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">frameCount</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">int</span>
+<span class="n">Application</span><span class="o">::</span><span class="n">run</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// The main frame loop</span>
+<span class="w">    </span><span class="k">while</span><span class="w"> </span><span class="p">(</span><span class="n">frame</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">true</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="kt">bool</span>
+<span class="n">Application</span><span class="o">::</span><span class="n">frame</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">//Log()-&gt;info(&quot;Frame start ----------------------------------------------------------------------------&quot;);</span>
+
+<span class="w">    </span><span class="c1">//viewer-&gt;deviceWaitIdle();</span>
+<span class="w">    </span><span class="c1">//viewer-&gt;waitForFences(1, ~0);</span>
+
+<span class="w">    </span><span class="n">_lastFrameOK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// for stats collection</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">steady_clock</span><span class="o">::</span><span class="n">time_point</span><span class="w"> </span><span class="n">t_start</span><span class="p">,</span><span class="w"> </span><span class="n">t_update</span><span class="p">,</span><span class="w"> </span><span class="n">t_events</span><span class="p">,</span><span class="w"> </span><span class="n">t_record</span><span class="p">,</span><span class="w"> </span><span class="n">t_present</span><span class="p">,</span><span class="w"> </span><span class="n">t_end</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// realize on first frame if not already realized</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">compileManager</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="n">realize</span><span class="p">();</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="n">t_start</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">steady_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+
+<span class="w">    </span><span class="c1">// whether we need to render a new frame based on the renderOnDemand state:</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">renderRequests</span><span class="p">.</span><span class="n">exchange</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="n">_framesUntilStopRender</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">renderingEnabled</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">renderContinuously</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">true</span><span class="w"> </span><span class="o">||</span>
+<span class="w">        </span><span class="n">_framesUntilStopRender</span><span class="o">--</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">renderingEnabled</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">advanceToNextFrame</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_lastFrameOK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">t_events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">steady_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+
+<span class="w">        </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">handleEvents</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">active</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_lastFrameOK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">t_update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">steady_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">num_windows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">windows</span><span class="p">().</span><span class="n">size</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// Update the scene graph (see AppUpdateOperation)</span>
+<span class="w">        </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">update</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// it&#39;s possible that an update operation will shut down the viewer:</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">active</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">_lastFrameOK</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// if the number of windows has changed, skip to the next frame immediately</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">num_windows</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">windows</span><span class="p">().</span><span class="n">size</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">Log</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;Number of windows changed; skipping to next frame&quot;</span><span class="p">);</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">t_record</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">steady_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+
+<span class="w">        </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">recordAndSubmit</span><span class="p">();</span>
+
+<span class="w">        </span><span class="n">t_present</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">steady_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+
+<span class="w">        </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">present</span><span class="p">();</span>
+
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">t_end</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">steady_clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+<span class="w">        </span><span class="n">stats</span><span class="p">.</span><span class="n">frame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration_cast</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">microseconds</span><span class="o">&gt;</span><span class="p">(</span><span class="n">t_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="p">);</span>
+<span class="w">        </span><span class="n">stats</span><span class="p">.</span><span class="n">events</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration_cast</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">microseconds</span><span class="o">&gt;</span><span class="p">(</span><span class="n">t_update</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_events</span><span class="p">);</span>
+<span class="w">        </span><span class="n">stats</span><span class="p">.</span><span class="n">update</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration_cast</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">microseconds</span><span class="o">&gt;</span><span class="p">(</span><span class="n">t_record</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_update</span><span class="p">);</span>
+<span class="w">        </span><span class="n">stats</span><span class="p">.</span><span class="n">record</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration_cast</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">microseconds</span><span class="o">&gt;</span><span class="p">(</span><span class="n">t_present</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_record</span><span class="p">);</span>
+<span class="w">        </span><span class="n">stats</span><span class="p">.</span><span class="n">present</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration_cast</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">microseconds</span><span class="o">&gt;</span><span class="p">(</span><span class="n">t_end</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_present</span><span class="p">);</span>
+
+<span class="w">        </span><span class="n">_framesSinceLastRender</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">else</span><span class="w"> </span><span class="c1">// no render</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// manually poll the events and install a frame event</span>
+<span class="w">        </span><span class="c1">// (normally called by advanceToNextFrame)</span>
+<span class="w">        </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">pollEvents</span><span class="p">(</span><span class="n">_framesSinceLastRender</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="mi">0</span><span class="p">);</span>
+<span class="w">        </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">getEvents</span><span class="p">().</span><span class="n">emplace_back</span><span class="p">(</span><span class="k">new</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">FrameEvent</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">FrameStamp</span><span class="o">&gt;</span><span class="p">(</span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">getFrameStamp</span><span class="p">())));</span>
+
+<span class="w">        </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">handleEvents</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// update traversal (see AppUpateOperation)</span>
+<span class="w">        </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">update</span><span class="p">();</span>
+
+<span class="w">        </span><span class="c1">// it&#39;s possible that an update operation will shut down the viewer:</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">active</span><span class="p">())</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Call the user-supplied &quot;idle&quot; functions</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">idle</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">idleFunctions</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">idle</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">idle</span><span class="p">)();</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">_framesSinceLastRender</span><span class="o">++</span><span class="p">;</span>
+
+<span class="w">        </span><span class="c1">// After not rendering for a few frames, start applying a sleep to</span>
+<span class="w">        </span><span class="c1">// &quot;simulate&quot; vsync so we don&#39;t tax the CPU by running full-out.</span>
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_framesSinceLastRender</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="mi">60</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">renderRequests</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">max_frame_time</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">milliseconds</span><span class="p">(</span><span class="mi">10</span><span class="p">);</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">now</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">clock</span><span class="o">::</span><span class="n">now</span><span class="p">();</span>
+<span class="w">            </span><span class="k">auto</span><span class="w"> </span><span class="n">elapsed</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">now</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">t_start</span><span class="p">;</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">elapsed</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">max_frame_time</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">dur_us</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">duration_cast</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">chrono</span><span class="o">::</span><span class="n">microseconds</span><span class="o">&gt;</span><span class="p">(</span><span class="n">max_frame_time</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">elapsed</span><span class="p">);</span>
+<span class="w">                </span><span class="n">std</span><span class="o">::</span><span class="n">this_thread</span><span class="o">::</span><span class="n">sleep_for</span><span class="p">(</span><span class="n">dur_us</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">viewer</span><span class="o">-&gt;</span><span class="n">active</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="n">std</span><span class="o">::</span><span class="n">string</span>
+<span class="n">Application</span><span class="o">::</span><span class="n">about</span><span class="p">()</span><span class="w"> </span><span class="k">const</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">stringstream</span><span class="w"> </span><span class="n">buf</span><span class="p">;</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">about</span><span class="p">())</span>
+<span class="w">        </span><span class="n">buf</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">buf</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+<span class="p">}</span>
+
+
+<span class="cp">#ifndef ROCKY_HAS_IMGUI</span>
+<span class="k">using</span><span class="w"> </span><span class="n">RenderImGuiContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+<span class="kt">void</span>
+<span class="nf">Application::install</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">RenderImGuiContext</span><span class="o">&gt;</span><span class="w"> </span><span class="n">group</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="n">install</span><span class="p">(</span><span class="n">group</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="kt">void</span>
+<span class="nf">Application::install</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">RenderImGuiContext</span><span class="o">&gt;</span><span class="w"> </span><span class="n">group</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">installAutomaticIdleFunctions</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="cp">#ifdef ROCKY_HAS_IMGUI</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">group</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">group</span><span class="o">-&gt;</span><span class="n">window</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">group</span><span class="o">-&gt;</span><span class="n">imguiContext</span><span class="p">(),</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">group</span><span class="o">-&gt;</span><span class="n">view</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="n">group</span><span class="o">-&gt;</span><span class="n">view</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">display</span><span class="p">.</span><span class="n">windowsAndViews</span><span class="p">[</span><span class="n">group</span><span class="o">-&gt;</span><span class="n">window</span><span class="p">].</span><span class="n">front</span><span class="p">();</span>
+<span class="w">    </span><span class="n">ROCKY_SOFT_ASSERT_AND_RETURN</span><span class="p">(</span><span class="n">view</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="p">());</span>
+
+<span class="w">    </span><span class="c1">// keep track so we can remove it later if necessary:</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">viewData</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">display</span><span class="p">.</span><span class="n">_viewData</span><span class="p">[</span><span class="n">view</span><span class="p">];</span>
+<span class="w">    </span><span class="n">viewData</span><span class="p">.</span><span class="n">guiContextGroup</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">group</span><span class="p">;</span>
+
+<span class="w">    </span><span class="c1">// add the renderer to the view&#39;s render graph:</span>
+<span class="w">    </span><span class="n">viewData</span><span class="p">.</span><span class="n">parentRenderGraph</span><span class="o">-&gt;</span><span class="n">addChild</span><span class="p">(</span><span class="n">group</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// add the event handler that will pass events from VSG to ImGui:</span>
+<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">send</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SendEventsToImGuiContext</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">group</span><span class="o">-&gt;</span><span class="n">window</span><span class="p">,</span><span class="w"> </span><span class="n">group</span><span class="o">-&gt;</span><span class="n">imguiContext</span><span class="p">());</span>
+<span class="w">    </span><span class="n">viewData</span><span class="p">.</span><span class="n">guiEventVisitor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">send</span><span class="p">;</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">handlers</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">display</span><span class="p">.</span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">viewer</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">getEventHandlers</span><span class="p">();</span>
+<span class="w">    </span><span class="n">handlers</span><span class="p">.</span><span class="n">insert</span><span class="p">(</span><span class="n">handlers</span><span class="p">.</span><span class="n">begin</span><span class="p">(),</span><span class="w"> </span><span class="n">send</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// request a frame when the sender handles an ImGui event:</span>
+<span class="w">    </span><span class="n">_subs</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">send</span><span class="o">-&gt;</span><span class="n">onEvent</span><span class="p">([</span><span class="n">vsgcontext</span><span class="p">(</span><span class="k">this</span><span class="o">-&gt;</span><span class="n">vsgcontext</span><span class="p">)](</span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">UIEvent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">cast</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">FrameEvent</span><span class="o">&gt;</span><span class="p">())</span><span class="w"> </span><span class="k">return</span><span class="p">;</span>
+<span class="w">            </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">requestFrame</span><span class="p">();</span>
+<span class="w">        </span><span class="p">});</span>
+
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">installAutomaticIdleFunctions</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="c1">// when the user adds a new GUI node, we need to add it to the idle functions</span>
+<span class="w">        </span><span class="n">_subs</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">group</span><span class="o">-&gt;</span><span class="n">onNodeAdded</span><span class="p">([</span><span class="n">app</span><span class="p">(</span><span class="k">this</span><span class="p">),</span><span class="w"> </span><span class="n">ic</span><span class="p">(</span><span class="n">group</span><span class="o">-&gt;</span><span class="n">imguiContext</span><span class="p">())](</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">ImGuiContextNode</span><span class="o">&gt;</span><span class="w"> </span><span class="n">node</span><span class="p">)</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// add the node to the idle functions so it can render</span>
+<span class="w">                </span><span class="k">auto</span><span class="w"> </span><span class="n">idle_function</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="n">ic</span><span class="p">,</span><span class="w"> </span><span class="n">node</span><span class="p">]()</span>
+<span class="w">                    </span><span class="p">{</span>
+<span class="w">                        </span><span class="n">ImGui</span><span class="o">::</span><span class="n">SetCurrentContext</span><span class="p">(</span><span class="n">ic</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetIO</span><span class="p">().</span><span class="n">DeltaTime</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetIO</span><span class="p">().</span><span class="n">DeltaTime</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="mf">0.0f</span><span class="w"> </span><span class="o">?</span><span class="w"> </span><span class="mf">0.016f</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetIO</span><span class="p">().</span><span class="n">DeltaTime</span><span class="p">;</span>
+<span class="w">                        </span><span class="n">ImGui</span><span class="o">::</span><span class="n">NewFrame</span><span class="p">();</span>
+<span class="w">                        </span><span class="n">node</span><span class="o">-&gt;</span><span class="n">render</span><span class="p">(</span><span class="n">ic</span><span class="p">);</span>
+<span class="w">                        </span><span class="n">ImGui</span><span class="o">::</span><span class="n">EndFrame</span><span class="p">();</span>
+<span class="w">                    </span><span class="p">};</span>
+
+<span class="w">                </span><span class="n">app</span><span class="o">-&gt;</span><span class="n">idleFunctions</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">make_shared</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">()</span><span class="o">&gt;&gt;</span><span class="p">(</span><span class="n">idle_function</span><span class="p">));</span>
+<span class="w">            </span><span class="p">});</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="cp">#endif</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

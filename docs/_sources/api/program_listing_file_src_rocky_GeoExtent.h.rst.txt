@@ -1,0 +1,193 @@
+
+.. _program_listing_file_src_rocky_GeoExtent.h:
+
+Program Listing for File GeoExtent.h
+====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_GeoExtent.h>` (``src/rocky/GeoExtent.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Common.h>
+   #include <rocky/GeoPoint.h>
+   #include <rocky/GeoCircle.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT GeoExtent
+       {
+       public:
+           GeoExtent();
+           GeoExtent(const GeoExtent& rhs) = default;
+           GeoExtent& operator=(const GeoExtent&) = default;
+           GeoExtent(GeoExtent&& rhs) noexcept = default;
+           GeoExtent& operator=(GeoExtent&&) noexcept = default;
+   
+           GeoExtent(
+               const SRS& srs,
+               double west, double south,
+               double east, double north);
+   
+           GeoExtent(const SRS& srs);
+   
+           GeoExtent(const SRS& srs, const Box& bounds);
+   
+           void set(double west, double south, double east, double north);
+   
+           bool operator == (const GeoExtent& rhs) const;
+   
+           bool operator != (const GeoExtent& rhs) const;
+   
+           const SRS& srs() const { return _srs; }
+   
+           inline double west() const { return _west; }
+           inline double east() const { return normalizeX(_west + _width); }
+           inline double south() const { return _south; }
+           inline double north() const { return _south + _height; }
+   
+           inline double xmin() const { return _west; }
+           inline double xmax() const { return _west + _width; }
+           inline double ymin() const { return _south; }
+           inline double ymax() const { return _south + _height; }
+   
+           inline double width() const { return _width; }
+   
+           double width(const Units& units) const;
+   
+           inline double height() const { return _height; }
+   
+           double height(const Units& units) const;
+   
+           GeoPoint centroid() const;
+   
+           bool getCentroid(double& out_x, double& out_y) const;
+   
+           bool crossesAntimeridian() const;
+   
+           void getBounds(double& xmin, double& ymin, double& xmax, double& ymax) const;
+   
+           inline bool valid() const {
+               return _srs.valid() && _width >= 0.0 && _height >= 0.0;
+           }
+           inline operator bool() const {
+               return valid();
+           }
+   
+           bool splitAcrossAntimeridian(GeoExtent& first, GeoExtent& second) const;
+   
+           GeoExtent transform(const SRS& to_srs) const;
+   
+           bool contains(double x, double y, const SRS& srs = { }) const;
+   
+           bool contains(const GeoPoint& rhs) const;
+   
+           bool contains(const GeoExtent& rhs) const;
+   
+           bool contains(const Box& rhs) const;
+   
+           bool intersects(const GeoExtent& rhs) const;
+   
+           Box bounds() const;
+   
+           GeoCircle computeBoundingGeoCircle() const;
+   
+           void expandToInclude(double x, double y);
+   
+           bool expandToInclude(const GeoExtent& rhs);
+   
+           GeoExtent intersectionSameSRS(const GeoExtent& rhs) const;
+   
+           std::string toString() const;
+   
+           void scale(double x_scale, double y_scale);
+   
+           void expand(double x, double y);
+   
+           void expand(const Distance& x, const Distance& y);
+   
+           double area() const;
+   
+           bool createScaleBias(const GeoExtent& target, glm::dmat4& output) const;
+   
+           Sphere createWorldBoundingSphere(double minElev, double maxElev) const;
+   
+           template<typename VEC>
+           inline VEC clamp(const VEC& vec) const;
+   
+           template<typename ITER>
+           inline void clamp(ITER begin, ITER end) const;
+   
+       public:
+           static GeoExtent INVALID;
+   
+       private:
+           double _west, _width, _south, _height;
+           SRS _srs;
+   
+           double normalizeX(double longitude) const;
+   
+           void clamp();
+   
+           void setOriginAndSize(double west, double south, double width, double height);
+       };
+   
+   
+       class ROCKY_EXPORT GeoExtent3D : public GeoExtent
+       {
+       public:
+           GeoExtent3D() = default;
+           GeoExtent3D(const GeoExtent& extent) : GeoExtent(extent) { }
+           GeoExtent3D(const GeoExtent& extent, const std::string& in_description) : GeoExtent(extent) {
+               description = in_description;
+           }
+           GeoExtent3D(const GeoExtent& extent, unsigned in_minLevel) : GeoExtent(extent) {
+               minLevel = in_minLevel;
+           }
+           GeoExtent3D(const GeoExtent& extent, unsigned in_minLevel, const std::string& in_description) : GeoExtent(extent) {
+               minLevel = in_minLevel;
+               description = in_description;
+           }
+           GeoExtent3D(const GeoExtent& extent, unsigned in_minLevel, unsigned in_maxLevel) : GeoExtent(extent) {
+               minLevel = in_minLevel;
+               maxLevel = in_maxLevel;
+           }
+           GeoExtent3D(const GeoExtent& extent, unsigned in_minLevel, unsigned in_maxLevel, const std::string& in_description) : GeoExtent(extent) {
+               minLevel = in_minLevel;
+               maxLevel = in_maxLevel;
+               description = in_description;
+           }
+   
+           option<unsigned> minLevel = 0u;
+   
+           option<unsigned> maxLevel = 99u;
+   
+           option<std::string> description;
+       };
+   
+       using DataExtent = GeoExtent3D;
+       using DataExtentList = std::vector<DataExtent>;
+   
+   
+   
+       template<typename VEC>
+       inline VEC GeoExtent::clamp(const VEC& input) const {
+           VEC output = input;
+           output.x = std::clamp(input.x, xmin(), xmax());
+           output.y = std::clamp(input.y, ymin(), ymax());
+           return output;
+       }
+   
+       template<typename ITER>
+       inline void GeoExtent::clamp(ITER begin, ITER end) const {
+           for (auto it = begin; it != end; ++it) {
+               it->x = std::clamp(it->x, xmin(), xmax());
+               it->y = std::clamp(it->y, ymin(), ymax());
+           }
+       }
+   
+   }

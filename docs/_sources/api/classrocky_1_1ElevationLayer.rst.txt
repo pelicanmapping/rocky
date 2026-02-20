@@ -1,0 +1,32 @@
+.. _exhale_class_classrocky_1_1ElevationLayer:
+
+Class ElevationLayer
+====================
+
+- Defined in :ref:`file_src_rocky_ElevationLayer.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public rocky::Inherit< TileLayer, ElevationLayer >``
+
+
+Derived Type
+************
+
+- ``public rocky::Inherit< ElevationLayer, TMSElevationLayer >`` (:ref:`exhale_class_classrocky_1_1Inherit`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::ElevationLayer
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

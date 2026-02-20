@@ -1,0 +1,82 @@
+
+.. _file_src_rocky_Color.h:
+
+File Color.h
+============
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/Color.h``)
+----------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_Color.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``cstdint``
+
+- ``rocky/Common.h`` (:ref:`file_src_rocky_Common.h`)
+
+- ``rocky/Math.h`` (:ref:`file_src_rocky_Math.h`)
+
+- ``string``
+
+- ``vector``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_Color.cpp`
+
+- :ref:`file_src_rocky_ImageLayer.h`
+
+- :ref:`file_src_rocky_ecs_Label.h`
+
+- :ref:`file_src_rocky_ecs_Line.h`
+
+- :ref:`file_src_rocky_ecs_Mesh.h`
+
+- :ref:`file_src_rocky_ecs_Point.h`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainSettings.h`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainState.cpp`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainState.h`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classrocky_1_1Color`
+

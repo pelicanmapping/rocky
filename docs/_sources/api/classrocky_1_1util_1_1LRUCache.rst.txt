@@ -1,0 +1,35 @@
+.. _exhale_class_classrocky_1_1util_1_1LRUCache:
+
+Template Class LRUCache
+=======================
+
+- Defined in :ref:`file_src_rocky_Cache.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public rocky::Cache< K, V >`` (:ref:`exhale_class_classrocky_1_1Cache`)
+
+
+Template Parameter Order
+------------------------
+
+#. `class <exhale_struct_structrocky_1_1option_>`_
+#. `class <exhale_struct_structrocky_1_1option_>`_
+
+
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::util::LRUCache
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

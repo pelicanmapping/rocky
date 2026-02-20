@@ -1,0 +1,14 @@
+.. _exhale_define_Common_8h_1a1e056c9ad67d91b362d38e1921ea4174:
+
+Define ROCKY_QUIET_ASSERT
+=========================
+
+- Defined in :ref:`file_src_rocky_Common.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ROCKY_QUIET_ASSERT
+   :project: Rocky

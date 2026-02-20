@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a004f1ecf8511deb396742dfb6c55c1d6:
+
+Template Function rocky::euler_degrees_from_quaternion
+======================================================
+
+- Defined in :ref:`file_src_rocky_Math.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::euler_degrees_from_quaternion(const Q&)
+   :project: Rocky

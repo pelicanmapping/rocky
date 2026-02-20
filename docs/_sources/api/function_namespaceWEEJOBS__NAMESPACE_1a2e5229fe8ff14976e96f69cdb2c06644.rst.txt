@@ -1,0 +1,14 @@
+.. _exhale_function_namespaceWEEJOBS__NAMESPACE_1a2e5229fe8ff14976e96f69cdb2c06644:
+
+Function WEEJOBS_NAMESPACE::dispatch(std::function<void()>, const context&)
+===========================================================================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: WEEJOBS_NAMESPACE::dispatch(std::function<void()>, const context&)
+   :project: Rocky

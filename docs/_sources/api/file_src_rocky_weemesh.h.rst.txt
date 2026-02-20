@@ -1,0 +1,134 @@
+
+.. _file_src_rocky_weemesh.h:
+
+File weemesh.h
+==============
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/weemesh.h``)
+------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_weemesh.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``climits``
+
+- ``cmath``
+
+- ``iterator``
+
+- ``map``
+
+- ``rtree.h`` (:ref:`file_src_rocky_rtree.h`)
+
+- ``set``
+
+- ``unordered_map``
+
+- ``unordered_set``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_vsg_ecs_FeatureView.cpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_weemesh`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structweemesh_1_1edge__t`
+
+- :ref:`exhale_struct_structweemesh_1_1edgeset__t`
+
+- :ref:`exhale_struct_structweemesh_1_1graph__t`
+
+- :ref:`exhale_struct_structweemesh_1_1mesh__t`
+
+- :ref:`exhale_struct_structweemesh_1_1neighbors__t`
+
+- :ref:`exhale_struct_structweemesh_1_1node__t`
+
+- :ref:`exhale_struct_structweemesh_1_1segment__t`
+
+- :ref:`exhale_struct_structweemesh_1_1triangle__t`
+
+- :ref:`exhale_struct_structweemesh_1_1vert__t`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceweemesh_1a3308817e38eaca16d35735962ce3d41d`
+
+- :ref:`exhale_function_namespaceweemesh_1aaca29c5c759c5c86362ab5ff9588c848`
+
+- :ref:`exhale_function_namespaceweemesh_1a6f11ef3e0a4ccbfd7de0c63f7937c630`
+
+- :ref:`exhale_function_namespaceweemesh_1aee1c5d92a845cf39b42a82408ef8b01c`
+
+- :ref:`exhale_function_namespaceweemesh_1a794d8e87edb9d851db612aff095b2e76`
+
+
+Defines
+-------
+
+
+- :ref:`exhale_define_weemesh_8h_1a73f318eac0c77684a4abc3c8ea07d431`
+
+- :ref:`exhale_define_weemesh_8h_1a107a127f7ab4b5d0807035f219b85930`
+
+- :ref:`exhale_define_weemesh_8h_1a1c39139002b1d058d458d8c7c442e1fb`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef_namespaceweemesh_1a12b40edef77503af39af0cc4692640d0`
+
+- :ref:`exhale_typedef_namespaceweemesh_1a33416fa70481bb7b5b3b04183dc020c6`
+
+- :ref:`exhale_typedef_namespaceweemesh_1a8ef7d898f2ed2d11cdc16b288a8edf3a`
+
+- :ref:`exhale_typedef_namespaceweemesh_1a5a127a67140b82c916fc4c683eaa5888`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable_namespaceweemesh_1a75e78464d47d0e03c7da03ad8e9f04f8`
+

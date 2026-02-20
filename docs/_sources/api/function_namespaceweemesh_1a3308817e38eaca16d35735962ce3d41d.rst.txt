@@ -1,0 +1,14 @@
+.. _exhale_function_namespaceweemesh_1a3308817e38eaca16d35735962ce3d41d:
+
+Template Function weemesh::clamp
+================================
+
+- Defined in :ref:`file_src_rocky_weemesh.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: weemesh::clamp(T, T, T)
+   :project: Rocky

@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1ab1d43c8feee9032c33e7505a767b5845:
+
+Function rocky::from_json(const json&, Distance&)
+=================================================
+
+- Defined in :ref:`file_src_rocky_Units.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::from_json(const json&, Distance&)
+   :project: Rocky

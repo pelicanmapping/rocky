@@ -1,0 +1,37 @@
+.. _exhale_struct_structrocky_1_1util_1_1vector__map:
+
+Template Struct vector_map
+==========================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+- :ref:`exhale_struct_structrocky_1_1util_1_1vector__map_1_1ENTRY`
+
+
+Template Parameter Order
+------------------------
+
+#. `typename <exhale_struct_structrocky_1_1option_>`_
+#. `typename <exhale_struct_structrocky_1_1option_>`_
+#. `typename <exhale_struct_structrocky_1_1option_>`_
+
+
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::util::vector_map
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

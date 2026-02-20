@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1afd176aa2b44713f26c60110f40e52c91:
+
+Function rocky::to_vsg(const glm::fquat&)
+=========================================
+
+- Defined in :ref:`file_src_rocky_vsg_VSGUtils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::to_vsg(const glm::fquat&)
+   :project: Rocky

@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1a11f2d085901cdcfc80ef0d1a7c1ca66e:
+
+Function rocky::util::moveImageToVSG
+====================================
+
+- Defined in :ref:`file_src_rocky_vsg_VSGUtils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::moveImageToVSG(std::shared_ptr<Image>)
+   :project: Rocky

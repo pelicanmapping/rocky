@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1Color:
+
+Class Color
+===========
+
+- Defined in :ref:`file_src_rocky_Color.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public glm::fvec4``
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::Color
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

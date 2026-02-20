@@ -1,0 +1,14 @@
+.. _exhale_define_TerrainState_8cpp_1a6db321802e8f5770404cfc5d5ce3d457:
+
+Define SETTINGS_UBO_NAME
+========================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_TerrainState.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: SETTINGS_UBO_NAME
+   :project: Rocky

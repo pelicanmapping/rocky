@@ -1,0 +1,14 @@
+.. _exhale_define_Common_8h_1a3d98bf9da4e05febd6fde7757f805531:
+
+Define ROCKY_IF_SOFT_ASSERT
+===========================
+
+- Defined in :ref:`file_src_rocky_Common.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ROCKY_IF_SOFT_ASSERT
+   :project: Rocky

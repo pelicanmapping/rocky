@@ -1,0 +1,90 @@
+
+.. _program_listing_file_src_rocky_MBTiles.h:
+
+Program Listing for File MBTiles.h
+==================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_MBTiles.h>` (``src/rocky/MBTiles.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Common.h>
+   #ifdef ROCKY_HAS_MBTILES
+   
+   #include <rocky/Result.h>
+   #include <rocky/URI.h>
+   #include <rocky/TileKey.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class Image;
+   
+       namespace MBTiles
+       {
+           struct Options
+           {
+               option<URI> uri;
+   
+               option<std::string> format = { "image/png" };
+   
+               option<bool> compress = false;
+           };
+   
+           class ROCKY_EXPORT Driver
+           {
+           public:
+               Driver();
+               ~Driver();
+   
+               Result<> open(
+                   const std::string& name,
+                   const Options& options,
+                   bool isWritingRequested,
+                   Profile& profile_inout,
+                   DataExtentList& dataExtents,
+                   const IOOptions& io);
+   
+               void close();
+   
+               Result<std::shared_ptr<Image>> read(
+                   const TileKey& key,
+                   const IOOptions& io) const;
+   
+               Result<> write(
+                   const TileKey& key,
+                   std::shared_ptr<Image> image,
+                   const IOOptions& io) const;
+   
+               void setDataExtents(const DataExtentList&);
+               bool getMetaData(const std::string& name, std::string& value);
+               bool putMetaData(const std::string& name, const std::string& value);
+   
+           private:
+               void* _database;
+               mutable unsigned _minLevel;
+               mutable unsigned _maxLevel;
+               std::shared_ptr<Image> _emptyImage;
+               Options _options;
+               std::string _tileFormat;
+               bool _forceRGB;
+               std::string _name;
+   
+               // because no one knows if/when sqlite3 is threadsafe.
+               mutable std::mutex _mutex;
+   
+               bool createTables();
+               void computeLevels();
+               Result<int> readMaxLevel();
+           };
+       }
+   }
+   
+   #else // if !ROCKY_HAS_MBTILES
+   #ifndef ROCKY_BUILDING_SDK
+   #error MBTILES support is not enabled in Rocky.
+   #endif
+   #endif // ROCKY_HAS_MBTILES

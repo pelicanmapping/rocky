@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a07906f7ab35a55668dda5a0d3c144367:
+
+Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Profile)
+============================================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class Profile)
+   :project: Rocky

@@ -1,0 +1,14 @@
+.. _exhale_function_namespaceWEEJOBS__NAMESPACE_1a7e5e48f960937d658337f04edbbb9b51:
+
+Template Function WEEJOBS_NAMESPACE::dispatch(F, future<T>, const context&)
+===========================================================================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: WEEJOBS_NAMESPACE::dispatch(F, future<T>, const context&)
+   :project: Rocky

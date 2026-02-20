@@ -1,0 +1,31 @@
+
+.. _program_listing_file_src_rocky_vsg_Common.h:
+
+Program Listing for File Common.h
+=================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_Common.h>` (``src/rocky/vsg/Common.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Common.h>
+   #include <vsg/all.h>
+   
+   #define ROCKY_VSG_NAMESPACE ROCKY_NAMESPACE
+   
+   // non-exported classes
+   #define ROCKY_VSG_INTERNAL
+   
+   #ifndef VSG_COMPUTE_VERSION
+   #define VSG_COMPUTE_VERSION(major, minor, rev) ((major) * 10000 + (minor) * 100 + (rev))
+   #define VSG_VERSION_INTEGER VSG_COMPUTE_VERSION(VSG_VERSION_MAJOR, VSG_VERSION_MINOR, VSG_VERSION_PATCH)
+   #endif
+   
+   #if VSG_API_VERSION_LESS(1, 1, 7)
+   #error "Rocky requires VSG 1.1.7 or later"
+   #endif

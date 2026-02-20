@@ -1,0 +1,68 @@
+
+.. _file_src_rocky_vsg_imgui_SendEventsToImGui.h:
+
+File SendEventsToImGui.h
+========================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_vsg_imgui>` (``src/rocky/vsg/imgui``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/vsg/imgui/SendEventsToImGui.h``)
+--------------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_vsg_imgui_SendEventsToImGui.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``chrono``
+
+- ``imgui.h`` (:ref:`file_src_rocky_rocky_imgui.h`)
+
+- ``rocky/vsg/Common.h`` (:ref:`file_src_rocky_vsg_Common.h`)
+
+- ``vsg/core/Visitor.h``
+
+- ``vsg/ui/KeyEvent.h``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_vsg_imgui_ImGuiIntegration.h`
+
+- :ref:`file_src_rocky_vsg_imgui_SendEventsToImGui.cpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classrocky_1_1SendEventsToImGui`
+

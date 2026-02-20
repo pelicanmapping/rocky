@@ -1,0 +1,56 @@
+
+.. _file_src_rocky_Viewpoint.cpp:
+
+File Viewpoint.cpp
+==================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/Viewpoint.cpp``)
+----------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_Viewpoint.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Viewpoint.h`` (:ref:`file_src_rocky_Viewpoint.h`)
+
+- ``json.h`` (:ref:`file_src_rocky_json.h`)
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespacerocky_1aa22e8a098a2f111777fea52c1a5c4b89`
+
+- :ref:`exhale_function_namespacerocky_1a1f0a5d2734aaa65e147b39bff252eddb`
+

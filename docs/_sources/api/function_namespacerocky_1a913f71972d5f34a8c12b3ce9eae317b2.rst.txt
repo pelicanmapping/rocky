@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a913f71972d5f34a8c12b3ce9eae317b2:
+
+Function rocky::unqualify
+=========================
+
+- Defined in :ref:`file_src_rocky_Common.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::unqualify(std::string_view)
+   :project: Rocky

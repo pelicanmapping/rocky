@@ -1,0 +1,17 @@
+.. _exhale_struct_structrocky_1_1GeometryKey:
+
+Struct GeometryKey
+==================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_GeometryPool.h`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::GeometryKey
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

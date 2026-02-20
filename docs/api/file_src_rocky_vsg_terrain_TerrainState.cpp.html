@@ -1,0 +1,176 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>File TerrainState.cpp &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">File TerrainState.cpp</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/file_src_rocky_vsg_terrain_TerrainState.cpp.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="file-terrainstate-cpp">
+<span id="file-src-rocky-vsg-terrain-terrainstate-cpp"></span><h1>File TerrainState.cpp<a class="headerlink" href="#file-terrainstate-cpp" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="dir_src_rocky_vsg_terrain.html#dir-src-rocky-vsg-terrain"><span class="std std-ref">Parent directory</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/terrain</span></code>)</p>
+<nav class="contents local" id="contents">
+<p class="topic-title">Contents</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="#definition-src-rocky-vsg-terrain-terrainstate-cpp" id="id1">Definition (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/terrain/TerrainState.cpp</span></code>)</a></p></li>
+<li><p><a class="reference internal" href="#includes" id="id2">Includes</a></p></li>
+<li><p><a class="reference internal" href="#defines" id="id3">Defines</a></p></li>
+</ul>
+</nav>
+<section id="definition-src-rocky-vsg-terrain-terrainstate-cpp">
+<h2>Definition (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/terrain/TerrainState.cpp</span></code>)<a class="headerlink" href="#definition-src-rocky-vsg-terrain-terrainstate-cpp" title="Link to this heading"></a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="program_listing_file_src_rocky_vsg_terrain_TerrainState.cpp.html">Program Listing for File TerrainState.cpp</a></li>
+</ul>
+</div>
+</section>
+<section id="includes">
+<h2>Includes<a class="headerlink" href="#includes" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">../PipelineState.h</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">../VSGUtils.h</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TerrainNode.h</span></code> (<a class="reference internal" href="file_src_rocky_vsg_terrain_TerrainNode.h.html#file-src-rocky-vsg-terrain-terrainnode-h"><span class="std std-ref">File TerrainNode.h</span></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TerrainSettings.h</span></code> (<a class="reference internal" href="file_src_rocky_vsg_terrain_TerrainSettings.h.html#file-src-rocky-vsg-terrain-terrainsettings-h"><span class="std std-ref">File TerrainSettings.h</span></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TerrainState.h</span></code> (<a class="reference internal" href="file_src_rocky_vsg_terrain_TerrainState.h.html#file-src-rocky-vsg-terrain-terrainstate-h"><span class="std std-ref">File TerrainState.h</span></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TerrainTileNode.h</span></code> (<a class="reference internal" href="file_src_rocky_vsg_terrain_TerrainTileNode.h.html#file-src-rocky-vsg-terrain-terraintilenode-h"><span class="std std-ref">File TerrainTileNode.h</span></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rocky/Color.h</span></code> (<a class="reference internal" href="file_src_rocky_Color.h.html#file-src-rocky-color-h"><span class="std std-ref">File Color.h</span></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rocky/Heightfield.h</span></code> (<a class="reference internal" href="file_src_rocky_Heightfield.h.html#file-src-rocky-heightfield-h"><span class="std std-ref">File Heightfield.h</span></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rocky/Image.h</span></code> (<a class="reference internal" href="file_src_rocky_Image.h.html#file-src-rocky-image-h"><span class="std std-ref">File Image.h</span></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">rocky/TerrainTileModel.h</span></code> (<a class="reference internal" href="file_src_rocky_TerrainTileModel.h.html#file-src-rocky-terraintilemodel-h"><span class="std std-ref">File TerrainTileModel.h</span></a>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vsg/state/BindDescriptorSet.h</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">vsg/state/ViewDependentState.h</span></code></p></li>
+</ul>
+</section>
+<section id="defines">
+<h2>Defines<a class="headerlink" href="#defines" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1a142597e2f2f369f7e1052009742f13c5.html#exhale-define-terrainstate-8cpp-1a142597e2f2f369f7e1052009742f13c5"><span class="std std-ref">Define ATTR_NORMAL</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1ae1050315961fa4c495cc4dabc3c9eed3.html#exhale-define-terrainstate-8cpp-1ae1050315961fa4c495cc4dabc3c9eed3"><span class="std std-ref">Define ATTR_NORMAL_NEIGHBOR</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1a73c8e2612cdf9aaffe1888e8f7f3c2e1.html#exhale-define-terrainstate-8cpp-1a73c8e2612cdf9aaffe1888e8f7f3c2e1"><span class="std std-ref">Define ATTR_UV</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1aa8932ba604ffd3801761e7a590cb6f6f.html#exhale-define-terrainstate-8cpp-1aa8932ba604ffd3801761e7a590cb6f6f"><span class="std std-ref">Define ATTR_VERTEX</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1af4e56af63601a0fa4bb0d0f447a07527.html#exhale-define-terrainstate-8cpp-1af4e56af63601a0fa4bb0d0f447a07527"><span class="std std-ref">Define ATTR_VERTEX_NEIGHBOR</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1a9a92f5163ea1a7b982365243e7b262e2.html#exhale-define-terrainstate-8cpp-1a9a92f5163ea1a7b982365243e7b262e2"><span class="std std-ref">Define COLOR_TEX_BINDING</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1a255e1e427020475b6c912ab1688210d9.html#exhale-define-terrainstate-8cpp-1a255e1e427020475b6c912ab1688210d9"><span class="std std-ref">Define COLOR_TEX_NAME</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1ae354e52f2e19ee8290da5b769c53e842.html#exhale-define-terrainstate-8cpp-1ae354e52f2e19ee8290da5b769c53e842"><span class="std std-ref">Define ELEVATION_TEX_BINDING</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1ab2a8861cc02d70175368636c905f437c.html#exhale-define-terrainstate-8cpp-1ab2a8861cc02d70175368636c905f437c"><span class="std std-ref">Define ELEVATION_TEX_NAME</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1a63774437c2b37c124791886b246aa24e.html#exhale-define-terrainstate-8cpp-1a63774437c2b37c124791886b246aa24e"><span class="std std-ref">Define NORMAL_TEX_BINDING</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1a8464351b2f571acc996006ddccebd39c.html#exhale-define-terrainstate-8cpp-1a8464351b2f571acc996006ddccebd39c"><span class="std std-ref">Define NORMAL_TEX_NAME</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1addb5e8f44f118caca56d34a67f168cc4.html#exhale-define-terrainstate-8cpp-1addb5e8f44f118caca56d34a67f168cc4"><span class="std std-ref">Define SETTINGS_UBO_BINDING</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1a6db321802e8f5770404cfc5d5ce3d457.html#exhale-define-terrainstate-8cpp-1a6db321802e8f5770404cfc5d5ce3d457"><span class="std std-ref">Define SETTINGS_UBO_NAME</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1a4afb985bda696dbc5d33bb906a9b21ec.html#exhale-define-terrainstate-8cpp-1a4afb985bda696dbc5d33bb906a9b21ec"><span class="std std-ref">Define TERRAIN_FRAG_SHADER</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1a1341d0902445597b3d9594d4bed7621a.html#exhale-define-terrainstate-8cpp-1a1341d0902445597b3d9594d4bed7621a"><span class="std std-ref">Define TERRAIN_VERT_SHADER</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1a87de957fda29ed59f06191a7e08273d6.html#exhale-define-terrainstate-8cpp-1a87de957fda29ed59f06191a7e08273d6"><span class="std std-ref">Define TILE_UBO_BINDING</span></a></p></li>
+<li><p><a class="reference internal" href="define_TerrainState_8cpp_1af14724ebfe60d48776f7ee67759d626f.html#exhale-define-terrainstate-8cpp-1af14724ebfe60d48776f7ee67759d626f"><span class="std std-ref">Define TILE_UBO_NAME</span></a></p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

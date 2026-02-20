@@ -1,0 +1,17 @@
+.. _exhale_class_classrocky_1_1util_1_1StreamCompressor:
+
+Class StreamCompressor
+======================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::util::StreamCompressor
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

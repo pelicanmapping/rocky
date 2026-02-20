@@ -1,0 +1,22 @@
+
+.. _namespace_ImGuiEx:
+
+Namespace ImGuiEx
+=================
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceImGuiEx_1a5b2a9b0ed3e2dc9ca6858d5158467d04`
+
+- :ref:`exhale_function_namespaceImGuiEx_1a5eafbb21b9a863323d1875e6c1458430`

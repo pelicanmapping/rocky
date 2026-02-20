@@ -1,0 +1,28 @@
+
+.. _program_listing_file_src_rocky_vsg_RTT.h:
+
+Program Listing for File RTT.h
+==============================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_RTT.h>` (``src/rocky/vsg/RTT.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/vsg/Common.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT RTT
+       {
+       public:
+           static vsg::ref_ptr<vsg::RenderGraph> createOffScreenRenderGraph(
+               vsg::Context& context,
+               const VkExtent2D& extent,
+               vsg::ref_ptr<vsg::ImageInfo> colorImageInfo,
+               vsg::ref_ptr<vsg::ImageInfo> depthImageInfo);
+       };
+   }

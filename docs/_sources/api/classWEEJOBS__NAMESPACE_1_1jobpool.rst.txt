@@ -1,0 +1,27 @@
+.. _exhale_class_classWEEJOBS__NAMESPACE_1_1jobpool:
+
+Class jobpool
+=============
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+- :ref:`exhale_struct_structWEEJOBS__NAMESPACE_1_1jobpool_1_1metrics__t`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: WEEJOBS_NAMESPACE::jobpool
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

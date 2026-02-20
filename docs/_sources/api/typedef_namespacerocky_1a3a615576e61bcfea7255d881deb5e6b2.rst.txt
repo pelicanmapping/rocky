@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespacerocky_1a3a615576e61bcfea7255d881deb5e6b2:
+
+Typedef rocky::VSGContext
+=========================
+
+- Defined in :ref:`file_src_rocky_vsg_VSGContext.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: rocky::VSGContext
+   :project: Rocky

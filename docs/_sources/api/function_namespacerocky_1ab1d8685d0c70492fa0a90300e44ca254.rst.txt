@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1ab1d8685d0c70492fa0a90300e44ca254:
+
+Function rocky::from_json(const json&, DateTime&)
+=================================================
+
+- Defined in :ref:`file_src_rocky_DateTime.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::from_json(const json&, DateTime&)
+   :project: Rocky

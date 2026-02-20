@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1ad6c45c9f3e0a2aec96d05b19d3468f0e:
+
+Function rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class GeoExtent)
+==============================================================
+
+- Defined in :ref:`file_src_rocky_json.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::ROCKY_DEFINE_JSON_SERIALIZERS(class GeoExtent)
+   :project: Rocky

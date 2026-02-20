@@ -1,0 +1,88 @@
+
+.. _file_src_rocky_vsg_MapManipulator.h:
+
+File MapManipulator.h
+=====================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_vsg>` (``src/rocky/vsg``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/vsg/MapManipulator.h``)
+-----------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_vsg_MapManipulator.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``optional``
+
+- ``rocky/GeoPoint.h`` (:ref:`file_src_rocky_GeoPoint.h`)
+
+- ``rocky/Math.h`` (:ref:`file_src_rocky_Math.h`)
+
+- ``rocky/Viewpoint.h`` (:ref:`file_src_rocky_Viewpoint.h`)
+
+- ``rocky/vsg/VSGContext.h`` (:ref:`file_src_rocky_vsg_VSGContext.h`)
+
+- ``vector``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_vsg_DisplayManager.cpp`
+
+- :ref:`file_src_rocky_vsg_DisplayManager.h`
+
+- :ref:`file_src_rocky_vsg_MapManipulator.cpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+- :ref:`namespace_vsg`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1Action`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1ActionOption`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1ActionOptions`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1InputSpec`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1State`
+
+- :ref:`exhale_struct_structrocky_1_1MapManipulator_1_1Task`
+
+- :ref:`exhale_class_classrocky_1_1MapManipulator`
+
+- :ref:`exhale_class_classrocky_1_1MapManipulator_1_1Settings`
+

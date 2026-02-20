@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a813e8c9057a10dee760d1ef2b685d9ba:
+
+Function rocky::operator\*(const glm::fvec3&, const glm::fmat4&)
+================================================================
+
+- Defined in :ref:`file_src_rocky_Math.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::operator*(const glm::fvec3&, const glm::fmat4&)
+   :project: Rocky

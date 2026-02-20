@@ -1,0 +1,14 @@
+.. _exhale_define_rtree_8h_1a71d39d14ebc41d5afb366da768e437cc:
+
+Define RTREE_USE_LINEAR_SPLIT
+=============================
+
+- Defined in :ref:`file_src_rocky_rtree.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: RTREE_USE_LINEAR_SPLIT
+   :project: Rocky

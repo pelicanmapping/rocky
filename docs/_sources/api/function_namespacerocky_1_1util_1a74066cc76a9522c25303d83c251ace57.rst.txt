@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1_1util_1a74066cc76a9522c25303d83c251ace57:
+
+Function rocky::util::toLowerInPlace
+====================================
+
+- Defined in :ref:`file_src_rocky_Utils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::util::toLowerInPlace(std::string&)
+   :project: Rocky

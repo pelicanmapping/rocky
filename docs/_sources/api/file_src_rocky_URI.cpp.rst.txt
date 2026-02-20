@@ -1,0 +1,83 @@
+
+.. _file_src_rocky_URI.cpp:
+
+File URI.cpp
+============
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/URI.cpp``)
+----------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_URI.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Context.h`` (:ref:`file_src_rocky_Context.h`)
+
+- ``URI.h`` (:ref:`file_src_rocky_URI.h`)
+
+- ``Utils.h`` (:ref:`file_src_rocky_Utils.h`)
+
+- ``Version.h``
+
+- ``fstream``
+
+- ``json.h`` (:ref:`file_src_rocky_json.h`)
+
+- ``random``
+
+- ``sstream``
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+- :ref:`namespace_std__chrono_literals`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespacerocky_1afb6a778d5f9828e9075e62b5ef8cc9b8`
+
+- :ref:`exhale_function_namespacerocky_1a2dd15ab9999cb5aac9f53c170a28bf12`
+
+- :ref:`exhale_function_namespacerocky_1aebd13da86127e156d60c80d73c3a2924`
+
+- :ref:`exhale_function_namespacerocky_1a4674a0dd837fe8b6bf04ec1a56d8234a`
+
+
+Defines
+-------
+
+
+- :ref:`exhale_define_URI_8cpp_1aa499bb75bb504909cd0a72baf48c4653`
+
+- :ref:`exhale_define_URI_8cpp_1a9f918755b601cf4bffca775992e6fb90`
+

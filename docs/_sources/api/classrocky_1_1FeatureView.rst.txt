@@ -1,0 +1,27 @@
+.. _exhale_class_classrocky_1_1FeatureView:
+
+Class FeatureView
+=================
+
+- Defined in :ref:`file_src_rocky_vsg_ecs_FeatureView.h`
+
+
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+- :ref:`exhale_struct_structrocky_1_1FeatureView_1_1Workspace`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::FeatureView
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

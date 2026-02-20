@@ -1,0 +1,14 @@
+.. _exhale_define_SurfaceNode_8cpp_1a002b2f4894492820fe708b1b7e7c5e70:
+
+Define EPSILON
+==============
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_SurfaceNode.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: EPSILON
+   :project: Rocky

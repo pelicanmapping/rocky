@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespaceweemesh_1a12b40edef77503af39af0cc4692640d0:
+
+Typedef weemesh::spatial_index_t
+================================
+
+- Defined in :ref:`file_src_rocky_weemesh.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: weemesh::spatial_index_t
+   :project: Rocky

@@ -1,0 +1,14 @@
+.. _exhale_define_rtree_8h_1a48ab98477536b7144da4b56f4a69af99:
+
+Define RTREE_DONT_USE_MEMPOOLS
+==============================
+
+- Defined in :ref:`file_src_rocky_rtree.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: RTREE_DONT_USE_MEMPOOLS
+   :project: Rocky

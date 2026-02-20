@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespacerocky_1ae10af4f95701bff9b068016fc0cf93c4:
+
+Typedef rocky::SpatialReference
+===============================
+
+- Defined in :ref:`file_src_rocky_SRS.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: rocky::SpatialReference
+   :project: Rocky

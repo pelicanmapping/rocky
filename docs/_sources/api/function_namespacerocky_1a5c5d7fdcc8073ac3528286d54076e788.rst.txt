@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a5c5d7fdcc8073ac3528286d54076e788:
+
+Function rocky::from_json(const json&, Color&)
+==============================================
+
+- Defined in :ref:`file_src_rocky_Color.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::from_json(const json&, Color&)
+   :project: Rocky

@@ -1,0 +1,17 @@
+.. _exhale_class_classrocky_1_1Geocoder:
+
+Class Geocoder
+==============
+
+- Defined in :ref:`file_src_rocky_Geocoder.h`
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::Geocoder
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

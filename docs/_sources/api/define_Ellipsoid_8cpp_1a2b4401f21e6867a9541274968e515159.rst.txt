@@ -1,0 +1,14 @@
+.. _exhale_define_Ellipsoid_8cpp_1a2b4401f21e6867a9541274968e515159:
+
+Define WGS84_RADIUS_EQUATOR
+===========================
+
+- Defined in :ref:`file_src_rocky_Ellipsoid.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: WGS84_RADIUS_EQUATOR
+   :project: Rocky

@@ -1,0 +1,93 @@
+
+.. _file_src_rocky_vsg_terrain_GeometryPool.h:
+
+File GeometryPool.h
+===================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_vsg_terrain>` (``src/rocky/vsg/terrain``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/vsg/terrain/GeometryPool.h``)
+-----------------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_vsg_terrain_GeometryPool.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``map``
+
+- ``rocky/IOTypes.h`` (:ref:`file_src_rocky_IOTypes.h`)
+
+- ``rocky/Math.h`` (:ref:`file_src_rocky_Math.h`)
+
+- ``rocky/TileKey.h`` (:ref:`file_src_rocky_TileKey.h`)
+
+- ``rocky/vsg/VSGContext.h`` (:ref:`file_src_rocky_vsg_VSGContext.h`)
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_vsg_terrain_GeometryPool.cpp`
+
+- :ref:`file_src_rocky_vsg_terrain_SurfaceNode.cpp`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainEngine.cpp`
+
+- :ref:`file_src_rocky_vsg_terrain_TerrainEngine.h`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structrocky_1_1GeometryKey`
+
+- :ref:`exhale_struct_structrocky_1_1GeometryPool_1_1Settings`
+
+- :ref:`exhale_class_classrocky_1_1GeometryPool`
+
+- :ref:`exhale_class_classrocky_1_1SharedGeometry`
+
+
+Defines
+-------
+
+
+- :ref:`exhale_define_GeometryPool_8h_1a9c2ff32097844781144f17cc1cd98834`
+
+- :ref:`exhale_define_GeometryPool_8h_1a6965be3afbc7f37fd606041f34b79f51`
+
+- :ref:`exhale_define_GeometryPool_8h_1a713d6643155367a42049b31cd7b363eb`
+
+- :ref:`exhale_define_GeometryPool_8h_1aad098042760a07172557c6881b778239`
+
+- :ref:`exhale_define_GeometryPool_8h_1ac0bd5224191d0621f74185e5f493dfba`
+

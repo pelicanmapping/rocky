@@ -1,0 +1,61 @@
+
+.. _program_listing_file_src_rocky_vsg_terrain_TerrainSettings.h:
+
+Program Listing for File TerrainSettings.h
+==========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_terrain_TerrainSettings.h>` (``src/rocky/vsg/terrain/TerrainSettings.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Color.h>
+   #include <rocky/Result.h>
+   #include <rocky/vsg/Common.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class TerrainSettings
+       {
+       public:
+           TerrainSettings() = default;
+   
+           Result<> from_json(std::string_view JSON);
+   
+           std::string to_json() const;
+   
+           option<unsigned> tileSize = 17;
+   
+           option<float> minTileRangeFactor = 7.0;
+   
+           option<float> pixelError = 128.0f;
+   
+           option<unsigned> maxLevel = 23;
+   
+           option<unsigned> minLevel = 0;
+   
+           option<float> tilePixelSize = 256.0f;
+   
+           option<float> skirtRatio = 0.025f;
+   
+           option<Color> backgroundColor = Color("#08AEE0");
+   
+           option<unsigned> concurrency = 6;
+   
+           option<bool> wireOverlay = false;
+   
+           option<bool> lighting = false;
+   
+           option<bool> debugNormals = false;
+   
+           option<unsigned> tileCacheSize = 0u;
+   
+       public: // internal runtime settings, not serialized.
+   
+           bool supportMultiThreadedRecord = false;
+       };
+   }

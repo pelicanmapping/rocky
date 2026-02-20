@@ -1,0 +1,14 @@
+.. _exhale_define_Ephemeris_8cpp_1a6d2f23abd122bd382542eee34788b40c:
+
+Define nrad
+===========
+
+- Defined in :ref:`file_src_rocky_Ephemeris.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: nrad
+   :project: Rocky

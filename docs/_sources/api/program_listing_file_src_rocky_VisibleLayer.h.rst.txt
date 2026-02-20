@@ -1,0 +1,37 @@
+
+.. _program_listing_file_src_rocky_VisibleLayer.h:
+
+Program Listing for File VisibleLayer.h
+=======================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_VisibleLayer.h>` (``src/rocky/VisibleLayer.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Layer.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT VisibleLayer : public Inherit<Layer, VisibleLayer>
+       {
+       public:
+           option<float> opacity = 1.0f;
+   
+           std::string to_json() const override;
+   
+       protected: // Layer
+   
+           VisibleLayer();
+   
+           VisibleLayer(std::string_view JSON);
+   
+       private:
+   
+           void construct(std::string_view JSON);
+       };
+   
+   } // namespace ROCKY_NAMESPACE

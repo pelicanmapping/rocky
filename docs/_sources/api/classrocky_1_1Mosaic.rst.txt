@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1Mosaic:
+
+Class Mosaic
+============
+
+- Defined in :ref:`file_src_rocky_Image.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public rocky::Inherit< Image, Mosaic >``
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::Mosaic
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

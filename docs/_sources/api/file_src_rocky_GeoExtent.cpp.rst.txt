@@ -1,0 +1,73 @@
+
+.. _file_src_rocky_GeoExtent.cpp:
+
+File GeoExtent.cpp
+==================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/GeoExtent.cpp``)
+----------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_GeoExtent.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``Context.h`` (:ref:`file_src_rocky_Context.h`)
+
+- ``GeoExtent.h`` (:ref:`file_src_rocky_GeoExtent.h`)
+
+- ``Math.h`` (:ref:`file_src_rocky_Math.h`)
+
+- ``iomanip``
+
+- ``json.h`` (:ref:`file_src_rocky_json.h`)
+
+
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespacerocky_1aa065b69918aa6dd951ab513eab27713d`
+
+- :ref:`exhale_function_namespacerocky_1a9632995436346c5b432a864c6ec4ff39`
+
+
+Defines
+-------
+
+
+- :ref:`exhale_define_GeoExtent_8cpp_1a002b2f4894492820fe708b1b7e7c5e70`
+
+- :ref:`exhale_define_GeoExtent_8cpp_1aa499bb75bb504909cd0a72baf48c4653`
+
+- :ref:`exhale_define_GeoExtent_8cpp_1ac88d0faf5986203be5e13fc0469c83ed`
+

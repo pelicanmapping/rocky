@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a81df6fc1439cf3f131a193a65fa04d03:
+
+Function rocky::from_json(const json&, Duration&)
+=================================================
+
+- Defined in :ref:`file_src_rocky_Units.cpp`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::from_json(const json&, Duration&)
+   :project: Rocky

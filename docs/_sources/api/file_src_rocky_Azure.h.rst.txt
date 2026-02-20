@@ -1,0 +1,46 @@
+
+.. _file_src_rocky_Azure.h:
+
+File Azure.h
+============
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/Azure.h``)
+----------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_Azure.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``rocky/Version.h``
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_Azure.cpp`
+
+- :ref:`file_src_rocky_AzureImageLayer.h`
+
+
+

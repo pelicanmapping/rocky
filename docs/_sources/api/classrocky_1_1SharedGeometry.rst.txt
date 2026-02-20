@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1SharedGeometry:
+
+Class SharedGeometry
+====================
+
+- Defined in :ref:`file_src_rocky_vsg_terrain_GeometryPool.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public vsg::Inherit< vsg::Geometry, SharedGeometry >``
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::SharedGeometry
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

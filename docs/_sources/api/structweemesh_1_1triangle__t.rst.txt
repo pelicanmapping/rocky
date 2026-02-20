@@ -1,0 +1,17 @@
+.. _exhale_struct_structweemesh_1_1triangle__t:
+
+Struct triangle_t
+=================
+
+- Defined in :ref:`file_src_rocky_weemesh.h`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: weemesh::triangle_t
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

@@ -1,0 +1,67 @@
+
+.. _program_listing_file_src_rocky_ecs_Line.h:
+
+Program Listing for File Line.h
+===============================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_ecs_Line.h>` (``src/rocky/ecs/Line.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Color.h>
+   #include <rocky/SRS.h>
+   #include <rocky/ecs/Component.h>
+   #include <vector>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       struct ROCKY_EXPORT LineStyle : public Component<LineStyle>
+       {
+           // if alpha is zero, use the line's per-vertex color instead
+           Color color = Color{ 1, 1, 1, 1 };
+           float width = 2.0f; // pixels
+           std::uint16_t stipplePattern = 0xFFFF;
+           int stippleFactor = 1;
+           float resolution = 100000.0f; // meters
+           float depthOffset = 0.0f; // meters
+           bool useGeometryColors = false;
+       };
+   
+   
+       enum struct LineTopology
+       {
+           Strip, // a single line strip
+           Segments // a series of disconnected line segments
+       };
+   
+   
+       struct ROCKY_EXPORT LineGeometry : public Component<LineGeometry>
+       {
+           LineTopology topology = LineTopology::Strip;
+   
+           SRS srs;
+   
+           std::vector<glm::dvec3> points;
+   
+           std::vector<Color> colors;
+   
+           void recycle(entt::registry&);
+       };
+   
+   
+       class ROCKY_EXPORT Line : public Component<Line>
+       {
+       public:
+           entt::entity style = entt::null;
+   
+           entt::entity geometry = entt::null;
+   
+           inline Line() = default;
+           inline Line(const LineGeometry& geometry_) : geometry(geometry_.owner) {}
+           inline Line(const LineGeometry& geometry_, const LineStyle& style_) : geometry(geometry_.owner), style(style_.owner) {}
+       };
+   }

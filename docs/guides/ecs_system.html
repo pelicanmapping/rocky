@@ -1,0 +1,201 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entity Component System &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Hello World" href="../examples/hello_world.html" />
+    <link rel="prev" title="Maps and Layers" href="maps_and_layers.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Entity Component System</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#key-concepts">Key Concepts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#entities">Entities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#components">Components</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#registry">Registry</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-usage">Basic Usage</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#creating-an-entity">Creating an Entity</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#adding-components">Adding Components</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Entity Component System</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guides/ecs_system.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="entity-component-system">
+<h1>Entity Component System<a class="headerlink" href="#entity-component-system" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This guide is under development. For now, please refer to the <a class="reference internal" href="../api/library_root.html"><span class="doc">API Reference</span></a> for detailed API information.</p>
+</div>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>Rocky uses an Entity Component System (ECS) architecture for creating map annotations and dynamic objects. The ECS is based on the <a class="reference external" href="https://github.com/skypjack/entt">EnTT</a> library.</p>
+</section>
+<section id="key-concepts">
+<h2>Key Concepts<a class="headerlink" href="#key-concepts" title="Link to this heading"></a></h2>
+<section id="entities">
+<h3>Entities<a class="headerlink" href="#entities" title="Link to this heading"></a></h3>
+<p>Entities are lightweight identifiers (handles) that represent objects in your scene. They have no data themselves, but serve as containers for components.</p>
+</section>
+<section id="components">
+<h3>Components<a class="headerlink" href="#components" title="Link to this heading"></a></h3>
+<p>Components are data structures that define specific aspects of an entity:</p>
+<ul class="simple">
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::ecs::Transform</span></code> - Position, orientation, scale</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::ecs::Mesh</span></code> - 3D geometry</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::ecs::Line</span></code> - Line geometry</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::ecs::Point</span></code> - Point features</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::ecs::Label</span></code> - Text labels</p></li>
+</ul>
+</section>
+<section id="registry">
+<h3>Registry<a class="headerlink" href="#registry" title="Link to this heading"></a></h3>
+<p>The <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::ecs::Registry</span></code> manages all entities and their components.</p>
+</section>
+</section>
+<section id="basic-usage">
+<h2>Basic Usage<a class="headerlink" href="#basic-usage" title="Link to this heading"></a></h2>
+<section id="creating-an-entity">
+<h3>Creating an Entity<a class="headerlink" href="#creating-an-entity" title="Link to this heading"></a></h3>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/ecs/Registry.h&gt;</span>
+<span class="k">using</span><span class="w"> </span><span class="k">namespace</span><span class="w"> </span><span class="nn">rocky</span><span class="o">::</span><span class="nn">ecs</span><span class="p">;</span>
+
+<span class="n">Registry</span><span class="w"> </span><span class="n">registry</span><span class="p">;</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">entity</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">registry</span><span class="p">.</span><span class="n">create</span><span class="p">();</span>
+</pre></div>
+</div>
+</section>
+<section id="adding-components">
+<h3>Adding Components<a class="headerlink" href="#adding-components" title="Link to this heading"></a></h3>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">transform</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">registry</span><span class="p">.</span><span class="n">emplace</span><span class="o">&lt;</span><span class="n">Transform</span><span class="o">&gt;</span><span class="p">(</span><span class="n">entity</span><span class="p">);</span>
+<span class="n">transform</span><span class="p">.</span><span class="n">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GeoPoint</span><span class="p">(</span><span class="n">SRS</span><span class="o">::</span><span class="n">WGS84</span><span class="p">,</span><span class="w"> </span><span class="mf">-122.419</span><span class="p">,</span><span class="w"> </span><span class="mf">37.775</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">);</span>
+
+<span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">label</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">registry</span><span class="p">.</span><span class="n">emplace</span><span class="o">&lt;</span><span class="n">Label</span><span class="o">&gt;</span><span class="p">(</span><span class="n">entity</span><span class="p">);</span>
+<span class="n">label</span><span class="p">.</span><span class="n">text</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Hello, World!&quot;</span><span class="p">;</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::ecs::Component</span></code> - Base component template</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::ecs::Registry</span></code> - Entity registry</p></li>
+<li><p><a href="#id1"><span class="problematic" id="id2">:cpp:namespace:`rocky::ecs`</span></a> - ECS namespace documentation</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="maps_and_layers.html" class="btn btn-neutral float-left" title="Maps and Layers" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../examples/hello_world.html" class="btn btn-neutral float-right" title="Hello World" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

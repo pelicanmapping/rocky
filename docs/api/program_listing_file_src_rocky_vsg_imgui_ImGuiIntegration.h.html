@@ -1,0 +1,295 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Program Listing for File ImGuiIntegration.h &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../guides/getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/maps_and_layers.html">Maps and Layers</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../guides/ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Program Listing for File ImGuiIntegration.h</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/api/program_listing_file_src_rocky_vsg_imgui_ImGuiIntegration.h.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="program-listing-for-file-imguiintegration-h">
+<span id="program-listing-file-src-rocky-vsg-imgui-imguiintegration-h"></span><h1>Program Listing for File ImGuiIntegration.h<a class="headerlink" href="#program-listing-for-file-imguiintegration-h" title="Link to this heading"></a></h1>
+<p>↰ <a class="reference internal" href="file_src_rocky_vsg_imgui_ImGuiIntegration.h.html#file-src-rocky-vsg-imgui-imguiintegration-h"><span class="std std-ref">Return to documentation for file</span></a> (<code class="docutils literal notranslate"><span class="pre">src/rocky/vsg/imgui/ImGuiIntegration.h</span></code>)</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#pragma once</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/vsg/VSGContext.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/Callbacks.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/vsg/imgui/SendEventsToImGui.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;rocky/vsg/imgui/RenderImGui.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;imgui.h&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ROCKY_NAMESPACE</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">Application</span><span class="p">;</span>
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">DisplayManager</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">ROCKY_EXPORT</span><span class="w"> </span><span class="n">SendEventsToImGuiContext</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">SendEventsToImGui</span><span class="p">,</span><span class="w"> </span><span class="n">SendEventsToImGuiContext</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="n">SendEventsToImGuiContext</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Window</span><span class="o">&gt;</span><span class="w"> </span><span class="n">window</span><span class="p">,</span><span class="w"> </span><span class="n">ImGuiContext</span><span class="o">*</span><span class="w"> </span><span class="n">imguiContext</span><span class="p">)</span><span class="w"> </span><span class="o">:</span>
+<span class="w">            </span><span class="n">_window</span><span class="p">(</span><span class="n">window</span><span class="p">),</span><span class="w"> </span><span class="n">_imguiContext</span><span class="p">(</span><span class="n">imguiContext</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">//nop</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="n">Callback</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">UIEvent</span><span class="o">&amp;</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">onEvent</span><span class="p">;</span>
+
+<span class="w">        </span><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">E</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">propagate</span><span class="p">(</span><span class="n">E</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">// only process events for the window we are interested in, and if the event wasn&#39;t handled</span>
+<span class="w">            </span><span class="c1">// (say, by another wrapper connected to another view)</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">e</span><span class="p">.</span><span class="n">handled</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="p">((</span><span class="n">_window</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">window</span><span class="p">.</span><span class="n">ref_ptr</span><span class="p">()</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">_window</span><span class="p">)))</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="c1">// activate the context associated with this window/view</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_imguiContext</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">ImGui</span><span class="o">::</span><span class="n">SetCurrentContext</span><span class="p">(</span><span class="n">_imguiContext</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">                </span><span class="n">Inherit</span><span class="o">::</span><span class="n">apply</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+
+<span class="w">                </span><span class="n">onEvent</span><span class="p">.</span><span class="n">fire</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ButtonPressEvent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">propagate</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ButtonReleaseEvent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">propagate</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ScrollWheelEvent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">propagate</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">KeyPressEvent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">propagate</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">KeyReleaseEvent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">propagate</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">MoveEvent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">propagate</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ConfigureWindowEvent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">propagate</span><span class="p">(</span><span class="n">e</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">apply</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">FrameEvent</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span><span class="w"> </span><span class="k">override</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">_imguiContext</span><span class="p">)</span>
+<span class="w">                </span><span class="n">ImGui</span><span class="o">::</span><span class="n">SetCurrentContext</span><span class="p">(</span><span class="n">_imguiContext</span><span class="p">);</span>
+<span class="w">            </span><span class="n">Inherit</span><span class="o">::</span><span class="n">apply</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">            </span><span class="n">onEvent</span><span class="p">.</span><span class="n">fire</span><span class="p">(</span><span class="n">e</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">private</span><span class="o">:</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Window</span><span class="o">&gt;</span><span class="w"> </span><span class="n">_window</span><span class="p">;</span>
+<span class="w">        </span><span class="n">VSGContext</span><span class="w"> </span><span class="n">_vsgContext</span><span class="p">;</span>
+<span class="w">        </span><span class="n">ImGuiContext</span><span class="o">*</span><span class="w"> </span><span class="n">_imguiContext</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">ROCKY_EXPORT</span><span class="w"> </span><span class="n">ImGuiContextNode</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="p">,</span><span class="w"> </span><span class="n">ImGuiContextNode</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="n">ImGuiContextNode</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">traverse</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">RecordTraversal</span><span class="o">&amp;</span><span class="w"> </span><span class="n">record</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="n">ImGuiContext</span><span class="o">*</span><span class="w"> </span><span class="n">imguiContext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">            </span><span class="n">record</span><span class="p">.</span><span class="n">getValue</span><span class="p">(</span><span class="s">&quot;imgui.context&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">imguiContext</span><span class="p">);</span>
+<span class="w">            </span><span class="n">render</span><span class="p">(</span><span class="n">imguiContext</span><span class="p">);</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="k">virtual</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">render</span><span class="p">(</span><span class="n">ImGuiContext</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+
+<span class="w">    </span><span class="k">class</span><span class="w"> </span><span class="nc">ROCKY_EXPORT</span><span class="w"> </span><span class="n">RenderImGuiContext</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">RenderImGui</span><span class="p">,</span><span class="w"> </span><span class="n">RenderImGuiContext</span><span class="o">&gt;</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Window</span><span class="o">&gt;</span><span class="w"> </span><span class="n">window</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">View</span><span class="o">&gt;</span><span class="w"> </span><span class="n">view</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">Callback</span><span class="o">&lt;</span><span class="kt">void</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">ImGuiContextNode</span><span class="o">&gt;</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">onNodeAdded</span><span class="p">;</span>
+
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="n">enableDocking</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+
+<span class="w">        </span><span class="n">RenderImGuiContext</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Window</span><span class="o">&gt;</span><span class="w"> </span><span class="n">in_window</span><span class="p">,</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">View</span><span class="o">&gt;</span><span class="w"> </span><span class="n">in_view</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{})</span><span class="w"> </span><span class="o">:</span>
+<span class="w">            </span><span class="n">Inherit</span><span class="p">(</span><span class="n">in_window</span><span class="p">),</span><span class="w"> </span><span class="n">window</span><span class="p">(</span><span class="n">in_window</span><span class="p">),</span><span class="w"> </span><span class="n">view</span><span class="p">(</span><span class="n">in_view</span><span class="p">)</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">            </span><span class="c1">//nop</span>
+<span class="w">        </span><span class="p">}</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">add</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">ref_ptr</span><span class="o">&lt;</span><span class="n">ImGuiContextNode</span><span class="o">&gt;</span><span class="w"> </span><span class="n">node</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">public</span><span class="o">:</span>
+
+<span class="w">        </span><span class="kt">void</span><span class="w"> </span><span class="n">traverse</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">RecordTraversal</span><span class="o">&amp;</span><span class="w"> </span><span class="n">record</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">protected</span><span class="o">:</span>
+<span class="w">        </span><span class="k">mutable</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">_firstFrame</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">};</span>
+
+
+<span class="w">    </span><span class="k">namespace</span><span class="w"> </span><span class="nn">detail</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">class</span><span class="w"> </span><span class="nc">ImGuiDispatcher</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">vsg</span><span class="o">::</span><span class="n">Inherit</span><span class="o">&lt;</span><span class="n">vsg</span><span class="o">::</span><span class="n">Node</span><span class="p">,</span><span class="w"> </span><span class="n">ImGuiDispatcher</span><span class="o">&gt;</span>
+<span class="w">        </span><span class="p">{</span>
+<span class="w">        </span><span class="k">public</span><span class="o">:</span>
+<span class="w">            </span><span class="n">ImGuiContext</span><span class="o">*</span><span class="w"> </span><span class="n">imguicontext</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">            </span><span class="n">VSGContext</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">;</span>
+
+<span class="w">            </span><span class="n">ImGuiDispatcher</span><span class="p">(</span><span class="n">ImGuiContext</span><span class="o">*</span><span class="w"> </span><span class="n">imguiContext_in</span><span class="p">,</span><span class="w"> </span><span class="n">VSGContext</span><span class="w"> </span><span class="n">vsgContext_in</span><span class="p">)</span>
+<span class="w">                </span><span class="o">:</span><span class="w"> </span><span class="n">imguicontext</span><span class="p">(</span><span class="n">imguiContext_in</span><span class="p">),</span><span class="w"> </span><span class="n">vsgcontext</span><span class="p">(</span><span class="n">vsgContext_in</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="p">}</span>
+
+<span class="w">            </span><span class="kt">void</span><span class="w"> </span><span class="n">traverse</span><span class="p">(</span><span class="n">vsg</span><span class="o">::</span><span class="n">RecordTraversal</span><span class="o">&amp;</span><span class="w"> </span><span class="n">record</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">override</span>
+<span class="w">            </span><span class="p">{</span>
+<span class="w">                </span><span class="n">RenderingState</span><span class="w"> </span><span class="n">rs</span><span class="p">{</span>
+<span class="w">                    </span><span class="n">record</span><span class="p">.</span><span class="n">getCommandBuffer</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">viewID</span><span class="p">,</span>
+<span class="w">                    </span><span class="n">record</span><span class="p">.</span><span class="n">getFrameStamp</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">frameCount</span>
+<span class="w">                </span><span class="p">};</span>
+
+<span class="w">                </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">record_gui</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">vsgcontext</span><span class="o">-&gt;</span><span class="n">guiRecorders</span><span class="p">)</span>
+<span class="w">                </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">record_gui</span><span class="p">(</span><span class="n">rs</span><span class="p">,</span><span class="w"> </span><span class="n">imguicontext</span><span class="p">);</span>
+<span class="w">                </span><span class="p">}</span>
+<span class="w">            </span><span class="p">}</span>
+<span class="w">        </span><span class="p">};</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ImGuiEx</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TextOutlined</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">ImVec4</span><span class="o">&amp;</span><span class="w"> </span><span class="n">outlineColor</span><span class="p">,</span><span class="w"> </span><span class="kt">unsigned</span><span class="w"> </span><span class="n">outlinePixels</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="w"> </span><span class="n">text</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">dl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetWindowDrawList</span><span class="p">();</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">font</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetFont</span><span class="p">();</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetFontSize</span><span class="p">();</span>
+<span class="w">        </span><span class="k">auto</span><span class="w"> </span><span class="n">pos</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetCursorScreenPos</span><span class="p">();</span>
+
+<span class="w">        </span><span class="n">ImU32</span><span class="w"> </span><span class="n">outline_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">ColorConvertFloat4ToU32</span><span class="p">(</span><span class="n">outlineColor</span><span class="p">);</span>
+<span class="w">        </span><span class="n">ImU32</span><span class="w"> </span><span class="n">text_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ImGui</span><span class="o">::</span><span class="n">ColorConvertFloat4ToU32</span><span class="p">(</span><span class="n">ImGui</span><span class="o">::</span><span class="n">GetStyleColorVec4</span><span class="p">(</span><span class="n">ImGuiCol_Text</span><span class="p">));</span>
+
+<span class="w">        </span><span class="c1">// Outline passes</span>
+<span class="w">        </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">outlinePixels</span><span class="p">;</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">outlinePixels</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">y</span><span class="p">)</span>
+<span class="w">            </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">outlinePixels</span><span class="p">;</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">&lt;=</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">outlinePixels</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">x</span><span class="p">)</span>
+<span class="w">                </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">x</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">y</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="mi">0</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">                    </span><span class="n">ImU32</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mh">0x00FFFFFF</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">((</span><span class="mh">0xFF</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">abs</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">1</span><span class="p">))))</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">24</span><span class="p">);</span>
+<span class="w">                    </span><span class="n">dl</span><span class="o">-&gt;</span><span class="n">AddText</span><span class="p">(</span><span class="n">font</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">ImVec2</span><span class="p">(</span><span class="n">pos</span><span class="p">.</span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">pos</span><span class="p">.</span><span class="n">y</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">y</span><span class="p">),</span><span class="w"> </span><span class="n">alpha</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">outline_col</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">text</span><span class="p">.</span><span class="n">front</span><span class="p">());</span>
+<span class="w">                </span><span class="p">}</span>
+
+<span class="w">        </span><span class="c1">// Center (fill) pass</span>
+<span class="w">        </span><span class="n">dl</span><span class="o">-&gt;</span><span class="n">AddText</span><span class="p">(</span><span class="n">font</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">pos</span><span class="p">,</span><span class="w"> </span><span class="n">text_col</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">text</span><span class="p">.</span><span class="n">front</span><span class="p">());</span>
+
+<span class="w">        </span><span class="c1">// Advance layout so subsequent widgets appear after the text</span>
+<span class="w">        </span><span class="k">const</span><span class="w"> </span><span class="n">ImVec2</span><span class="w"> </span><span class="n">sz</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">font</span><span class="o">-&gt;</span><span class="n">CalcTextSizeA</span><span class="p">(</span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">FLT_MAX</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0f</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">text</span><span class="p">.</span><span class="n">front</span><span class="p">());</span>
+
+<span class="w">        </span><span class="n">ImGui</span><span class="o">::</span><span class="n">Dummy</span><span class="p">(</span><span class="n">ImVec2</span><span class="p">(</span><span class="n">sz</span><span class="p">.</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">sz</span><span class="p">.</span><span class="n">y</span><span class="p">));</span>
+
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+
+<span class="w">    </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="nf">TextOutlined</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">ImVec4</span><span class="o">&amp;</span><span class="w"> </span><span class="n">outlineColor</span><span class="p">,</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string_view</span><span class="w"> </span><span class="n">text</span><span class="p">)</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">TextOutlined</span><span class="p">(</span><span class="n">outlineColor</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="n">text</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

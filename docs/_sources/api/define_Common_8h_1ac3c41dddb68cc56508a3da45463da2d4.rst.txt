@@ -1,0 +1,14 @@
+.. _exhale_define_Common_8h_1ac3c41dddb68cc56508a3da45463da2d4:
+
+Define ROCKY_SOFT_ASSERT_AND_RETURN
+===================================
+
+- Defined in :ref:`file_src_rocky_Common.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ROCKY_SOFT_ASSERT_AND_RETURN
+   :project: Rocky

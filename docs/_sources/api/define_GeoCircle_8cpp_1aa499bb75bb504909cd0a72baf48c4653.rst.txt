@@ -1,0 +1,14 @@
+.. _exhale_define_GeoCircle_8cpp_1aa499bb75bb504909cd0a72baf48c4653:
+
+Define LC
+=========
+
+- Defined in :ref:`file_src_rocky_GeoCircle.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: LC
+   :project: Rocky

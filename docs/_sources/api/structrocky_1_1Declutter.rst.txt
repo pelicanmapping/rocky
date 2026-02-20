@@ -1,0 +1,17 @@
+.. _exhale_struct_structrocky_1_1Declutter:
+
+Struct Declutter
+================
+
+- Defined in :ref:`file_src_rocky_ecs_Declutter.h`
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::Declutter
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

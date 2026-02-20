@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespacerocky_1a8ce31c79b35ac7411f165b9ffd57b35d:
+
+Typedef rocky::time_point
+=========================
+
+- Defined in :ref:`file_src_rocky_ecs_Registry.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: rocky::time_point
+   :project: Rocky

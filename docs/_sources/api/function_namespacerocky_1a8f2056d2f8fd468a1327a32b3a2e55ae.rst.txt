@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a8f2056d2f8fd468a1327a32b3a2e55ae:
+
+Function rocky::Failure_ConfigurationError
+==========================================
+
+- Defined in :ref:`file_src_rocky_Result.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::Failure_ConfigurationError(Failure::ConfigurationError)
+   :project: Rocky

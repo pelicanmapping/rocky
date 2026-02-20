@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1a5b81c6102830f34c9f93619a84586d68:
+
+Template Function rocky::setVisible(entt::registry&, ITER, ITER, bool, int)
+===========================================================================
+
+- Defined in :ref:`file_src_rocky_ecs_Visibility.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::setVisible(entt::registry&, ITER, ITER, bool, int)
+   :project: Rocky

@@ -1,0 +1,14 @@
+.. _exhale_variable_namespacerocky_1aa1d17e8a3adbe79c682b5c59bb691bc6:
+
+Variable rocky::HF_ENCODED_FORMAT
+=================================
+
+- Defined in :ref:`file_src_rocky_Heightfield.h`
+
+
+Variable Documentation
+----------------------
+
+
+.. doxygenvariable:: rocky::HF_ENCODED_FORMAT
+   :project: Rocky

@@ -1,0 +1,14 @@
+.. _exhale_function_namespacerocky_1abd7ee4e41eaff226d877aa500db57cdc:
+
+Function rocky::distanceTo
+==========================
+
+- Defined in :ref:`file_src_rocky_vsg_VSGUtils.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: rocky::distanceTo(const vsg::dvec3&, vsg::State *)
+   :project: Rocky

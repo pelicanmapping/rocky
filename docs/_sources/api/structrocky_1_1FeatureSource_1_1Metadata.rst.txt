@@ -1,0 +1,23 @@
+.. _exhale_struct_structrocky_1_1FeatureSource_1_1Metadata:
+
+Struct FeatureSource::Metadata
+==============================
+
+- Defined in :ref:`file_src_rocky_Feature.h`
+
+
+Nested Relationships
+--------------------
+
+This struct is a nested type of :ref:`exhale_class_classrocky_1_1FeatureSource`.
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::FeatureSource::Metadata
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

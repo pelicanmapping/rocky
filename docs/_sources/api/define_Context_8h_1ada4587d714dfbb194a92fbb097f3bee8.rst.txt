@@ -1,0 +1,14 @@
+.. _exhale_define_Context_8h_1ada4587d714dfbb194a92fbb097f3bee8:
+
+Define ROCKY_ADD_OBJECT_FACTORY
+===============================
+
+- Defined in :ref:`file_src_rocky_Context.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: ROCKY_ADD_OBJECT_FACTORY
+   :project: Rocky

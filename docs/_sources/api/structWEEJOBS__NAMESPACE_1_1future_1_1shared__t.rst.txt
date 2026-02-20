@@ -1,0 +1,23 @@
+.. _exhale_struct_structWEEJOBS__NAMESPACE_1_1future_1_1shared__t:
+
+Struct future::shared_t
+=======================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Nested Relationships
+--------------------
+
+This struct is a nested type of :ref:`exhale_class_classWEEJOBS__NAMESPACE_1_1future`.
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: WEEJOBS_NAMESPACE::future::shared_t
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

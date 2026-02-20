@@ -1,0 +1,79 @@
+
+.. _namespace_WEEJOBS_NAMESPACE:
+
+Namespace WEEJOBS_NAMESPACE
+===========================
+
+
+weejobs is an API for scheduling a task to run in the background. 
+
+
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+
+
+
+Detailed Description
+--------------------
+
+Please read the README.md file for more information. 
+
+
+
+
+
+Classes
+-------
+
+
+- :ref:`exhale_struct_structWEEJOBS__NAMESPACE_1_1context`
+
+- :ref:`exhale_struct_structWEEJOBS__NAMESPACE_1_1future_1_1shared__t`
+
+- :ref:`exhale_struct_structWEEJOBS__NAMESPACE_1_1jobgroup`
+
+- :ref:`exhale_struct_structWEEJOBS__NAMESPACE_1_1jobpool_1_1metrics__t`
+
+- :ref:`exhale_class_classWEEJOBS__NAMESPACE_1_1cancelable`
+
+- :ref:`exhale_class_classWEEJOBS__NAMESPACE_1_1future`
+
+- :ref:`exhale_class_classWEEJOBS__NAMESPACE_1_1jobpool`
+
+- :ref:`exhale_class_classWEEJOBS__NAMESPACE_1_1metrics`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_namespaceWEEJOBS__NAMESPACE_1a2eeb5aaf0aa0cc99e0f13f0454ebb334`
+
+- :ref:`exhale_function_namespaceWEEJOBS__NAMESPACE_1a7e5e48f960937d658337f04edbbb9b51`
+
+- :ref:`exhale_function_namespaceWEEJOBS__NAMESPACE_1aabc9b2721e0b1f080cc574e5f4769730`
+
+- :ref:`exhale_function_namespaceWEEJOBS__NAMESPACE_1a2e5229fe8ff14976e96f69cdb2c06644`
+
+- :ref:`exhale_function_namespaceWEEJOBS__NAMESPACE_1a02e2b4771ff1112794e587a832b390f7`
+
+- :ref:`exhale_function_namespaceWEEJOBS__NAMESPACE_1a2912ee8681e1be4aff4d489c0abdd779`
+
+- :ref:`exhale_function_namespaceWEEJOBS__NAMESPACE_1adc8d1b77b4b106ff2cbb058e00da1eac`
+
+- :ref:`exhale_function_namespaceWEEJOBS__NAMESPACE_1ab6b1e260260de8d70efc5ccb6da18263`
+
+- :ref:`exhale_function_namespaceWEEJOBS__NAMESPACE_1a2436e3c38e57766ada9823d1b5fc17cc`
+
+- :ref:`exhale_function_namespaceWEEJOBS__NAMESPACE_1a44db487a1de31df5815dd5f549007257`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef_namespaceWEEJOBS__NAMESPACE_1a546f7a6fa7fb39be21d076e4b62d0009`

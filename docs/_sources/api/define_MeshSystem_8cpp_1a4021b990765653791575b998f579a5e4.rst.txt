@@ -1,0 +1,14 @@
+.. _exhale_define_MeshSystem_8cpp_1a4021b990765653791575b998f579a5e4:
+
+Define MESH_VERT_SHADER
+=======================
+
+- Defined in :ref:`file_src_rocky_vsg_ecs_MeshSystem.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: MESH_VERT_SHADER
+   :project: Rocky

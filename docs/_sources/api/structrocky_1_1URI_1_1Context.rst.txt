@@ -1,0 +1,23 @@
+.. _exhale_struct_structrocky_1_1URI_1_1Context:
+
+Struct URI::Context
+===================
+
+- Defined in :ref:`file_src_rocky_URI.h`
+
+
+Nested Relationships
+--------------------
+
+This struct is a nested type of :ref:`exhale_class_classrocky_1_1URI`.
+
+
+Struct Documentation
+--------------------
+
+
+.. doxygenstruct:: rocky::URI::Context
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:

@@ -1,0 +1,14 @@
+.. _exhale_typedef_namespacerocky_1a8539a130c4b3ced5ba82dec5273b6935:
+
+Typedef rocky::DataExtent
+=========================
+
+- Defined in :ref:`file_src_rocky_GeoExtent.h`
+
+
+Typedef Documentation
+---------------------
+
+
+.. doxygentypedef:: rocky::DataExtent
+   :project: Rocky

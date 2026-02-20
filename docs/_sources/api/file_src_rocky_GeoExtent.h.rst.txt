@@ -1,0 +1,85 @@
+
+.. _file_src_rocky_GeoExtent.h:
+
+File GeoExtent.h
+================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky>` (``src/rocky``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/GeoExtent.h``)
+--------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_GeoExtent.h.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``rocky/Common.h`` (:ref:`file_src_rocky_Common.h`)
+
+- ``rocky/GeoCircle.h`` (:ref:`file_src_rocky_GeoCircle.h`)
+
+- ``rocky/GeoPoint.h`` (:ref:`file_src_rocky_GeoPoint.h`)
+
+
+
+Included By
+-----------
+
+
+- :ref:`file_src_rocky_Context.cpp`
+
+- :ref:`file_src_rocky_Feature.h`
+
+- :ref:`file_src_rocky_GeoExtent.cpp`
+
+- :ref:`file_src_rocky_GeoImage.h`
+
+- :ref:`file_src_rocky_Layer.cpp`
+
+- :ref:`file_src_rocky_Profile.h`
+
+- :ref:`file_src_rocky_vsg_VSGContext.cpp`
+
+
+
+
+Namespaces
+----------
+
+
+- :ref:`namespace_rocky`
+
+
+Classes
+-------
+
+
+- :ref:`exhale_class_classrocky_1_1GeoExtent`
+
+- :ref:`exhale_class_classrocky_1_1GeoExtent3D`
+
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef_namespacerocky_1a8539a130c4b3ced5ba82dec5273b6935`
+
+- :ref:`exhale_typedef_namespacerocky_1abc2ef1ce71832584cc61941b7968788f`
+

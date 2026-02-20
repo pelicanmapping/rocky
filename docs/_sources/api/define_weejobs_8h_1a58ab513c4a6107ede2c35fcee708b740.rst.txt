@@ -1,0 +1,14 @@
+.. _exhale_define_weejobs_8h_1a58ab513c4a6107ede2c35fcee708b740:
+
+Define WEEJOBS_NAMESPACE
+========================
+
+- Defined in :ref:`file_src_rocky_weejobs.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: WEEJOBS_NAMESPACE
+   :project: Rocky

@@ -1,0 +1,57 @@
+
+.. _program_listing_file_src_rocky_GeoCircle.h:
+
+Program Listing for File GeoCircle.h
+====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_GeoCircle.h>` (``src/rocky/GeoCircle.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/GeoPoint.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class GeoExtent;
+   
+        class ROCKY_EXPORT GeoCircle
+        {
+        public:
+            GeoCircle();
+   
+            GeoCircle(const GeoCircle& rhs);
+   
+            GeoCircle(const GeoPoint& center, double radius);
+   
+            const GeoPoint& center() const { return _center; }
+            void setCenter(const GeoPoint& value) { _center = value; }
+   
+            double radius() const { return _radius; }
+            void setRadius(double value) { _radius = value; }
+   
+            const SRS& srs() const { return _center.srs; }
+   
+            bool operator == (const GeoCircle& rhs) const;
+   
+            bool operator != (const GeoCircle& rhs) const { return !operator==(rhs); }
+   
+            bool valid() const { return _center.valid() && _radius > 0.0; }
+   
+            GeoCircle transform(const SRS& srs) const;
+   
+            bool intersects(const GeoCircle& rhs) const;
+   
+        public:
+   
+            static GeoCircle INVALID;
+   
+        protected:
+            GeoPoint _center;
+            double   _radius;
+        };
+   }

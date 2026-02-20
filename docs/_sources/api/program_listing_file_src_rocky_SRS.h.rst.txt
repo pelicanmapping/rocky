@@ -1,0 +1,277 @@
+
+.. _program_listing_file_src_rocky_SRS.h:
+
+Program Listing for File SRS.h
+==============================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_SRS.h>` (``src/rocky/SRS.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   
+   #include <rocky/Common.h>
+   #include <rocky/Units.h>
+   #include <rocky/Ellipsoid.h>
+   #include <optional>
+   #include <limits>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class SRSOperation;
+   
+       class ROCKY_EXPORT SRS
+       {
+       public:
+           static const SRS WGS84;
+   
+           static const SRS ECEF;
+   
+           static const SRS SPHERICAL_MERCATOR;
+   
+           static const SRS PLATE_CARREE;
+   
+           static const SRS MOON;
+   
+           static const SRS EMPTY;
+   
+       public:
+           SRS() = default;
+   
+           SRS(std::string_view definition);
+   
+           SRSOperation to(const SRS& target) const;
+   
+           const char* name() const;
+   
+           inline const std::string& definition() const {
+               return _definition;
+           }
+   
+           inline bool valid() const;            
+   
+           inline operator bool() const {
+               return valid();
+           }
+   
+           bool isGeodetic() const;
+   
+           bool isProjected() const;
+   
+           bool isGeocentric() const;
+   
+           bool isQSC() const;
+   
+           bool hasVerticalDatumShift() const;
+   
+           const SRS& geodeticSRS() const;
+   
+           const SRS& geocentricSRS() const;
+   
+           const std::string& wkt() const;
+   
+           const Units& units() const;
+   
+           const Ellipsoid& ellipsoid() const;
+   
+           const Box& bounds() const;
+   
+           const Box& geodeticBounds() const;
+   
+           bool horizontallyEquivalentTo(const SRS& rhs) const;
+   
+           bool equivalentTo(const SRS& rhs) const;
+   
+           inline bool operator == (const SRS& rhs) const {
+               return equivalentTo(rhs);
+           }
+   
+           inline bool operator != (const SRS& rhs) const {
+               return !equivalentTo(rhs);
+           }
+   
+           glm::dmat4 topocentricToWorldMatrix(const glm::dvec3& origin) const;
+   
+           static double transformUnits(
+               double input,
+               const SRS& fromSRS,
+               const SRS& toSRS,
+               const Angle& latitude);
+   
+           static double transformUnits(
+               const Distance& distance,
+               const SRS& outSRS,
+               const Angle& latitude);
+   
+           double transformDistance(
+               const Distance& distance,
+               const Units& output_units,
+               const Angle& latitude = { 0 }) const;
+   
+           const std::string& errorMessage() const;
+   
+           // copy/move operations
+           SRS(const SRS& rhs) = default;
+           SRS& operator=(const SRS& rhs) = default;
+           SRS(SRS&&) = default;
+           SRS& operator =(SRS&& rhs) = default;
+   
+           std::string string() const;
+   
+           static std::string projVersion();
+   
+           static std::function<void(int level, const char* msg)> projMessageCallback;
+   
+       private:
+           std::string _definition;
+           mutable std::optional<bool> _valid;
+           mutable std::optional<int> _crs_type;
+           friend class SRSOperation;
+   
+           bool _establish_valid() const;
+       };
+   
+       using SpatialReference = SRS;
+   
+   
+       class ROCKY_EXPORT SRSOperation
+       {
+       public:
+           SRSOperation() = default;
+   
+           SRSOperation(const SRS& from, const SRS& to);
+   
+           bool valid() const {
+               return _handle != nullptr;
+           }
+   
+           inline operator bool() const {
+               return valid();
+           }
+   
+           inline bool noop() const {
+               return _nop;
+           }
+   
+           inline const SRS& from() const {
+               return _from;
+           }
+   
+           inline const SRS& to() const {
+               return _to;
+           }
+   
+           inline bool transform(double& x, double& y) const {
+               double unused = 0.0;
+               return _nop ? true : forward(_handle, x, y, unused);
+           }
+   
+           inline bool transform(double& x, double& y, double& z) const {
+               return _nop ? true : forward(_handle, x, y, z);
+           }
+   
+           template<typename DVEC3A, typename DVEC3B>
+           inline bool transform(const DVEC3A& in, DVEC3B& out) const {
+               out[0] = in[0], out[1] = in[1], out[2] = in[2];
+               return _nop? true : forward(_handle, out[0], out[1], out[2]);
+           }
+   
+           template<typename DVEC3A, typename DVEC3B>
+           inline bool operator()(const DVEC3A& in, DVEC3B& out) const {
+               out[0] = in[0], out[1] = in[1], out[2] = in[2];
+               return _nop ? true : forward(_handle, out[0], out[1], out[2]);
+           }
+   
+           template<typename DVEC3>
+           inline DVEC3 operator()(const DVEC3& in) const {
+               if (_nop) return in;
+               DVEC3 out(in);
+               if (forward(_handle, out.x, out.y, out.z)) return out;
+               else return DVEC3(std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN(), std::numeric_limits<double>::quiet_NaN());
+           }
+   
+           template<typename ITERATOR>
+           inline bool transformRange(ITERATOR begin, ITERATOR end) const {
+               if (_nop) return true;
+               unsigned errors = 0;
+               for (auto iter = begin; iter != end; ++iter)
+                   if (!forward(_handle, iter->x, iter->y, iter->z))
+                       errors++;
+               return errors == 0;
+           }
+   
+           template<typename DVEC3>
+           inline bool transformArray(DVEC3* inout, std::size_t count) const {
+               return _nop ? true : forward(_handle,
+                   &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
+           }
+   
+           inline bool inverse(double& x, double& y) const {
+               double z = 0.0;
+               return _nop ? true : inverse(_handle, x, y, z);
+           }
+   
+           inline bool inverse(double& x, double& y, double& z) const {
+               return _nop ? true : inverse(_handle, x, y, z);
+           }
+   
+           template<typename DVEC3A, typename DVEC3B>
+           inline bool inverse(const DVEC3A& in, DVEC3B& out) const {
+               out = { in[0], in[1], in[2] };
+               return _nop ? true : inverse(_handle, out[0], out[1], out[2]);
+           }
+   
+           template<typename ITERATOR>
+           inline bool inverseRange(ITERATOR begin, ITERATOR end) const {
+               if (_nop) return true;
+               unsigned errors = 0;
+               for (auto iter = begin; iter != end; ++iter)
+                   if (!inverse(_handle, iter->x, iter->y, iter->z))
+                       errors++;
+               return errors == 0;
+           }
+   
+           template<typename DVEC3>
+           inline bool inverseArray(DVEC3* inout, std::size_t count) const {
+               return _nop ? true : inverse(_handle,
+                   &inout[0][0], &inout[0][1], &inout[0][2], sizeof(DVEC3), count);
+           }
+   
+           Box transformBounds(const Box& input) const;
+   
+           bool clamp(double& x, double& y) const;
+   
+           const std::string& errorMessage() const;
+   
+           std::string string() const;
+   
+           // copy/move ops
+           SRSOperation(const SRSOperation& rhs) = default;
+           SRSOperation& operator=(const SRSOperation&) = default;
+           SRSOperation(SRSOperation&& rhs) noexcept = default;
+           SRSOperation& operator=(SRSOperation&&) noexcept = default;
+   
+       private:
+           void* _handle = nullptr;
+           bool _nop = true;
+           SRS _from, _to;
+   
+           bool forward(void* handle, double& x, double& y, double& z) const;
+           bool inverse(void* handle, double& x, double& y, double& z) const;
+   
+           bool forward(void* handle, double* x, double* y, double* z, std::size_t stride, std::size_t count) const;
+           bool inverse(void* handle, double* x, double* y, double* z, std::size_t stride, std::size_t count) const;
+           friend class SRS;
+       };
+   
+   
+       inline bool SRS::valid() const {
+           if (_valid.has_value())
+               return _valid.value();
+           else
+               return _establish_valid();
+       }
+   }

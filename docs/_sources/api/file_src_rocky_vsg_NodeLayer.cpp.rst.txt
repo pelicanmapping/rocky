@@ -1,0 +1,44 @@
+
+.. _file_src_rocky_vsg_NodeLayer.cpp:
+
+File NodeLayer.cpp
+==================
+
+|exhale_lsh| :ref:`Parent directory <dir_src_rocky_vsg>` (``src/rocky/vsg``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+
+.. contents:: Contents
+   :local:
+   :backlinks: none
+
+Definition (``src/rocky/vsg/NodeLayer.cpp``)
+--------------------------------------------
+
+
+.. toctree::
+   :maxdepth: 1
+
+   program_listing_file_src_rocky_vsg_NodeLayer.cpp.rst
+
+
+
+
+
+Includes
+--------
+
+
+- ``NodeLayer.h`` (:ref:`file_src_rocky_vsg_NodeLayer.h`)
+
+- ``VSGUtils.h`` (:ref:`file_src_rocky_vsg_VSGUtils.h`)
+
+- ``ecs/EntityNode.h`` (:ref:`file_src_rocky_vsg_ecs_EntityNode.h`)
+
+- ``rocky/ecs/Visibility.h`` (:ref:`file_src_rocky_ecs_Visibility.h`)
+
+
+
+
+

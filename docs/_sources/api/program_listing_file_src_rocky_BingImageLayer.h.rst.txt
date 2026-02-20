@@ -1,0 +1,51 @@
+
+.. _program_listing_file_src_rocky_BingImageLayer.h:
+
+Program Listing for File BingImageLayer.h
+=========================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_BingImageLayer.h>` (``src/rocky/BingImageLayer.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/Bing.h>
+   #ifdef ROCKY_HAS_BING
+   
+   #include <rocky/ImageLayer.h>
+   #include <rocky/URI.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+       class ROCKY_EXPORT BingImageLayer : public Inherit<ImageLayer, BingImageLayer>, public Bing::ImageLayerOptions
+       {
+       public:
+           BingImageLayer();
+   
+           BingImageLayer(std::string_view JSON, const IOOptions& io);
+   
+           std::string to_json() const override;
+   
+       protected: // Layer
+   
+           Result<> openImplementation(const IOOptions& io) override;
+   
+           void closeImplementation() override;
+   
+           Result<GeoImage> createTileImplementation(const TileKey& key, const IOOptions& io) const override;
+   
+       private:
+   
+           void construct(std::string_view, const IOOptions& io);
+       };
+   }
+   
+   
+   #else // if !ROCKY_HAS_BING
+   #ifndef ROCKY_BUILDING_SDK
+   #error Bing support is not enabled in Rocky.
+   #endif
+   #endif // ROCKY_HAS_BING

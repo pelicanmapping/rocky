@@ -1,0 +1,14 @@
+.. _exhale_define_LineSystem_8cpp_1ab54c0376212bfb93df988a2ae14d8ef0:
+
+Define LINE_FRAG_SHADER
+=======================
+
+- Defined in :ref:`file_src_rocky_vsg_ecs_LineSystem.cpp`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: LINE_FRAG_SHADER
+   :project: Rocky

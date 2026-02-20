@@ -1,0 +1,14 @@
+.. _exhale_define_rtree_8h_1a231c67e84cc51b8e5a98bf22449ad41e:
+
+Define RTREE_STOP_SEARCHING
+===========================
+
+- Defined in :ref:`file_src_rocky_rtree.h`
+
+
+Define Documentation
+--------------------
+
+
+.. doxygendefine:: RTREE_STOP_SEARCHING
+   :project: Rocky

@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Maps and Layers &mdash; Rocky SDK 0.9.8 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=9edc463e" />
+      <link rel="stylesheet" type="text/css" href="../_static/graphviz.css?v=4ae1632d" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+      <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+      <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=29de89ba" />
+
+  
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=1a282f62"></script>
+      <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+      <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+      <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
+      <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Entity Component System" href="ecs_system.html" />
+    <link rel="prev" title="Getting Started with Rocky" href="getting_started.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search"  style="background: #2980B9" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            Rocky SDK
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started with Rocky</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Maps and Layers</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#map-class">Map Class</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#layer-types">Layer Types</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#image-layers">Image Layers</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#elevation-layers">Elevation Layers</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="ecs_system.html">Entity Component System</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Examples</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../examples/hello_world.html">Hello World</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../api/library_root.html">API Reference</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu"  style="background: #2980B9" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">Rocky SDK</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Maps and Layers</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/guides/maps_and_layers.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="maps-and-layers">
+<h1>Maps and Layers<a class="headerlink" href="#maps-and-layers" title="Link to this heading"></a></h1>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This guide is under development. For now, please refer to the <a class="reference internal" href="../api/library_root.html"><span class="doc">API Reference</span></a> for detailed API information.</p>
+</div>
+<section id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading"></a></h2>
+<p>Rocky’s data model revolves around the <a class="reference internal" href="../api/classrocky_1_1Map.html#_CPPv4N5rocky3MapE" title="rocky::Map"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::Map</span></code></a> class, which contains an ordered collection of <a class="reference internal" href="../api/classrocky_1_1Layer.html#_CPPv4N5rocky5LayerE" title="rocky::Layer"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::Layer</span></code></a> objects.</p>
+</section>
+<section id="map-class">
+<h2>Map Class<a class="headerlink" href="#map-class" title="Link to this heading"></a></h2>
+<p>The <a class="reference internal" href="../api/classrocky_1_1Map.html#_CPPv4N5rocky3MapE" title="rocky::Map"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::Map</span></code></a> holds all your map data layers and provides:</p>
+<ul class="simple">
+<li><p>Layer management (add, remove, reorder)</p></li>
+<li><p>Coordinate system definition (SRS)</p></li>
+<li><p>Callback notifications for changes</p></li>
+</ul>
+</section>
+<section id="layer-types">
+<h2>Layer Types<a class="headerlink" href="#layer-types" title="Link to this heading"></a></h2>
+<section id="image-layers">
+<h3>Image Layers<a class="headerlink" href="#image-layers" title="Link to this heading"></a></h3>
+<p>Image layers display visible map colors:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api/classrocky_1_1TMSImageLayer.html#_CPPv4N5rocky13TMSImageLayerE" title="rocky::TMSImageLayer"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::TMSImageLayer</span></code></a> - Tile Map Service imagery</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::MBTilesImageLayer</span></code> - MBTiles database imagery</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::GDALImageLayer</span></code> - Local GeoTIFF/GDAL imagery</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::AzureImageLayer</span></code> - Microsoft Azure Maps</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::BingImageLayer</span></code> - Microsoft Bing Maps</p></li>
+</ul>
+</section>
+<section id="elevation-layers">
+<h3>Elevation Layers<a class="headerlink" href="#elevation-layers" title="Link to this heading"></a></h3>
+<p>Elevation layers provide terrain height data:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api/classrocky_1_1TMSElevationLayer.html#_CPPv4N5rocky17TMSElevationLayerE" title="rocky::TMSElevationLayer"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::TMSElevationLayer</span></code></a> - Tile Map Service elevation</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::MBTilesElevationLayer</span></code> - MBTiles database elevation</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::GDALElevationLayer</span></code> - Local GeoTIFF/GDAL elevation</p></li>
+<li><p><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::BingElevationLayer</span></code> - Microsoft Bing elevation</p></li>
+</ul>
+</section>
+</section>
+<section id="see-also">
+<h2>See Also<a class="headerlink" href="#see-also" title="Link to this heading"></a></h2>
+<ul class="simple">
+<li><p><a class="reference internal" href="../api/classrocky_1_1Map.html#_CPPv4N5rocky3MapE" title="rocky::Map"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::Map</span></code></a> - Map API documentation</p></li>
+<li><p><a class="reference internal" href="../api/classrocky_1_1Layer.html#_CPPv4N5rocky5LayerE" title="rocky::Layer"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">rocky::Layer</span></code></a> - Layer base class</p></li>
+<li><p><a class="reference internal" href="../examples/hello_world.html"><span class="doc">Hello World</span></a> - Simple layer example</p></li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="getting_started.html" class="btn btn-neutral float-left" title="Getting Started with Rocky" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="ecs_system.html" class="btn btn-neutral float-right" title="Entity Component System" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2025, Pelican Mapping.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

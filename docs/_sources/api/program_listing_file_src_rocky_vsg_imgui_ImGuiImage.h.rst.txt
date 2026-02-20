@@ -1,0 +1,106 @@
+
+.. _program_listing_file_src_rocky_vsg_imgui_ImGuiImage.h:
+
+Program Listing for File ImGuiImage.h
+=====================================
+
+|exhale_lsh| :ref:`Return to documentation for file <file_src_rocky_vsg_imgui_ImGuiImage.h>` (``src/rocky/vsg/imgui/ImGuiImage.h``)
+
+.. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
+
+.. code-block:: cpp
+
+   
+   #pragma once
+   #include <rocky/vsg/VSGContext.h>
+   
+   #if defined(ROCKY_HAS_IMGUI) && __has_include(<imgui.h>)
+   #include <imgui.h>
+   #include <imgui_internal.h>
+   #include <rocky/Image.h>
+   
+   namespace ROCKY_NAMESPACE
+   {
+   #if IMGUI_VERSION_NUM >= 19200
+       using ImGuiTextureHandle = ImTextureRef;
+   #else
+       using ImGuiTextureHandle = ImTextureID;
+   #endif
+   
+       class ROCKY_EXPORT ImGuiImage
+       {
+       public:
+           ImGuiImage() = default;
+   
+           ImGuiImage(Image::Ptr image, VSGContext context);
+   
+           ImGuiTextureHandle handle() const;
+   
+           ImTextureID id() const;
+   
+           inline void render(ImVec2 size, float rotationDegrees = 0.0f) const;
+   
+           inline ImVec2 size() const {
+               return ImVec2(_image->width(), _image->height());
+           }
+   
+           inline operator bool() const {
+               return _internal;
+           }
+   
+       protected:
+           struct Internal;
+           Image::Ptr _image;
+           Internal* _internal = nullptr;
+       };
+   
+   
+       inline void ImGuiImage::render(ImVec2 size, float rotationDegrees) const
+       {
+           if (rotationDegrees == 0.0f)
+           {
+               ImGui::Image(handle(), size);
+               return;
+           }
+   
+           auto* window = ImGui::GetCurrentWindow();
+   
+           float cos_a = cosf(glm::radians(rotationDegrees));
+           float sin_a = sinf(glm::radians(rotationDegrees));
+   
+           ImVec2 half_size = ImVec2(size.x * 0.5f, size.y * 0.5f);
+   
+           // 4 corners relative to center (unrotated)
+           ImVec2 corners[4] = {
+               ImVec2(-half_size.x, -half_size.y),
+               ImVec2(half_size.x, -half_size.y),
+               ImVec2(half_size.x,  half_size.y),
+               ImVec2(-half_size.x,  half_size.y)
+           };
+   
+           ImVec2 center(window->DC.CursorPos.x + half_size.x, window->DC.CursorPos.y + half_size.y);
+           
+           // Rotate + translate corners
+           for (int i = 0; i < 4; ++i)
+           {
+               float x = corners[i].x * cos_a - corners[i].y * sin_a;
+               float y = corners[i].x * sin_a + corners[i].y * cos_a;
+   
+               corners[i].x = center.x + x;
+               corners[i].y = center.y + y;
+           }
+   
+           const ImRect bb(
+               ImVec2(center.x - half_size.x, center.y - half_size.y),
+               ImVec2(center.x + half_size.x, center.y + half_size.y));
+   
+           ImGui::ItemSize(bb);
+   
+           if (!ImGui::ItemAdd(bb, 0))
+               return;
+   
+           window->DrawList->AddImageQuad(id(), corners[0], corners[1], corners[2], corners[3]);
+       }
+   };
+   
+   #endif

@@ -1,0 +1,26 @@
+.. _exhale_class_classrocky_1_1VulkanExtensions:
+
+Class VulkanExtensions
+======================
+
+- Defined in :ref:`file_src_rocky_vsg_Polyfill.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public vsg::Inherit< vsg::Object, VulkanExtensions >``
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: rocky::VulkanExtensions
+   :project: Rocky
+   :members:
+   :protected-members:
+   :undoc-members:
