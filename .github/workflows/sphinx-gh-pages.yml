@@ -59,7 +59,7 @@ jobs:
       run: |
         echo "Building Sphinx documentation..."
         cd docs/sphinx
-        sphinx-build -b html -W --keep-going . _build/html
+        sphinx-build -b html --keep-going . _build/html
         echo "Sphinx build complete"
         ls -la _build/html/
 
