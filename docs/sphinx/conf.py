@@ -95,12 +95,8 @@ exhale_args = {
     "exhaleUseDoxyfile":     True,
 
     # SELECTIVE DOCUMENTATION: Control what Exhale generates
-    # These are the kinds of things we want to show in the API tree
-    "unabridgedOrphanKinds": {"namespace", "class", "struct"},
-    "kindsWithContentsDirectives": ["namespace", "class", "struct"],
-
-    # Exclude detail/internal namespaces from listings
-    "listingExclude": [r".*detail.*", r".*internal.*"],
+    # Exclude detail/internal namespaces from listings (but be permissive otherwise)
+    "listingExclude": [r".*detail.*", r".*internal.*", r".*tinyxml.*"],
 
     # File organization
     "fullToctreeMaxDepth": 3,
