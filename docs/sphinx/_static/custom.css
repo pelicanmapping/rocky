@@ -1,0 +1,173 @@
+/* Custom CSS for Rocky SDK Documentation */
+
+/* Better code block styling */
+.highlight {
+    background-color: #f8f8f8;
+    border: 1px solid #e1e4e5;
+    border-radius: 3px;
+    padding: 10px;
+    margin: 1em 0;
+}
+
+/* Improve class/function signature readability */
+.sig-name {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.sig-prename {
+    color: #7f8c8d;
+}
+
+/* Better table styling */
+table.docutils {
+    border: 1px solid #e1e4e5;
+    border-collapse: collapse;
+    margin: 1em 0;
+}
+
+table.docutils th {
+    background-color: #f3f6f6;
+    border: 1px solid #e1e4e5;
+    padding: 8px;
+    font-weight: bold;
+}
+
+table.docutils td {
+    border: 1px solid #e1e4e5;
+    padding: 8px;
+}
+
+/* Namespace/class hierarchy improvements */
+.toctree-l1 {
+    margin-bottom: 0.5em;
+}
+
+.toctree-l2 {
+    font-size: 95%;
+}
+
+/* Code inline styling */
+code.literal {
+    background-color: #f3f6f6;
+    border: 1px solid #e1e4e5;
+    border-radius: 2px;
+    padding: 2px 4px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    color: #e74c3c;
+}
+
+/* Improve note/warning/tip boxes */
+.admonition {
+    padding: 12px;
+    margin: 1em 0;
+    border-left: 4px solid;
+    border-radius: 3px;
+}
+
+.admonition.note {
+    border-left-color: #6ab0de;
+    background-color: #e7f2fa;
+}
+
+.admonition.warning {
+    border-left-color: #f0b37e;
+    background-color: #ffedcc;
+}
+
+.admonition.tip {
+    border-left-color: #1abc9c;
+    background-color: #dbfaf3;
+}
+
+.admonition-title {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+}
+
+/* Better link styling */
+a.reference.internal {
+    color: #2980b9;
+}
+
+a.reference.internal:hover {
+    color: #3498db;
+    text-decoration: underline;
+}
+
+/* Improve parameter lists in function signatures */
+.sig-param {
+    font-style: italic;
+}
+
+/* Better spacing for class members */
+dl.cpp.class > dd {
+    margin-left: 2em;
+}
+
+dl.cpp.function > dd {
+    margin-left: 2em;
+}
+
+/* Improve search results */
+.search li {
+    padding: 0.5em 0;
+}
+
+.search .highlighted {
+    background-color: #ffc;
+}
+
+/* Better code copy button (if sphinx-copybutton is installed) */
+.copybtn {
+    opacity: 0.3;
+    transition: opacity 0.2s;
+}
+
+.copybtn:hover {
+    opacity: 1;
+}
+
+/* Improve mobile responsiveness */
+@media screen and (max-width: 768px) {
+    .highlight {
+        font-size: 90%;
+    }
+
+    table.docutils {
+        font-size: 90%;
+    }
+}
+
+/* Improve version selector if multiple versions exist */
+.version-selector {
+    margin: 1em 0;
+}
+
+/* Better heading anchors */
+a.headerlink {
+    opacity: 0;
+    margin-left: 0.5em;
+    font-size: 0.8em;
+    transition: opacity 0.2s;
+}
+
+h1:hover > a.headerlink,
+h2:hover > a.headerlink,
+h3:hover > a.headerlink,
+h4:hover > a.headerlink,
+h5:hover > a.headerlink,
+h6:hover > a.headerlink {
+    opacity: 1;
+}
+
+/* Improve class inheritance diagrams */
+.graphviz {
+    text-align: center;
+    margin: 1em 0;
+}
+
+.graphviz svg {
+    max-width: 100%;
+    height: auto;
+}

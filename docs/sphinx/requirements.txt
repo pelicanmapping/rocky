@@ -1,0 +1,8 @@
+# Sphinx and extensions for Rocky SDK documentation
+sphinx>=7.0.0
+sphinx-rtd-theme>=2.0.0
+breathe>=4.35.0
+exhale>=0.3.6
+
+# Optional but recommended
+sphinx-copybutton>=0.5.2

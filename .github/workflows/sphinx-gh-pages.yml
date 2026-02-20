@@ -1,0 +1,87 @@
+name: Sphinx Documentation
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Allow only one concurrent deployment
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        submodules: false
+        fetch-depth: 0
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Install Graphviz
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y graphviz
+
+    - name: Install Doxygen
+      run: |
+        sudo apt-get install -y doxygen
+
+    - name: Install Python dependencies
+      run: |
+        pip install --upgrade pip
+        pip install -r docs/sphinx/requirements.txt
+
+    - name: Verify installations
+      run: |
+        doxygen --version
+        sphinx-build --version
+        python -c "import breathe; print(f'Breathe: {breathe.__version__}')"
+        python -c "import exhale; print(f'Exhale: {exhale.__version__}')"
+
+    - name: Generate Doxygen XML
+      run: |
+        echo "Generating Doxygen XML output..."
+        doxygen Doxyfile
+        echo "Doxygen XML generation complete"
+        ls -la docs/doxygen/xml/ | head -20
+
+    - name: Build Sphinx documentation
+      run: |
+        echo "Building Sphinx documentation..."
+        cd docs/sphinx
+        sphinx-build -b html -W --keep-going . _build/html
+        echo "Sphinx build complete"
+        ls -la _build/html/
+
+    - name: Create .nojekyll file
+      run: |
+        touch docs/sphinx/_build/html/.nojekyll
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: docs/sphinx/_build/html
+        publish_branch: gh-pages
+        destination_dir: docs
+        force_orphan: true
+        user_name: 'github-actions[bot]'
+        user_email: 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Upload documentation artifact
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: sphinx-documentation
+        path: docs/sphinx/_build/html/
+        retention-days: 30
