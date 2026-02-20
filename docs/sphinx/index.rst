@@ -18,7 +18,7 @@ Rocky is a C++ toolkit for:
 
 **Key Features:**
 
-* 🗺️ Multiple data source support (TMS, MBTiles, GDAL, Azure, Bing)
+* 🗺️ Multiple data source support (TMS, MBTiles, GDAL, Azure)
 * 🌍 Full coordinate system transformation support
 * 🎮 Entity Component System (ECS) for annotations
 * 🎨 Vulkan-based rendering with VulkanSceneGraph (VSG)
@@ -73,29 +73,28 @@ Core Modules
 
 **rocky::ecs** - Entity Component System for annotations
 
-* :cpp:class:`rocky::ecs::Component` - Base component template
-* :cpp:class:`rocky::ecs::Registry` - Entity registry/manager
-* :cpp:class:`rocky::ecs::Transform` - Transform component
-* :cpp:class:`rocky::ecs::Mesh` - 3D mesh component
-* :cpp:class:`rocky::ecs::Label` - Text label component
+* :cpp:class:`rocky::Mesh` - 3D mesh component
+* :cpp:class:`rocky::Line` - Line component
+* :cpp:class:`rocky::Point` - Point component
+* :cpp:class:`rocky::Label` - Text label component
+* :cpp:class:`rocky::Widget` - ImGui component
+* :cpp:class:`rocky::Transform` - Transform component
 
 **rocky::vsg** - Vulkan SceneGraph rendering backend
 
 * :cpp:class:`rocky::vsg::Application` - Main application class
-* :cpp:class:`rocky::vsg::MapNode` - Scene graph node for rendering maps
-* :cpp:class:`rocky::vsg::TerrainNode` - Terrain rendering
 * :cpp:class:`rocky::vsg::DisplayManager` - Multi-window management
+* :cpp:class:`rocky::vsg::MapNode` - Scene graph node for rendering maps
 
 Data Sources
 ~~~~~~~~~~~~
 
 Rocky supports multiple geospatial data sources:
 
-* **TMS** - Tile Map Service (TMSImageLayer, TMSElevationLayer)
-* **MBTiles** - SQLite-based tile database (MBTilesImageLayer, MBTilesElevationLayer)
+* **TMS** - Tile Map Service or XYZ Tiles (TMSImageLayer, TMSElevationLayer)
 * **GDAL** - Geospatial Data Abstraction Library (GDALImageLayer, GDALElevationLayer)
+* **MBTiles** - SQLite-based tile database (MBTilesImageLayer, MBTilesElevationLayer)
 * **Azure Maps** - Microsoft Azure Maps service (AzureImageLayer)
-* **Bing Maps** - Microsoft Bing Maps (BingImageLayer, BingElevationLayer)
 
 Requirements
 ------------
@@ -140,7 +139,7 @@ Rocky is licensed under the MIT License.
 
 .. code-block:: text
 
-   Copyright 2023 Pelican Mapping
+   Copyright 2025 Pelican Mapping
 
    Permission is hereby granted, free of charge, to any person obtaining a copy
    of this software and associated documentation files (the "Software"), to deal

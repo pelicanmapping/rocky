@@ -112,7 +112,6 @@ exhale_args = {
     **Main Modules:**
 
     - **rocky** - Core map and layer functionality
-    - **rocky::ecs** - Entity Component System for annotations
     - **rocky::vsg** - Vulkan SceneGraph rendering backend
     """,
 }
