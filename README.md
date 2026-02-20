@@ -7,7 +7,16 @@ Rocky will render an accurate 3D or 2D map with real geospatial imagery and elev
 **This project is in its early stages so expect a lot of API and architectural changes before version 1.0.**
 
 ![Windows](https://github.com/pelicanmapping/rocky/actions/workflows/ci-windows-minimal.yml/badge.svg)
-![Documentation](https://github.com/pelicanmapping/rocky/actions/workflows/mkdocs-gh-pages.yml/badge.svg)
+![Documentation](https://github.com/pelicanmapping/rocky/actions/workflows/sphinx-gh-pages.yml/badge.svg)
+
+## 📚 Documentation
+
+**Full API documentation and guides are available at: https://pelicanmapping.github.io/rocky/docs/**
+
+Quick links:
+- [Getting Started](https://pelicanmapping.github.io/rocky/docs/guides/getting_started.html) - Build and run Rocky
+- [Hello World Example](https://pelicanmapping.github.io/rocky/docs/examples/hello_world.html) - Your first Rocky app
+- [API Reference](https://pelicanmapping.github.io/rocky/docs/api/library_root.html) - Complete API documentation
 
 <!-- TOC start (generated with https://github.com/derlin/bitdowntoc) -->
 

@@ -1,1 +1,22 @@
 build/
+
+# Doxygen output
+docs/doxygen/xml/
+docs/doxygen/html/
+docs/doxygen/latex/
+
+# Sphinx build output
+docs/sphinx/_build/
+docs/sphinx/api/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+env/
+
+# Documentation artifacts
+*.doctree
+.buildinfo
