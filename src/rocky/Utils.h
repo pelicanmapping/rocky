@@ -22,7 +22,7 @@
 
 namespace ROCKY_NAMESPACE
 {
-    namespace util
+    namespace detail
     {
         const std::string EMPTY_STRING = {};
 
@@ -64,7 +64,7 @@ namespace ROCKY_NAMESPACE
         extern ROCKY_EXPORT std::string& trimInPlace(std::string& str);
 
         //! Character to lower case
-        inline char toLower(char c) {
+        inline unsigned char toLower(unsigned char c) {
             return (c < 0x80) ? c | ((c >= 'A' && c <= 'Z') ? 0x20 : 0x00) : std::tolower(c);
         }
 

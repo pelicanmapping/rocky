@@ -15,6 +15,7 @@
 ROCKY_ABOUT(sqlite, SQLITE_VERSION);
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 #undef LC
 #define LC "[MBTiles] "
@@ -212,7 +213,7 @@ MBTiles::Driver::open(
         std::string boundsStr;
         if (getMetaData("bounds", boundsStr))
         {
-            auto tokens = util::StringTokenizer()
+            auto tokens = StringTokenizer()
                 .delim(",")
                 .tokenize(boundsStr);
             if (tokens.size() == 4)
@@ -252,8 +253,8 @@ MBTiles::Driver::open(
 
     // do we require RGB? for jpeg?
     _forceRGB =
-        util::endsWith(_tileFormat, "jpg", false) ||
-        util::endsWith(_tileFormat, "jpeg", false);
+        endsWith(_tileFormat, "jpg", false) ||
+        endsWith(_tileFormat, "jpeg", false);
 
     // make an empty image.
     int size = 256;
@@ -349,7 +350,7 @@ MBTiles::Driver::read(const TileKey& key, const IOOptions& io) const
             std::istringstream inputStream(dataBuffer);
             std::string value;
 
-            if (!util::ZLibCompressor().decompress(inputStream, value))
+            if (!ZLibCompressor().decompress(inputStream, value))
             {
                 errorMessage = "Decompression failed";
                 valid = false;
@@ -424,7 +425,7 @@ MBTiles::Driver::write(const TileKey& key, std::shared_ptr<Image> input, const I
     if (_options.compress == true)
     {
         std::ostringstream output;
-        if (!util::ZLibCompressor().compress(value, output))
+        if (!ZLibCompressor().compress(value, output))
         {
             return Failure(Failure::GeneralError, "Compressor failed");
         }

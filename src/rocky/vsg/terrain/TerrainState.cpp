@@ -106,7 +106,7 @@ TerrainState::createDefaultDescriptors(VSGContext& context)
     // no other data is available. These are 1x1 pixel placeholder images.
     auto color_image = Image::create(Image::R8G8B8A8_UNORM, 1, 1);
     color_image->write(Color(Color::Red, 0.0f), 0, 0);
-    texturedefs.color.defaultData = util::moveImageToVSG(color_image);
+    texturedefs.color.defaultData = moveImageToVSG(color_image);
     ROCKY_HARD_ASSERT(texturedefs.color.defaultData);
     this->defaultTileDescriptors.color = vsg::DescriptorImage::create(
         texturedefs.color.sampler,
@@ -117,7 +117,7 @@ TerrainState::createDefaultDescriptors(VSGContext& context)
 
     auto hf = Heightfield::create(1, 1);
     hf.fill(0.0f);
-    texturedefs.elevation.defaultData = util::moveImageToVSG(hf.image);
+    texturedefs.elevation.defaultData = moveImageToVSG(hf.image);
     ROCKY_HARD_ASSERT(texturedefs.elevation.defaultData);
     this->defaultTileDescriptors.elevation = vsg::DescriptorImage::create(
         texturedefs.elevation.sampler,
@@ -300,7 +300,7 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
         renderModel.color.image = layer.image.image();
         renderModel.color.matrix = layer.matrix;
 
-        auto data = util::wrapImageInVSG(renderModel.color.image);
+        auto data = wrapImageInVSG(renderModel.color.image);
         if (data)
         {
             // queue the old data for safe disposal
@@ -334,7 +334,7 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
         renderModel.minHeight = hf.encoded() ? hf.minHeight() : 1.0f;
         renderModel.maxHeight = hf.encoded() ? hf.maxHeight() : 0.0f;
 
-        auto data = util::wrapImageInVSG(renderModel.elevation.image);
+        auto data = wrapImageInVSG(renderModel.elevation.image);
         if (data)
         {
             // queue the old data for safe disposal

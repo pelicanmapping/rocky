@@ -357,7 +357,7 @@ PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometry
 
             geomDetail.geomNode->set(copy, geom.colors, geom.widths);
 
-            auto mt = util::find<vsg::MatrixTransform>(geomDetail.rootNode);
+            auto mt = find<vsg::MatrixTransform>(geomDetail.rootNode);
             mt->matrix = vsg::translate(to_vsg(offset));
             localizer_matrix = mt->matrix;
         }

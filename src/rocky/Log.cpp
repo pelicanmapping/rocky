@@ -12,6 +12,7 @@
 ROCKY_ABOUT(spdlog, std::to_string(SPDLOG_VER_MAJOR) + "." + std::to_string(SPDLOG_VER_MINOR) + "." + std::to_string(SPDLOG_VER_PATCH));
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 Logger rocky::Log()
 {
@@ -25,16 +26,16 @@ Logger rocky::Log()
                 auto logger = spdlog::stdout_color_mt("rocky");
                 logger->set_pattern("%^[%n %l]%$ %v");
 
-                auto log_level = util::getEnvVar("ROCKY_LOG_LEVEL");
-                if (!log_level.has_value()) log_level = util::getEnvVar("ROCKY_NOTIFY_LEVEL");
+                auto log_level = getEnvVar("ROCKY_LOG_LEVEL");
+                if (!log_level.has_value()) log_level = getEnvVar("ROCKY_NOTIFY_LEVEL");
                 if (!log_level.has_value()) logger->set_level(default_level);
-                else if (util::ciEquals(log_level.value(), "trace")) logger->set_level(spdlog::level::trace);
-                else if (util::ciEquals(log_level.value(), "info")) logger->set_level(spdlog::level::info);
-                else if (util::ciEquals(log_level.value(), "debug")) logger->set_level(spdlog::level::debug);
-                else if (util::ciEquals(log_level.value(), "warn")) logger->set_level(spdlog::level::warn);
-                else if (util::ciEquals(log_level.value(), "error")) logger->set_level(spdlog::level::err);
-                else if (util::ciEquals(log_level.value(), "critical")) logger->set_level(spdlog::level::critical);
-                else if (util::ciEquals(log_level.value(), "off")) logger->set_level(spdlog::level::off);
+                else if (ciEquals(log_level.value(), "trace")) logger->set_level(spdlog::level::trace);
+                else if (ciEquals(log_level.value(), "info")) logger->set_level(spdlog::level::info);
+                else if (ciEquals(log_level.value(), "debug")) logger->set_level(spdlog::level::debug);
+                else if (ciEquals(log_level.value(), "warn")) logger->set_level(spdlog::level::warn);
+                else if (ciEquals(log_level.value(), "error")) logger->set_level(spdlog::level::err);
+                else if (ciEquals(log_level.value(), "critical")) logger->set_level(spdlog::level::critical);
+                else if (ciEquals(log_level.value(), "off")) logger->set_level(spdlog::level::off);
                 else logger->set_level(default_level);
             }
             catch (spdlog::spdlog_ex ex)

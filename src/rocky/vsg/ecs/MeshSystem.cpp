@@ -26,7 +26,7 @@ namespace
     {
         auto sampler = vsg::Sampler::create();
         auto image = Image::create(Image::R8_UNORM, 1, 1);
-        return vsg::ImageInfo::create(sampler, util::moveImageToVSG(image));
+        return vsg::ImageInfo::create(sampler, moveImageToVSG(image));
     }
 
     vsg::ref_ptr<vsg::ShaderSet> createShaderSet(VSGContext& vsgcontext)

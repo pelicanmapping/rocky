@@ -79,6 +79,6 @@ namespace ROCKY_NAMESPACE
 #define ROCKY_ADD_OBJECT_FACTORY(NAME, FUNC) \
         struct __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER { \
             __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER () { \
-                ROCKY_NAMESPACE::ContextImpl::objectFactories()[ROCKY_NAMESPACE::util::toLower(#NAME)] = FUNC; \
+                ROCKY_NAMESPACE::ContextImpl::objectFactories()[ROCKY_NAMESPACE::detail::toLower(#NAME)] = FUNC; \
         } }; \
         __ROCKY_OBJECTFACTORY_##NAME##_INSTALLER __rocky_objectFactory_##NAME ;

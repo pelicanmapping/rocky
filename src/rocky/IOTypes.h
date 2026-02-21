@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
         Result<>(std::shared_ptr<Image> image, std::ostream& stream, std::string contentType, const IOOptions& io)>;
 
     //! Service for tracking invalid request URIs
-    using DealpoolService = util::LRUCache<std::string, Failure>;
+    using DealpoolService = rocky::detail::LRUCache<std::string, Failure>;
 
     //! Holds a generic content buffer and its type.
     struct Content {
@@ -47,7 +47,7 @@ namespace ROCKY_NAMESPACE
     };
 
     //! A cache that stores Content objects by URI.
-    using ContentCache = rocky::util::LRUCache<std::string, Result<Content>>;
+    using ContentCache = rocky::detail::LRUCache<std::string, Result<Content>>;
 
     /**
     * Collection of service available to rocky classes that perform IO operations.
@@ -77,7 +77,7 @@ namespace ROCKY_NAMESPACE
         std::shared_ptr<ContentCache> contentCache;
 
         //! Provides fast access to Image data that is resident somwehere in memory
-        std::shared_ptr<util::ResidentCache<std::string, Image, GeoExtent>> residentImageCache;
+        std::shared_ptr<detail::ResidentCache<std::string, Image, GeoExtent>> residentImageCache;
 
         //! URI deadpool; URI will use this if available.
         std::shared_ptr<DealpoolService> deadpool;

@@ -146,7 +146,7 @@ auto Demo_Geocoder = [](Application& app)
                                             auto&& [xform, label] = r.get<Transform, Label>(placemark.label);
 
                                             auto text = display_name;
-                                            util::replaceInPlace(text, ", ", "\n");
+                                            rocky::detail::replaceInPlace(text, ", ", "\n");
                                             label.text = text;
 
                                             xform.position = myfeature.extent.centroid();

@@ -13,6 +13,7 @@
 #include <rocky/TerrainTileModelFactory.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 #define LC "[TerrainTilePager] "
 
@@ -421,7 +422,7 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io, std::
         return false;
     };
 
-    auto merge_operation = util::PromiseOperation<bool>::create(merge);
+    auto merge_operation = PromiseOperation<bool>::create(merge);
     info.dataMerger = merge_operation->future();
 
     vsg::observer_ptr<TerrainTileNode> weak_tile(info.tile);

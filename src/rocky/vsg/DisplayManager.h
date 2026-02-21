@@ -147,7 +147,7 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Visitor> guiEventVisitor;
             std::shared_ptr<std::function<void()>> guiIdleEventProcessor;
         };
-        util::vector_map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
+        detail::vector_map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
 
         Application* _app = nullptr;
         bool _debugCallbackInstalled = false;

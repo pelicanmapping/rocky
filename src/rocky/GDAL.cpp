@@ -21,7 +21,6 @@
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
-using namespace ROCKY_NAMESPACE::util;
 
 #undef LC
 #define LC "[GDAL] \"" + getName() + "\" "
@@ -413,8 +412,8 @@ GDAL_detail::Driver::open(
     if (layer->uri.has_value())
     {
         // Use the base instead of the full if this is a gdal virtual file system
-        if (util::startsWith(layer->uri->base(), "/vsi") ||     // vsi mini-driver
-            util::startsWith(layer->uri->base(), "<"))          // XML init string
+        if (startsWith(layer->uri->base(), "/vsi") ||     // vsi mini-driver
+            startsWith(layer->uri->base(), "<"))          // XML init string
         {
             source = layer->uri->base();
         }
@@ -512,7 +511,7 @@ GDAL_detail::Driver::open(
         auto rr = URI(prjLocation).read(io); // TODO io
         if (rr.ok() && !rr.value().content.data.empty())
         {
-            src_srs = SRS(util::trim(rr.value().content.data));
+            src_srs = SRS(trim(rr.value().content.data));
         }
     }
 
@@ -655,7 +654,7 @@ GDAL_detail::Driver::open(
     _bounds = Box(minX, minY, maxX, maxY);
 
     const char* pora = _srcDS->GetMetadataItem("AREA_OR_POINT");
-    bool is_area = pora != nullptr && util::toLower(std::string(pora)) == "area";
+    bool is_area = pora != nullptr && toLower(std::string(pora)) == "area";
 
     bool clamped = false;
     if (srs.isGeodetic())

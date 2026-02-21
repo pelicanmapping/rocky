@@ -10,6 +10,7 @@
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 using namespace ROCKY_NAMESPACE::Azure;
 
 #undef LC
@@ -42,7 +43,7 @@ AzureImageLayer::construct(std::string_view JSON, const IOOptions& io)
     get_to(j, "mapTileApiUrl", mapTileApiUrl);
 
     // environment variable key overrides a key set in code
-    auto key = util::getEnvVar("AZURE_KEY");
+    auto key = getEnvVar("AZURE_KEY");
     if (key.has_value())
     {
         Log()->info(LC "Loading subscription key from an environment variable");

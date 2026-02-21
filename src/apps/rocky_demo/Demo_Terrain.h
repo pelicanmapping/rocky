@@ -147,7 +147,7 @@ auto Demo_Terrain = [](Application& app)
         ImGuiLTable::ColorEdit3("Background color", bg);
 
         static std::vector<std::string> options = { "global-geodetic", "global-qsc", "spherical-mercator" };
-        int index = util::indexOf(options, app.mapNode->profile.wellKnownName());
+        int index = indexOf(options, app.mapNode->profile.wellKnownName());
         if (index >= 0)
         {
             if (ImGuiLTable::BeginCombo("Rendering profile", options[index].c_str()))

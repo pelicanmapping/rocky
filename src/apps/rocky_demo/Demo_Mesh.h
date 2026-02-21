@@ -240,7 +240,7 @@ auto Demo_Mesh_Textured = [](Application& app)
 
         // Make a texture component to hold our image:
         auto& tex = reg.emplace<MeshTexture>(entity);
-        tex.imageInfo = vsg::ImageInfo::create(sampler, util::moveImageToVSG(image));
+        tex.imageInfo = vsg::ImageInfo::create(sampler, moveImageToVSG(image));
 
         // Make a style pointing to our texture:
         auto& style = reg.emplace<MeshStyle>(entity);
@@ -337,13 +337,13 @@ auto Demo_Mesh_Shared = [](Application& app)
         styles[1] = entities.emplace_back(reg.create());
         auto& style1 = reg.emplace<MeshStyle>(styles[1]);
         auto& tex1 = reg.emplace<MeshTexture>(styles[1]);
-        tex1.imageInfo = vsg::ImageInfo::create(sampler, util::moveImageToVSG(image0));
+        tex1.imageInfo = vsg::ImageInfo::create(sampler, moveImageToVSG(image0));
         style1.texture = styles[1];
 
         styles[2] = entities.emplace_back(reg.create());
         auto& style2 = reg.emplace<MeshStyle>(styles[2]);
         auto& tex2 = reg.emplace<MeshTexture>(styles[2]);
-        tex2.imageInfo = vsg::ImageInfo::create(sampler, util::moveImageToVSG(image1));
+        tex2.imageInfo = vsg::ImageInfo::create(sampler, moveImageToVSG(image1));
         style2.texture = styles[2];
 
         // Create a few different geometries.

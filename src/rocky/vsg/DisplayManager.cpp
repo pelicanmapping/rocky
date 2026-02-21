@@ -15,6 +15,7 @@
 #endif
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
@@ -35,7 +36,7 @@ namespace
 Result<GeoPoint>
 ROCKY_NAMESPACE::pointAtWindowCoords(vsg::ref_ptr<vsg::View> view, int x, int y)
 {
-    auto terrain = util::find<TerrainNode>(view);
+    auto terrain = find<TerrainNode>(view);
     if (!terrain)
         return Failure_AssertionFailure;
 

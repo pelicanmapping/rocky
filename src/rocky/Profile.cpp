@@ -10,7 +10,7 @@
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
+using namespace ROCKY_NAMESPACE::detail;
 
 #define LC "[Profile] "
 
@@ -133,9 +133,9 @@ Profile::Profile(const SRS& srs, const Box& bounds, unsigned x_tiles_at_lod0, un
 void
 Profile::setup(const std::string& name)
 {
-    if (util::ciEquals(name, "plate-carree") ||
-        util::ciEquals(name, "plate-carre") ||
-        util::ciEquals(name, "eqc-wgs84"))
+    if (ciEquals(name, "plate-carree") ||
+        ciEquals(name, "plate-carre") ||
+        ciEquals(name, "eqc-wgs84"))
     {
         _shared->wellKnownName = name;
 
@@ -144,12 +144,12 @@ Profile::setup(const std::string& name)
         SRS::WGS84.to(SRS::PLATE_CARREE).transform(glm::dvec3(180, 90, 0), ex);
         setup(SRS::PLATE_CARREE, Box(-ex.x, -ex.y, ex.x, ex.y), 2, 1);
     }
-    else if (util::ciEquals(name, "global-geodetic"))
+    else if (ciEquals(name, "global-geodetic"))
     {
         _shared->wellKnownName = "global-geodetic";
         setup(SRS::WGS84, Box(-180.0, -90.0, 180.0, 90.0), 2, 1);
     }
-    else if (util::ciEquals(name, "spherical-mercator"))
+    else if (ciEquals(name, "spherical-mercator"))
     {
         _shared->wellKnownName = "spherical-mercator";
         setup(SRS::SPHERICAL_MERCATOR, SRS::SPHERICAL_MERCATOR.bounds(), 1, 1);
@@ -158,7 +158,7 @@ Profile::setup(const std::string& name)
     {
         setup(SRS(name), Box(-180.0, -90.0, 180.0, 90.0), 2, 1);
     }
-    else if (util::ciEquals(name, "qsc+z"))
+    else if (ciEquals(name, "qsc+z"))
     {
         _shared->wellKnownName = name;
         setup(
@@ -167,7 +167,7 @@ Profile::setup(const std::string& name)
             2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, -180.0, 45.0, 180.0, 90.0);
     }
-    else if (util::ciEquals(name, "qsc-z"))
+    else if (ciEquals(name, "qsc-z"))
     {
         _shared->wellKnownName = name;
         setup(
@@ -176,7 +176,7 @@ Profile::setup(const std::string& name)
             2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, -180.0, -90.0, 180.0, -45.0);
     }
-    else if (util::ciEquals(name, "qsc+x"))
+    else if (ciEquals(name, "qsc+x"))
     {
         _shared->wellKnownName = name;
         setup(
@@ -185,7 +185,7 @@ Profile::setup(const std::string& name)
             2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, -45.0, -45.0, 45.0, 45.0);
     }
-    else if (util::ciEquals(name, "qsc-x"))
+    else if (ciEquals(name, "qsc-x"))
     {
         _shared->wellKnownName = name;
         setup(
@@ -194,7 +194,7 @@ Profile::setup(const std::string& name)
             2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, 135.0, -45.0, 225.0, 45.0);
     }
-    else if (util::ciEquals(name, "qsc+y"))
+    else if (ciEquals(name, "qsc+y"))
     {
         _shared->wellKnownName = name;
         setup(
@@ -203,7 +203,7 @@ Profile::setup(const std::string& name)
             2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, 45.0, -45.0, 125.0, 45.0);
     }
-    else if (util::ciEquals(name, "qsc-y"))
+    else if (ciEquals(name, "qsc-y"))
     {
         _shared->wellKnownName = name;
         setup(
@@ -212,7 +212,7 @@ Profile::setup(const std::string& name)
             2, 2);
         _shared->geodeticExtent = GeoExtent(SRS::WGS84, -135.0, -45.0, -45.0, 45.0);
     }
-    else if (util::ciEquals(name, "global-qsc") || util::ciEquals(name, "qsc"))
+    else if (ciEquals(name, "global-qsc") || ciEquals(name, "qsc"))
     {
         _shared->wellKnownName = "global-qsc";
 
@@ -232,7 +232,7 @@ Profile::setup(const std::string& name)
                 Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=-90"), qscbox, 2, 2, Box(-135.0, -45.0, -45.0, 45.0))
             });
     }
-    else if (util::ciEquals(name, "moon"))
+    else if (ciEquals(name, "moon"))
     {
         _shared->wellKnownName = "moon";
 

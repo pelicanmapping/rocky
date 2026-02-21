@@ -31,7 +31,7 @@ namespace ROCKY_NAMESPACE
         virtual std::uint32_t misses() const { return 0LL; }
     };
 
-    namespace util
+    namespace detail
     {
         /**
         * ResidentCache cached std::weak_ptr's to shared objects. If the shared
@@ -125,7 +125,7 @@ namespace ROCKY_NAMESPACE
             size_t _capacity;
             using E = typename std::pair<K, V>;
             mutable typename std::list<E> _cache;
-            mutable vector_map<K, typename std::list<E>::iterator> _map;
+            mutable detail::vector_map<K, typename std::list<E>::iterator> _map;
             std::uint32_t _hits = 0, _misses = 0;
 
         public:

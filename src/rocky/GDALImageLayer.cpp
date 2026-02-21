@@ -12,6 +12,7 @@
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 using namespace ROCKY_NAMESPACE::GDAL_detail;
 
 ROCKY_ADD_OBJECT_FACTORY(GDALImage,

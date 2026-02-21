@@ -12,7 +12,7 @@ using json = nlohmann::json;
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::TMS;
-using namespace ROCKY_NAMESPACE::util;
+using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
@@ -50,7 +50,7 @@ namespace
         if (!node)
             return nullptr;
 
-        if (util::toLower(node->ValueStr()) == util::toLower(tag))
+        if (toLower(node->ValueStr()) == toLower(tag))
             return node;
 
         for (const TiXmlNode* childnode = node->FirstChild();
@@ -91,7 +91,7 @@ namespace
             auto childxml = childnode->ToElement();
             if (childxml)
             {
-                std::string name = util::toLower(childxml->Value());
+                std::string name = toLower(childxml->Value());
                 if (name == "abstract")
                 {
                     tilemap.abstract = getChildTextValue(childxml);
@@ -370,14 +370,14 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
                     if (sub)
                     {
                         auto temp = working;
-                        util::replaceInPlace(temp, "${x}", std::to_string(x));
-                        util::replaceInPlace(temp, "${y}", std::to_string(y));
-                        util::replaceInPlace(temp, "${-y}", std::to_string(y_inverted));
-                        util::replaceInPlace(temp, "${z}", std::to_string(zoom));
-                        util::replaceInPlace(temp, "{x}", std::to_string(x));
-                        util::replaceInPlace(temp, "{y}", std::to_string(y));
-                        util::replaceInPlace(temp, "{-y}", std::to_string(y_inverted));
-                        util::replaceInPlace(temp, "{z}", std::to_string(zoom));
+                        replaceInPlace(temp, "${x}", std::to_string(x));
+                        replaceInPlace(temp, "${y}", std::to_string(y));
+                        replaceInPlace(temp, "${-y}", std::to_string(y_inverted));
+                        replaceInPlace(temp, "${z}", std::to_string(zoom));
+                        replaceInPlace(temp, "{x}", std::to_string(x));
+                        replaceInPlace(temp, "{y}", std::to_string(y));
+                        replaceInPlace(temp, "{-y}", std::to_string(y_inverted));
+                        replaceInPlace(temp, "{z}", std::to_string(zoom));
                         return temp;
                     }
                     else
@@ -398,14 +398,14 @@ TileMap::getURI(const TileKey& tilekey, bool invertY) const
     if (sub)
     {
         auto temp = working;
-        util::replaceInPlace(temp, "${x}", std::to_string(x));
-        util::replaceInPlace(temp, "${y}", std::to_string(y));
-        util::replaceInPlace(temp, "${-y}", std::to_string(y_inverted));
-        util::replaceInPlace(temp, "${z}", std::to_string(zoom));
-        util::replaceInPlace(temp, "{x}", std::to_string(x));
-        util::replaceInPlace(temp, "{y}", std::to_string(y));
-        util::replaceInPlace(temp, "{-y}", std::to_string(y_inverted));
-        util::replaceInPlace(temp, "{z}", std::to_string(zoom));
+        replaceInPlace(temp, "${x}", std::to_string(x));
+        replaceInPlace(temp, "${y}", std::to_string(y));
+        replaceInPlace(temp, "${-y}", std::to_string(y_inverted));
+        replaceInPlace(temp, "${z}", std::to_string(zoom));
+        replaceInPlace(temp, "{x}", std::to_string(x));
+        replaceInPlace(temp, "{y}", std::to_string(y));
+        replaceInPlace(temp, "{-y}", std::to_string(y_inverted));
+        replaceInPlace(temp, "{z}", std::to_string(zoom));
         return temp;
     }
    

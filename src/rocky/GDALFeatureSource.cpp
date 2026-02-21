@@ -12,6 +12,7 @@
 #include <cassert>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
@@ -260,7 +261,7 @@ namespace
             {
                 // get the field name and convert to lower case:
                 name = std::string(OGR_Fld_GetNameRef(field_handle_ref));
-                name = util::toLower(name);
+                name = detail::toLower(name);
             }
 
             // get the field type and set the value appropriately
@@ -272,7 +273,7 @@ namespace
                 if (OGR_F_IsFieldSetAndNotNull(handle, i))
                 {
                     auto value = OGR_F_GetFieldAsInteger(handle, i);
-                    out_feature.fields[name].emplace<long long>(value);
+                    out_feature.fields[name].emplace<std::int64_t>(value);
                 }
             }
             break;
@@ -282,7 +283,7 @@ namespace
                 if (OGR_F_IsFieldSetAndNotNull(handle, i))
                 {
                     auto value = OGR_F_GetFieldAsInteger64(handle, i);
-                    out_feature.fields[name].emplace<long long>(value);
+                    out_feature.fields[name].emplace<std::int64_t>(value);
                 }
             }
             break;
@@ -496,9 +497,9 @@ GDALFeatureSource::open()
             _source = uri->full();
 
             // ..inside a zip file?
-            if (util::endsWith(_source, ".zip", false) || _source.find(".zip/") != std::string::npos)
+            if (endsWith(_source, ".zip", false) || _source.find(".zip/") != std::string::npos)
             {
-                _source = util::make_string() << "/vsizip/" << _source;
+                _source = make_string() << "/vsizip/" << _source;
             }
         }
 
@@ -545,7 +546,7 @@ GDALFeatureSource::open()
                     auto* name = OGR_Fld_GetNameRef(fieldDefHandle);
                     if (name)
                     {
-                        _metadata.fieldNames.emplace_back(util::toLower(std::string(name)));
+                        _metadata.fieldNames.emplace_back(toLower(std::string(name)));
                     }
                 }
             }

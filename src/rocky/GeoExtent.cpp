@@ -9,7 +9,7 @@
 #include <iomanip>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
+using namespace ROCKY_NAMESPACE::detail;
 
 #undef  LC
 #define LC "[GeoExtent] "

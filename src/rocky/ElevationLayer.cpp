@@ -10,7 +10,6 @@
 #include <cinttypes>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 #define LC "[ElevationLayer] \"" << name().value() << "\" : "
 

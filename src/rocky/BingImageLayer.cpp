@@ -11,6 +11,7 @@
 #include "Utils.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 using namespace ROCKY_NAMESPACE::Bing;
 
 #undef LC
@@ -43,7 +44,7 @@ BingImageLayer::construct(std::string_view JSON, const IOOptions& io)
     get_to(j, "imageryMetadataUrl", imageryMetadataUrl, io);
 
     // environment variable key overrides a key set in code
-    auto key = util::getEnvVar("BING_KEY");
+    auto key = getEnvVar("BING_KEY");
     if (key.has_value())
     {
         Log()->info(LC "Overriding API key from environment variable");

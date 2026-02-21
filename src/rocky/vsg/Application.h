@@ -96,7 +96,7 @@ namespace ROCKY_NAMESPACE
         DisplayManager display;
 
         //! Runs ongoing background tasks
-        util::BackgroundServices background;
+        detail::BackgroundServices background;
 
         //! Scene graph elements
         vsg::ref_ptr<vsg::Viewer> viewer;

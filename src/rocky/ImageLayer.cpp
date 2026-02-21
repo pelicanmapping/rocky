@@ -14,7 +14,6 @@
 #include <cinttypes>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 
 ImageLayer::ImageLayer() :

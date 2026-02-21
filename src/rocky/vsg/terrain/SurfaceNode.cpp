@@ -9,7 +9,6 @@
 #include <rocky/Heightfield.h>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 #undef EPSILON
 #define EPSILON 1e-7

@@ -44,7 +44,7 @@ ImGuiImage::ImGuiImage(Image::Ptr image, VSGContext vsg)
     _internal = new Internal();
     _image = image;
 
-    auto data = util::wrapImageData(image);
+    auto data = wrapImageData(image);
 
     auto sampler = vsg::Sampler::create();
     sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;

@@ -24,7 +24,7 @@ ROCKY_ABOUT(zlib, ZLIB_VERSION)
 #endif
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
+using namespace ROCKY_NAMESPACE::detail;
 
 std::vector<std::string>
 StringTokenizer::operator()(std::string_view input, bool* error) const
@@ -135,7 +135,7 @@ StringTokenizer::operator()(std::string_view input, bool* error) const
 
 /** Replaces all the instances of "sub" with "other" in "s". */
 std::string&
-rocky::util::replaceInPlace(std::string& s, std::string_view sub, std::string_view other)
+rocky::detail::replaceInPlace(std::string& s, std::string_view sub, std::string_view other)
 {
     if (sub.empty()) return s;
     size_t b = 0;
@@ -155,7 +155,7 @@ rocky::util::replaceInPlace(std::string& s, std::string_view sub, std::string_vi
 * http://www.codeproject.com/KB/stl/stdstringtrim.aspx
 */
 std::string&
-rocky::util::trimInPlace(std::string& str)
+rocky::detail::trimInPlace(std::string& str)
 {
     int start, end;
     for (start = 0; start < (int)str.length() && std::isspace(str[start]); ++start);
@@ -165,14 +165,14 @@ rocky::util::trimInPlace(std::string& str)
 }
 
 std::string
-rocky::util::trim(std::string_view in)
+rocky::detail::trim(std::string_view in)
 {
     std::string out(in);
     return trimInPlace(out);
 }
 
 bool
-rocky::util::ciEquals(std::string_view lhs, std::string_view rhs)
+rocky::detail::ciEquals(std::string_view lhs, std::string_view rhs)
 {
     if ( lhs.length() != rhs.length() )
         return false;
@@ -193,7 +193,7 @@ rocky::util::ciEquals(std::string_view lhs, std::string_view rhs)
 #endif
 
 bool
-rocky::util::startsWith(std::string_view ref, std::string_view pattern, bool caseSensitive)
+rocky::detail::startsWith(std::string_view ref, std::string_view pattern, bool caseSensitive)
 {
     if ( pattern.length() > ref.length() )
         return false;
@@ -218,7 +218,7 @@ rocky::util::startsWith(std::string_view ref, std::string_view pattern, bool cas
 }
 
 bool
-rocky::util::endsWith(std::string_view ref, std::string_view pattern, bool caseSensitive)
+rocky::detail::endsWith(std::string_view ref, std::string_view pattern, bool caseSensitive)
 {
     if ( pattern.length() > ref.length() )
         return false;
@@ -244,7 +244,7 @@ rocky::util::endsWith(std::string_view ref, std::string_view pattern, bool caseS
 }
 
 std::string
-rocky::util::getExecutableLocation()
+rocky::detail::getExecutableLocation()
 {
 #if defined(_WIN32)
 
@@ -285,7 +285,7 @@ namespace
 }
 
 std::optional<std::string>
-rocky::util::getEnvVar(std::string_view name)
+rocky::detail::getEnvVar(std::string_view name)
 {
     auto result = _getEnvVar(name);
     if (!result.has_value())
@@ -296,14 +296,14 @@ rocky::util::getEnvVar(std::string_view name)
 }
 
 bool
-rocky::util::isEnvVarSet(const char* name)
+rocky::detail::isEnvVarSet(const char* name)
 {
     return getEnvVar(name).has_value();
 }
 
 
 void
-rocky::util::setThreadName(const char* name)
+rocky::detail::setThreadName(const char* name)
 {
 #if (defined _WIN32 && defined _WIN32_WINNT_WIN10 && defined _WIN32_WINNT && _WIN32_WINNT >= _WIN32_WINNT_WIN10) || (defined __CYGWIN__)
     wchar_t buf[256];

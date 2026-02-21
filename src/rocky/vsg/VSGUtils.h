@@ -152,317 +152,316 @@ namespace ROCKY_NAMESPACE
         }
     }
 
-    namespace util
+    //! Returns a vsg::Data structure pointing the the data in an image object
+    //! without taking ownership of the data.
+    template<typename T>
+    vsg::ref_ptr<vsg::Data> wrap(std::shared_ptr<Image> image, VkFormat format)
     {
-        //! Returns a vsg::Data structure pointing the the data in an image object
-        //! without taking ownership of the data.
-        template<typename T>
-        vsg::ref_ptr<vsg::Data> wrap(std::shared_ptr<Image> image, VkFormat format)
+        unsigned
+            width = image->width(),
+            height = image->height(),
+            depth = image->depth();
+
+        T* data = image->data<T>(); // reinterpret_cast<T*>->data());
+
+        vsg::Data::Properties props;
+        props.format = format;
+        props.allocatorType = vsg::ALLOCATOR_TYPE_NO_DELETE;
+
+        vsg::ref_ptr<vsg::Data> vsg_data;
+        if (depth == 1)
         {
-            unsigned
-                width = image->width(),
-                height = image->height(),
-                depth = image->depth();
-
-            T* data = image->data<T>(); // reinterpret_cast<T*>->data());
-
-            vsg::Data::Properties props;
-            props.format = format;
-            props.allocatorType = vsg::ALLOCATOR_TYPE_NO_DELETE;
-
-            vsg::ref_ptr<vsg::Data> vsg_data;
-            if (depth == 1)
-            {
-                vsg_data = vsg::Array2D<T>::create(width, height, data, props);
-            }
-            else
-            {
-                vsg_data = vsg::Array3D<T>::create(width, height, depth, data, props);
-            }
-
-            //if (image->origin() == Image::BOTTOM_LEFT)
-            //    vsg_data->properties.origin = vsg::TOP_LEFT;
-            //else
-            //    vsg_data->properties.origin = vsg::BOTTOM_LEFT;
-
-            return vsg_data;
+            vsg_data = vsg::Array2D<T>::create(width, height, data, props);
+        }
+        else
+        {
+            vsg_data = vsg::Array3D<T>::create(width, height, depth, data, props);
         }
 
-        //! Wraps a rocky Image object in a VSG Data object.
-        //! The source Image is not cleared in the process and data is now shared between the two.
-        inline vsg::ref_ptr<vsg::Data> wrapImageData(std::shared_ptr<Image> image)
+        //if (image->origin() == Image::BOTTOM_LEFT)
+        //    vsg_data->properties.origin = vsg::TOP_LEFT;
+        //else
+        //    vsg_data->properties.origin = vsg::BOTTOM_LEFT;
+
+        return vsg_data;
+    }
+
+    //! Wraps a rocky Image object in a VSG Data object.
+    //! The source Image is not cleared in the process and data is now shared between the two.
+    inline vsg::ref_ptr<vsg::Data> wrapImageData(std::shared_ptr<Image> image)
+    {
+        if (!image) return { };
+
+        switch (image->pixelFormat())
         {
-            if (!image) return { };
+        case Image::R8_UNORM:
+            return wrap<unsigned char>(image, VK_FORMAT_R8_UNORM);
+            break;
+        case Image::R8_SRGB:
+            return wrap<unsigned char>(image, VK_FORMAT_R8_SRGB);
+            break;
+        case Image::R8G8_UNORM:
+            return wrap<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
+            break;
+        case Image::R8G8_SRGB:
+            return wrap<vsg::ubvec2>(image, VK_FORMAT_R8G8_SRGB);
+            break;
+        case Image::R8G8B8_UNORM:
+            return wrap<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
+            break;
+        case Image::R8G8B8_SRGB:
+            return wrap<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_SRGB);
+            break;
+        case Image::R8G8B8A8_UNORM:
+            return wrap<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
+            break;
+        case Image::R8G8B8A8_SRGB:
+            return wrap<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_SRGB);
+            break;
+        case Image::R16_UNORM:
+            return wrap<unsigned short>(image, VK_FORMAT_R16_UNORM);
+            break;
+        case Image::R32_SFLOAT:
+            return wrap<float>(image, VK_FORMAT_R32_SFLOAT);
+            break;
+        case Image::R64_SFLOAT:
+            return wrap<double>(image, VK_FORMAT_R64_SFLOAT);
+            break;
+        };
 
-            switch (image->pixelFormat())
-            {
-            case Image::R8_UNORM:
-                return wrap<unsigned char>(image, VK_FORMAT_R8_UNORM);
-                break;
-            case Image::R8_SRGB:
-                return wrap<unsigned char>(image, VK_FORMAT_R8_SRGB);
-                break;
-            case Image::R8G8_UNORM:
-                return wrap<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
-                break;
-            case Image::R8G8_SRGB:
-                return wrap<vsg::ubvec2>(image, VK_FORMAT_R8G8_SRGB);
-                break;
-            case Image::R8G8B8_UNORM:
-                return wrap<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
-                break;
-            case Image::R8G8B8_SRGB:
-                return wrap<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_SRGB);
-                break;
-            case Image::R8G8B8A8_UNORM:
-                return wrap<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
-                break;
-            case Image::R8G8B8A8_SRGB:
-                return wrap<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_SRGB);
-                break;
-            case Image::R16_UNORM:
-                return wrap<unsigned short>(image, VK_FORMAT_R16_UNORM);
-                break;
-            case Image::R32_SFLOAT:
-                return wrap<float>(image, VK_FORMAT_R32_SFLOAT);
-                break;
-            case Image::R64_SFLOAT:
-                return wrap<double>(image, VK_FORMAT_R64_SFLOAT);
-                break;
-            };
+        return { };
+    }
 
-            return { };
-        }
+    //! Wraps a rocky Image object in a VSG Data object. Data is shared.
+    inline vsg::ref_ptr<vsg::Data> wrapImageInVSG(std::shared_ptr<Image> image)
+    {
+        if (!image)
+            return {};
 
-        //! Wraps a rocky Image object in a VSG Data object. Data is shared.
-        inline vsg::ref_ptr<vsg::Data> wrapImageInVSG(std::shared_ptr<Image> image)
-        {
-            if (!image)
-                return {};
-
-            auto data = wrapImageData(image);
-            data->properties.origin = vsg::TOP_LEFT;
+        auto data = wrapImageData(image);
+        data->properties.origin = vsg::TOP_LEFT;
 #if VSG_API_VERSION_LESS(1,1,12)
-            data->properties.maxNumMipmaps = 1;
+        data->properties.maxNumMipmaps = 1;
 #else
-            data->properties.mipLevels = 1;
+        data->properties.mipLevels = 1;
 #endif
 
-            return data;
+        return data;
+    }
+
+    //! Returns a vsg::Data structure containing the data in an image, taking
+    //! ownership of the data and reseting the image.
+    template<typename T>
+    vsg::ref_ptr<vsg::Data> move(std::shared_ptr<Image> image, VkFormat format)
+    {
+        // NB!
+        // We copy the values out of image FIRST because once we call
+        // image->releaseData() they will all reset!
+        unsigned
+            width = image->width(),
+            height = image->height(),
+            depth = image->depth();
+
+        T* data = reinterpret_cast<T*>(image->releaseData());
+
+        vsg::Data::Properties props;
+        props.format = format;
+        props.allocatorType = vsg::ALLOCATOR_TYPE_NEW_DELETE;
+
+        vsg::ref_ptr<vsg::Data> vsg_data;
+        if (depth == 1)
+        {
+            vsg_data = vsg::Array2D<T>::create(width, height, data, props);
+        }
+        else
+        {
+            vsg_data = vsg::Array3D<T>::create(width, height, depth, data, props);
         }
 
-        //! Returns a vsg::Data structure containing the data in an image, taking
-        //! ownership of the data and reseting the image.
-        template<typename T>
-        vsg::ref_ptr<vsg::Data> move(std::shared_ptr<Image> image, VkFormat format)
+        //if (image->origin() == Image::BOTTOM_LEFT)
+        //    vsg_data->properties.origin = vsg::TOP_LEFT;
+        //else
+        //    vsg_data->properties.origin = vsg::BOTTOM_LEFT;
+
+        return vsg_data;
+    }
+
+    //! Moves a rocky Image object into a VSG Data object.
+    //! The source Image is cleared in the process.
+    inline vsg::ref_ptr<vsg::Data> moveImageData(std::shared_ptr<Image> image)
+    {
+        if (!image) return { };
+
+        switch (image->pixelFormat())
         {
-            // NB!
-            // We copy the values out of image FIRST because once we call
-            // image->releaseData() they will all reset!
-            unsigned
-                width = image->width(),
-                height = image->height(),
-                depth = image->depth();
+        case Image::R8_UNORM:
+            return move<unsigned char>(image, VK_FORMAT_R8_UNORM);
+            break;
+        case Image::R8_SRGB:
+            return move<unsigned char>(image, VK_FORMAT_R8_SRGB);
+            break;
+        case Image::R8G8_UNORM:
+            return move<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
+            break;
+        case Image::R8G8_SRGB:
+            return move<vsg::ubvec2>(image, VK_FORMAT_R8G8_SRGB);
+            break;
+        case Image::R8G8B8_UNORM:
+            return move<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
+            break;
+        case Image::R8G8B8_SRGB:
+            return move<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_SRGB);
+            break;
+        case Image::R8G8B8A8_UNORM:
+            return move<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
+            break;
+        case Image::R8G8B8A8_SRGB:
+            return move<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_SRGB);
+            break;
+        case Image::R16_UNORM:
+            return move<unsigned short>(image, VK_FORMAT_R16_UNORM);
+            break;
+        case Image::R32_SFLOAT:
+            return move<float>(image, VK_FORMAT_R32_SFLOAT);
+            break;
+        case Image::R64_SFLOAT:
+            return move<double>(image, VK_FORMAT_R64_SFLOAT);
+            break;
+        };
 
-            T* data = reinterpret_cast<T*>(image->releaseData());
+        return { };
+    }
 
-            vsg::Data::Properties props;
-            props.format = format;
-            props.allocatorType = vsg::ALLOCATOR_TYPE_NEW_DELETE;
+    // adapted from vsg.
+    // take ownership of the input image as a VSG object.
+    // the input image becomes INVALID after this method. If that's not what
+    // you want, clone the input image first!
+    inline vsg::ref_ptr<vsg::Data> moveImageToVSG(std::shared_ptr<Image> image)
+    {
+        if (!image)
+            return {};
 
-            vsg::ref_ptr<vsg::Data> vsg_data;
-            if (depth == 1)
-            {
-                vsg_data = vsg::Array2D<T>::create(width, height, data, props);
-            }
-            else
-            {
-                vsg_data = vsg::Array3D<T>::create(width, height, depth, data, props);
-            }
-
-            //if (image->origin() == Image::BOTTOM_LEFT)
-            //    vsg_data->properties.origin = vsg::TOP_LEFT;
-            //else
-            //    vsg_data->properties.origin = vsg::BOTTOM_LEFT;
-
-            return vsg_data;
-        }
-
-        //! Moves a rocky Image object into a VSG Data object.
-        //! The source Image is cleared in the process.
-        inline vsg::ref_ptr<vsg::Data> moveImageData(std::shared_ptr<Image> image)
-        {
-            if (!image) return { };
-
-            switch (image->pixelFormat())
-            {
-            case Image::R8_UNORM:
-                return move<unsigned char>(image, VK_FORMAT_R8_UNORM);
-                break;
-            case Image::R8_SRGB:
-                return move<unsigned char>(image, VK_FORMAT_R8_SRGB);
-                break;
-            case Image::R8G8_UNORM:
-                return move<vsg::ubvec2>(image, VK_FORMAT_R8G8_UNORM);
-                break;
-            case Image::R8G8_SRGB:
-                return move<vsg::ubvec2>(image, VK_FORMAT_R8G8_SRGB);
-                break;
-            case Image::R8G8B8_UNORM:
-                return move<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_UNORM);
-                break;
-            case Image::R8G8B8_SRGB:
-                return move<vsg::ubvec3>(image, VK_FORMAT_R8G8B8_SRGB);
-                break;
-            case Image::R8G8B8A8_UNORM:
-                return move<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_UNORM);
-                break;
-            case Image::R8G8B8A8_SRGB:
-                return move<vsg::ubvec4>(image, VK_FORMAT_R8G8B8A8_SRGB);
-                break;
-            case Image::R16_UNORM:
-                return move<unsigned short>(image, VK_FORMAT_R16_UNORM);
-                break;
-            case Image::R32_SFLOAT:
-                return move<float>(image, VK_FORMAT_R32_SFLOAT);
-                break;
-            case Image::R64_SFLOAT:
-                return move<double>(image, VK_FORMAT_R64_SFLOAT);
-                break;
-            };
-
-            return { };
-        }
-
-        // adapted from vsg.
-        // take ownership of the input image as a VSG object.
-        // the input image becomes INVALID after this method. If that's not what
-        // you want, clone the input image first!
-        inline vsg::ref_ptr<vsg::Data> moveImageToVSG(std::shared_ptr<Image> image)
-        {
-            if (!image)
-                return {};
-
-            auto data = moveImageData(image);
-            data->properties.origin = vsg::TOP_LEFT;
+        auto data = moveImageData(image);
+        data->properties.origin = vsg::TOP_LEFT;
 #if VSG_API_VERSION_LESS(1,1,12)
-            data->properties.maxNumMipmaps = 1;
+        data->properties.maxNumMipmaps = 1;
 #else
-            data->properties.mipLevels = 1;
+        data->properties.mipLevels = 1;
 #endif
 
-            return data;
-        }
+        return data;
+    }
 
-        inline Image::PixelFormat fromVkPixelFormat(VkFormat vkformat)
+    inline Image::PixelFormat fromVkPixelFormat(VkFormat vkformat)
+    {
+        switch (vkformat)
         {
-            switch (vkformat)
-            {
-            case VK_FORMAT_R8_UNORM: return Image::R8_UNORM;
-            case VK_FORMAT_R8_SRGB: return Image::R8_SRGB;
-            case VK_FORMAT_R8G8_UNORM: return Image::R8G8_UNORM;
-            case VK_FORMAT_R8G8_SRGB: return Image::R8G8_SRGB;
-            case VK_FORMAT_R8G8B8_UNORM: return Image::R8G8B8_UNORM;
-            case VK_FORMAT_R8G8B8_SRGB: return Image::R8G8B8_SRGB;
-            case VK_FORMAT_R8G8B8A8_UNORM: return Image::R8G8B8A8_UNORM;
-            case VK_FORMAT_R8G8B8A8_SRGB: return Image::R8G8B8A8_SRGB;
-            case VK_FORMAT_R16_UNORM: return Image::R16_UNORM;
-            case VK_FORMAT_R32_SFLOAT: return Image::R32_SFLOAT;
-            case VK_FORMAT_R64_SFLOAT: return Image::R64_SFLOAT;
-            default: return Image::UNDEFINED;
-            }
+        case VK_FORMAT_R8_UNORM: return Image::R8_UNORM;
+        case VK_FORMAT_R8_SRGB: return Image::R8_SRGB;
+        case VK_FORMAT_R8G8_UNORM: return Image::R8G8_UNORM;
+        case VK_FORMAT_R8G8_SRGB: return Image::R8G8_SRGB;
+        case VK_FORMAT_R8G8B8_UNORM: return Image::R8G8B8_UNORM;
+        case VK_FORMAT_R8G8B8_SRGB: return Image::R8G8B8_SRGB;
+        case VK_FORMAT_R8G8B8A8_UNORM: return Image::R8G8B8A8_UNORM;
+        case VK_FORMAT_R8G8B8A8_SRGB: return Image::R8G8B8A8_SRGB;
+        case VK_FORMAT_R16_UNORM: return Image::R16_UNORM;
+        case VK_FORMAT_R32_SFLOAT: return Image::R32_SFLOAT;
+        case VK_FORMAT_R64_SFLOAT: return Image::R64_SFLOAT;
+        default: return Image::UNDEFINED;
         }
+    }
 
-        inline VkFormat toVkPixelFormat(Image::PixelFormat format)
+    inline VkFormat toVkPixelFormat(Image::PixelFormat format)
+    {
+        switch (format)
         {
-            switch (format)
-            {
-            case Image::R8_UNORM: return VK_FORMAT_R8_UNORM;
-            case Image::R8_SRGB: return VK_FORMAT_R8_SRGB;
-            case Image::R8G8_UNORM: return VK_FORMAT_R8G8_UNORM;
-            case Image::R8G8_SRGB: return VK_FORMAT_R8G8_SRGB;
-            case Image::R8G8B8_UNORM: return VK_FORMAT_R8G8B8_UNORM;
-            case Image::R8G8B8_SRGB: return VK_FORMAT_R8G8B8_SRGB;
-            case Image::R8G8B8A8_UNORM: return VK_FORMAT_R8G8B8A8_UNORM;
-            case Image::R8G8B8A8_SRGB: return VK_FORMAT_R8G8B8A8_SRGB;
-            case Image::R16_UNORM: return VK_FORMAT_R16_UNORM;
-            case Image::R32_SFLOAT: return VK_FORMAT_R32_SFLOAT;
-            case Image::R64_SFLOAT: return VK_FORMAT_R64_SFLOAT;
-            default: return VK_FORMAT_UNDEFINED;
-            }
+        case Image::R8_UNORM: return VK_FORMAT_R8_UNORM;
+        case Image::R8_SRGB: return VK_FORMAT_R8_SRGB;
+        case Image::R8G8_UNORM: return VK_FORMAT_R8G8_UNORM;
+        case Image::R8G8_SRGB: return VK_FORMAT_R8G8_SRGB;
+        case Image::R8G8B8_UNORM: return VK_FORMAT_R8G8B8_UNORM;
+        case Image::R8G8B8_SRGB: return VK_FORMAT_R8G8B8_SRGB;
+        case Image::R8G8B8A8_UNORM: return VK_FORMAT_R8G8B8A8_UNORM;
+        case Image::R8G8B8A8_SRGB: return VK_FORMAT_R8G8B8A8_SRGB;
+        case Image::R16_UNORM: return VK_FORMAT_R16_UNORM;
+        case Image::R32_SFLOAT: return VK_FORMAT_R32_SFLOAT;
+        case Image::R64_SFLOAT: return VK_FORMAT_R64_SFLOAT;
+        default: return VK_FORMAT_UNDEFINED;
         }
+    }
 
 
-        // Convert a vsg::Data structure to an Image if possible
-        inline Result<std::shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
+    // Convert a vsg::Data structure to an Image if possible
+    inline Result<std::shared_ptr<Image>> makeImageFromVSG(vsg::ref_ptr<vsg::Data> data)
+    {
+        if (!data)
+            return Failure(Failure::ResourceUnavailable, "Data is empty");
+
+        // TODO: move this into a utility somewhere
+        auto vkformat = data->properties.format;
+
+        Image::PixelFormat format = fromVkPixelFormat(vkformat);
+
+        if (format == Image::UNDEFINED)
         {
-            if (!data)
-                return Failure(Failure::ResourceUnavailable, "Data is empty");
-
-            // TODO: move this into a utility somewhere
-            auto vkformat = data->properties.format;
-
-            Image::PixelFormat format = fromVkPixelFormat(vkformat);
-
-            if (format == Image::UNDEFINED)
-            {
-                return Failure(Failure::ResourceUnavailable, "Unsupported image format");
-            }
-
-            auto image = Image::create(
-                format,
-                data->width(),
-                data->height(),
-                data->depth());
-
-            memcpy(image->data<uint8_t>(), data->dataPointer(), image->sizeInBytes());
-
-            if (data->properties.origin == vsg::TOP_LEFT)
-            {
-                image->flipVerticalInPlace();
-            }
-
-            return image;
+            return Failure(Failure::ResourceUnavailable, "Unsupported image format");
         }
 
-        inline vsg::ref_ptr<vsg::DescriptorImage> createTexture(Image::Ptr image,
-            vsg::ref_ptr<vsg::Device> vsg_device)
+        auto image = Image::create(
+            format,
+            data->width(),
+            data->height(),
+            data->depth());
+
+        memcpy(image->data<uint8_t>(), data->dataPointer(), image->sizeInBytes());
+
+        if (data->properties.origin == vsg::TOP_LEFT)
         {
-            //auto vsg_context = vsg::Context::create(vsg_device);
-
-            //auto imageInfo = vsg::ImageInfo::create();
-
-            auto colorImage = vsg::Image::create(moveImageData(image));
-            colorImage->imageType = VK_IMAGE_TYPE_2D;
-            colorImage->format = toVkPixelFormat(image->pixelFormat());
-            colorImage->mipLevels = 1;
-            colorImage->arrayLayers = 1;
-            colorImage->samples = VK_SAMPLE_COUNT_1_BIT;
-            colorImage->tiling = VK_IMAGE_TILING_OPTIMAL;
-            colorImage->usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
-            colorImage->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            colorImage->flags = 0;
-            colorImage->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-            //imageInfo->imageView = vsg::createImageView(*vsg_context, colorImage, VK_IMAGE_ASPECT_COLOR_BIT);
-
-            auto sampler = vsg::Sampler::create();
-            sampler->magFilter = VK_FILTER_LINEAR;
-            sampler->minFilter = VK_FILTER_LINEAR;
-            sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-            sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
-            sampler->anisotropyEnable = VK_FALSE; // don't need this for a billboarded icon
-            sampler->maxAnisotropy = 1.0f;
-            sampler->maxLod = 1.0f;
-
-            //imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-
-            return vsg::DescriptorImage::create(
-                sampler, moveImageData(image), 0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+            image->flipVerticalInPlace();
         }
 
+        return image;
+    }
 
+    inline vsg::ref_ptr<vsg::DescriptorImage> createTexture(Image::Ptr image,
+        vsg::ref_ptr<vsg::Device> vsg_device)
+    {
+        //auto vsg_context = vsg::Context::create(vsg_device);
+
+        //auto imageInfo = vsg::ImageInfo::create();
+
+        auto colorImage = vsg::Image::create(moveImageData(image));
+        colorImage->imageType = VK_IMAGE_TYPE_2D;
+        colorImage->format = toVkPixelFormat(image->pixelFormat());
+        colorImage->mipLevels = 1;
+        colorImage->arrayLayers = 1;
+        colorImage->samples = VK_SAMPLE_COUNT_1_BIT;
+        colorImage->tiling = VK_IMAGE_TILING_OPTIMAL;
+        colorImage->usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        colorImage->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        colorImage->flags = 0;
+        colorImage->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        //imageInfo->imageView = vsg::createImageView(*vsg_context, colorImage, VK_IMAGE_ASPECT_COLOR_BIT);
+
+        auto sampler = vsg::Sampler::create();
+        sampler->magFilter = VK_FILTER_LINEAR;
+        sampler->minFilter = VK_FILTER_LINEAR;
+        sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->anisotropyEnable = VK_FALSE; // don't need this for a billboarded icon
+        sampler->maxAnisotropy = 1.0f;
+        sampler->maxLod = 1.0f;
+
+        //imageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        return vsg::DescriptorImage::create(
+            sampler, moveImageData(image), 0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+    }
+
+    namespace detail 
+    {
         /**
         * PromiseOperation combines a VSG operation with the Promise/Future construct
         * so that a VSG operation can return a future result.

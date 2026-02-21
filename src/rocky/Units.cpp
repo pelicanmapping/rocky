@@ -9,6 +9,7 @@
 #include <string>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
@@ -30,7 +31,7 @@ namespace
             return false;
         }
 
-        std::string unitsStr = util::trim(input.substr(pos));
+        std::string unitsStr = trim(input.substr(pos));
 
         if (unitsStr.empty())
         {
@@ -198,7 +199,7 @@ Units::registerAll()
 
     for (auto& ptr : units)
     {
-        s_unitsTable[util::toLower(ptr->getName())] = ptr;
+        s_unitsTable[toLower(ptr->getName())] = ptr;
     }
 }
 

@@ -368,7 +368,7 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
 
             geomDetail.geomNode->set(copy, geom.colors, geom.topology);
 
-            auto mt = util::find<vsg::MatrixTransform>(geomDetail.root);
+            auto mt = find<vsg::MatrixTransform>(geomDetail.root);
             mt->matrix = vsg::translate(to_vsg(offset));
             localizer_matrix = mt->matrix;
         }

@@ -9,7 +9,6 @@
 #include <rocky/Units.h>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
 
 #undef LC
 #define LC "[MapManipulator] "

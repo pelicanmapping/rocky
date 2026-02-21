@@ -10,7 +10,7 @@
 #include <random>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
+using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
@@ -163,10 +163,10 @@ Color::Color(const std::string& input, Format format)
         if (!std::isspace(c))
             t += (c >= 'A' && c <= 'Z') ? (c | 0x20) : c;
 
-    if (util::startsWith(t, "rgb("))
+    if (startsWith(t, "rgb("))
     {
         std::string sub = t.substr(4, t.size() - 5);
-        auto components = util::StringTokenizer()
+        auto components = StringTokenizer()
             .delim(",")
             .tokenize(sub);
         if (components.size() == 3)
@@ -177,10 +177,10 @@ Color::Color(const std::string& input, Format format)
             set((float)R / 255.0f, (float)G / 255.0f, (float)B / 255.0f, 1.0f);
         }
     }
-    else if (util::startsWith(t, "rgba("))
+    else if (startsWith(t, "rgba("))
     {
         std::string sub = t.substr(5, t.size() - 6);
-        auto components = util::StringTokenizer()
+        auto components = StringTokenizer()
             .delim(",")
             .tokenize(sub);
         if (components.size() == 4)
@@ -192,17 +192,17 @@ Color::Color(const std::string& input, Format format)
             set((float)R / 255.0f, (float)G / 255.0f, (float)B / 255.0f, (float)A);
         }
     }
-    else if (util::startsWith(t, "hsl("))
+    else if (startsWith(t, "hsl("))
     {
         std::string sub = t.substr(4, t.size() - 5);
-        auto components = util::StringTokenizer()
+        auto components = StringTokenizer()
             .delim(",")
             .tokenize(sub);
         if (components.size() == 3)
         {
             float H = std::atof(components[0].c_str());
             float S = 0.0f;
-            if (util::endsWith(components[1], "%"))
+            if (endsWith(components[1], "%"))
             {
                 std::string sub = components[1].substr(0, components[1].size() - 1);
                 S = std::atof(sub.c_str());
@@ -212,7 +212,7 @@ Color::Color(const std::string& input, Format format)
                 S = std::atof(components[1].c_str());
             }
             float L = 0.0f;
-            if (util::endsWith(components[2], "%"))
+            if (endsWith(components[2], "%"))
             {
                 std::string sub = components[2].substr(0, components[2].size() - 1);
                 L = std::atof(sub.c_str());
@@ -225,17 +225,17 @@ Color::Color(const std::string& input, Format format)
             hsl2rgb_in_place(*this);
         }
     }
-    else if (util::startsWith(t, "hsla("))
+    else if (startsWith(t, "hsla("))
     {
         std::string sub = t.substr(5, t.size() - 6);
-        auto components = util::StringTokenizer()
+        auto components = StringTokenizer()
             .delim(",")
             .tokenize(sub);
         if (components.size() == 4)
         {
             float H = std::atof(components[0].c_str());
             float S = 0.0f;
-            if (util::endsWith(components[1], "%"))
+            if (endsWith(components[1], "%"))
             {
                 std::string sub = components[1].substr(0, components[1].size() - 1);
                 S = std::atof(sub.c_str());
@@ -245,7 +245,7 @@ Color::Color(const std::string& input, Format format)
                 S = std::atof(components[1].c_str());
             }
             float L = 0.0f;
-            if (util::endsWith(components[2], "%"))
+            if (endsWith(components[2], "%"))
             {
                 std::string sub = components[2].substr(0, components[2].size() - 1);
                 L = std::atof(sub.c_str());
@@ -320,7 +320,7 @@ Color::toHTML(Format format) const
     else
         f[0] = a, f[1] = b, f[2] = g, f[3] = r;
 
-    return util::make_string()
+    return make_string()
         << "#"
         << std::hex << std::setw(2) << std::setfill('0') << (int)(f[0] * 255.0f)
         << std::hex << std::setw(2) << std::setfill('0') << (int)(f[1] * 255.0f)

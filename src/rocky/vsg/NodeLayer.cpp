@@ -9,10 +9,11 @@
 #include <rocky/ecs/Visibility.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 Result<> NodeLayer::openImplementation(const IOOptions& io)
 {
-    util::forEach<EntityNode>(node, [&](EntityNode* entityNode)
+    forEach<EntityNode>(node, [&](EntityNode* entityNode)
         {
             auto [lock, r] = entityNode->registry.write();
             for (auto e : entityNode->entities)
@@ -24,7 +25,7 @@ Result<> NodeLayer::openImplementation(const IOOptions& io)
 
 void NodeLayer::closeImplementation()
 {
-    util::forEach<EntityNode>(node, [&](EntityNode* entityNode)
+    forEach<EntityNode>(node, [&](EntityNode* entityNode)
         {
             auto [lock, r] = entityNode->registry.write();
             r.remove<ActiveState>(entityNode->entities.begin(), entityNode->entities.end());

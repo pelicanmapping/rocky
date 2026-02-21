@@ -24,6 +24,7 @@ ROCKY_ABOUT(vsgxchange, VSGXCHANGE_VERSION_STRING)
 #endif
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
@@ -155,7 +156,7 @@ namespace
             auto result = GDAL_detail::readImage((unsigned char*)data.c_str(), data.length(), gdal_driver);
 
             if (result.ok())
-                return util::moveImageToVSG(result.value());
+                return moveImageToVSG(result.value());
             else
                 return { };
         }
@@ -354,7 +355,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
         "../../../../src/rocky/vsg"              // running from visual studio with an in-source build :(
     };
 
-    auto exec_path = std::filesystem::path(util::getExecutableLocation());
+    auto exec_path = std::filesystem::path(getExecutableLocation());
     Log()->debug("Running from: {}", exec_path.string());
 
     for (auto& relative_path : relative_paths_to_add)
@@ -424,7 +425,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
                     auto local_options = vsg::Options::create(*options);
                     local_options->extensionHint = i->second;
                     auto result = rw->read_cast<vsg::Data>(location, local_options);
-                    return util::makeImageFromVSG(result);
+                    return makeImageFromVSG(result);
                 }
             }
 
@@ -438,7 +439,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
                     auto local_options = vsg::Options::create(*options);
                     local_options->extensionHint = contentTypeAsExtension;
                     auto result = rw->read_cast<vsg::Data>(location, local_options);
-                    return util::makeImageFromVSG(result);
+                    return makeImageFromVSG(result);
                 }
             }
 
@@ -456,7 +457,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
                         auto local_options = vsg::Options::create(*options);
                         local_options->extensionHint = i->second;
                         auto result = rw->read_cast<vsg::Data>(location, local_options);
-                        return util::makeImageFromVSG(result);
+                        return makeImageFromVSG(result);
                     }
                 }
             }
@@ -468,7 +469,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
     io.services().contentCache = std::make_shared<ContentCache>(256);
 
     // weak cache of resident image (and elevation) rasters
-    io.services().residentImageCache = std::make_shared<util::ResidentCache<std::string, Image, GeoExtent>>();
+    io.services().residentImageCache = std::make_shared<ResidentCache<std::string, Image, GeoExtent>>();
 
     // remembers failed URI requests so we don't repeat them
     io.services().deadpool = std::make_shared<DealpoolService>(4096);

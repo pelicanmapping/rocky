@@ -35,6 +35,7 @@
 #define LC "[URI] "
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 using namespace std::chrono_literals;
 
 bool URI::supportsHTTPS()
@@ -103,7 +104,7 @@ URI::inferContentType(const std::string& buffer)
 
 namespace
 {
-    static bool httpDebug = ROCKY_NAMESPACE::util::isEnvVarSet("HTTP_DEBUG");
+    static bool httpDebug = ROCKY_NAMESPACE::detail::isEnvVarSet("HTTP_DEBUG");
 
     std::string inferContentTypeFromFileExtension(const std::string& filename)
     {
@@ -111,7 +112,7 @@ namespace
         auto dot = filename.find_last_of('.');
         if (dot != std::string::npos)
         {
-            auto suffix = util::toLower(filename.substr(dot + 1));
+            auto suffix = toLower(filename.substr(dot + 1));
             if (suffix == "png") return "image/png";
             if (suffix == "jpg" || suffix == "jpeg") return "image/jpeg";
             if (suffix == "tif" || suffix == "tiff") return "image/tiff";
@@ -156,7 +157,7 @@ namespace
     {
         for (auto& h : headers)
         {
-            if (util::ciEquals(h.name, name))
+            if (ciEquals(h.name, name))
                 return h.value;
         }
         return {};
@@ -213,8 +214,8 @@ namespace
             if (colon != std::string::npos && colon > 0 && colon < header.length() - 1)
             {
                 headers.emplace_back(KeyValuePair{
-                    util::trim(header.substr(0, colon)),
-                    util::trim(header.substr(colon + 1)) });
+                    trim(header.substr(0, colon)),
+                    trim(header.substr(colon + 1)) });
             }
         }
 
@@ -607,7 +608,7 @@ URI::set(std::string_view location, const URI::Context& context)
 {
     std::string location_to_use(location);
 
-    if (util::startsWith(location, "file://", false))
+    if (startsWith(location, "file://", false))
         _baseURI = location.substr(7);
     else
         _baseURI = location;
@@ -617,8 +618,8 @@ URI::set(std::string_view location, const URI::Context& context)
 
     bool absolute_location =
         std::filesystem::path(_baseURI).is_absolute() ||
-        util::toLower(_baseURI).substr(0, 7) == "http://" ||
-        util::toLower(_baseURI).substr(0, 8) == "https://";
+        toLower(_baseURI).substr(0, 7) == "http://" ||
+        toLower(_baseURI).substr(0, 8) == "https://";
 
     // resolve a relative path using the referrer
     if (!absolute_location && !context.referrer.empty())
@@ -731,7 +732,7 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
         static int rotator = 0;
         if (_r0 != std::string::npos && _r1 != std::string::npos)
         {
-            util::replaceInPlace(
+            replaceInPlace(
                 request.url,
                 request.url.substr(_r0, _r1 - _r0 + 1),
                 request.url.substr(_r0 + 1 + (rotator++ % (_r1 - _r0 - 1)), 1));
@@ -786,10 +787,10 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
 bool
 URI::isRemote() const
 {
-    auto temp = util::trim(util::toLower(_fullURI));
+    auto temp = trim(toLower(_fullURI));
     return
-        util::startsWith(temp, "http://") ||
-        util::startsWith(temp, "https://");
+        startsWith(temp, "http://") ||
+        startsWith(temp, "https://");
 }
 
 void

@@ -112,7 +112,7 @@ auto Demo_NodePager = [](Application& app)
                     profile = Profile(pn[i]);                    
                     app.vsgcontext->onNextUpdate([&]()
                         {
-                            util::remove(pager, app.mainScene->children);
+                            remove(pager, app.mainScene->children);
                             pager = nullptr;
                         });
 

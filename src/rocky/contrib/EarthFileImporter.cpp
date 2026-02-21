@@ -9,6 +9,7 @@
 #include "../tinyxml/tinyxml.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
@@ -30,7 +31,7 @@ namespace
     // map earth file property names to rocky names for common general properties
     std::string map_property_name(const char* name)
     {
-        if (util::ciEquals(name, "url"))
+        if (ciEquals(name, "url"))
             return "uri";
         else
             return name;
@@ -42,7 +43,7 @@ namespace
         {
             // first see if this element has a text child, and if so
             // that is our simple value.
-            auto text_value = util::trim(get_text_value(child));
+            auto text_value = trim(get_text_value(child));
             if (!text_value.empty())
             {
                 parent_json[map_property_name(child->Value())] = text_value;
@@ -64,7 +65,7 @@ namespace
         {
             // first see if this element has a text child, and if so
             // skip it.
-            auto text_value = util::trim(get_text_value(child));
+            auto text_value = trim(get_text_value(child));
             if (!text_value.empty())
             {
                 continue;
@@ -73,7 +74,7 @@ namespace
             // otherwise inspect the child.
             else if (child->ToElement() && !child->ValueStr().empty())
             {
-                if (util::ciEquals(child->ValueStr(), "profile"))
+                if (ciEquals(child->ValueStr(), "profile"))
                 {
                     json profile = json::object();
                     const char* attribute = child->ToElement()->Attribute("num_tiles_wide_at_lod_0");
@@ -189,7 +190,7 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
 
     // Confirm a top-level "map" element:
     auto mapxml = doc.RootElement();
-    if (!util::ciEquals(mapxml->Value(), "map"))
+    if (!ciEquals(mapxml->Value(), "map"))
     {
         return Failure(Failure::ConfigurationError, "XML missing top-level 'map' element");
     }
@@ -211,7 +212,7 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
         if (child_el)
         {
             // Include files
-            if (util::ciEquals(child->ValueStr(), "xi:include"))
+            if (ciEquals(child->ValueStr(), "xi:include"))
             {
                 std::string href;
                 if (child_el->QueryStringAttribute("href", &href) == TIXML_SUCCESS)
@@ -228,7 +229,7 @@ EarthFileImporter::read(const std::string& location, const IOOptions& io) const
             if (child_el) // check again since the xi:include may have changed things
             {
                 // special treatment of the options object
-                if (util::ciEquals(child_el->ValueStr(), "options"))
+                if (ciEquals(child_el->ValueStr(), "options"))
                 {
                     auto options_json = json::object();
                     collect_children_recursively(child_el, options_json);

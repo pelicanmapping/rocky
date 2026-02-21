@@ -35,6 +35,7 @@ ROCKY_ABOUT(tinyxml, std::to_string(TIXML_MAJOR_VERSION) + "." + std::to_string(
 
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 // Static object factory map.
 // Normally this would go in static.cpp, but since the registration macro (ROCKY_ADD_OBJECT_FACTORY)
@@ -50,7 +51,7 @@ ContextImpl::objectFactories()
 std::shared_ptr<Object>
 ContextImpl::createObjectImpl(const std::string& name, const std::string& JSON, const IOOptions& io)
 {
-    auto i = objectFactories().find(util::toLower(name));
+    auto i = objectFactories().find(toLower(name));
     if (i != objectFactories().end())
         return i->second(JSON, io);
     return nullptr;
@@ -101,8 +102,7 @@ ContextImpl::ContextImpl()
 
     // Tell the weejobs library how to set a thread name
     jobs::set_thread_name_function([](const char* value) {
-        util::setThreadName(value);
-        });
+        setThreadName(value); });
 }
 
 ContextImpl::~ContextImpl()

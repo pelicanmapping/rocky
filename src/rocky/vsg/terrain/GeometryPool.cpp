@@ -10,18 +10,19 @@
 #define LC "[GeometryPool] "
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 GeometryPool::GeometryPool(const SRS& renderingSRS)
 {
     _renderingSRS = renderingSRS;
 
     // activate debugging mode
-    if (util::isEnvVarSet("ROCKY_DEBUG_REX_GEOMETRY_POOL"))
+    if (isEnvVarSet("ROCKY_DEBUG_REX_GEOMETRY_POOL"))
     {
         debug = true;
     }
 
-    if (util::isEnvVarSet("ROCKY_NO_GEOMETRY_POOL"))
+    if (isEnvVarSet("ROCKY_NO_GEOMETRY_POOL"))
     {
         enabled = false;
         Log()->info(LC "Geometry pool disabled (environment)");

@@ -8,7 +8,7 @@
 #include <rocky/json.h>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
+using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
@@ -24,18 +24,18 @@ namespace
 TEST_CASE("strings")
 {
     std::string s1 = "Hello, world!";
-    CHECK(util::replaceInPlace(s1, "world", "Rocky") == "Hello, Rocky!");
+    CHECK(detail::replaceInPlace(s1, "world", "Rocky") == "Hello, Rocky!");
     s1 = "Hello, world!";
-    CHECK(util::replaceInPlace(s1, "world", "") == "Hello, !");
+    CHECK(detail::replaceInPlace(s1, "world", "") == "Hello, !");
     s1 = "Hello, world!";
-    CHECK(util::replaceInPlace(s1, "", "Rocky") == "Hello, world!");
+    CHECK(detail::replaceInPlace(s1, "", "Rocky") == "Hello, world!");
     s1 = "Hello, world!";
-    CHECK(util::replaceInPlace(s1, "", "") == "Hello, world!");
+    CHECK(detail::replaceInPlace(s1, "", "") == "Hello, world!");
 
-    s1 = util::trim("  Hello, Rocky!  ");
+    s1 = detail::trim("  Hello, Rocky!  ");
     CHECK(s1 == "Hello, Rocky!");
     s1 = "  Hello, Rocky!  ";
-    CHECK(util::trimInPlace(s1) == "Hello, Rocky!");
+    CHECK(detail::trimInPlace(s1) == "Hello, Rocky!");
 }
 
 TEST_CASE("json")
@@ -162,7 +162,7 @@ TEST_CASE("Compression")
 
     // compress:
     std::stringstream output_stream;
-    util::ZLibCompressor comp;
+    ZLibCompressor comp;
     CHECK(comp.compress(original_data, output_stream) == true);
     std::string compressed_data = output_stream.str();
 
@@ -675,7 +675,7 @@ TEST_CASE("IO")
 
             auto body = r.value().content.data;
             CHECK(!body.empty());
-            CHECK(rocky::util::startsWith(body, "<?xml"));
+            CHECK(rocky::detail::startsWith(body, "<?xml"));
         }
         else
         {
@@ -694,7 +694,7 @@ TEST_CASE("IO")
                 CHECK(r.value().content.type == "text/xml");
                 auto body = r.value().content.data;
                 CHECK(!body.empty());
-                CHECK(rocky::util::startsWith(body, "<?xml"));
+                CHECK(rocky::detail::startsWith(body, "<?xml"));
             }
         }
         else

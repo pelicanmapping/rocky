@@ -159,7 +159,7 @@ namespace ROCKY_NAMESPACE
             std::monostate,
             std::string,
             double,
-            long long,
+            std::int64_t,
             bool>;
 
         struct FieldValue : public FieldValueUnion
@@ -196,9 +196,9 @@ namespace ROCKY_NAMESPACE
             Boolean
         };
 
-        using Fields = util::vector_map<std::string, FieldValue>;
+        using Fields = detail::vector_map<std::string, FieldValue>;
 
-        using FieldSchema = util::vector_map<std::string, FieldType>;
+        using FieldSchema = detail::vector_map<std::string, FieldType>;
 
         using ID = long long;
 

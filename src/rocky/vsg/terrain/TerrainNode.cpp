@@ -13,9 +13,6 @@
 #include <rocky/TileLayer.h>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::util;
-
-
 
 TerrainProfileNode::TerrainProfileNode(const Profile& in_profile, TerrainNode& in_terrain) :
     profile(in_profile),

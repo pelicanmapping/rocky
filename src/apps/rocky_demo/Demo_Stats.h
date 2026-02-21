@@ -15,6 +15,7 @@
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
@@ -70,22 +71,22 @@ auto Demo_Stats = [](Application& app)
         if (app.renderContinuously)
         {
             float fps = std::ceil(1.0f / (1e-6f * (float)average(&frames, over, f)));
-            buf = util::format("%.2f ms (%.0f fps)", 0.001f * (float)app.stats.frame.count(), fps);
+            buf = format("%.2f ms (%.0f fps)", 0.001f * (float)app.stats.frame.count(), fps);
         }
         else
         {
-            buf = util::format("%.2f ms", 0.001f * (float)app.stats.frame.count());
+            buf = format("%.2f ms", 0.001f * (float)app.stats.frame.count());
         }
 
         ImGuiLTable::PlotLines("Frame", get_timings, &frames, frame_count, f, buf.c_str(), 0.0f, 17.0f);
 
-        buf = util::format(u8"%lld us", average(&events, over, f));
+        buf = format(u8"%lld us", average(&events, over, f));
         ImGuiLTable::PlotLines("Event", get_timings, &events, frame_count, f, buf.c_str(), 0.0f, 10.0f);
 
-        buf = util::format(u8"%lld us", average(&update, over, f));
+        buf = format(u8"%lld us", average(&update, over, f));
         ImGuiLTable::PlotLines("Update", get_timings, &update, frame_count, f, buf.c_str(), 0.0f, 10.0f);
 
-        buf = util::format(u8"%lld us", average(&record, over, f));
+        buf = format(u8"%lld us", average(&record, over, f));
         ImGuiLTable::PlotLines("Record", get_timings, &record, frame_count, f, buf.c_str(), 0.0f, 10.0f);
 
         ImGuiLTable::End();
@@ -117,7 +118,7 @@ auto Demo_Stats = [](Application& app)
             if (m)
             {
                 std::string name = m->name.empty() ? "default" : m->name;
-                auto buf = util::format("(%d) %d / %d", (int)m->concurrency, (int)m->running, (int)m->pending);
+                auto buf = format("(%d) %d / %d", (int)m->concurrency, (int)m->running, (int)m->pending);
                 ImGuiLTable::Text(name.c_str(), "%s", buf.c_str());
             }
         }
