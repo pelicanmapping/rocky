@@ -14,16 +14,16 @@
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
-        <title>Rocky</title>
+        <title>struct vector_map - Rocky</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
       
       
 
@@ -42,7 +42,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -60,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#rocky-documentation" class="md-skip">
+        <a href="#struct-vector_map" class="md-skip">
           Skip to content
         </a>
       
@@ -76,7 +76,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
+    <a href="../../../.." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              struct vector_map
             
           </span>
         </div>
@@ -174,7 +174,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
+    <a href="../../../.." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -189,19 +189,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
         
   
   
@@ -217,7 +208,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -276,7 +266,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/README.md" class="md-nav__link">
+      <a href="../../../README.md" class="md-nav__link">
         
   
   
@@ -324,6 +314,218 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#members" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Members
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Records
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        operator[]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#emplace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        emplace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#emplace_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        emplace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#begin" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        begin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#end" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        end
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#begin_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        begin
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#end_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        end
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#empty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        empty
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clear
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#erase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        erase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indexof" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        indexOf
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#insert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        insert
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -339,9 +541,60 @@
 
 
 
-<h1 id="rocky-documentation">Rocky Documentation</h1>
-<p>Welcome to the Rocky documentation site.</p>
-<p>This site is generated with <strong>MkDocs</strong>. API references are produced using <code>clang-doc</code> and are available under <a href="api/README.md">API Reference</a>.</p>
+<h1 id="struct-vector_map">struct vector_map</h1>
+<p><em>Defined at src/rocky/Utils.h#116</em></p>
+<p>A std::map-like map that uses a vector. This benchmarks much faster than std::map or std::unordered_map for small sets.</p>
+<h2 id="members">Members</h2>
+<p>public EQUAL keys_equal</p>
+<p>public int _container</p>
+<h2 id="records">Records</h2>
+<p>ENTRY</p>
+<h2 id="functions">Functions</h2>
+<h3 id="operator">operator[]</h3>
+<p><em>public DATA &amp; operator<a href="const KEY &amp; key"></a></em></p>
+<p><em>Defined at src/rocky/Utils.h#129</em></p>
+<h3 id="emplace">emplace</h3>
+<p><em>public DATA &amp; emplace(const KEY &amp; key, const DATA &amp; data)</em></p>
+<p><em>Defined at src/rocky/Utils.h#140</em></p>
+<h3 id="emplace_1">emplace</h3>
+<p><em>public DATA &amp; emplace(const KEY &amp; key, DATA &amp;&amp; data)</em></p>
+<p><em>Defined at src/rocky/Utils.h#146</em></p>
+<h3 id="begin">begin</h3>
+<p><em>public int begin()</em></p>
+<p><em>Defined at src/rocky/Utils.h#152</em></p>
+<h3 id="end">end</h3>
+<p><em>public int end()</em></p>
+<p><em>Defined at src/rocky/Utils.h#153</em></p>
+<h3 id="begin_1">begin</h3>
+<p><em>public int begin()</em></p>
+<p><em>Defined at src/rocky/Utils.h#154</em></p>
+<h3 id="end_1">end</h3>
+<p><em>public int end()</em></p>
+<p><em>Defined at src/rocky/Utils.h#155</em></p>
+<h3 id="find">find</h3>
+<p><em>public int find(const KEY &amp; key)</em></p>
+<p><em>Defined at src/rocky/Utils.h#157</em></p>
+<h3 id="find_1">find</h3>
+<p><em>public int find(const KEY &amp; key)</em></p>
+<p><em>Defined at src/rocky/Utils.h#166</em></p>
+<h3 id="empty">empty</h3>
+<p><em>public _Bool empty()</em></p>
+<p><em>Defined at src/rocky/Utils.h#175</em></p>
+<h3 id="clear">clear</h3>
+<p><em>public void clear()</em></p>
+<p><em>Defined at src/rocky/Utils.h#177</em></p>
+<h3 id="erase">erase</h3>
+<p><em>public void erase(const KEY &amp; key)</em></p>
+<p><em>Defined at src/rocky/Utils.h#179</em></p>
+<h3 id="indexof">indexOf</h3>
+<p><em>public int indexOf(const KEY &amp; key)</em></p>
+<p><em>Defined at src/rocky/Utils.h#191</em></p>
+<h3 id="size">size</h3>
+<p><em>public int size()</em></p>
+<p><em>Defined at src/rocky/Utils.h#200</em></p>
+<h3 id="insert">insert</h3>
+<p><em>public void insert(InputIterator a, InputIterator b)</em></p>
+<p><em>Defined at src/rocky/Utils.h#203</em></p>
 
 
 
@@ -391,10 +644,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": [], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

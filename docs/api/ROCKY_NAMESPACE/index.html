@@ -1,0 +1,873 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>namespace ROCKY_NAMESPACE - Rocky</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#namespace-rocky_namespace" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Rocky
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              namespace ROCKY_NAMESPACE
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Rocky
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#namespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Namespaces
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Records
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#visit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        visit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#to_glm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_glm
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#to_vsg" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_vsg
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#distanceto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        distanceTo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expandby" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        expandBy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fromvkpixelformat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fromVkPixelFormat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tovkpixelformat" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        toVkPixelFormat
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        operator*
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expandby_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        expandBy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#is_identity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_identity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quaternion_from_euler_radians" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        quaternion_from_euler_radians
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quaternion_from_euler_degrees" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        quaternion_from_euler_degrees
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#euler_radians_from_quaternion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        euler_radians_from_quaternion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#euler_degrees_from_quaternion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        euler_degrees_from_quaternion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quaternion_from_unscaled_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        quaternion_from_unscaled_matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quaternion_from_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        quaternion_from_matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#visible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        visible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setvisible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setVisible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setvisible_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setVisible
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#empty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        empty
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#enums" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enums
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="namespace-rocky_namespace">namespace ROCKY_NAMESPACE</h1>
+<p>A collection of types used by the various I/O systems.</p>
+<p>Classes here are extensions of the vsgImGui classes to support multi-context ImGui rendering. This is neccessary when crossing DLL boundaries and the like.</p>
+<h2 id="namespaces">Namespaces</h2>
+<ul>
+<li><a href="detail/">detail</a></li>
+<li><a href="TMS/">TMS</a></li>
+</ul>
+<h2 id="records">Records</h2>
+<ul>
+<li><a href="ROCKY_EXPORT/">ROCKY_EXPORT</a></li>
+<li><a href="IOOptions/">IOOptions</a></li>
+<li><a href="Mosaic/">Mosaic</a></li>
+<li><a href="ContextFactory/">ContextFactory</a></li>
+<li><a href="SRSOperation/">SRSOperation</a></li>
+<li><a href="ElevationLayerVector/">ElevationLayerVector</a></li>
+<li><a href="Map/">Map</a></li>
+<li><a href="ImageLayer/">ImageLayer</a></li>
+<li><a href="ElevationLayer/">ElevationLayer</a></li>
+<li><a href="PipelineUtils/">PipelineUtils</a></li>
+<li><a href="MapNode/">MapNode</a></li>
+<li><a href="MeshEditor/">MeshEditor</a></li>
+<li><a href="TerrainSettings/">TerrainSettings</a></li>
+<li><a href="SharedGeometry/">SharedGeometry</a></li>
+<li><a href="GeometryKey/">GeometryKey</a></li>
+<li><a href="Profile/">Profile</a></li>
+<li><a href="GeometryPool/">GeometryPool</a></li>
+<li><a href="TerrainTileNode/">TerrainTileNode</a></li>
+<li><a href="TerrainTilePager/">TerrainTilePager</a></li>
+<li><a href="TerrainTileHost/">TerrainTileHost</a></li>
+<li><a href="TerrainTileModel/">TerrainTileModel</a></li>
+<li><a href="TerrainDescriptors/">TerrainDescriptors</a></li>
+<li><a href="TerrainTileDescriptors/">TerrainTileDescriptors</a></li>
+<li><a href="TextureData/">TextureData</a></li>
+<li><a href="TerrainTileRenderModel/">TerrainTileRenderModel</a></li>
+<li><a href="ROCKY_VSG_INTERNAL/">ROCKY_VSG_INTERNAL</a></li>
+<li><a href="TerrainEngine/">TerrainEngine</a></li>
+<li><a href="GeoPoint/">GeoPoint</a></li>
+<li><a href="TerrainNode/">TerrainNode</a></li>
+<li><a href="CreateTileManifest/">CreateTileManifest</a></li>
+<li><a href="SurfaceNode/">SurfaceNode</a></li>
+<li><a href="SendEventsToImGui/">SendEventsToImGui</a></li>
+<li><a href="Application/">Application</a></li>
+<li><a href="DisplayManager/">DisplayManager</a></li>
+<li><a href="DisplayGeoPoint/">DisplayGeoPoint</a></li>
+<li><a href="SetPolygonMode/">SetPolygonMode</a></li>
+<li><a href="SetDepthWriteEnable/">SetDepthWriteEnable</a></li>
+<li><a href="SetCullMode/">SetCullMode</a></li>
+<li><a href="SetColorWriteMask/">SetColorWriteMask</a></li>
+<li><a href="VSGContextFactory/">VSGContextFactory</a></li>
+<li><a href="MotionSystem/">MotionSystem</a></li>
+<li><a href="TransformDetail/">TransformDetail</a></li>
+<li><a href="EntityNode/">EntityNode</a></li>
+<li><a href="ElevationSession/">ElevationSession</a></li>
+<li><a href="StyleSheet/">StyleSheet</a></li>
+<li><a href="NodeGraph/">NodeGraph</a></li>
+<li><a href="MeshTexture/">MeshTexture</a></li>
+<li><a href="TransformViewDetail/">TransformViewDetail</a></li>
+<li><a href="RenderImGuiContext/">RenderImGuiContext</a></li>
+<li><a href="Cache/">Cache</a></li>
+<li><a href="Distance/">Distance</a></li>
+<li><a href="Angle/">Angle</a></li>
+<li><a href="Duration/">Duration</a></li>
+<li><a href="Speed/">Speed</a></li>
+<li><a href="ScreenSize/">ScreenSize</a></li>
+<li><a href="Heightfield/">Heightfield</a></li>
+<li><a href="GeoExtent/">GeoExtent</a></li>
+<li><a href="Failure/">Failure</a></li>
+<li><a href="Result/">Result</a></li>
+<li><a href="Status/">Status</a></li>
+<li><a href="option/">option</a></li>
+<li><a href="TileKey/">TileKey</a></li>
+<li><a href="Feature/">Feature</a></li>
+<li><a href="Image/">Image</a></li>
+<li><a href="GeoHeightfield/">GeoHeightfield</a></li>
+<li><a href="Motion/">Motion</a></li>
+<li><a href="MotionGreatCircle/">MotionGreatCircle</a></li>
+<li><a href="Registry/">Registry</a></li>
+<li><a href="ActiveState/">ActiveState</a></li>
+<li><a href="Visibility/">Visibility</a></li>
+<li><a href="Declutter/">Declutter</a></li>
+<li><a href="MeshGeometry/">MeshGeometry</a></li>
+<li><a href="MeshStyle/">MeshStyle</a></li>
+<li><a href="Mesh/">Mesh</a></li>
+<li><a href="LabelStyle/">LabelStyle</a></li>
+<li><a href="Label/">Label</a></li>
+<li><a href="Transform/">Transform</a></li>
+<li><a href="Component/">Component</a></li>
+<li><a href="GeoImage/">GeoImage</a></li>
+<li><a href="Layer/">Layer</a></li>
+<li><a href="DateTime/">DateTime</a></li>
+<li><a href="CelestialBody/">CelestialBody</a></li>
+<li><a href="URIResponse/">URIResponse</a></li>
+<li><a href="Hyperlink/">Hyperlink</a></li>
+<li><a href="RenderingState/">RenderingState</a></li>
+<li><a href="ViewLocal/">ViewLocal</a></li>
+<li><a href="ContextImpl/">ContextImpl</a></li>
+<li><a href="Content/">Content</a></li>
+<li><a href="ElevationSample/">ElevationSample</a></li>
+<li><a href="CallbackSubs/">CallbackSubs</a></li>
+<li><a href="Callback/">Callback</a></li>
+</ul>
+<h2 id="functions">Functions</h2>
+<h3 id="visit">visit</h3>
+<p><em>int visit(int * visitor, int * view, int * object)</em></p>
+<p>Accept a visitor on the specifed object (or the view) using the view's viewID. Since Rocky's ECS system is multi-view-aware, we need to embed the viewID in the visitor for the ECS systems to choose the proper transform. e.g.: Use this when running intersections on the scene to include ECS components!</p>
+<h3 id="to_glm">to_glm</h3>
+<p><em>const int &amp; to_glm(const int &amp; a)</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#53</em></p>
+<p>vsg-glm conversions. These work because GLM and VSG classes are binary compatible. C++ does not permit conversion operator overload outside of a class.</p>
+<h3 id="to_vsg">to_vsg</h3>
+<p><em>const int &amp; to_vsg(const int &amp; a)</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#84</em></p>
+<h3 id="distanceto">distanceTo</h3>
+<p><em>float distanceTo(const int &amp; p, int * state)</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#128</em></p>
+<p>Distance in scene units (meters) from a point to the camera.</p>
+<h3 id="expandby">expandBy</h3>
+<p><em>void expandBy(int &amp; bs, const vec_type &amp; v)</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#135</em></p>
+<p>Expands an existing sphere to include a point.</p>
+<h3 id="fromvkpixelformat">fromVkPixelFormat</h3>
+<p><em>int fromVkPixelFormat(int vkformat)</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#355</em></p>
+<h3 id="tovkpixelformat">toVkPixelFormat</h3>
+<p><em>int toVkPixelFormat(int format)</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#374</em></p>
+<h3 id="operator">operator*</h3>
+<p><em>int operator</em>(const int &amp; a, const int &amp; b)*</p>
+<p><em>Defined at src/rocky/Math.h#31</em></p>
+<p>Convenience function to transform a 3D vector using a 4D matrix</p>
+<p>mult a vec3 x mat4</p>
+<h3 id="expandby_1">expandBy</h3>
+<p><em>SPHERE &amp; expandBy(SPHERE &amp; s, typename SPHERE::vec_type p)</em></p>
+<p><em>Defined at src/rocky/Math.h#51</em></p>
+<h3 id="is_identity">is_identity</h3>
+<p><em>_Bool is_identity(const int &amp; m)</em></p>
+<p><em>Defined at src/rocky/Math.h#255</em></p>
+<p>Test a glm matrix for identity.</p>
+<h3 id="quaternion_from_euler_radians">quaternion_from_euler_radians</h3>
+<p><em>Q quaternion_from_euler_radians(double xaxis, double yaxis, double zaxis)</em></p>
+<p><em>Defined at src/rocky/Math.h#270</em></p>
+<p>Convert Euler angles, in radians, to a quaternion. https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles</p>
+<h3 id="quaternion_from_euler_degrees">quaternion_from_euler_degrees</h3>
+<p><em>Q quaternion_from_euler_degrees(double xaxis, double yaxis, double zaxis)</em></p>
+<p><em>Defined at src/rocky/Math.h#294</em></p>
+<p>Convert Euler angles, in degrees, to a quaternion.</p>
+<h3 id="euler_radians_from_quaternion">euler_radians_from_quaternion</h3>
+<p><em>int euler_radians_from_quaternion(const Q &amp; q)</em></p>
+<p><em>Defined at src/rocky/Math.h#302</em></p>
+<p>Convert a quat to Euler angles in radians. https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles</p>
+<h3 id="euler_degrees_from_quaternion">euler_degrees_from_quaternion</h3>
+<p><em>int euler_degrees_from_quaternion(const Q &amp; q)</em></p>
+<p><em>Defined at src/rocky/Math.h#322</em></p>
+<p>Convert a quat to Euler angles in degrees.</p>
+<h3 id="quaternion_from_unscaled_matrix">quaternion_from_unscaled_matrix</h3>
+<p><em>Q quaternion_from_unscaled_matrix(const M &amp; _mat)</em></p>
+<p><em>Defined at src/rocky/Math.h#335</em></p>
+<p>Extract the rotation component from a 4x4 matrix as a quaternion, assuming the matrix has a unit scale (i.e., unscaled). If you are unsure whether the matrix is scaled or not, use quaternion_from_matrix() instead.</p>
+<p><strong>mat</strong> The input unscaled matrix.</p>
+<p><strong>return</strong> The rotation component of the unscaled matrix.</p>
+<h3 id="quaternion_from_matrix">quaternion_from_matrix</h3>
+<p><em>Q quaternion_from_matrix(const M &amp; mat)</em></p>
+<p><em>Defined at src/rocky/Math.h#400</em></p>
+<p>Extract the rotation component from a 4x4 matrix as a quaternion. This method will normalize any scaling factor found in the matrix. If you know your matrix is unscaled, call quaternion_from_unscaled_matrix() instead for better performance.</p>
+<p><strong>mat</strong> The input matrix.</p>
+<p><strong>return</strong> The rotation component of the matrix.</p>
+<h3 id="visible">visible</h3>
+<p><em>_Bool visible(const Visibility &amp; vis, int &amp; rs)</em></p>
+<p><em>Defined at src/rocky/ecs/Visibility.h#45</em></p>
+<h3 id="setvisible">setVisible</h3>
+<p><em>void setVisible(int &amp; registry, int e, _Bool value, int view_index)</em></p>
+<p><em>Defined at src/rocky/ecs/Visibility.h#56</em></p>
+<p>Toggle the visibility of an entity in the given view</p>
+<p><strong>r</strong> Entity registry</p>
+<p><strong>e</strong> Entity id</p>
+<p><strong>value</strong> New visibility state</p>
+<p><strong>view_index</strong> Index of view to set visibility</p>
+<h3 id="setvisible_1">setVisible</h3>
+<p><em>void setVisible(int &amp; registry, ITER begin, ITER end, _Bool value, int view_index)</em></p>
+<p><em>Defined at src/rocky/ecs/Visibility.h#69</em></p>
+<h3 id="empty">empty</h3>
+<p><em>_Bool empty()</em></p>
+<p><em>Defined at src/rocky/TerrainTileModel.h#56</em></p>
+<p>True if this model contains no data.</p>
+<h2 id="enums">Enums</h2>
+<p>| enum class Interpolation |</p>
+<p>--</p>
+<p>| Nearest |
+| Average |
+| Bilinear |
+| Triangulate |
+| Cubic |
+| CubicSpline |</p>
+<p><em>Defined at src/rocky/Math.h#20</em></p>
+<p>Raster interpolation methods</p>
+<p>| enum class GeodeticInterpolation |</p>
+<p>--</p>
+<p>| RhumbLine |
+| GreatCircle |</p>
+<p><em>Defined at src/rocky/Feature.h#145</em></p>
+<p>How to interpolate points along a line segment on a geodetic map</p>
+<p>| enum class LineTopology |</p>
+<p>--</p>
+<p>| Strip |
+| Segments |</p>
+<p><em>Defined at src/rocky/ecs/Line.h#28</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -14,16 +14,16 @@
         
       
       
-      <link rel="icon" href="assets/images/favicon.png">
+      <link rel="icon" href="../../../../assets/images/favicon.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
     
     
       
-        <title>Rocky</title>
+        <title>class LRUCache - Rocky</title>
       
     
     
-      <link rel="stylesheet" href="assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
       
       
 
@@ -42,7 +42,7 @@
       
     
     
-    <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -60,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#rocky-documentation" class="md-skip">
+        <a href="#class-lrucache" class="md-skip">
           Skip to content
         </a>
       
@@ -76,7 +76,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
+    <a href="../../../.." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Home
+              class LRUCache
             
           </span>
         </div>
@@ -174,7 +174,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
+    <a href="../../../.." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -189,19 +189,10 @@
       
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-      <a href="." class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../.." class="md-nav__link">
         
   
   
@@ -217,7 +208,6 @@
   
 
       </a>
-      
     </li>
   
 
@@ -276,7 +266,7 @@
   
   
     <li class="md-nav__item">
-      <a href="api/README.md" class="md-nav__link">
+      <a href="../../../README.md" class="md-nav__link">
         
   
   
@@ -324,6 +314,130 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lrucache" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LRUCache
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setcapacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setCapacity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#put" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        put
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#capacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        capacity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hits
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#misses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        misses
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#clear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        clear
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -339,9 +453,49 @@
 
 
 
-<h1 id="rocky-documentation">Rocky Documentation</h1>
-<p>Welcome to the Rocky documentation site.</p>
-<p>This site is generated with <strong>MkDocs</strong>. API references are produced using <code>clang-doc</code> and are available under <a href="api/README.md">API Reference</a>.</p>
+<h1 id="class-lrucache">class LRUCache</h1>
+<p><em>Defined at src/rocky/Cache.h#121</em></p>
+<p>LRUCache is a thread-safe implementation of a Least Recently Used (LRU) cache. It stores key-value pairs and evicts the least recently used item when the cache reaches its capacity. The cache is protected by a mutex to ensure thread safety. Adapted from https://www.geeksforgeeks.org/lru-cache-implementation Optimized by Copilot</p>
+<h2 id="functions">Functions</h2>
+<h3 id="lrucache">LRUCache<K, V></h3>
+<p><em>public void LRUCache<K, V>(int capacity)</em></p>
+<p><em>Defined at src/rocky/Cache.h#135</em></p>
+<p>Constructs an LRUCache with the specified capacity.</p>
+<p><strong>capacity_</strong> The maximum number of items the cache can hold.</p>
+<h3 id="setcapacity">setCapacity</h3>
+<p><em>public void setCapacity(int value)</em></p>
+<p><em>Defined at src/rocky/Cache.h#142</em></p>
+<p>Sets the cache capacity and clears all current entries and statistics.</p>
+<p><strong>value</strong> The new maximum number of items the cache can hold.</p>
+<h3 id="get">get</h3>
+<p><em>public int get(const K &amp; key)</em></p>
+<p><em>Defined at src/rocky/Cache.h#157</em></p>
+<p>Retrieves the value associated with the given key, if present. Moves the accessed item to the most recently used position.</p>
+<p><strong>key</strong> The key to look up.</p>
+<p><strong>return</strong> An optional containing the value if found, or empty if not found.</p>
+<h3 id="put">put</h3>
+<p><em>public void put(const K &amp; key, const V &amp; value)</em></p>
+<p><em>Defined at src/rocky/Cache.h#178</em></p>
+<p>Inserts or updates the value for the given key. If the key already exists, updates its value and moves it to the most recently used position. If the cache is full, evicts the least recently used item.</p>
+<p><strong>key</strong> The key to insert or update.</p>
+<p><strong>value</strong> The value to associate with the key.</p>
+<h3 id="capacity">capacity</h3>
+<p><em>public int capacity()</em></p>
+<p><em>Defined at src/rocky/Cache.h#201</em></p>
+<p>Returns the maximum number of items the cache can hold.</p>
+<h3 id="size">size</h3>
+<p><em>public int size()</em></p>
+<p><em>Defined at src/rocky/Cache.h#206</em></p>
+<h3 id="hits">hits</h3>
+<p><em>public int hits()</em></p>
+<p><em>Defined at src/rocky/Cache.h#212</em></p>
+<h3 id="misses">misses</h3>
+<p><em>public int misses()</em></p>
+<p><em>Defined at src/rocky/Cache.h#217</em></p>
+<h3 id="clear">clear</h3>
+<p><em>public void clear()</em></p>
+<p><em>Defined at src/rocky/Cache.h#223</em></p>
+<p>Clears all entries from the cache and resets statistics.</p>
 
 
 
@@ -391,10 +545,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": ".", "features": [], "search": "assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

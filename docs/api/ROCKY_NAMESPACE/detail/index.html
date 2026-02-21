@@ -1,0 +1,665 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.2">
+    
+    
+      
+        <title>namespace detail - Rocky</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    <body dir="ltr">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#namespace-detail" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Rocky
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              namespace detail
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Rocky
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Index
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#records" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Records
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linear_to_srgb" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        linear_to_sRGB
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#srgb_to_linear" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        sRGB_to_linear
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#find" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#isenvvarset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        isEnvVarSet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indexof" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        indexOf
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        format
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tolower" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        toLower
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tolower_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        toLower
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tolowerinplace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        toLowerInPlace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#startswith" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        startsWith
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#endswith" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        endsWith
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ciequals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ciEquals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setthreadname" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setThreadName
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#setthreadname_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        setThreadName
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="namespace-detail">namespace detail</h1>
+<h2 id="records">Records</h2>
+<ul>
+<li><a href="ImGuiDispatcher/">ImGuiDispatcher</a></li>
+<li><a href="FindNodeVisitor/">FindNodeVisitor</a></li>
+<li><a href="ForEachNodeVisitor/">ForEachNodeVisitor</a></li>
+<li><a href="PromiseOperation/">PromiseOperation</a></li>
+<li><a href="LambdaOperation/">LambdaOperation</a></li>
+<li><a href="SimpleCompiler/">SimpleCompiler</a></li>
+<li><a href="ROCKY_EXPORT/">ROCKY_EXPORT</a></li>
+<li><a href="PointStyleRecord/">PointStyleRecord</a></li>
+<li><a href="PointStyleUniform/">PointStyleUniform</a></li>
+<li><a href="PointDrawable/">PointDrawable</a></li>
+<li><a href="PointStyleDetail/">PointStyleDetail</a></li>
+<li><a href="PointGeometryDetail/">PointGeometryDetail</a></li>
+<li><a href="LineStyleRecord/">LineStyleRecord</a></li>
+<li><a href="LineStyleUniform/">LineStyleUniform</a></li>
+<li><a href="LineDrawable/">LineDrawable</a></li>
+<li><a href="LineStyleDetail/">LineStyleDetail</a></li>
+<li><a href="LineGeometryDetail/">LineGeometryDetail</a></li>
+<li><a href="MeshStyleRecord/">MeshStyleRecord</a></li>
+<li><a href="MeshStyleUniform/">MeshStyleUniform</a></li>
+<li><a href="MeshDrawable/">MeshDrawable</a></li>
+<li><a href="MeshStyleDetail/">MeshStyleDetail</a></li>
+<li><a href="MeshGeometryDetail/">MeshGeometryDetail</a></li>
+<li><a href="MeshTextureDetail/">MeshTextureDetail</a></li>
+<li><a href="ResidentCache/">ResidentCache</a></li>
+<li><a href="LRUCache/">LRUCache</a></li>
+<li><a href="qualified_double/">qualified_double</a></li>
+<li><a href="vector_map_equal/">vector_map_equal</a></li>
+<li><a href="vector_map/">vector_map</a></li>
+<li><a href="make_string/">make_string</a></li>
+<li><a href="StreamCompressor/">StreamCompressor</a></li>
+<li><a href="ThreadLocal/">ThreadLocal</a></li>
+<li><a href="Gate/">Gate</a></li>
+<li><a href="ScopedGate/">ScopedGate</a></li>
+<li><a href="SentryTracker/">SentryTracker</a></li>
+</ul>
+<h2 id="functions">Functions</h2>
+<h3 id="linear_to_srgb">linear_to_sRGB</h3>
+<p><em>float linear_to_sRGB(float c)</em></p>
+<p><em>Defined at src/rocky/Image.h#369</em></p>
+<h3 id="srgb_to_linear">sRGB_to_linear</h3>
+<p><em>float sRGB_to_linear(float c)</em></p>
+<p><em>Defined at src/rocky/Image.h#381</em></p>
+<h3 id="find">find</h3>
+<p><em>T * find(int * root)</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#562</em></p>
+<p>Finds the first node of a given type in a scene graph.</p>
+<h3 id="isenvvarset">isEnvVarSet</h3>
+<p><em>int isEnvVarSet(const char * name)</em></p>
+<p>Whther and environment variable is set at all</p>
+<h3 id="indexof">indexOf</h3>
+<p><em>int indexOf(const T &amp; container, const V &amp; v)</em></p>
+<p><em>Defined at src/rocky/Utils.h#37</em></p>
+<p>Index of an element in a container</p>
+<h3 id="format">format</h3>
+<p><em>int format(const int &amp; format, Args... args)</em></p>
+<p><em>Defined at src/rocky/Utils.h#45</em></p>
+<p>Replacement for sprintf https://stackoverflow.com/a/26221725/4218920</p>
+<h3 id="tolower">toLower</h3>
+<p><em>unsigned char toLower(unsigned char c)</em></p>
+<p><em>Defined at src/rocky/Utils.h#67</em></p>
+<p>Character to lower case</p>
+<h3 id="tolower_1">toLower</h3>
+<p><em>int toLower(int in)</em></p>
+<p><em>Defined at src/rocky/Utils.h#72</em></p>
+<p>String to lower case</p>
+<h3 id="tolowerinplace">toLowerInPlace</h3>
+<p><em>int &amp; toLowerInPlace(int &amp; in)</em></p>
+<p><em>Defined at src/rocky/Utils.h#79</em></p>
+<p>String to lower case in situ</p>
+<h3 id="startswith">startsWith</h3>
+<p><em>int startsWith(int ref, int pattern, _Bool caseSensitive)</em></p>
+<p>True is "ref" starts with "pattern"</p>
+<h3 id="endswith">endsWith</h3>
+<p><em>int endsWith(int ref, int pattern, _Bool caseSensitive)</em></p>
+<p>True is "ref" ends with "pattern"</p>
+<h3 id="ciequals">ciEquals</h3>
+<p><em>int ciEquals(int lhs, int rhs)</em></p>
+<p>Case-insensitive compare</p>
+<h3 id="setthreadname">setThreadName</h3>
+<p><em>ROCKY_EXPORT setThreadName(const char * name)</em></p>
+<p>Sets the name of the current thread</p>
+<h3 id="setthreadname_1">setThreadName</h3>
+<p><em>int setThreadName(const int &amp; name)</em></p>
+<p>Sets the name of the current thread</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
