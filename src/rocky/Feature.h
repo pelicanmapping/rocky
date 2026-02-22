@@ -167,7 +167,7 @@ namespace ROCKY_NAMESPACE
             inline bool valid() const;
             inline std::string stringValue() const;
             inline double doubleValue() const;
-            inline long long intValue() const;
+            inline std::int64_t intValue() const;
             inline bool boolValue() const;
 
             inline bool operator == (const std::string& rhs) const {
@@ -179,7 +179,7 @@ namespace ROCKY_NAMESPACE
             inline bool operator == (double rhs) const {
                 return doubleValue() == rhs;
             }
-            inline bool operator == (long long rhs) const {
+            inline bool operator == (std::int64_t rhs) const {
                 return intValue() == rhs;
             }
             inline bool operator == (bool rhs) const {
@@ -200,7 +200,7 @@ namespace ROCKY_NAMESPACE
 
         using FieldSchema = detail::vector_map<std::string, FieldType>;
 
-        using ID = long long;
+        using ID = std::int64_t;
 
 
     public:
@@ -405,8 +405,8 @@ namespace ROCKY_NAMESPACE
             return std::get<std::string>(*this);
         else if (std::holds_alternative<double>(*this))
             return std::to_string(std::get<double>(*this));
-        else if (std::holds_alternative<long long>(*this))
-            return std::to_string(std::get<long long>(*this));
+        else if (std::holds_alternative<std::int64_t>(*this))
+            return std::to_string(std::get<std::int64_t>(*this));
         else if (std::holds_alternative<bool>(*this))
             return std::get<bool>(*this) ? "true" : "false";
         return {};
@@ -416,8 +416,8 @@ namespace ROCKY_NAMESPACE
     {
         if (std::holds_alternative<double>(*this))
             return std::get<double>(*this);
-        else if (std::holds_alternative<long long>(*this))
-            return static_cast<double>(std::get<long long>(*this));
+        else if (std::holds_alternative<std::int64_t>(*this))
+            return static_cast<double>(std::get<std::int64_t>(*this));
         else if (std::holds_alternative<std::string>(*this))
             return std::atof(std::get<std::string>(*this).c_str());
         else if (std::holds_alternative<bool>(*this))
@@ -425,12 +425,12 @@ namespace ROCKY_NAMESPACE
         return 0.0;
     }
 
-    long long Feature::FieldValue::intValue() const
+    std::int64_t Feature::FieldValue::intValue() const
     {
-        if (std::holds_alternative<long long>(*this))
-            return std::get<long long>(*this);
+        if (std::holds_alternative<std::int64_t>(*this))
+            return std::get<std::int64_t>(*this);
         else if (std::holds_alternative<double>(*this))
-            return static_cast<long long>(std::get<double>(*this));
+            return static_cast<std::int64_t>(std::get<double>(*this));
         else if (std::holds_alternative<std::string>(*this))
             return std::atoll(std::get<std::string>(*this).c_str());
         else if (std::holds_alternative<bool>(*this))
@@ -444,8 +444,8 @@ namespace ROCKY_NAMESPACE
             return std::get<bool>(*this);
         else if (std::holds_alternative<double>(*this))
             return std::get<double>(*this) != 0.0;
-        else if (std::holds_alternative<long long>(*this))
-            return std::get<long long>(*this) != 0LL;
+        else if (std::holds_alternative<std::int64_t>(*this))
+            return std::get<std::int64_t>(*this) != 0LL;
         else if (std::holds_alternative<std::string>(*this))
             return std::get<std::string>(*this) == "true";
         return false;

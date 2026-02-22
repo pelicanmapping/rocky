@@ -13,6 +13,7 @@
 #include <rocky/vsg/terrain/TerrainEngine.h>
 #include <rocky/Memory.h>
 #include "helpers.h"
+#include <climits>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -30,20 +31,20 @@ namespace
     float get_timings(void* data, int index) {
         return 0.001f * (float)(*(Timings*)data)[index].count();
     };
-    unsigned long long average(void* data, int count, int start) {
+    std::uint64_t average(void* data, int count, int start) {
         Timings& t = *(Timings*)(data);
-        unsigned long long total = 0;
+        std::uint64_t total = 0;
         int s = start - count; if (s < 0) s += frame_count;
         for (int i = s; i <= s + count; i++)
             total += t[i % frame_count].count();
         return total / count;
     }
-    unsigned long long lowest(void* data, int count, int start) {
+    std::uint64_t lowest(void* data, int count, int start) {
         Timings& t = *(Timings*)(data);
-        long long result = INT_MAX;
+        auto result = std::numeric_limits<std::uint64_t>::max();
         int s = start - count; if (s < 0) s += frame_count;
         for (int i = s; i <= s + count; i++)
-            result = std::min(result, static_cast<long long>(t[i % frame_count].count()));
+            result = std::min(result, static_cast<std::uint64_t>(t[i % frame_count].count()));
         return result;
     }
 }

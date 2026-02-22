@@ -10,6 +10,7 @@
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 using namespace ROCKY_NAMESPACE::Bing;
 
 #undef LC
