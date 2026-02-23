@@ -110,7 +110,6 @@ TMSElevationLayer::createTileImplementation(const TileKey& key, const IOOptions&
         if (r.error().type == Failure::ServiceUnavailable)
         {
             fail(r.error());
-            Log()->warn(LC "Layer \"" + name + "\" : " + r.error().message);
         }
 
         return r.error();
