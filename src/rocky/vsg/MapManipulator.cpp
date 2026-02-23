@@ -2014,7 +2014,7 @@ MapManipulator::ndc(const vsg::PointerEvent& event) const
 {
     auto camera = _camera_weakptr.ref_ptr();
     if (!camera)
-        false;
+        return {0.0, 0.0};
 
     auto renderArea = camera->getRenderArea();
 

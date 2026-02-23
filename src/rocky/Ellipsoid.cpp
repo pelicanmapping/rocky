@@ -335,7 +335,7 @@ Ellipsoid::calculateHorizonPoint(const std::vector<glm::dvec3>& points) const
 {
     double max_magnitude = 0.0;
 
-    glm::dvec3 unit_culling_point_dir; // vector along which to calculate the horizon point
+    glm::dvec3 unit_culling_point_dir(0.0, 0.0, 0.0); // vector along which to calculate the horizon point
     std::vector<glm::dvec3> unit_points;
     unit_points.reserve(points.size());
     for (auto& point : points)
@@ -348,6 +348,11 @@ Ellipsoid::calculateHorizonPoint(const std::vector<glm::dvec3>& points) const
     for (auto& unit_point : unit_points)
     {
         auto mag2 = glm::dot(unit_point, unit_point); // length squared
+
+        // prevent division by zero
+        if (mag2 < 1e-12)
+          continue;
+
         auto mag = sqrt(mag2);
         auto point_dir = unit_point / mag;
 

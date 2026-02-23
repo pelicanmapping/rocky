@@ -145,7 +145,7 @@ namespace ROCKY_NAMESPACE
     private:
         mutable detail::PointStyleDetail _defaultStyleDetail;
         mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
-        mutable float _devicePixelRatio;
+        mutable float _devicePixelRatio = -1.0;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Point&) {
             return _pipelines[0].config->layout;
