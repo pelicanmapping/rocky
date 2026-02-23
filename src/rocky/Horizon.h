@@ -61,9 +61,9 @@ namespace ROCKY_NAMESPACE
         Ellipsoid _em;
         bool _valid = false;
         bool _orthographic = false; // assume orthographic projection
-        glm::dvec3 _eye;       // world eyepoint
-        glm::dvec3 _eyeUnit;   // unit eye vector (scaled)
-        glm::dvec3 _VC;        // eye->center vector (scaled)
+        glm::dvec3 _eye = {0.0, 0.0, 0.0};       // world eyepoint
+        glm::dvec3 _eyeUnit = { 0.0, 0.0, 0.0 };   // unit eye vector (scaled)
+        glm::dvec3 _VC = { 0.0, 0.0, 0.0 };        // eye->center vector (scaled)
         double _VCmag = 0.0;    // distance from eye to center (scaled)
         double _VCmag2 = 0.0;   // distance from eye to center squared (scaled)
         double _VHmag2 = 0.0;   // distance from eye to horizon squared (scaled)
