@@ -16,6 +16,11 @@ target_link_libraries(${APP_NAME} rocky imgui::imgui)
 
 install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 
+if (USING_VCPKG AND ROCKY_INSTALL_VCPKG_DEPENDENCY_DLLS)
+    file(GLOB VCPKG_DLLS "${VCPKG_INSTALLED_DIR}/${VCPKG_TARGET_TRIPLET}/bin/*.dll")
+    install(FILES ${VCPKG_DLLS} DESTINATION bin)
+endif()
+
 set_target_properties(${APP_NAME} PROPERTIES FOLDER "apps")
 
 # MSVC requires /bigobj on debug mode
