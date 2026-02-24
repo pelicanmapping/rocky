@@ -4,8 +4,6 @@ Rocky is a C++ SDK for rendering maps and globes. <img align="right" width="200"
 
 Rocky will render an accurate 3D or 2D map with real geospatial imagery and elevation data. It supports thousands of map projections and many popular geodata sources including GeoTIFF, TMS, OpenStreetMap, WMTS, WMS, and Azure Maps. Rocky's data model is inspired by the osgEarth SDK, a 3D GIS toolkit created in 2008 and still in wide use today.
 
-**This project is in its early stages so expect a lot of API and architectural changes before version 1.0.**
-
 ![Windows](https://github.com/pelicanmapping/rocky/actions/workflows/ci-windows-minimal.yml/badge.svg)
 ![Documentation](https://github.com/pelicanmapping/rocky/actions/workflows/mkdocs-gh-pages.yml/badge.svg)
 
@@ -49,7 +47,7 @@ bootstrap-vcpkg.bat
 ```
 That will download and build all the dependencies (takes a while) and generate your CMake project and Visual Studio solution file.
 
-If you would rather not use vcpkg, you can build and install the [dependencies](#acknowledgements) yourself, or use your favorite package manager (like `apt` on Linux).
+If you would rather not use vcpkg, you can build and install the [dependencies](#acknowledgements) yourself, or use your favorite package manager (like `apt` on Linux). We also provide a `bootstream-vcpkg.sh` script for Linux.
 
 > *Note: Rocky requires Vulkan SDK 1.3.268 or newer.*
 
@@ -60,7 +58,6 @@ If you would rather not use vcpkg, you can build and install the [dependencies](
 Rocky is pretty good at finding its data files, but if you run into trouble, you might need to set a couple environment variables to help:
 ```bat
 set ROCKY_FILE_PATH=%rocky_install_dir%/share/rocky
-set ROCKY_DEFAULT_FONT=C:/windows/fonts/arialbd.ttf
 set PROJ_DATA=%proj_install_dir%/share/proj
 ```
 

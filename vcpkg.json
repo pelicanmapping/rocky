@@ -1,6 +1,6 @@
 {
     "name": "rocky",
-    "version-string": "0.9.9",
+    "version-string": "1.0.0",
     "port-version": 1,
     "description": "3D Maps SDK for C++/Vulkan",
     "homepage": "https://github.com/pelicanmapping/rocky",
