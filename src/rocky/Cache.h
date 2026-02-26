@@ -125,7 +125,8 @@ namespace ROCKY_NAMESPACE
             size_t _capacity;
             using E = typename std::pair<K, V>;
             mutable typename std::list<E> _cache;
-            mutable detail::vector_map<K, typename std::list<E>::iterator> _map;
+            mutable std::unordered_map<K, typename std::list<E>::iterator> _map;
+            //mutable detail::vector_map<K, typename std::list<E>::iterator> _map;
             std::uint32_t _hits = 0, _misses = 0;
 
         public:
@@ -134,7 +135,7 @@ namespace ROCKY_NAMESPACE
             //! \param capacity_ The maximum number of items the cache can hold.
             LRUCache(size_t capacity = 32) : _capacity(capacity)
             {
-                _map._container.reserve(capacity);
+                //_map._container.reserve(capacity);
             }
 
             //! Sets the cache capacity and clears all current entries and statistics.
@@ -145,7 +146,7 @@ namespace ROCKY_NAMESPACE
                 _cache.clear();
                 _map.clear();
                 _capacity = std::max((size_t)0, value);
-                _map._container.reserve(_capacity);
+                //_map._container.reserve(_capacity);
                 _hits = 0;
                 _misses = 0;
             }
@@ -188,9 +189,8 @@ namespace ROCKY_NAMESPACE
                 }
                 else {
                     if (_cache.size() == _capacity) {
-                        auto first_key = _cache.front().first;
+                        _map.erase(_cache.front().first);
                         _cache.pop_front();
-                        _map.erase(first_key);
                     }
                     _cache.emplace_back(key, value);
                     _map[key] = std::prev(_cache.end());

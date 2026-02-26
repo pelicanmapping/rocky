@@ -30,6 +30,7 @@
 #define ROCKY_MAX_NUMBER_OF_VIEWS @ROCKY_MAX_NUMBER_OF_VIEWS@
 
 #cmakedefine ROCKY_USE_UTF8_FILENAMES_ON_WINDOWS
+#cmakedefine ROCKY_DEBUG_MEMCHECK
 
 // Dependency defines
 
@@ -52,4 +53,3 @@
 #cmakedefine ROCKY_HAS_VSG
 #cmakedefine ROCKY_HAS_VSGXCHANGE
 #cmakedefine ROCKY_HAS_ENTT
-#cmakedefine ROCKY_HAS_GLSLANG

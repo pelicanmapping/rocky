@@ -24,10 +24,10 @@ namespace ROCKY_NAMESPACE
         LabelSystem(Registry& registry);
 
         //! One time setup of the system
-        void initialize(VSGContext&) override;
+        void initialize(VSGContext) override;
 
         //! Per frame update
-        void update(VSGContext&) override;
+        void update(VSGContext) override;
 
     protected:
         struct ImFontContainer {

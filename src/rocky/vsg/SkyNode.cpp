@@ -104,7 +104,7 @@ namespace
 #define ATMOSPHERE_VERT_SHADER "shaders/rocky.atmo.sky.vert"
 #define ATMOSPHERE_FRAG_SHADER "shaders/rocky.atmo.sky.frag"
 
-    vsg::ref_ptr<vsg::ShaderSet> makeAtmoShaderSet(VSGContext& context)
+    vsg::ref_ptr<vsg::ShaderSet> makeAtmoShaderSet(VSGContext context)
     {
         auto file = vsg::findFile(ATMOSPHERE_VERT_SHADER, context->searchPaths);
         Log()->info("Loading atmosphere vertex shader from: {}", file.string());
@@ -141,7 +141,7 @@ namespace
     }
 
 
-    vsg::ref_ptr<vsg::StateGroup> makeAtmoStateGroup(VSGContext& vsgcontext)
+    vsg::ref_ptr<vsg::StateGroup> makeAtmoStateGroup(VSGContext vsgcontext)
     {
         auto shaderSet = makeAtmoShaderSet(vsgcontext);
         if (!shaderSet)
@@ -202,7 +202,7 @@ namespace
     }
 
 
-    vsg::ref_ptr<vsg::Node> makeAtmosphere(const SRS& srs, float thickness, VSGContext& vsgcontext)
+    vsg::ref_ptr<vsg::Node> makeAtmosphere(const SRS& srs, float thickness, VSGContext vsgcontext)
     {
         // attach the actual atmospheric geometry
         const bool with_texcoords = false;
@@ -223,7 +223,7 @@ namespace
     }
 }
 
-SkyNode::SkyNode(const VSGContext& c) :
+SkyNode::SkyNode(const VSGContext c) :
     _context(c)
 {
     setWorldSRS(SRS::ECEF);

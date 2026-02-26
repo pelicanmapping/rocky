@@ -73,7 +73,7 @@ auto Demo_Views = [](Application& app)
 
                         if (ImGui::Button("Remove view"))
                         {
-                            app.onNextUpdate([&app, view]() { app.display.removeView(view); });
+                            app.onNextUpdate([&app, view](...) { app.display.removeView(view); });
                         }
                     }
 

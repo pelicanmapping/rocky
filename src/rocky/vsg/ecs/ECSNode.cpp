@@ -28,7 +28,7 @@ SimpleSystemNodeBase::SimpleSystemNodeBase(Registry& in_registry) :
 }
 
 void
-SimpleSystemNodeBase::update(VSGContext& vsgcontext)
+SimpleSystemNodeBase::update(VSGContext vsgcontext)
 {
     if (!_pipelinesCompiled)
     {
@@ -104,7 +104,7 @@ ECSNode::~ECSNode()
 }
 
 void
-ECSNode::initialize(VSGContext& vsgcontext)
+ECSNode::initialize(VSGContext vsgcontext)
 {
     for (auto& system : systems)
     {
@@ -113,7 +113,7 @@ ECSNode::initialize(VSGContext& vsgcontext)
 }
 
 void
-ECSNode::update(VSGContext& vsgcontext)
+ECSNode::update(VSGContext vsgcontext)
 {
     // update all systems
     for (auto& system : systems)

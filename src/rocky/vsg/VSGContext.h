@@ -18,6 +18,22 @@ namespace ROCKY_NAMESPACE
 {
     class MapNode;
 
+    class VSGContextImpl;
+
+#if 0
+    using VSGContext = std::shared_ptr<VSGContextImpl>;
+    using VSGContextRef = VSGContextImpl*;
+#else
+    using VSGContext = VSGContextImpl*;
+    using VSGContextRef = VSGContext;
+#endif
+
+    namespace detail
+    {
+        using GuiRecorder = std::function<void(RenderingState&, void* guiContext)>;
+        using GuiRecorders = std::deque<GuiRecorder>;
+    }
+
     /**
      * Rocky runtime context to use with a VSG-based application.
      * Use VSGContextFactory::create to VSGContext instance.
@@ -59,11 +75,10 @@ namespace ROCKY_NAMESPACE
         std::vector<std::uint32_t> activeViewIDs = { 0 };
 
         //! Callback fired during each update pass.
-        Callback<> onUpdate;
+        Callback<void(VSGContext)> onUpdate;
 
         //! Callbacks to render GUI elements
-        using GuiRecorder = std::function<void(RenderingState&, void* guiContext)>;
-        std::deque<GuiRecorder> guiRecorders;
+        detail::GuiRecorders guiRecorders;
 
         //! Polyfill Vulkan Extension functions (not supplied by VSG yet)
         VulkanExtensions* ext();
@@ -82,7 +97,7 @@ namespace ROCKY_NAMESPACE
         //! Queue a function to run during the update pass.
         //! This is a safe way to do things that require modifying the scene
         //! or compiling vulkan objects
-        void onNextUpdate(std::function<void()> function);
+        void onNextUpdate(std::function<void(VSGContext)> function);
 
         //! Compiles the Vulkan primitives for an object. This is a thread-safe
         //! operation. Each call to compile() might block the viewer to access
@@ -118,6 +133,8 @@ namespace ROCKY_NAMESPACE
         //! Update any pending compile results. Returns true if updates occurred.
         bool update();
 
+        virtual ~VSGContextImpl();
+
     private:
         vsg::ref_ptr<vsg::Viewer> _viewer;
 
@@ -134,6 +151,8 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::CommandGraph> _computeCommandGraph;
 
         vsg::ref_ptr<VulkanExtensions> _vulkanExtensions;
+
+        vsg::ref_ptr<vsg::Operation> _updateOperation;
 
     private:
         //! Construct a new VSG-based application instance
@@ -157,7 +176,16 @@ namespace ROCKY_NAMESPACE
         return _viewer;
     }
 
-    using VSGContext = std::shared_ptr<VSGContextImpl>;
+#if 1
+    struct VSGContextSingleton : public std::unique_ptr<VSGContextImpl> {
+        VSGContextSingleton() = default;
+        VSGContextSingleton(VSGContextImpl* ptr) : std::unique_ptr<VSGContextImpl>(ptr) {}
+        inline operator VSGContext () { return get(); }
+        inline operator VSGContext () const { return get(); }
+    };
+#else
+    using VSGContextSingleton = VSGContext;
+#endif
 
     /**
     * Factory singleton for creating a VSGContext instance.
@@ -166,8 +194,8 @@ namespace ROCKY_NAMESPACE
     {
     public:
         template<typename... Args>
-        static VSGContext create(Args&&... args) {
-            return VSGContext(new VSGContextImpl(std::forward<Args>(args)...));
+        static VSGContextSingleton create(Args&&... args) {
+            return VSGContextSingleton(new VSGContextImpl(std::forward<Args>(args)...));
         }
     };
 }

@@ -26,6 +26,13 @@ MapNode::MapNode(VSGContext context)
     profile = Profile("global-geodetic");
 }
 
+MapNode::~MapNode()
+{
+#ifdef ROCKY_DEBUG_MEMCHECK
+    Log()->debug("~MapNode");
+#endif
+}
+
 Result<>
 MapNode::from_json(const std::string& JSON, const IOOptions& io)
 {
@@ -201,24 +208,21 @@ MapNode::traverse(vsg::ConstVisitor& visitor) const
 }
 
 vsg::ref_ptr<MapNode>
-MapNode::create(VSGContext context)
+MapNode::create(VSGContext vsgcontext)
 {
-    //ROCKY_SOFT_ASSERT_AND_RETURN(context, {}, "ILLEGAL: null context");
-    //ROCKY_SOFT_ASSERT_AND_RETURN(context->viewer(), {}, "ILLEGAL: context does not contain a viewer");
-    //ROCKY_SOFT_ASSERT_AND_RETURN(context->viewer()->updateOperations, {}, "ILLEGAL: viewer does not contain update operations");
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext, {}, "ILLEGAL: null context");
 
-    auto mapNode = vsg::ref_ptr<MapNode>(new MapNode(context));
+    auto mapNode = vsg::ref_ptr<MapNode>(new MapNode(vsgcontext));
 
-    if (context && context->viewer() && context->viewer()->updateOperations)
-    {
-        auto update = [mapNode, context]()
+    vsg::observer_ptr<MapNode> weak_mapNode(mapNode);
+
+    mapNode->_updateSub = vsgcontext->onUpdate([weak_mapNode](VSGContext context)
+        {
+            if (auto mapNode = weak_mapNode.ref_ptr())
             {
-                context->update();
                 mapNode->update(context);
-            };
-
-        context->viewer()->updateOperations->add(LambdaOperation::create(update), vsg::UpdateOperations::ALL_FRAMES);
-    }
+            }
+        });
 
     return mapNode;
 }

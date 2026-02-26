@@ -250,7 +250,9 @@ namespace ROCKY_NAMESPACE
             std::string filename = "/vsimem/temp" + std::to_string(rgen++);
 
             // populate the "file" from our raw data
-            auto memfile = VSIFileFromMemBuffer(filename.c_str(), (GByte*)data, (vsi_l_offset)length, true);
+            constexpr bool transferOwnershipToGDAL = false;
+
+            auto memfile = VSIFileFromMemBuffer(filename.c_str(), (GByte*)data, (vsi_l_offset)length, transferOwnershipToGDAL);
             if (memfile)
             {
                 const char* const drivers[] = { name.c_str(), nullptr };
@@ -355,8 +357,8 @@ namespace ROCKY_NAMESPACE
 
                     GDALClose(ds);
                 }
+                VSIFCloseL(memfile);
                 VSIUnlink(filename.c_str());
-                VSIFree(memfile);
             }
 
             return result;
@@ -1429,12 +1431,17 @@ GDAL_detail::Driver::createHeightfield(const TileKey& key, unsigned tileSize, co
         INIT_RASTERIO_EXTRA_ARG(xtras);
         xtras.eResampleAlg = alg;
 
-        band->RasterIO(GF_Read,
+        auto err = band->RasterIO(GF_Read,
             (int)floor(px), (int)floor(py),
             (int)ceil(px2 - px), (int)ceil(py2 - py),
             hf_raw,
             tileSize, tileSize,
             GDT_Float32, 0, 0, &xtras);
+
+        if (err != CE_None)
+        {
+            return Failure(Failure::GeneralError, "RasterIO failure (corrupted input)");
+        }
 
         hf.image->flipVerticalInPlace();
 

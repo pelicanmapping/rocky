@@ -31,6 +31,8 @@ namespace ROCKY_NAMESPACE
     public:
         TerrainProfileNode(const Profile& profile, TerrainNode& terrain);
 
+        virtual ~TerrainProfileNode();
+
         //! Terrain housing this profile node
         TerrainNode& terrain;
 
@@ -82,6 +84,8 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct a new terrain node
         TerrainNode(VSGContext);
+
+        virtual ~TerrainNode();
 
         //! Map to render, and profile to render it in
         Result<> setMap(

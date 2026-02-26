@@ -65,7 +65,7 @@ TEST_CASE("json")
     ROCKY_NAMESPACE::from_json(j_uri, uri2);
     CHECK((uri2.base() == "file.xml"));
 
-    Context context = ContextFactory::create();
+    auto context = ContextFactory::create();
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "file.xml";
     auto map = rocky::Map::create();

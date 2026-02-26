@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE
             return std::make_shared<MotionSystem>(r); }
 
         //! Called periodically to update the transforms
-        void update(VSGContext& context) override
+        void update(VSGContext context) override
         {
             auto time = context->viewer()->getFrameStamp()->time;
 

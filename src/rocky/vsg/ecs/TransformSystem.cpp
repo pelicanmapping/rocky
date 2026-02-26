@@ -39,7 +39,7 @@ TransformSystem::TransformSystem(Registry& r) : System(r)
 }
 
 void
-TransformSystem::update(VSGContext& context)
+TransformSystem::update(VSGContext context)
 {
     auto [lock, registry] = _registry.read();
 

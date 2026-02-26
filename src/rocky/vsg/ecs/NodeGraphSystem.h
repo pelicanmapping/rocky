@@ -22,10 +22,10 @@ namespace ROCKY_NAMESPACE
         ~NodeSystemNode();
 
         //! One-time initialization of the system        
-        void initialize(VSGContext&) override;
+        void initialize(VSGContext) override;
 
         //! Every frame update
-        void update(VSGContext&) override;
+        void update(VSGContext) override;
 
         //! VSG record traversal
         void traverse(vsg::RecordTraversal&) const override;

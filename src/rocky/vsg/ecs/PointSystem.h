@@ -129,10 +129,10 @@ namespace ROCKY_NAMESPACE
         //int featureMask(const Line&) const override;
 
         //! One-time initialization of the system    
-        void initialize(VSGContext&) override;
+        void initialize(VSGContext) override;
 
         //! Periodic update to check for style changes
-        void update(VSGContext&) override;
+        void update(VSGContext) override;
 
         //! Record/render traversal
         void traverse(vsg::RecordTraversal&) const override;
@@ -156,7 +156,7 @@ namespace ROCKY_NAMESPACE
         //void createOrUpdateComponent(const Point&, detail::PointDetail&, detail::PointGeometryDetail*);
 
         // Called when a point geometry component is found in the dirty list
-        void createOrUpdateGeometry(const PointGeometry& geom, detail::PointGeometryDetail&, VSGContext& context);
+        void createOrUpdateGeometry(const PointGeometry& geom, detail::PointGeometryDetail&, VSGContext context);
 
         // Called when a point style is found in the dirty list
         void createOrUpdateStyle(const PointStyle& style, detail::PointStyleDetail& styleDetail);

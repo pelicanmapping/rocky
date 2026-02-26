@@ -262,11 +262,13 @@ namespace ROCKY_NAMESPACE
             height = image->height(),
             depth = image->depth();
 
-        T* data = reinterpret_cast<T*>(image->releaseData());
+        auto released = image->releaseData();
+        T* data = reinterpret_cast<T*>(released.first);
+        bool ownsData = released.second;
 
         vsg::Data::Properties props;
         props.format = format;
-        props.allocatorType = vsg::ALLOCATOR_TYPE_NEW_DELETE;
+        props.allocatorType = ownsData ? vsg::ALLOCATOR_TYPE_NEW_DELETE : vsg::ALLOCATOR_TYPE_NO_DELETE;
 
         vsg::ref_ptr<vsg::Data> vsg_data;
         if (depth == 1)

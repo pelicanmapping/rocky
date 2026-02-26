@@ -19,7 +19,7 @@ namespace ROCKY_NAMESPACE
         protected:
             SimpleSystemNodeBase(Registry& in_registry);
 
-            void update(VSGContext& vsgcontext) override;
+            void update(VSGContext vsgcontext) override;
 
             inline void requestCompile(vsg::Object* object) {
                 _toCompile->addChild(vsg::ref_ptr<vsg::Object>(object));
@@ -104,11 +104,11 @@ namespace ROCKY_NAMESPACE
         //! Initialize of all connected system nodes. This should be invoked
         //! any time a new viewer is created.
         //! @param runtime The runtime object to pass to the systems
-        void initialize(VSGContext& vsgcontext);
+        void initialize(VSGContext vsgcontext);
 
         //! Update all connected system nodes. This should be invoked once per frame.
         //! @param runtime The runtime object to pass to the systems
-        void update(VSGContext& vsgcontext);
+        void update(VSGContext vsgcontext);
 
         std::vector<System*> systems;
         std::vector<std::shared_ptr<System>> non_node_systems;

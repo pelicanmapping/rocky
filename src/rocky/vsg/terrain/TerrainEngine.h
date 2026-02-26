@@ -27,15 +27,17 @@ namespace ROCKY_NAMESPACE
             const Profile& profile,
             const SRS& renderingSRS,
             TerrainState& stateFactory,
-            VSGContext context,
+            //VSGContext context,
             const TerrainSettings& settings,
             TerrainTileHost* host);
+
+        ~TerrainEngine();
 
         //! Terrain settings.
         const TerrainSettings& settings;
 
         //! runtime operations (scene graph, views, etc)
-        VSGContext context;
+        //VSGContext context;
 
         //! the map this terrain is rendering
         std::shared_ptr<const Map> map;
@@ -60,7 +62,8 @@ namespace ROCKY_NAMESPACE
         //! Create a single terrain tile.
         vsg::ref_ptr<TerrainTileNode> createTile(
             const TileKey& key,
-            vsg::ref_ptr<TerrainTileNode> parent);
+            vsg::ref_ptr<TerrainTileNode> parent,
+            VSGContext context);
 
         bool update(VSGContext context);
     };

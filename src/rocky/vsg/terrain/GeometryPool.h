@@ -40,58 +40,38 @@ namespace ROCKY_NAMESPACE
 
     struct GeometryKey
     {
-        GeometryKey() :
-            lod(-1),
-            tileY(0),
-            patch(false),
-            size(0u)
-        {
-            //nop
-        }
+        int lod = -1;
+        int tileY = 0;
+        unsigned size = 0u;
 
-        GeometryKey(const GeometryKey& rhs) :
-            lod(rhs.lod),
-            tileY(rhs.tileY),
-            patch(rhs.patch),
-            size(rhs.size)
-        {
-            //nop
-        }
+        GeometryKey() = default;
 
-        bool operator < (const GeometryKey& rhs) const
+        GeometryKey(const GeometryKey&) = default;
+
+        inline bool operator < (const GeometryKey& rhs) const
         {
             if (lod < rhs.lod) return true;
             if (lod > rhs.lod) return false;
             if (tileY < rhs.tileY) return true;
             if (tileY > rhs.tileY) return false;
-            if (size < rhs.size) return true;
-            if (size > rhs.size) return false;
-            if (patch == false && rhs.patch == true) return true;
-            return false;
+            return size < rhs.size;
         }
 
-        bool operator == (const GeometryKey& rhs) const
+        inline bool operator == (const GeometryKey& rhs) const
         {
             return
                 lod == rhs.lod &&
                 tileY == rhs.tileY &&
-                size == rhs.size &&
-                patch == rhs.patch;
+                size == rhs.size;
         }
 
-        bool operator != (const GeometryKey& rhs) const
+        inline bool operator != (const GeometryKey& rhs) const
         {
             return
                 lod != rhs.lod ||
                 tileY != rhs.tileY ||
-                size != rhs.size ||
-                patch != rhs.patch;
+                size != rhs.size;
         }
-
-        int      lod;
-        int      tileY;
-        bool     patch;
-        unsigned size;
     };
 }
 
@@ -119,6 +99,8 @@ namespace ROCKY_NAMESPACE
         //! Construct the geometry pool
         GeometryPool(const SRS& renderingSRS);
 
+        ~GeometryPool();
+
         using SharedGeometries = std::map<GeometryKey, vsg::ref_ptr<SharedGeometry>>;
 
         struct Settings {
@@ -141,7 +123,7 @@ namespace ROCKY_NAMESPACE
         void clear();
 
         //! Remove unused entries from the pool
-        void sweep(VSGContext& context);
+        void sweep(VSGContext context);
 
         //! Number of geometries in the pool
         inline std::size_t size() const;

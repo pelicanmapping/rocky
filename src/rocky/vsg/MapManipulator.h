@@ -33,7 +33,7 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<MapNode> mapNode,
             vsg::ref_ptr<vsg::Window> window,
             vsg::ref_ptr<vsg::Camera> camera,
-            VSGContext& context);
+            VSGContext context);
 
         virtual ~MapManipulator();
 

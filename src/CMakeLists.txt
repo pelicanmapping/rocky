@@ -21,6 +21,9 @@ if (WIN32)
     add_compile_options(/we4834)
 endif()
 
+option(ROCKY_DEBUG_MEMCHECK "Instrument code for memcheck analysis and debugging" OFF)
+mark_as_advanced(ROCKY_DEBUG_MEMCHECK)  
+
 add_subdirectory(rocky)
 add_subdirectory(apps)
 add_subdirectory(tests)

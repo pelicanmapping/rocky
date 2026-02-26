@@ -58,7 +58,7 @@ NodePager::NodePager(const Profile& graphProfile, const SRS& sceneSRS) :
 }
 
 void
-NodePager::initialize(VSGContext& vsgcontext)
+NodePager::initialize(VSGContext vsgcontext)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid(), void());
@@ -82,7 +82,7 @@ NodePager::initialize(VSGContext& vsgcontext)
 
     // install an update operation that will flush the culling sentry each frame,
     // removing invisible nodes from the scene graph.
-    _sentryUpdate = vsgcontext->onUpdate([this, vsgcontext]()
+    _sentryUpdate = vsgcontext->onUpdate([this](VSGContextRef vsgcontext)
         {
             auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
 

@@ -57,7 +57,7 @@ WidgetSystemNode::WidgetSystemNode(Registry& in_registry) :
 }
 
 void
-WidgetSystemNode::initialize(VSGContext& context)
+WidgetSystemNode::initialize(VSGContext context)
 {
     // register me as a gui rendering callback.
     auto recorder = [this](RenderingState& rs, void* imguiContext)
@@ -107,7 +107,7 @@ WidgetSystemNode::initialize(VSGContext& context)
 }
 
 void
-WidgetSystemNode::update(VSGContext& context)
+WidgetSystemNode::update(VSGContext context)
 {
     auto [lock, registry] = _registry.read();
 

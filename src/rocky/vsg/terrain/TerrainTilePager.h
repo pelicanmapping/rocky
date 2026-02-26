@@ -62,10 +62,7 @@ namespace ROCKY_NAMESPACE
 
         //! Update traversal.
         //! @return true if any changes occurred.
-        bool update(
-            const vsg::FrameStamp* fs,
-            const IOOptions& io,
-            std::shared_ptr<TerrainEngine> engine);
+        bool update(std::shared_ptr<TerrainEngine> engine, VSGContext vsgcontext);
 
         //! Fetches a tile by its key.
         //! @param key TileKey for which to fetch a tile
@@ -91,18 +88,21 @@ namespace ROCKY_NAMESPACE
         //! Loads the geometry for 4 new subtiles, and inherits their data models from a parent.
         void requestCreateChildren(
             TileInfo& info,
-            std::shared_ptr<TerrainEngine> terrain) const;
+            std::shared_ptr<TerrainEngine> terrain,
+            VSGContext vsgcontext) const;
 
         //! Loads new data for a tile that was prepped in loadSubtiles
         void requestLoadData(
             TileInfo& info,
             const IOOptions& io,
-            std::shared_ptr<TerrainEngine> terrain) const;
+            std::shared_ptr<TerrainEngine> terrain,
+            VSGContext vsgcontext) const;
 
         //! Merges the new data model loaded in loadData.
         void requestMergeData(
             TileInfo& info,
             const IOOptions& io,
-            std::shared_ptr<TerrainEngine> terrain) const;
+            std::shared_ptr<TerrainEngine> terrain,
+            VSGContext vsgcontext) const;
     };
 }

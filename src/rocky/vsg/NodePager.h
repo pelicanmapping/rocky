@@ -53,7 +53,7 @@ namespace ROCKY_NAMESPACE
         NodePager(const Profile& graphProfile, const SRS& sceneSRS);
 
         //! Call this after configuring the pager's settings.
-        void initialize(VSGContext&);
+        void initialize(VSGContext);
 
         //! Whether this pager is paging
         bool active = false;

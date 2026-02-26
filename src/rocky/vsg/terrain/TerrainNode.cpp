@@ -22,12 +22,19 @@ TerrainProfileNode::TerrainProfileNode(const Profile& in_profile, TerrainNode& i
     //nop
 }
 
+TerrainProfileNode::~TerrainProfileNode()
+{
+#ifdef ROCKY_DEBUG_MEMCHECK
+    Log()->debug("~TerrainProfileNode");
+#endif
+}
+
 void
-TerrainProfileNode::reset(VSGContext context)
+TerrainProfileNode::reset(VSGContext vsgcontext)
 {
     for (auto& child : this->children)
     {
-        context->dispose(child);
+        vsgcontext->dispose(child);
     }
 
     children.clear();
@@ -40,13 +47,13 @@ TerrainProfileNode::reset(VSGContext context)
         profile,
         terrain.renderingSRS,
         terrain.terrainState,
-        context,    // runtime API
+        //context,    // runtime API
         settings(), // settings
         this);      // host
 }
 
 Result<>
-TerrainProfileNode::createRootTiles(VSGContext context)
+TerrainProfileNode::createRootTiles(VSGContext vsgcontext)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(_engine != nullptr, Failure_AssertionFailure);
     ROCKY_SOFT_ASSERT_AND_RETURN(_engine->stateFactory.status.ok(), _engine->stateFactory.status.error());
@@ -58,7 +65,7 @@ TerrainProfileNode::createRootTiles(VSGContext context)
     for (auto& key : keys)
     {
         // create a tile with no parent:
-        auto tile = _engine->createTile(key, {});
+        auto tile = _engine->createTile(key, {}, vsgcontext);
 
         // ensure it can't page out:
         tile->doNotExpire = true;
@@ -67,13 +74,13 @@ TerrainProfileNode::createRootTiles(VSGContext context)
         this->addChild(tile);
     }
 
-    context->compile(vsg::ref_ptr<TerrainProfileNode>(this));
+    vsgcontext->compile(vsg::ref_ptr<TerrainProfileNode>(this));
 
     return ResultVoidOK;
 }
 
 bool
-TerrainProfileNode::update(VSGContext context)
+TerrainProfileNode::update(VSGContext vsgcontext)
 {
     bool changes = false;
 
@@ -81,7 +88,7 @@ TerrainProfileNode::update(VSGContext context)
     {
         if (children.empty())
         {
-            auto r = createRootTiles(context);
+            auto r = createRootTiles(vsgcontext);
             if (r.failed())
             {
                 terrain.status = r.error();
@@ -93,10 +100,10 @@ TerrainProfileNode::update(VSGContext context)
         {
             ROCKY_HARD_ASSERT(_engine);
 
-            if (_tiles.update(context->viewer()->getFrameStamp(), context->io, _engine))
+            if (_tiles.update(_engine, vsgcontext))
                 changes = true;
 
-            changes = _engine->update(context);
+            changes = _engine->update(vsgcontext);
         }
     }
 
@@ -112,14 +119,23 @@ TerrainProfileNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, v
 
 
 
-TerrainNode::TerrainNode(VSGContext context) :
-    terrainState(context)
+TerrainNode::TerrainNode(VSGContext vsgcontext) :
+    terrainState(vsgcontext)
 {
     // create the graphics pipeline to render this map
-    if (!terrainState.setupTerrainStateGroup(*this, context))
+    if (!terrainState.setupTerrainStateGroup(*this, vsgcontext))
     {
         status = Failure("Failed to set up terrain state group");
     }
+}
+
+TerrainNode::~TerrainNode()
+{
+    _callbacks.clear();
+
+#ifdef ROCKY_DEBUG_MEMCHECK
+    Log()->debug("~TerrainNode");
+#endif
 }
 
 TerrainNode::Stats

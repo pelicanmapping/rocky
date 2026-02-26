@@ -202,11 +202,12 @@ namespace ROCKY_NAMESPACE
         //! \param pixel Value to store (in linear color space, if applicable)
         void fill(const Pixel& pixel);
 
-        //! Releases this image's data without deleting it. 
-        //! Use this to transfer ownership of the raw data to someone else.
-        //! The inheritor is responsible to deleting the data.
+        //! Releases this image's data without deleting it.
+        //! The returns value includes a pointer to the raw data, and a boolean flag
+        //! indicating whether the caller how owns the data and is responsible for
+        //! ultimately deleting it.
         //! This object becomes invalid unless you call allocate() on it again.
-        unsigned char* releaseData();
+        std::pair<unsigned char*, bool> releaseData();
 
         //! Reinterprets this image as having a different pixel format.
         //! Use this with caution. Only use this as a temporary object.

@@ -55,7 +55,7 @@ NodeSystemNode::on_update_NodeGraph(entt::registry& r, entt::entity e)
 }
 
 void
-NodeSystemNode::initialize(VSGContext& vsgcontext)
+NodeSystemNode::initialize(VSGContext vsgcontext)
 {
     // nop
 }
@@ -172,7 +172,7 @@ NodeSystemNode::traverse(vsg::ConstVisitor& v) const
 }
 
 void
-NodeSystemNode::update(VSGContext& vsgcontext)
+NodeSystemNode::update(VSGContext vsgcontext)
 {
     if (status.failed()) return;
 

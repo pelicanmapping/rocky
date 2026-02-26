@@ -904,6 +904,12 @@ namespace WEEJOBS_NAMESPACE
         for (auto& pool : _pools)
             if (pool)
                 pool->join_threads();
+
+        for (auto& pool : _pools)
+            if (pool)
+                delete pool;
+
+        _pools.clear();
     }
 
     inline void jobpool::run()

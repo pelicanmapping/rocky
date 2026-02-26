@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Creates a new sky node
-        SkyNode(const VSGContext& instance);
+        SkyNode(const VSGContext instance);
 
         //! Sets the spatial reference system of the earth (geocentric)
         void setWorldSRS(const SRS& srs);

@@ -19,7 +19,7 @@ using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
-    vsg::ref_ptr<vsg::ShaderSet> createLineShaderSet(VSGContext& vsgcontext)
+    vsg::ref_ptr<vsg::ShaderSet> createLineShaderSet(VSGContext vsgcontext)
     {
         vsg::ref_ptr<vsg::ShaderSet> shaderSet;
 
@@ -174,7 +174,7 @@ LineSystemNode::LineSystemNode(Registry& registry) :
 }
 
 void
-LineSystemNode::initialize(VSGContext& vsgcontext)
+LineSystemNode::initialize(VSGContext vsgcontext)
 {
     // Now create the pipeline and stategroup to bind it
     auto shaderSet = createLineShaderSet(vsgcontext);
@@ -276,7 +276,7 @@ LineSystemNode::compile(vsg::Context& compileContext)
 }
 
 void
-LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDetail& geomDetail, VSGContext& vsgcontext)
+LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDetail& geomDetail, VSGContext vsgcontext)
 {
     // NB: registry is read-locked
 
@@ -542,7 +542,7 @@ LineSystemNode::traverse(vsg::ConstVisitor& v) const
 }
 
 void
-LineSystemNode::update(VSGContext& vsgcontext)
+LineSystemNode::update(VSGContext vsgcontext)
 {
     if (status.failed()) return;
 

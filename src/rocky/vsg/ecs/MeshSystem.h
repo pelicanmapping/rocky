@@ -131,9 +131,9 @@ namespace ROCKY_NAMESPACE
         int featureMask(const Mesh&) const;
 
         //! One-time initialization of the system        
-        void initialize(VSGContext&) override;
+        void initialize(VSGContext) override;
 
-        void update(VSGContext&) override;
+        void update(VSGContext) override;
 
         void traverse(vsg::RecordTraversal&) const override;
 
@@ -154,10 +154,10 @@ namespace ROCKY_NAMESPACE
         mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
 
         // Called when a line geometry component is found in the dirty list
-        void createOrUpdateGeometry(const MeshGeometry&, detail::MeshGeometryDetail&, VSGContext&);
+        void createOrUpdateGeometry(const MeshGeometry&, detail::MeshGeometryDetail&, VSGContext);
 
         // Called when a line style is found in the dirty list
-        void createOrUpdateStyle(const MeshStyle&, detail::MeshStyleDetail&, entt::registry&, VSGContext&);
+        void createOrUpdateStyle(const MeshStyle&, detail::MeshStyleDetail&, entt::registry&, VSGContext);
 
         // Called when a new mesh texture shows up
         void addOrUpdateTexture(const MeshTexture&, detail::MeshTextureDetail&, entt::registry&);

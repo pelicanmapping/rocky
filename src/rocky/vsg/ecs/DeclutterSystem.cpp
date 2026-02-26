@@ -20,7 +20,7 @@ DeclutterSystem::DeclutterSystem(Registry r) : System(r)
 }
 
 void
-DeclutterSystem::update(VSGContext& vsgcontext)
+DeclutterSystem::update(VSGContext vsgcontext)
 {
     _total = 0, _visible = 0;
 

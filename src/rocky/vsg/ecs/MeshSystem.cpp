@@ -29,7 +29,7 @@ namespace
         return vsg::ImageInfo::create(sampler, moveImageToVSG(image));
     }
 
-    vsg::ref_ptr<vsg::ShaderSet> createShaderSet(VSGContext& vsgcontext)
+    vsg::ref_ptr<vsg::ShaderSet> createShaderSet(VSGContext vsgcontext)
     {
         vsg::ref_ptr<vsg::ShaderSet> shaderSet;
 
@@ -220,7 +220,7 @@ MeshSystemNode::MeshSystemNode(Registry& registry) :
 
 
 void
-MeshSystemNode::initialize(VSGContext& vsgcontext)
+MeshSystemNode::initialize(VSGContext vsgcontext)
 {
     // make sure all required vulkan features are available:
     bool supported = false;
@@ -366,7 +366,7 @@ MeshSystemNode::compile(vsg::Context& compileContext)
 }
 
 void
-MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDetail& geomDetail, VSGContext& vsgcontext)
+MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDetail& geomDetail, VSGContext vsgcontext)
 {
     // NB: registry is read-locked
 
@@ -440,7 +440,7 @@ MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDet
 
 
 void
-MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& styleDetail, entt::registry& reg, VSGContext& vsgcontext)
+MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& styleDetail, entt::registry& reg, VSGContext vsgcontext)
 {
     // NB: registry is read-locked
     bool needsCompile = false;
@@ -699,7 +699,7 @@ MeshSystemNode::traverse(vsg::ConstVisitor& v) const
 }
 
 void
-MeshSystemNode::update(VSGContext& vsgcontext)
+MeshSystemNode::update(VSGContext vsgcontext)
 {
     if (status.failed()) return;
 

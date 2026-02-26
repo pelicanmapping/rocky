@@ -95,10 +95,16 @@ namespace
                 {
                     proj_destroy(iter->second.pj);
                 }
+                if (iter->second.pj_geodetic)
+                {
+                    proj_destroy(iter->second.pj_geodetic);
+                }
             }
 
             if (g_pj_thread_local_context)
+            {
                 proj_context_destroy(g_pj_thread_local_context);
+            }
         }
 
         PJ_CONTEXT* threading_context()
@@ -520,7 +526,12 @@ namespace
                     if (pj && normalize_to_gis_coords)
                     {
                         // re-order the coordinates to GIS standard long=x, lat=y
-                        pj = proj_normalize_for_visualization(ctx, pj);
+                        auto new_pj = proj_normalize_for_visualization(ctx, pj);
+                        if (new_pj)
+                        {
+                            proj_destroy(pj);
+                            pj = new_pj;
+                        }
                     }
                 }
 

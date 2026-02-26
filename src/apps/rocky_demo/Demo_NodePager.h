@@ -110,7 +110,7 @@ auto Demo_NodePager = [](Application& app)
                 {
                     profileIndex = i;
                     profile = Profile(pn[i]);                    
-                    app.vsgcontext->onNextUpdate([&]()
+                    app.vsgcontext->onNextUpdate([&](...)
                         {
                             remove(pager, app.mainScene->children);
                             pager = nullptr;

@@ -90,7 +90,7 @@ namespace ROCKY_NAMESPACE
         Registry registry = Registry::create();
 
         //! VSG context object
-        rocky::VSGContext vsgcontext;
+        rocky::VSGContextSingleton vsgcontext;
 
         //! Keeps track of windows and views
         DisplayManager display;

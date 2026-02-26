@@ -10,8 +10,8 @@
 #include "TerrainState.h"
 #include "SurfaceNode.h"
 #include "GeometryPool.h"
-#include <rocky/Map.h>
 #include <rocky/TerrainTileModel.h>
+#include <rocky/Map.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -21,7 +21,7 @@ TerrainEngine::TerrainEngine(
     const Profile& new_profile,
     const SRS& new_renderingSRS,
     TerrainState& new_stateFactory,
-    VSGContext new_context,
+    //VSGContext new_context,
     const TerrainSettings& new_settings,
     TerrainTileHost* new_host) :
 
@@ -29,7 +29,7 @@ TerrainEngine::TerrainEngine(
     profile(new_profile),
     renderingSRS(new_renderingSRS),
     stateFactory(new_stateFactory),
-    context(new_context),
+    //context(new_context),
     settings(new_settings),
     geometryPool(new_renderingSRS),
     host(new_host)
@@ -46,9 +46,15 @@ TerrainEngine::TerrainEngine(
     }
 }
 
+TerrainEngine::~TerrainEngine()
+{
+#ifdef ROCKY_DEBUG_MEMCHECK
+    Log()->debug("~TerrainEngine");
+#endif
+}
 
 vsg::ref_ptr<TerrainTileNode>
-TerrainEngine::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> parent)
+TerrainEngine::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> parent, VSGContext context)
 {
     GeometryPool::Settings geomSettings
     {

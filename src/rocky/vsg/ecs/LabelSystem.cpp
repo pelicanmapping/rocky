@@ -104,13 +104,13 @@ LabelSystem::LabelSystem(Registry& registry) :
 }
 
 void
-LabelSystem::initialize(VSGContext& vsg)
+LabelSystem::initialize(VSGContext vsg)
 {
     //nop
 }
 
 void
-LabelSystem::update(VSGContext& vsg)
+LabelSystem::update(VSGContext vsg)
 {
     // process any objects marked dirty
     _registry.read([&](entt::registry& reg)

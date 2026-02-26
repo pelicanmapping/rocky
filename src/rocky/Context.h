@@ -61,14 +61,26 @@ namespace ROCKY_NAMESPACE
         friend class ContextFactory;
     };
 
+#if 1
+    using Context = ContextImpl*; // std::unique_ptr<ContextImpl>;
+
+    struct ContextSingleton : public std::unique_ptr<ContextImpl> {
+        ContextSingleton() = default;
+        ContextSingleton(ContextImpl* ptr) : std::unique_ptr<ContextImpl>(ptr) {}
+        inline operator Context () { return get(); }
+        inline operator Context () const { return get(); }
+    };
+#else
     using Context = std::shared_ptr<ContextImpl>;
+    using ContextSingleton = Context;
+#endif
 
     class ContextFactory
     {
     public:
         template<typename... Args>
-        static Context create(Args&&... args) {
-            return Context(new ContextImpl(std::forward<Args>(args)...));
+        static ContextSingleton create(Args&&... args) {
+            return ContextSingleton(new ContextImpl(std::forward<Args>(args)...));
         };
     };
 }

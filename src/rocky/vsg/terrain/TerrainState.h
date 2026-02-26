@@ -90,8 +90,10 @@ namespace ROCKY_NAMESPACE
         //! Initialize the factory
         TerrainState(VSGContext);
 
+        ~TerrainState();
+
         //! Configures an existing stategroup for rendering terrain
-        bool setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext& context);
+        bool setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext context);
 
         //! Integrates data from the new data model into an existing render model,
         //! and creates or updates all the necessary descriptors and commands.
@@ -100,7 +102,7 @@ namespace ROCKY_NAMESPACE
         TerrainTileRenderModel updateRenderModel(
             const TerrainTileRenderModel& oldRenderModel,
             const TerrainTileModel& newDataModel,
-            VSGContext& runtime) const;
+            VSGContext context) const;
 
         void updateSettings(const TerrainSettings&);
 
@@ -127,16 +129,16 @@ namespace ROCKY_NAMESPACE
         //! Creates all the default texture information,
         //! i.e. placeholder textures and uniforms for all tiles
         //! when they don't have actual data.
-        void createDefaultDescriptors(VSGContext&);
+        void createDefaultDescriptors(VSGContext);
 
         //! Creates the base shader set used when rendering terrain
-        vsg::ref_ptr<vsg::ShaderSet> createShaderSet(VSGContext&) const;
+        vsg::ref_ptr<vsg::ShaderSet> createShaderSet(VSGContext) const;
 
         //! Creates a configurator for graphics pipeline state groups.
         //! The configurator does not contain any ACTUAL decriptors (like
         //! textures and uniforms) but rather just prepares the ShaderSet
         //! to work with the specific decriptors you PLAN to provide.
-        vsg::ref_ptr<vsg::GraphicsPipelineConfig> createPipelineConfig(VSGContext&) const;
+        vsg::ref_ptr<vsg::GraphicsPipelineConfig> createPipelineConfig(VSGContext) const;
 
         //! Defines a single texutre and its (possible shared) sampler
         struct TextureDef

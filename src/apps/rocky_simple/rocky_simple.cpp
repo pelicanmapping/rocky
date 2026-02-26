@@ -16,6 +16,14 @@ int main(int argc, char** argv)
 {
     vsg::CommandLine args(&argc, argv);
 
+    if (args.read("--memcheck"))
+    {
+        std::cout << "Running memory check" << std::endl;
+        auto image = rocky::Image::create(rocky::Image::R8G8B8A8_UNORM, 256, 256);
+        auto data = rocky::moveImageToVSG(image);
+        return 0;
+    }
+
     if (args.read("--debug"))
         debugLayer = true;
 

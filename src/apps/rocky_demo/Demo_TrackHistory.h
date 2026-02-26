@@ -70,7 +70,7 @@ namespace
                 });
         }
 
-        void update(VSGContext& vsgcontext) override
+        void update(VSGContext vsgcontext) override
         {
             auto now = std::chrono::steady_clock::now();
             auto freq = 1s / update_hertz;

@@ -27,6 +27,8 @@ namespace ROCKY_NAMESPACE
         //! Custom create function
         static vsg::ref_ptr<MapNode> create(VSGContext context);
 
+        virtual ~MapNode();
+
     public:
 
         //! Tiling profile for this map node
@@ -80,5 +82,7 @@ namespace ROCKY_NAMESPACE
         bool _openedLayers = false;
 
         mutable ViewLocal<Horizon> _horizon;
+
+        CallbackSub _updateSub;
     };
 }

@@ -134,7 +134,7 @@ Image::Image(Image&& rhs) noexcept :
         _height = rhs._height;
         _depth = rhs._depth;
         _pixelFormat = rhs._pixelFormat;
-        _data = rhs.releaseData();
+        std::tie(this->_data, this->_ownsData) = rhs.releaseData();
     }
 }
 
@@ -143,6 +143,7 @@ Image::~Image()
     if (_data && _ownsData)
     {
         delete[] _data;
+        _data = nullptr;
     }
 }
 
@@ -183,7 +184,10 @@ Image::allocate(
     auto layout = _layouts[pixelFormat()];
 
     if (_data && _ownsData)
+    {
         delete[] _data;
+        _data = nullptr;
+    }
 
     _data = new unsigned char[sizeInBytes()];
     _ownsData = true;
@@ -193,15 +197,19 @@ Image::allocate(
         write(glm::fvec4(0, 0, 0, 0), 0, 0);
 }
 
-unsigned char*
+std::pair<unsigned char*, bool>
 Image::releaseData()
 {
     auto released = _data;
+    auto owned = _ownsData;
     _data = nullptr;
+    _ownsData = true;
     _width = 0;
     _height = 0;
     _depth = 0;
-    return released;
+    _minValue = 0.0f;
+    _maxValue = 0.0f;
+    return std::make_pair(released, owned);
 }
 
 void

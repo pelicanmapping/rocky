@@ -40,7 +40,7 @@ namespace ROCKY_NAMESPACE
         DeclutterSystem(Registry r);
 
         //! Call periodically to update the visibility state of entities
-        void update(VSGContext& runtime) override;
+        void update(VSGContext runtime) override;
 
         //! Gets two stats, the number of entities marked visible in the last update,
         //! and the total number of entities considered in the last update.

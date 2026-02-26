@@ -228,11 +228,6 @@ Application::ctor(int& argc, char** argv)
     ecsNode->add(MeshSystemNode::create(registry));
     ecsNode->add(LineSystemNode::create(registry));
     ecsNode->add(PointSystemNode::create(registry));
-
-    //if (indirect)
-    //    ecsNode->add(IconSystem2Node::create(registry));
-    //else
-    //    ecsNode->add(IconSystemNode::create(registry));
     
     ecsNode->add(LabelSystem::create(registry));
 
@@ -247,12 +242,31 @@ Application::~Application()
 {
     Log()->debug("Quitting background services...");
     background.quit();
+
+#if 0
+    if (root)
+        root->children.clear();
+
+    root = nullptr;
+    mainScene = nullptr;
+    mapNode = nullptr;
+    skyNode = nullptr;
+    ecsNode = nullptr;
+    viewer = nullptr;
+#endif
+
+    Log()->debug("Waiting for all jobs to stop...");
+    jobs::shutdown();
+
+    vsgcontext = nullptr;
 }
 
 void
 Application::onNextUpdate(std::function<void()> func)
 {
-    vsgcontext->onNextUpdate(func);
+    vsgcontext->onNextUpdate([func](...) {
+        func();
+    });
 }
 
 void
@@ -595,7 +609,7 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
     handlers.insert(handlers.begin(), send);
 
     // request a frame when the sender handles an ImGui event:
-    _subs += send->onEvent([vsgcontext(this->vsgcontext)](const vsg::UIEvent& e)
+    _subs += send->onEvent([&](const vsg::UIEvent& e)
         {
             if (e.cast<vsg::FrameEvent>()) return;
             vsgcontext->requestFrame();
@@ -604,19 +618,22 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
     if (installAutomaticIdleFunctions)
     {
         // when the user adds a new GUI node, we need to add it to the idle functions
-        _subs += group->onNodeAdded([app(this), ic(group->imguiContext())](vsg::ref_ptr<ImGuiContextNode> node)
+        _subs += group->onNodeAdded([&, ic(group->imguiContext())](vsg::ref_ptr<ImGuiContextNode> node)
             {
                 // add the node to the idle functions so it can render
-                auto idle_function = [ic, node]()
+                vsg::observer_ptr<ImGuiContextNode> node_weak(node);
+
+                auto idle_function = [ic, node_weak]()
                     {
                         ImGui::SetCurrentContext(ic);
                         ImGui::GetIO().DeltaTime = ImGui::GetIO().DeltaTime <= 0.0f ? 0.016f : ImGui::GetIO().DeltaTime;
                         ImGui::NewFrame();
-                        node->render(ic);
+                        if (auto strong = node_weak.ref_ptr())
+                            strong->render(ic);
                         ImGui::EndFrame();
                     };
 
-                app->idleFunctions.emplace_back(std::make_shared<std::function<void()>>(idle_function));
+                idleFunctions.emplace_back(std::make_shared<std::function<void()>>(idle_function));
             });
     }
 #endif

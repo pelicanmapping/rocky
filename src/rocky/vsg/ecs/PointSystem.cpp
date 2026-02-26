@@ -19,7 +19,7 @@ using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
-    vsg::ref_ptr<vsg::ShaderSet> createShaderSet(VSGContext& vsgcontext)
+    vsg::ref_ptr<vsg::ShaderSet> createShaderSet(VSGContext vsgcontext)
     {
         vsg::ref_ptr<vsg::ShaderSet> shaderSet;
 
@@ -172,7 +172,7 @@ PointSystemNode::PointSystemNode(Registry& registry) :
 }
 
 void
-PointSystemNode::initialize(VSGContext& vsgcontext)
+PointSystemNode::initialize(VSGContext vsgcontext)
 {
     // Now create the pipeline and stategroup to bind it
     auto shaderSet = createShaderSet(vsgcontext);
@@ -276,7 +276,7 @@ PointSystemNode::compile(vsg::Context& compileContext)
 }
 
 void
-PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometryDetail& geomDetail, VSGContext& vsgcontext)
+PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometryDetail& geomDetail, VSGContext vsgcontext)
 {
     // NB: registry is read-locked
 
@@ -531,7 +531,7 @@ PointSystemNode::traverse(vsg::ConstVisitor& v) const
 }
 
 void
-PointSystemNode::update(VSGContext& vsgcontext)
+PointSystemNode::update(VSGContext vsgcontext)
 {
     if (status.failed()) return;
 

@@ -105,7 +105,7 @@ namespace
     }
 }
 
-static void screenshot(rocky::VSGContext&ctx, vsg::ref_ptr<vsg::Image> sourceImage,vsg::Path&filename)
+static void screenshot(rocky::VSGContext ctx, vsg::ref_ptr<vsg::Image> sourceImage,vsg::Path&filename)
 {
 	auto width = sourceImage->extent.width;
 	auto height = sourceImage->extent.height;
@@ -287,7 +287,7 @@ auto Demo_Screenshot = [](Application& app)
 		auto viewRG = app.display.renderGraph(main_view);
 		offscreenRenderGraph->children = viewRG->children;
 
-        auto install = [&app, main_window]()
+        auto install = [&app, main_window](...)
             {
                 auto commandGraph = app.display.commandGraph(main_window);
                 if (commandGraph)
@@ -311,7 +311,7 @@ auto Demo_Screenshot = [](Application& app)
 
 	if (ImGui::Button("Save"))
 	{
-		auto saveImage = [&app]() {
+		auto saveImage = [&app](...) {
 			vsg::Path filename(filenameBuffer);
 			auto imageViews = offscreenRenderGraph->framebuffer->getAttachments();
 			screenshot(app.vsgcontext, imageViews[0]->image, filename);

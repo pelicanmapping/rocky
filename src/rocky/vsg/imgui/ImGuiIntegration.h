@@ -141,10 +141,11 @@ namespace ROCKY_NAMESPACE
         {
         public:
             ImGuiContext* imguicontext = nullptr;
-            VSGContext vsgcontext;
+            detail::GuiRecorders& guiRecorders;
 
-            ImGuiDispatcher(ImGuiContext* imguiContext_in, VSGContext vsgContext_in)
-                : imguicontext(imguiContext_in), vsgcontext(vsgContext_in) {
+            ImGuiDispatcher(ImGuiContext* imguiContext_in, VSGContext vsgcontext) :
+                imguicontext(imguiContext_in),
+                guiRecorders(vsgcontext->guiRecorders) {
             }
 
             void traverse(vsg::RecordTraversal& record) const override
@@ -154,7 +155,7 @@ namespace ROCKY_NAMESPACE
                     record.getFrameStamp()->frameCount
                 };
 
-                for (auto& record_gui : vsgcontext->guiRecorders)
+                for (auto& record_gui : guiRecorders)
                 {
                     record_gui(rs, imguicontext);
                 }

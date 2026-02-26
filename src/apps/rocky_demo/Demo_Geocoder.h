@@ -109,7 +109,7 @@ auto Demo_Geocoder = [](Application& app)
                     ImGui::Selectable(display_name.c_str(), &selected);
                     if (selected)
                     {
-                        app.onNextUpdate([&app, myfeature(feature), display_name]() mutable
+                        app.onNextUpdate([&app, myfeature(feature), display_name](...) mutable
                             {
                                 auto extent = myfeature.extent;
                                 if (extent.area() == 0.0)

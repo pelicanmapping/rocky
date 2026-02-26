@@ -24,10 +24,10 @@ namespace ROCKY_NAMESPACE
         WidgetSystemNode(Registry& registry);
 
         //! One time setup of the system
-        void initialize(VSGContext& context) override;
+        void initialize(VSGContext context) override;
 
         //! Per-frame update
-        void update(VSGContext& context) override;
+        void update(VSGContext context) override;
     };
 }
 #endif // defined(ROCKY_HAS_IMGUI)

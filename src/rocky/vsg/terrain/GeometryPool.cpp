@@ -29,6 +29,13 @@ GeometryPool::GeometryPool(const SRS& renderingSRS)
     }
 }
 
+GeometryPool::~GeometryPool()
+{
+#ifdef ROCKY_DEBUG_MEMCHECK
+    Log()->debug("~GeometryPool");
+#endif
+}
+
 vsg::ref_ptr<SharedGeometry>
 GeometryPool::getPooledGeometry(const TileKey& tileKey, const Settings& settings, Cancelable* progress) const
 {
@@ -399,14 +406,14 @@ GeometryPool::clear()
 }
 
 void
-GeometryPool::sweep(VSGContext& context)
+GeometryPool::sweep(VSGContext context)
 {
     std::scoped_lock lock(_mutex);
     SharedGeometries temp;
     for (auto& entry : _sharedGeometries)
     {
         if (entry.second->referenceCount() > 1)
-            temp.emplace(entry.first, entry.second);
+            temp[entry.first] = std::move(entry.second);
         else
             context->dispose(entry.second);
 

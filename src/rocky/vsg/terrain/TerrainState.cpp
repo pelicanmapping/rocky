@@ -60,8 +60,16 @@ TerrainState::TerrainState(VSGContext context)
     }
 }
 
+TerrainState::~TerrainState()
+{
+    texturedefs.color.defaultData = nullptr;
+    texturedefs.color.sampler = nullptr;
+    texturedefs.elevation.defaultData = nullptr;
+    texturedefs.elevation.sampler = nullptr;
+}
+
 void
-TerrainState::createDefaultDescriptors(VSGContext& context)
+TerrainState::createDefaultDescriptors(VSGContext context)
 {
     // First create our samplers - each one is shared across all tiles.
     // In Vulkan, the sampler is separate from the image you are sampling,
@@ -142,7 +150,7 @@ TerrainState::createDefaultDescriptors(VSGContext& context)
 }
 
 vsg::ref_ptr<vsg::ShaderSet>
-TerrainState::createShaderSet(VSGContext& context) const
+TerrainState::createShaderSet(VSGContext context) const
 {
     // Creates a ShaderSet for terrain rendering.
     //
@@ -205,7 +213,7 @@ TerrainState::createShaderSet(VSGContext& context) const
 
 
 vsg::ref_ptr<vsg::GraphicsPipelineConfig>
-TerrainState::createPipelineConfig(VSGContext& context) const
+TerrainState::createPipelineConfig(VSGContext context) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), {});
 
@@ -253,7 +261,7 @@ TerrainState::createPipelineConfig(VSGContext& context) const
 }
 
 bool
-TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext& context)
+TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), false);
 
@@ -283,7 +291,7 @@ TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext& co
 }
 
 TerrainTileRenderModel
-TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, const TerrainTileModel& dataModel, VSGContext& vsgcontext) const
+TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, const TerrainTileModel& dataModel, VSGContext vsgcontext) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), oldRenderModel);
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), oldRenderModel);

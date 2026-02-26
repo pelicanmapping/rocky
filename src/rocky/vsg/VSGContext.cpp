@@ -256,14 +256,16 @@ namespace
 
     struct SimpleUpdateOperation : public vsg::Inherit<vsg::Operation, SimpleUpdateOperation>
     {
-        std::function<void()> _function;
+        std::function<void(VSGContext)> _function;
+        VSGContext _vsgcontext;
 
-        SimpleUpdateOperation(std::function<void()> function) :
-            _function(function) { }
+        SimpleUpdateOperation(std::function<void(VSGContext)> function, VSGContext vsgcontext) :
+            _function(function),
+            _vsgcontext(vsgcontext) { }
 
         void run() override
         {
-            _function();
+            _function(_vsgcontext);
         };
     };
 }
@@ -473,6 +475,25 @@ VSGContextImpl::ctor(int& argc, char** argv)
 
     // remembers failed URI requests so we don't repeat them
     io.services().deadpool = std::make_shared<DealpoolService>(4096);
+
+
+    ROCKY_SOFT_ASSERT_AND_RETURN(_viewer && _viewer->updateOperations, void());
+
+    // install an update operation on the viewer that invokes update() on this object.
+    _updateOperation = LambdaOperation::create([this]() { this->update(); });
+    _viewer->updateOperations->add(_updateOperation, vsg::UpdateOperations::ALL_FRAMES);
+}
+
+VSGContextImpl::~VSGContextImpl()
+{
+    if (_viewer && _updateOperation)
+    {
+        _viewer->updateOperations->remove(_updateOperation);
+    }
+
+#ifdef ROCKY_DEBUG_MEMCHECK
+    Log()->debug("~VSGContextImpl");
+#endif
 }
 
 vsg::ref_ptr<vsg::Device>
@@ -532,9 +553,9 @@ VSGContextImpl::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::functio
 }
 
 void
-VSGContextImpl::onNextUpdate(std::function<void()> function)
+VSGContextImpl::onNextUpdate(std::function<void(VSGContext)> function)
 {
-    _viewer->updateOperations->add(SimpleUpdateOperation::create(function));
+    _viewer->updateOperations->add(SimpleUpdateOperation::create(function, this));
 
     requestFrame();
 }
@@ -651,7 +672,7 @@ VSGContextImpl::update()
     bool updates_occurred = false;
 
     // Context update callbacks
-    onUpdate.fire();
+    onUpdate.fire(this);
 
     if (_compileResult)
     {

@@ -20,7 +20,7 @@ namespace ROCKY_NAMESPACE
         //! Construct the system
         TransformSystem(Registry& r);
 
-        void update(VSGContext& vsgcontext) override;
+        void update(VSGContext vsgcontext) override;
 
         //! Called periodically to update the transforms
         void traverse(vsg::RecordTraversal& record) const override;

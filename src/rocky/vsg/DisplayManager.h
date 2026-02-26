@@ -55,6 +55,9 @@ namespace ROCKY_NAMESPACE
         //! Call initialize() later to set it up.
         DisplayManager() = default;
 
+        // Destructor
+        ~DisplayManager();
+
         //! Construct a display manager connected to an Application object.
         void initialize(Application& app);
 

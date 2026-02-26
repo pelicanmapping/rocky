@@ -15,7 +15,7 @@ using namespace ROCKY_NAMESPACE;
 namespace
 {
     // Loads an external model to display in the RTT scene
-    vsg::ref_ptr<vsg::Node> load_rtt_model(const URI& uri, VSGContext& vsgcontext)
+    vsg::ref_ptr<vsg::Node> load_rtt_model(const URI& uri, VSGContext vsgcontext)
     {
         auto result = uri.read({});
         if (result.ok())
@@ -95,7 +95,7 @@ auto Demo_RTT = [](Application& app)
         // Add the RTT graph to our application's main window.
         // TODO: possibly replace this with the functionality described here:
         // https://github.com/vsg-dev/VulkanSceneGraph/discussions/928
-        auto install = [&app, rtt_graph, main_window]()
+        auto install = [&app, rtt_graph, main_window](...)
             {
                 auto commandGraph = app.display.commandGraph(main_window);
                 if (commandGraph)

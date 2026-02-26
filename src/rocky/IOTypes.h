@@ -61,6 +61,12 @@ namespace ROCKY_NAMESPACE
         Services(Services&&) noexcept = delete;
         Services& operator=(Services&&) noexcept = delete;
 
+        ~Services() {
+#ifdef ROCKY_DEBUG_MEMCHECK
+            Log()->debug("~Services");
+#endif
+        }
+
         //! Decodes an Image::Ptr from a URI
         ReadImageURIService readImageFromURI;
 

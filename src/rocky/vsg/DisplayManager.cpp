@@ -141,7 +141,7 @@ namespace
             auto window = e.window.ref_ptr();
             if (window)
             {
-                _app->onNextUpdate([window, this]()
+                _app->onNextUpdate([window, this](...)
                     {
                         Log()->debug("Removing window...");
                         _app->display.removeWindow(window);
@@ -168,7 +168,7 @@ DisplayManager::initialize(Application& app)
 
     initialize(app.vsgcontext);
 
-    if (vsgcontext && vsgcontext->viewer())
+    if (app.vsgcontext && app.vsgcontext->viewer())
     {
         // intercept the window-close event so we can remove the window from our tracking tables.
         auto& handlers = vsgcontext->viewer()->getEventHandlers();
@@ -180,6 +180,28 @@ void
 DisplayManager::initialize(VSGContext in_context)
 {
     vsgcontext = in_context;
+}
+
+DisplayManager::~DisplayManager()
+{
+#if 0
+    if (vsgcontext)
+    {
+        for (auto& window : vsgcontext->viewer()->windows())
+        {
+            auto& cg = _commandGraphByWindow[window];
+            if (cg)
+            {
+                cg->children.clear();
+            }
+        }
+        vsgcontext = nullptr;
+    }
+
+    windowsAndViews.clear();
+    _commandGraphByWindow.clear();
+    _app = nullptr;
+#endif
 }
 
 vsg::ref_ptr<vsg::Device>
@@ -508,7 +530,7 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
             // We still need to process ImGui events even if we're not rendering the frame,
             // so install this "idle" function:
-            auto func = [vsgcontext(vsgcontext), viewID(view->viewID), imguicontext]()
+            auto func = [&, viewID(view->viewID), imguicontext]()
                 {
                     RenderingState vrs{
                         viewID,
