@@ -560,10 +560,6 @@ Application::about() const
 }
 
 
-#ifndef ROCKY_HAS_IMGUI
-using RenderImGuiContext = vsg::Node;
-#endif
-
 void
 Application::install(vsg::ref_ptr<RenderImGuiContext> group)
 {
