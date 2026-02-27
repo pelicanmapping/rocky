@@ -111,15 +111,19 @@ namespace
                         ImGui::EndTable();
                     }
                 }
+
+                // update decluttering region:
                 auto size = ImGui::GetWindowSize();
+                auto& dc = i.registry.get<Declutter>(i.entity);
+                dc.rect = Rect(0, 0, size.x, size.y);
+
+                // respond to intersections:
+                i.checkFocus();
+
                 ImGui::End();
 
                 ImGui::PopStyleColor(2);
                 ImGui::PopStyleVar(2);
-
-                // update decluttering volume
-                auto& dc = i.registry.get<Declutter>(i.entity);
-                dc.rect = Rect(0, 0, size.x, size.y);
             };
 
         auto ll_to_ecef = SRS::WGS84.to(SRS::ECEF);
@@ -148,7 +152,7 @@ namespace
             auto entity = registry.create();
 
             auto& platform = registry.emplace<SimulatedPlatform>(entity);
-            platform.name = std::string("Sim " + std::to_string(i + 1));
+            platform.name = std::string("Sim " + std::to_string((std::int64_t)entity));
 
             double lat = -80.0 + rand_unit(mt) * 160.0;
             double lon = -180 + rand_unit(mt) * 360.0;

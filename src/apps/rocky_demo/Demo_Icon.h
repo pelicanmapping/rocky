@@ -39,12 +39,17 @@ auto Demo_Icon = [](Application& app)
             ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, (float)0.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
             ImGui::SetNextWindowPos(ImVec2{ i.position.x, i.position.y }, ImGuiCond_Always, pivot);
+
             ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
 
             icon.iconImage.render(ImVec2{ icon.sizePixels, icon.sizePixels }, icon.rotationDegrees);
 
+            // respond to intersections:
+            i.checkFocus();
+
             ImGui::End();
             ImGui::PopStyleVar(2);
+            
         };
 
     if (status.failed())

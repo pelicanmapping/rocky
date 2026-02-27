@@ -102,6 +102,8 @@ auto Demo_Widget = [](Application& app)
                     ImGui::SliderFloat("Slider", &some_float, 0.0f, 1.0f);
                     ImGui::Checkbox("Show me a fixed-position window", &fixed_window_open);
                 }
+
+                i.hasFocus = ImGui::IsWindowHovered();
                 ImGui::End();
 
                 ImGui::PopStyleVar();

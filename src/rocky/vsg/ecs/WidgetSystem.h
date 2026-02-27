@@ -10,6 +10,7 @@
 #if defined(ROCKY_HAS_IMGUI)
 #include <rocky/vsg/ecs/System.h>
 #include <rocky/ecs/Registry.h>
+#include <unordered_set>
 
 namespace ROCKY_NAMESPACE
 {
@@ -28,6 +29,13 @@ namespace ROCKY_NAMESPACE
 
         //! Per-frame update
         void update(VSGContext context) override;
+
+        //! Intersection support
+        void traverse(vsg::ConstVisitor& v) const override;
+
+    private:
+
+        std::unordered_set<entt::entity> _focusedEntities;
     };
 }
 #endif // defined(ROCKY_HAS_IMGUI)

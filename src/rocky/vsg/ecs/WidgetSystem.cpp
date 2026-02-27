@@ -10,6 +10,7 @@
 
 #include "WidgetSystem.h"
 #include "TransformDetail.h"
+#include "ECSVisitors.h"
 #include <rocky/Rendering.h>
 #include <rocky/ecs/Widget.h>
 #include <rocky/ecs/Visibility.h>
@@ -77,6 +78,8 @@ WidgetSystemNode::initialize(VSGContext context)
 #endif
                 ;
 
+            _focusedEntities.clear();
+
             auto view = reg.view<Widget, WidgetRenderable, TransformDetail, Visibility, ActiveState>();
             for (auto&& [entity, widget, renderable, xdetail, visibility, active] : view.each())
             {
@@ -92,12 +95,19 @@ WidgetSystemNode::initialize(VSGContext context)
                                defaultWindowFlags,
                                renderable.screen[rs.viewID],
                                (ImGuiContext*)imguiContext,
-                               rs.viewID
+                               rs.viewID,
+                               false // focus
                         };
 
                         // Note: widget render needs to call ImGui::SetCurrentContext(i.context)
                         // because of the DLL boundary
                         widget.render(i);
+
+                        // remember any widgets that want focus.
+                        if (i.hasFocus)
+                        {
+                            _focusedEntities.emplace(entity);
+                        }
                     }
                 }
             }
@@ -122,6 +132,22 @@ WidgetSystemNode::update(VSGContext context)
                 renderable.screen[viewID].y = (clip.y + 1.0) * 0.5 * (double)view.viewport[3] + (double)view.viewport[1];
             }
         });
+}
+
+void
+WidgetSystemNode::traverse(vsg::ConstVisitor& v) const
+{
+    // it might be an ECS visitor, in which case we'll communicate the entity being visited
+    auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&v);
+    std::uint32_t viewID = ecsVisitor ? ecsVisitor->viewID : 0;
+
+    if (ecsVisitor)
+    {
+        for (auto entity : _focusedEntities)
+            ecsVisitor->collectedEntities.emplace(entity);
+    }
+
+    Inherit::traverse(v);
 }
 
 #endif // ROCKY_HAS_IMGUI

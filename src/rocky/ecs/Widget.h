@@ -34,6 +34,17 @@ namespace ROCKY_NAMESPACE
         ImVec2 position;
         ImGuiContext* context;
         std::uint32_t viewID;
+        bool hasFocus = false;
+
+        inline bool checkFocus() {
+            auto min = ImGui::GetWindowPos();
+            auto winSize = ImGui::GetWindowSize();
+            auto mouse = ImGui::GetMousePos();
+            hasFocus =
+                mouse.x >= min.x && mouse.x < (min.x + winSize.x) &&
+                mouse.y >= min.y && mouse.y < (min.y + winSize.y);
+            return hasFocus;
+        }
     };
 }
 

@@ -20,7 +20,7 @@ namespace
         DemoIntersectMouseHandler(Application& in_app) : app(in_app) {}
 
         int buffer = 3;
-        Callback<void(std::vector<entt::entity>)> onIntersect;
+        Callback<void(std::unordered_set<entt::entity>)> onIntersect;
 
     protected:
         Application& app;
@@ -41,7 +41,7 @@ namespace
 auto Demo_Intersect = [](Application& app)
 {
     static CallbackSubs subs;
-    static std::vector<entt::entity> entities;
+    static std::unordered_set<entt::entity> entities;
     static vsg::ref_ptr<DemoIntersectMouseHandler> handler;
 
     if (subs.empty())
@@ -50,7 +50,7 @@ auto Demo_Intersect = [](Application& app)
         handler = DemoIntersectMouseHandler::create(app);
         app.viewer->getEventHandlers().emplace_back(handler);
 
-        subs += handler->onIntersect([&](std::vector<entt::entity>&& in_entities)
+        subs += handler->onIntersect([&](std::unordered_set<entt::entity>&& in_entities)
             {
                 entities = std::move(in_entities);
             });
@@ -66,12 +66,15 @@ auto Demo_Intersect = [](Application& app)
                 for (auto e : entities)
                 {
                     ImGui::Separator();
-                    auto* mesh = reg.try_get<Mesh>(e);
-                    if (mesh) ImGuiLTable::Text("Mesh", "entity %u", e);
-                    auto* line = reg.try_get<Line>(e);
-                    if (line) ImGuiLTable::Text("Line", "entity %u", e);
-                    auto* node = reg.try_get<NodeGraph>(e);
-                    if (node) ImGuiLTable::Text("NodeGraph", "entity %u", e);
+                    std::string types;
+
+                    if (reg.try_get<Widget>(e)) types += "Widget ";
+                    if (reg.try_get<Label>(e)) types += "Label ";
+                    if (reg.try_get<NodeGraph>(e)) types += "NodeGraph ";
+                    if (reg.try_get<Mesh>(e)) types += "Mesh ";
+                    if (reg.try_get<Line>(e)) types += "Line ";
+
+                    ImGuiLTable::Text(std::to_string((std::uint32_t)e).c_str(), types.c_str());
                 }
             });
 

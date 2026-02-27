@@ -17,7 +17,7 @@ namespace ROCKY_NAMESPACE
     public:
         std::uint32_t viewID = 0;
         entt::entity currentEntity = entt::null;
-        std::vector<entt::entity> collectedEntities;
+        std::unordered_set<entt::entity> collectedEntities;
 
         inline void reset() {
             collectedEntities.clear();
@@ -49,7 +49,7 @@ namespace ROCKY_NAMESPACE
         {
             bool intersects = Inherit::intersectDraw(firstVertex, vertexCount, firstInstance, instanceCount);
             if (intersects && currentEntity != entt::null)
-                collectedEntities.emplace_back(currentEntity);
+                collectedEntities.emplace(currentEntity);
             return intersects;
         }
 
@@ -57,7 +57,7 @@ namespace ROCKY_NAMESPACE
         {
             bool intersects = Inherit::intersectDrawIndexed(firstIndex, indexCount, firstInstance, instanceCount);
             if (intersects && currentEntity != entt::null)
-                collectedEntities.emplace_back(currentEntity);
+                collectedEntities.emplace(currentEntity);
             return intersects;
         }
     };
@@ -80,7 +80,7 @@ namespace ROCKY_NAMESPACE
         {
             bool intersects = Inherit::intersectDraw(firstVertex, vertexCount, firstInstance, instanceCount);
             if (intersects && currentEntity != entt::null)
-                collectedEntities.emplace_back(currentEntity);
+                collectedEntities.emplace(currentEntity);
             return intersects;
         }
 
@@ -88,7 +88,7 @@ namespace ROCKY_NAMESPACE
         {
             bool intersects = Inherit::intersectDrawIndexed(firstIndex, indexCount, firstInstance, instanceCount);
             if (intersects && currentEntity != entt::null)
-                collectedEntities.emplace_back(currentEntity);
+                collectedEntities.emplace(currentEntity);
             return intersects;
         }
     };
