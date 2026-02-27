@@ -459,23 +459,23 @@
 <h2 id="functions">Functions</h2>
 <h3 id="lrucache">LRUCache<K, V></h3>
 <p><em>public void LRUCache<K, V>(int capacity)</em></p>
-<p><em>Defined at src/rocky/Cache.h#135</em></p>
+<p><em>Defined at src/rocky/Cache.h#136</em></p>
 <p>Constructs an LRUCache with the specified capacity.</p>
 <p><strong>capacity_</strong> The maximum number of items the cache can hold.</p>
 <h3 id="setcapacity">setCapacity</h3>
 <p><em>public void setCapacity(int value)</em></p>
-<p><em>Defined at src/rocky/Cache.h#142</em></p>
+<p><em>Defined at src/rocky/Cache.h#143</em></p>
 <p>Sets the cache capacity and clears all current entries and statistics.</p>
 <p><strong>value</strong> The new maximum number of items the cache can hold.</p>
 <h3 id="get">get</h3>
 <p><em>public int get(const K &amp; key)</em></p>
-<p><em>Defined at src/rocky/Cache.h#157</em></p>
+<p><em>Defined at src/rocky/Cache.h#158</em></p>
 <p>Retrieves the value associated with the given key, if present. Moves the accessed item to the most recently used position.</p>
 <p><strong>key</strong> The key to look up.</p>
 <p><strong>return</strong> An optional containing the value if found, or empty if not found.</p>
 <h3 id="put">put</h3>
 <p><em>public void put(const K &amp; key, const V &amp; value)</em></p>
-<p><em>Defined at src/rocky/Cache.h#178</em></p>
+<p><em>Defined at src/rocky/Cache.h#179</em></p>
 <p>Inserts or updates the value for the given key. If the key already exists, updates its value and moves it to the most recently used position. If the cache is full, evicts the least recently used item.</p>
 <p><strong>key</strong> The key to insert or update.</p>
 <p><strong>value</strong> The value to associate with the key.</p>

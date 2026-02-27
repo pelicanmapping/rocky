@@ -355,6 +355,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#terrainengine_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ~TerrainEngine
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#createtile" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -403,7 +414,6 @@
 <p>Access to all terrain-specific logic, data, and settings associated with a Map.</p>
 <h2 id="members">Members</h2>
 <p>public const int &amp; settings</p>
-<p>public int context</p>
 <p>public int map</p>
 <p>public int profile</p>
 <p>public int renderingSRS</p>
@@ -413,9 +423,11 @@
 <p>public int loadSchedulerName</p>
 <h2 id="functions">Functions</h2>
 <h3 id="terrainengine">TerrainEngine</h3>
-<p><em>public void TerrainEngine(int map, const int &amp; profile, const int &amp; renderingSRS, int &amp; stateFactory, int context, const int &amp; settings, int * host)</em></p>
+<p><em>public void TerrainEngine(int map, const int &amp; profile, const int &amp; renderingSRS, int &amp; stateFactory, const int &amp; settings, int * host)</em></p>
+<h3 id="terrainengine_1">~TerrainEngine</h3>
+<p><em>public void ~TerrainEngine()</em></p>
 <h3 id="createtile">createTile</h3>
-<p><em>public int createTile(const int &amp; key, int parent)</em></p>
+<p><em>public int createTile(const int &amp; key, int parent, int context)</em></p>
 <p>Create a single terrain tile.</p>
 <h3 id="update">update</h3>
 <p><em>public _Bool update(int context)</em></p>

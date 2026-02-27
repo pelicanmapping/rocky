@@ -366,10 +366,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#find" class="md-nav__link">
+  <a href="#setthreadname" class="md-nav__link">
     <span class="md-ellipsis">
       
-        find
+        setThreadName
       
     </span>
   </a>
@@ -476,7 +476,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#setthreadname" class="md-nav__link">
+  <a href="#setthreadname_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         setThreadName
@@ -487,10 +487,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#setthreadname_1" class="md-nav__link">
+  <a href="#find" class="md-nav__link">
     <span class="md-ellipsis">
       
-        setThreadName
+        find
       
     </span>
   </a>
@@ -522,52 +522,51 @@
 <h1 id="namespace-detail">namespace detail</h1>
 <h2 id="records">Records</h2>
 <ul>
-<li><a href="ImGuiDispatcher/">ImGuiDispatcher</a></li>
+<li><a href="SentryTracker/">SentryTracker</a></li>
+<li><a href="ThreadLocal/">ThreadLocal</a></li>
+<li><a href="Gate/">Gate</a></li>
+<li><a href="ScopedGate/">ScopedGate</a></li>
+<li><a href="ResidentCache/">ResidentCache</a></li>
+<li><a href="LRUCache/">LRUCache</a></li>
+<li><a href="vector_map_equal/">vector_map_equal</a></li>
+<li><a href="vector_map/">vector_map</a></li>
+<li><a href="make_string/">make_string</a></li>
+<li><a href="ROCKY_EXPORT/">ROCKY_EXPORT</a></li>
+<li><a href="StreamCompressor/">StreamCompressor</a></li>
+<li><a href="qualified_double/">qualified_double</a></li>
 <li><a href="FindNodeVisitor/">FindNodeVisitor</a></li>
 <li><a href="ForEachNodeVisitor/">ForEachNodeVisitor</a></li>
 <li><a href="PromiseOperation/">PromiseOperation</a></li>
 <li><a href="LambdaOperation/">LambdaOperation</a></li>
 <li><a href="SimpleCompiler/">SimpleCompiler</a></li>
-<li><a href="ROCKY_EXPORT/">ROCKY_EXPORT</a></li>
-<li><a href="PointStyleRecord/">PointStyleRecord</a></li>
-<li><a href="PointStyleUniform/">PointStyleUniform</a></li>
-<li><a href="PointDrawable/">PointDrawable</a></li>
-<li><a href="PointStyleDetail/">PointStyleDetail</a></li>
-<li><a href="PointGeometryDetail/">PointGeometryDetail</a></li>
-<li><a href="LineStyleRecord/">LineStyleRecord</a></li>
-<li><a href="LineStyleUniform/">LineStyleUniform</a></li>
-<li><a href="LineDrawable/">LineDrawable</a></li>
-<li><a href="LineStyleDetail/">LineStyleDetail</a></li>
-<li><a href="LineGeometryDetail/">LineGeometryDetail</a></li>
+<li><a href="ImGuiDispatcher/">ImGuiDispatcher</a></li>
 <li><a href="MeshStyleRecord/">MeshStyleRecord</a></li>
 <li><a href="MeshStyleUniform/">MeshStyleUniform</a></li>
 <li><a href="MeshDrawable/">MeshDrawable</a></li>
 <li><a href="MeshStyleDetail/">MeshStyleDetail</a></li>
 <li><a href="MeshGeometryDetail/">MeshGeometryDetail</a></li>
 <li><a href="MeshTextureDetail/">MeshTextureDetail</a></li>
-<li><a href="ResidentCache/">ResidentCache</a></li>
-<li><a href="LRUCache/">LRUCache</a></li>
-<li><a href="qualified_double/">qualified_double</a></li>
-<li><a href="vector_map_equal/">vector_map_equal</a></li>
-<li><a href="vector_map/">vector_map</a></li>
-<li><a href="make_string/">make_string</a></li>
-<li><a href="StreamCompressor/">StreamCompressor</a></li>
-<li><a href="ThreadLocal/">ThreadLocal</a></li>
-<li><a href="Gate/">Gate</a></li>
-<li><a href="ScopedGate/">ScopedGate</a></li>
-<li><a href="SentryTracker/">SentryTracker</a></li>
+<li><a href="LineStyleRecord/">LineStyleRecord</a></li>
+<li><a href="LineStyleUniform/">LineStyleUniform</a></li>
+<li><a href="LineDrawable/">LineDrawable</a></li>
+<li><a href="LineStyleDetail/">LineStyleDetail</a></li>
+<li><a href="LineGeometryDetail/">LineGeometryDetail</a></li>
+<li><a href="PointStyleRecord/">PointStyleRecord</a></li>
+<li><a href="PointStyleUniform/">PointStyleUniform</a></li>
+<li><a href="PointDrawable/">PointDrawable</a></li>
+<li><a href="PointStyleDetail/">PointStyleDetail</a></li>
+<li><a href="PointGeometryDetail/">PointGeometryDetail</a></li>
 </ul>
 <h2 id="functions">Functions</h2>
 <h3 id="linear_to_srgb">linear_to_sRGB</h3>
 <p><em>float linear_to_sRGB(float c)</em></p>
-<p><em>Defined at src/rocky/Image.h#369</em></p>
+<p><em>Defined at src/rocky/Image.h#370</em></p>
 <h3 id="srgb_to_linear">sRGB_to_linear</h3>
 <p><em>float sRGB_to_linear(float c)</em></p>
-<p><em>Defined at src/rocky/Image.h#381</em></p>
-<h3 id="find">find</h3>
-<p><em>T * find(int * root)</em></p>
-<p><em>Defined at src/rocky/vsg/VSGUtils.h#562</em></p>
-<p>Finds the first node of a given type in a scene graph.</p>
+<p><em>Defined at src/rocky/Image.h#382</em></p>
+<h3 id="setthreadname">setThreadName</h3>
+<p><em>int setThreadName(const int &amp; name)</em></p>
+<p>Sets the name of the current thread</p>
 <h3 id="isenvvarset">isEnvVarSet</h3>
 <p><em>int isEnvVarSet(const char * name)</em></p>
 <p>Whther and environment variable is set at all</p>
@@ -600,12 +599,13 @@
 <h3 id="ciequals">ciEquals</h3>
 <p><em>int ciEquals(int lhs, int rhs)</em></p>
 <p>Case-insensitive compare</p>
-<h3 id="setthreadname">setThreadName</h3>
+<h3 id="setthreadname_1">setThreadName</h3>
 <p><em>ROCKY_EXPORT setThreadName(const char * name)</em></p>
 <p>Sets the name of the current thread</p>
-<h3 id="setthreadname_1">setThreadName</h3>
-<p><em>int setThreadName(const int &amp; name)</em></p>
-<p>Sets the name of the current thread</p>
+<h3 id="find">find</h3>
+<p><em>T * find(int * root)</em></p>
+<p><em>Defined at src/rocky/vsg/VSGUtils.h#564</em></p>
+<p>Finds the first node of a given type in a scene graph.</p>
 
 
 

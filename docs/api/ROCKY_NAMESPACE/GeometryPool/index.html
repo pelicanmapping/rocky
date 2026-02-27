@@ -366,6 +366,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#geometrypool_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ~GeometryPool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#getpooledgeometry" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -443,7 +454,7 @@
 
 
 <h1 id="class-geometrypool">class GeometryPool</h1>
-<p><em>Defined at src/rocky/vsg/terrain/GeometryPool.h#116</em></p>
+<p><em>Defined at src/rocky/vsg/terrain/GeometryPool.h#96</em></p>
 <p>Pool of terrain tile geometries.</p>
 <p>In a geocentric map, every tile at a particular LOD and a particular latitudinal (north-south) extent shares exactly the same geometry; each tile is just shifted and rotated differently. Therefore we can use the same Geometry for all tiles that share the same LOD and same min/max latitude in a geocentric map. In a projected map, all tiles at a given LOD share the same geometry regardless of extent, so even more sharing is possible.</p>
 <p>This object creates and returns geometries based on TileKeys, sharing instances whenever possible.</p>
@@ -456,6 +467,8 @@
 <h3 id="geometrypool">GeometryPool</h3>
 <p><em>public void GeometryPool(const int &amp; renderingSRS)</em></p>
 <p>Construct the geometry pool</p>
+<h3 id="geometrypool_1">~GeometryPool</h3>
+<p><em>public void ~GeometryPool()</em></p>
 <h3 id="getpooledgeometry">getPooledGeometry</h3>
 <p><em>public int getPooledGeometry(const int &amp; tileKey, const Settings &amp; settings, int * state)</em></p>
 <p>Gets the Geometry associated with a tile key, creating a new one if necessary and storing it in the pool.</p>
@@ -466,11 +479,11 @@
 <p><em>public void clear()</em></p>
 <p>Clear and reset the pool</p>
 <h3 id="sweep">sweep</h3>
-<p><em>public void sweep(int &amp; context)</em></p>
+<p><em>public void sweep(int context)</em></p>
 <p>Remove unused entries from the pool</p>
 <h3 id="size">size</h3>
 <p><em>public int size()</em></p>
-<p><em>Defined at src/rocky/vsg/terrain/GeometryPool.h#179</em></p>
+<p><em>Defined at src/rocky/vsg/terrain/GeometryPool.h#161</em></p>
 <p>Number of geometries in the pool</p>
 <p>inlines</p>
 
