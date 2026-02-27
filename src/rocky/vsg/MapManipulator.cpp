@@ -457,11 +457,112 @@ MapManipulator::reinitialize()
     _thrown = false;
     _delta.set(0.0, 0.0);
     _throwDelta.set(0.0, 0.0);
+    _throwVelocity.set(0.0, 0.0);
+    _dragHistory.clear();
     _continuousDelta.set(0.0, 0.0);
     _continuous = 0;
     _lastAction = ACTION_NULL;
     _previousMove.clear();
     clearEvents();
+}
+
+void
+MapManipulator::recordDragSample(vsg::time_point time, const vsg::dvec2& ndcDelta)
+{
+    // Add new sample
+    _dragHistory.push_back({ time, ndcDelta });
+
+    // Remove samples older than throwHistoryTime
+    double historyWindow = settings.throwHistoryTime;
+    while (!_dragHistory.empty())
+    {
+        double age = to_seconds(time - _dragHistory.front().time);
+        if (age > historyWindow)
+            _dragHistory.pop_front();
+        else
+            break;
+    }
+}
+
+vsg::dvec2
+MapManipulator::calculateThrowVelocity(vsg::time_point releaseTime) const
+{
+    if (_dragHistory.size() < 2)
+        return vsg::dvec2(0.0, 0.0);
+
+    // Sum all deltas in the history window
+    vsg::dvec2 totalDelta(0.0, 0.0);
+
+    for (const auto& sample : _dragHistory)
+    {
+        totalDelta += sample.ndcDelta;
+    }
+
+    // Calculate time span of the history
+    double timeSpan = to_seconds(releaseTime - _dragHistory.front().time);
+
+    if (timeSpan < 0.001) // Avoid division by near-zero
+        return vsg::dvec2(0.0, 0.0);
+
+    // Velocity = total displacement / time
+    vsg::dvec2 velocity = totalDelta / timeSpan;
+
+    // Clamp to maximum velocity
+    double speed = vsg::length(velocity);
+    if (speed > settings.maxThrowVelocity)
+    {
+        velocity = vsg::normalize(velocity) * settings.maxThrowVelocity;
+    }
+
+    return velocity;
+}
+
+void
+MapManipulator::clearDragHistory()
+{
+    _dragHistory.clear();
+}
+
+void
+MapManipulator::cancelThrow()
+{
+    _thrown = false;
+    _throwVelocity.set(0.0, 0.0);
+}
+
+bool
+MapManipulator::serviceThrow(vsg::time_point now)
+{
+    if (!_thrown)
+        return false;
+
+    double dt = to_seconds(now - _previousTime);
+    if (dt <= 0.0)
+        return _thrown;
+
+    // Apply velocity as pan delta
+    // Velocity is in NDC/second, so multiply by dt to get this frame's delta
+    vsg::dvec2 frameDelta = _throwVelocity * dt;
+    pan(frameDelta.x, frameDelta.y);
+
+    // Frame-rate independent exponential decay:
+    // For decay per reference frame (1/60s): velocity *= decayRate^(dt * 60)
+    // This ensures consistent behavior regardless of framerate
+    double referenceFrameRate = 60.0;
+    double decayExponent = dt * referenceFrameRate;
+    double decayFactor = std::pow(settings.throwDecayRate, decayExponent);
+
+    _throwVelocity *= decayFactor;
+
+    // Check if velocity has dropped below threshold
+    double speed = vsg::length(_throwVelocity);
+    if (speed < settings.throwThreshold)
+    {
+        _thrown = false;
+        _throwVelocity.set(0.0, 0.0);
+    }
+
+    return _thrown;
 }
 
 bool
@@ -965,6 +1066,9 @@ MapManipulator::apply(vsg::KeyPressEvent& keyPress)
     if (keyPress.handled || !withinRenderArea(_previousMove))
         return;
 
+    // Cancel any active throw on new input
+    cancelThrow();
+
     _keyPress = keyPress;
 
     recalculateCenterAndDistanceFromLookVector();
@@ -998,6 +1102,12 @@ MapManipulator::apply(vsg::ButtonPressEvent& buttonPress)
 
     //std::cout << "ButtonPressEvent" << std::endl;
 
+    // Cancel any active throw on new input
+    cancelThrow();
+
+    // Clear drag history for fresh velocity calculation
+    clearDragHistory();
+
     // simply record the button press event.
     clearEvents();
 
@@ -1026,8 +1136,32 @@ MapManipulator::apply(vsg::ButtonReleaseEvent& buttonRelease)
         vsg::dvec3 world;
         viewportToWorld(buttonRelease.x, buttonRelease.y, world);
     }
+    else
+    {
+        // Not a click - check for throw initiation
+        // Initiate throw if:
+        // 1. Throwing is enabled
+        // 2. Last action was pan
+        // 3. Not in continuous mode
+        // 4. Velocity exceeds threshold
+        if (settings.throwingEnabled &&
+            _lastAction._type == ACTION_PAN &&
+            _continuous == 0)
+        {
+            vsg::dvec2 velocity = calculateThrowVelocity(buttonRelease.time);
+            double speed = vsg::length(velocity);
+
+            if (speed >= settings.throwThreshold)
+            {
+                _thrown = true;
+                _throwVelocity = velocity;
+                _dirty = true;
+            }
+        }
+    }
 
     clearEvents();
+    clearDragHistory();
 
     buttonRelease.handled = true;
 }
@@ -1071,6 +1205,18 @@ MapManipulator::apply(vsg::MoveEvent& moveEvent)
     if (handleMouseAction(_lastAction, _previousMove.value(), moveEvent))
         _dirty = true;
 
+    // Record drag sample for throw velocity calculation (only for pan actions)
+    if (settings.throwingEnabled &&
+        (_lastAction._type == ACTION_PAN) &&
+        _previousMove.has_value())
+    {
+        auto curr = ndc(moveEvent);
+        auto prev = ndc(_previousMove.value());
+        vsg::dvec2 ndcDelta(curr.x - prev.x, -(curr.y - prev.y));
+        ndcDelta *= settings.mouseSensitivity;
+        recordDragSample(moveEvent.time, ndcDelta);
+    }
+
     if (_continuous > 0) // && !wasContinuous)
     {
         _continuousAction = _lastAction;
@@ -1089,6 +1235,9 @@ MapManipulator::apply(vsg::ScrollWheelEvent& scrollEvent)
 {
     if (scrollEvent.handled || !withinRenderArea(_previousMove))
         return;
+
+    // Cancel any active throw on new input
+    cancelThrow();
 
     //std::cout << "ScrollWheelEvent" << std::endl;
 
@@ -1153,6 +1302,15 @@ MapManipulator::apply(vsg::FrameEvent& frame)
     }
 
     serviceTask(frame.time);
+
+    // Service throw animation
+    if (_thrown)
+    {
+        if (serviceThrow(frame.time))
+        {
+            _dirty = true;  // Keep rendering while throw is active
+        }
+    }
 
     if (isSettingViewpoint())
     {
