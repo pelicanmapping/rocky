@@ -98,7 +98,7 @@ auto Demo_Widget = [](Application& app)
                 ImGui::SetNextWindowPos(ImVec2{ i.position.x, i.position.y }, ImGuiCond_Always, ImVec2{ 0.5f, 0.5f });
                 ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
                 {
-                    ImGui::Text("%s", "I am a widget.");
+                    ImGui::TextUnformatted("I am a widget.");
                     ImGui::SliderFloat("Slider", &some_float, 0.0f, 1.0f);
                     ImGui::Checkbox("Show me a fixed-position window", &fixed_window_open);
                 }
@@ -117,7 +117,7 @@ auto Demo_Widget = [](Application& app)
                         Transform& transform = i.registry.get<Transform>(i.entity);
                         auto p = transform.position.transform(SRS::WGS84);
 
-                        ImGui::Text("%s", "Widgets can be placed at absolute coordinates too.");
+                        ImGui::TextUnformatted("Widgets can be placed at absolute coordinates too.");
                         ImGui::Separator();
                         if (ImGuiLTable::Begin("pos_table")) {
                             ImGuiLTable::Text("Latitude:", "%.3f", p.y);

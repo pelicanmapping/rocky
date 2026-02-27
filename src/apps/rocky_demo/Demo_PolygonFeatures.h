@@ -40,7 +40,7 @@ auto Demo_PolygonFeatures = [](Application& app)
         }
         else if (data.working())
         {
-            ImGui::Text("%s", "Loading features...");
+            ImGui::TextUnformatted("Loading features...");
         }
         else if (data.available() && data->status.ok())
         {
@@ -78,7 +78,7 @@ auto Demo_PolygonFeatures = [](Application& app)
         }
         else
         {
-            ImGui::Text("%s", "Failed to load features!");
+            ImGui::TextUnformatted("Failed to load features!");
         }
     }
 

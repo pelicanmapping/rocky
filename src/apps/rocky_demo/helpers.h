@@ -62,7 +62,7 @@ namespace ImGuiLTable
         float scale_min = FLT_MAX, float scale_max = FLT_MAX)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -72,7 +72,7 @@ namespace ImGuiLTable
     static bool DragFloat(const char* label, float* v, float step, float v_min, float v_max, const char* format = nullptr)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -82,7 +82,7 @@ namespace ImGuiLTable
     static bool SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format = nullptr)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -92,7 +92,7 @@ namespace ImGuiLTable
     static bool SliderFloat(const char* label, float* v, float v_min, float v_max, const char* format, ImGuiSliderFlags flags)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -102,7 +102,7 @@ namespace ImGuiLTable
     static bool SliderDouble(const char* label, double* v, double v_min, double v_max, const char* format = nullptr)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -115,7 +115,7 @@ namespace ImGuiLTable
     static bool SliderDouble(const char* label, double* v, double v_min, double v_max, const char* format, ImGuiSliderFlags flags)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -128,7 +128,7 @@ namespace ImGuiLTable
     static bool SliderInt(const char* label, int* v, int v_min, int v_max)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -138,7 +138,7 @@ namespace ImGuiLTable
     static bool SliderInt(const char* label, int* v, int v_min, int v_max, const char* format, ImGuiSliderFlags flags)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -148,7 +148,7 @@ namespace ImGuiLTable
     static bool Checkbox(const char* label, bool* v)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -158,7 +158,7 @@ namespace ImGuiLTable
     static bool BeginCombo(const char* label, const char* defaultItem)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -173,7 +173,7 @@ namespace ImGuiLTable
     static bool Combo(const char* label, int* current_item, const char* const items[], int items_count, int height_in_items = -1)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -183,7 +183,7 @@ namespace ImGuiLTable
     static bool InputFloat(const char* label, float* v)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         std::string s("##" + std::string(label));
@@ -193,7 +193,7 @@ namespace ImGuiLTable
     static bool InputText(const char* label, char* buf, std::size_t bufSize, ImGuiInputTextFlags flags = 0)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         return ImGui::InputText(label, buf, bufSize, flags);
@@ -202,7 +202,7 @@ namespace ImGuiLTable
     static bool ColorEdit3(const char* label, float col[3], ImGuiColorEditFlags flags = 0)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         return ImGui::ColorEdit3(label, col, flags);
@@ -211,7 +211,7 @@ namespace ImGuiLTable
     static bool ColorEdit4(const char* label, float col[4], ImGuiColorEditFlags flags = 0)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         return ImGui::ColorEdit4(label, col, flags);
@@ -221,7 +221,7 @@ namespace ImGuiLTable
     static void Text(const char* label, LITERAL&& format, Args...args)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         ImGui::Text(format, args...);
@@ -231,17 +231,26 @@ namespace ImGuiLTable
     static void TextWrapped(const char* label, const char* format, Args...args)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         ImGui::TextWrapped(format, args...);
+    }
+
+    static void TextUnformatted(const char* label, const char* text)
+    {
+        ImGui::TableNextColumn();
+        ImGui::TextUnformatted(label);
+        ImGui::TableNextColumn();
+        ImGui::SetNextItemWidth(-1);
+        ImGui::TextUnformatted(text);
     }
 
     //template<typename...Args>
     static void TextLinkOpenURL(const char* label, const char* text, const char* href)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
 #if IMGUI_VERSION_NUM >= 19200
@@ -270,7 +279,7 @@ namespace ImGuiLTable
     {
         bool changed = false;
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         bool bits[16];
         for(int i=0; i<16/step; ++i) {
@@ -293,7 +302,7 @@ namespace ImGuiLTable
     static bool StringCombo(const char* label, std::string& selected, const std::vector<std::string>& strings)
     {
         ImGui::TableNextColumn();
-        ImGui::Text("%s", label);
+        ImGui::TextUnformatted(label);
         ImGui::TableNextColumn();
         ImGui::SetNextItemWidth(-1);
         bool changed = false;

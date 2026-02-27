@@ -95,7 +95,7 @@ namespace
                         image.render(image.size(), heading);
 
                         ImGui::TableNextColumn();
-                        ImGui::Text("%s", platform.name.c_str());
+                        ImGui::TextUnformatted(platform.name.c_str());
 
                         if (showPosition)
                         {
@@ -252,8 +252,8 @@ auto Demo_Simulation = [](Application& app)
             });
     }
 
-    ImGui::Text("%s", "TIP: toggle visibility in the Map panel!");
-    ImGui::Text("%s", "TIP: prevent overlap in the Decluttering panel!");
+    ImGui::TextUnformatted("TIP: toggle visibility in the Map panel!");
+    ImGui::TextUnformatted("TIP: prevent overlap in the Decluttering panel!");
     ImGui::Separator();
 
     if (ImGuiLTable::Begin("simulation"))

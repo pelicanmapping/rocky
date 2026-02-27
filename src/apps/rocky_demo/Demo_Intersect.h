@@ -74,7 +74,7 @@ auto Demo_Intersect = [](Application& app)
                     if (reg.try_get<Mesh>(e)) types += "Mesh ";
                     if (reg.try_get<Line>(e)) types += "Line ";
 
-                    ImGuiLTable::Text(std::to_string((std::uint32_t)e).c_str(), types.c_str());
+                    ImGuiLTable::TextUnformatted(std::to_string((std::uint32_t)e).c_str(), types.c_str());
                 }
             });
 

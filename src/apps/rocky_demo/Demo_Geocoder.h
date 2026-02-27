@@ -89,7 +89,7 @@ auto Demo_Geocoder = [](Application& app)
 
         if (geocoding_task.working())
         {
-            ImGui::Text("%s", "Searching...");
+            ImGui::TextUnformatted("Searching...");
         }
 
         else if (geocoding_task.available())
@@ -98,7 +98,7 @@ auto Demo_Geocoder = [](Application& app)
             if (result.ok())
             {
                 int count = 0;
-                ImGui::Text("%s", "Click on a result to center:");
+                ImGui::TextUnformatted("Click on a result to center:");
 
                 for (auto& feature : result.value())
                 {

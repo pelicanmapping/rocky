@@ -142,25 +142,25 @@ auto Demo_ElevationSampler = [](Application& app)
             }
             else if (sample.working())
             {
-                ImGuiLTable::Text("Elevation sampler:", "%s", "...");
-                ImGuiLTable::Text("Geometric error:", "%s", "...");
+                ImGuiLTable::TextUnformatted("Elevation sampler:", "...");
+                ImGuiLTable::TextUnformatted("Geometric error:", "...");
 
                 if (sample.working())
                     app.vsgcontext->requestFrame();
             }
             else
             {
-                ImGuiLTable::Text("Elevation sampler:", "%s", "no data");
+                ImGuiLTable::TextUnformatted("Elevation sampler:", "no data");
             }
         }
         else
         {
-            ImGuiLTable::Text("Elevation sampler:", "%s", "n/a - no elevation layer");
+            ImGuiLTable::TextUnformatted("Elevation sampler:", "n/a - no elevation layer");
         }
     }
     else
     {
-        ImGuiLTable::Text("GeoPoint:", "%s", "no intersection");
+        ImGuiLTable::TextUnformatted("GeoPoint:", "no intersection");
     }
 
     ImGuiLTable::End();

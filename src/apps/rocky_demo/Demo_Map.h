@@ -23,14 +23,14 @@ auto Demo_Map = [](Application& app)
         {
             if (!app.mapNode->map->name.empty())
             {
-                ImGuiLTable::Text("Name:", "%s", app.mapNode->map->name.c_str());
+                ImGuiLTable::TextUnformatted("Name:", app.mapNode->map->name.c_str());
             }
 
             auto& profile = app.mapNode->profile;
             if (profile.valid())
             {
                 if (!profile.wellKnownName().empty())
-                    ImGuiLTable::Text("Profile:", "%s", profile.wellKnownName().c_str());
+                    ImGuiLTable::TextUnformatted("Profile:", profile.wellKnownName().c_str());
                 else
                     ImGuiLTable::TextWrapped("Profile:", "%s", profile.to_json().c_str());
             }
@@ -110,7 +110,7 @@ auto Demo_Map = [](Application& app)
                     std::string srs_name = tileLayer->profile.srs().name();
                     if (srs_name.empty() || srs_name == "unknown")
                         srs_name = tileLayer->profile.srs().definition();
-                    ImGuiLTable::Text("SRS:", "%s", srs_name.c_str());
+                    ImGuiLTable::TextUnformatted("SRS:", srs_name.c_str());
                 }
                 const GeoExtent& extent = layer->extent();
                 if (extent.valid())

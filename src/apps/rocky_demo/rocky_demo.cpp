@@ -56,7 +56,7 @@ auto Demo_About = [](Application& app)
 {
     for (auto& about : rocky::ContextImpl::about())
     {
-        ImGui::Text("%s", about.c_str());
+        ImGui::TextUnformatted(about.c_str());
     }
 };
 
@@ -191,7 +191,7 @@ struct MainGUI : public vsg::Inherit<ImGuiContextNode, MainGUI>
             ImGui::Begin("##Attribution", nullptr,
                 ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | 
                 ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove);
-            ImGui::Text("%s", attribution->c_str());
+            ImGui::TextUnformatted(attribution->c_str());
             asize = ImGui::GetWindowSize();
             ImGui::End();
             ImGui::PopStyleVar(1);

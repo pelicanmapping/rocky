@@ -161,8 +161,8 @@ auto Demo_Draw = [](Application& app)
         app.vsgcontext->requestFrame();
     }
 
-    ImGui::Text("%s", "Left click: start a line or add a new point");
-    ImGui::Text("%s", "Right click: finish a line");
+    ImGui::TextUnformatted("Left click: start a line or add a new point");
+    ImGui::TextUnformatted("Right click: finish a line");
 
     ImGui::Checkbox("Draw", &on);
     ImGui::SameLine();

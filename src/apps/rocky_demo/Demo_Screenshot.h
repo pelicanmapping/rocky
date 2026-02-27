@@ -305,7 +305,7 @@ auto Demo_Screenshot = [](Application& app)
     }
 
 	static char filenameBuffer[512] = "screenshot.jpg";
-	ImGui::Text("Save Path:");
+	ImGui::TextUnformatted("Save Path:");
 	ImGui::SameLine();
 	ImGui::InputText("##Save Path", filenameBuffer, sizeof(filenameBuffer));
 
