@@ -465,6 +465,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#is_perspective_projection_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_perspective_projection_matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#is_orthographic_projection_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_orthographic_projection_matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#to_glm" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -757,6 +779,12 @@
 <p>Extract the rotation component from a 4x4 matrix as a quaternion. This method will normalize any scaling factor found in the matrix. If you know your matrix is unscaled, call quaternion_from_unscaled_matrix() instead for better performance.</p>
 <p><strong>mat</strong> The input matrix.</p>
 <p><strong>return</strong> The rotation component of the matrix.</p>
+<h3 id="is_perspective_projection_matrix">is_perspective_projection_matrix</h3>
+<p><em>_Bool is_perspective_projection_matrix(const M &amp; m)</em></p>
+<p><em>Defined at src/rocky/Math.h#417</em></p>
+<h3 id="is_orthographic_projection_matrix">is_orthographic_projection_matrix</h3>
+<p><em>_Bool is_orthographic_projection_matrix(const M &amp; m)</em></p>
+<p><em>Defined at src/rocky/Math.h#423</em></p>
 <h3 id="to_glm">to_glm</h3>
 <p><em>const int &amp; to_glm(const int &amp; a)</em></p>
 <p><em>Defined at src/rocky/vsg/VSGUtils.h#53</em></p>
