@@ -677,13 +677,12 @@ namespace WEEJOBS_NAMESPACE
         //! Wait for all threads to exit (after calling stop_threads)
         inline void join_threads();
 
-        bool _can_steal_work = true;
+        std::atomic<bool> _can_steal_work = { true };
         std::vector<detail::job> _queue;
         mutable std::mutex _queue_mutex; // protect access to the queue
-        mutable std::mutex _quit_mutex; // protects access to _done
         std::atomic<unsigned> _target_concurrency; // target number of concurrent threads in the pool
         std::condition_variable_any _block; // thread waiter block
-        bool _done = false; // set to true when threads should exit
+        std::atomic<bool> _done = { false }; // set to true when threads should exit
         std::vector<std::thread> _threads; // threads in the pool
         metrics_t _metrics; // metrics for this pool
     };
@@ -727,8 +726,8 @@ namespace WEEJOBS_NAMESPACE
             inline ~runtime();
             inline void shutdown();
 
-            bool _alive = true;
-            bool _stealing_allowed = false;
+            std::atomic<bool> _alive = { true };
+            std::atomic<bool> _stealing_allowed = { false };
             std::mutex _pools_mutex;
             std::vector<jobpool*> _pools;
             metrics _metrics;
@@ -925,7 +924,7 @@ namespace WEEJOBS_NAMESPACE
                         std::unique_lock<std::mutex> lock(_queue_mutex);
 
                         // work-stealing enabled: wait until any queue is non-empty
-                        _block.wait(lock, [this]() { return get_metrics()->total_pending() > 0 || _done; });
+                        _block.wait(lock, [this]() { return _metrics.pending > 0 || _done; });
 
                         if (!_done && !_queue.empty())
                         {
@@ -978,8 +977,6 @@ namespace WEEJOBS_NAMESPACE
 
             // See if we no longer need this thread because the
             // target concurrency has been reduced
-            std::lock_guard<std::mutex> lock(_quit_mutex);
-
             if (_target_concurrency < _metrics.concurrency)
             {
                 _metrics.concurrency--;
@@ -1058,9 +1055,9 @@ namespace WEEJOBS_NAMESPACE
             {
                 if (pool != thief)
                 {
-                    if (static_cast<std::size_t>(pool->_queue.size()) > max_num_jobs)
+                    if (pool->_metrics.pending > max_num_jobs)
                     {
-                        max_num_jobs = pool->_queue.size();
+                        max_num_jobs = pool->_metrics.pending;
                         pool_with_most_jobs = pool;
                     }
                 }
