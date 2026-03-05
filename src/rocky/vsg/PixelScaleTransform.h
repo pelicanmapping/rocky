@@ -16,11 +16,12 @@ namespace ROCKY_NAMESPACE
     *
     * This won't work great for multi-threaded record traversals..
     */
-    class ROCKY_EXPORT PixelScaleTransform : public vsg::Inherit<vsg::Transform, PixelScaleTransform>
+    class /*ROCKY_EXPORT*/ PixelScaleTransform : public vsg::Inherit<vsg::Transform, PixelScaleTransform>
     {
     public:
         //! Whether to undo any rotation found in the origial model view matrix;
         //! This will effectively billboard the geometry.
+        bool enabled = true;
         bool unrotate = false;
         bool snap = false;
         float unitSize = 1.0f;
@@ -28,36 +29,45 @@ namespace ROCKY_NAMESPACE
 
         void accept(vsg::RecordTraversal& rt) const override
         {
-            // Calculate the scale factor that will scale geometry from pixel space to model space
-            auto& state = *rt.getState();
-            auto& viewport = state._commandBuffer->viewDependentState->viewportData->at(0);
-
-            // TODO: orthographic camera support
-            ROCKY_SOFT_ASSERT(is_perspective_projection_matrix(state.projectionMatrixStack.top()));
-
-            double d = state.lodDistance(vsg::dsphere(0.0, 0.0, 0.0, 0.5)) / viewport[3]; // vp height
-            d *= (renderSize / unitSize);
-
-            matrix = vsg::scale(d);
-
-            if (unrotate)
+            if (enabled)
             {
-                auto& mv = state.modelviewMatrixStack.top();
-                auto rotation = quaternion_from_unscaled_matrix<vsg::dquat>(mv);
-                matrix = matrix * vsg::rotate(vsg::inverse(rotation));
-            }
+                // Calculate the scale factor that will scale geometry from pixel space to model space
+                auto& state = *rt.getState();
+                auto& viewport = state._commandBuffer->viewDependentState->viewportData->at(0);
 
-            if (snap)
-            {
-                auto mvp = state.projectionMatrixStack.top() * state.modelviewMatrixStack.top();
-                auto clip = mvp * matrix;
+                // extract the scale from the modelview matrix.
+                auto& mvm = state.modelviewMatrixStack.top();
+                auto scale = vsg::length(vsg::dvec3(mvm[0][0], mvm[0][1], mvm[0][2]));
 
-                clip[3][0] = 0.5 * (clip[3][0] / clip[3][3]) * viewport[2];
-                clip[3][1] = 0.5 * (clip[3][1] / clip[3][3]) * viewport[3];
-                clip[3][0] = 2.0 * (floor(clip[3][0]) / viewport[2]) * clip[3][3];
-                clip[3][1] = 2.0 * (floor(clip[3][1]) / viewport[3]) * clip[3][3];
+                double d;
+                auto& proj = state.projectionMatrixStack.top();
+                _perspective = is_perspective_projection_matrix(proj);
+                if (_perspective)
+                    d = state.lodDistance(vsg::dsphere(0.0, 0.0, 0.0, 0.5)) / viewport[3];
+                else
+                    d = 2.0 / (-proj[1][1] * viewport[3]); // ortho: world units per pixel = (top-bottom)/viewport_height
 
-                matrix = vsg::inverse(mvp) * clip;
+                _matrix = vsg::scale(scale * d);
+
+                if (unrotate)
+                {
+                    auto& mv = state.modelviewMatrixStack.top();
+                    auto rotation = quaternion_from_unscaled_matrix<vsg::dquat>(mv);
+                    _matrix = _matrix * vsg::rotate(vsg::inverse(rotation));
+                }
+
+                if (snap)
+                {
+                    auto mvp = state.projectionMatrixStack.top() * state.modelviewMatrixStack.top();
+                    auto clip = mvp * _matrix;
+
+                    clip[3][0] = 0.5 * (clip[3][0] / clip[3][3]) * viewport[2];
+                    clip[3][1] = 0.5 * (clip[3][1] / clip[3][3]) * viewport[3];
+                    clip[3][0] = 2.0 * (floor(clip[3][0]) / viewport[2]) * clip[3][3];
+                    clip[3][1] = 2.0 * (floor(clip[3][1]) / viewport[3]) * clip[3][3];
+
+                    _matrix = vsg::inverse(mvp) * clip;
+                }
             }
 
             rt.apply(*this);
@@ -65,12 +75,32 @@ namespace ROCKY_NAMESPACE
 
         vsg::dmat4 transform(const vsg::dmat4& mv) const override
         {
-            return mv * matrix;
+            if (enabled)
+            {
+                if (_perspective)
+                {
+                    return mv * _matrix;
+                }
+                else
+                {
+                    // remove the scale from the modelview matrix
+                    auto m = mv;
+                    m[0] = vsg::dvec4(vsg::normalize(vsg::dvec3(m[0][0], m[0][1], m[0][2])), 0.0);
+                    m[1] = vsg::dvec4(vsg::normalize(vsg::dvec3(m[1][0], m[1][1], m[1][2])), 0.0);
+                    m[2] = vsg::dvec4(vsg::normalize(vsg::dvec3(m[2][0], m[2][1], m[2][2])), 0.0);
+                    return m * _matrix;
+                }
+            }
+            else
+            {
+                return mv;
+            }
         }
 
 
     private:
-        mutable vsg::dmat4 matrix;
+        mutable bool _perspective = true;
+        mutable vsg::dmat4 _matrix;
     };
 
     /**

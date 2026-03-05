@@ -11,7 +11,9 @@ using namespace ROCKY_NAMESPACE;
 auto Demo_Model = [](Application& app)
 {
     static entt::entity entity = entt::null;
-    const double scale = 50000.0;
+    static double scale = 50000.0;
+    static bool autoScale = false;
+    static vsg::ref_ptr<PixelScaleTransform> pt;
 
     if (entity == entt::null)
     {
@@ -36,7 +38,10 @@ auto Demo_Model = [](Application& app)
 
         // The model component; we just set the node directly.
         auto& model = reg.emplace<NodeGraph>(entity);
-        model.node = node;
+        pt = PixelScaleTransform::create();
+        pt->enabled = false;
+        pt->addChild(node);
+        model.node = pt;
 
         // A transform component to place and move it on the map
         auto& transform = reg.emplace<Transform>(entity);
@@ -89,6 +94,19 @@ auto Demo_Model = [](Application& app)
         {
             auto rot = quaternion_from_euler_degrees(pitch, roll, heading);
             transform.localMatrix = glm::mat4_cast(rot) * glm::scale(glm::dmat4(1), glm::dvec3(scale));
+            transform.dirty(reg);
+        }
+
+        if (ImGuiLTable::SliderDouble("Scale", &scale, 1.0, 100000.0, "%.1lf", ImGuiSliderFlags_Logarithmic))
+        {
+            transform.localMatrix = glm::mat4_cast(rot) * glm::scale(glm::dmat4(1), glm::dvec3(scale));
+            transform.dirty(reg);
+            pt->renderSize = scale;
+        }
+
+        if (ImGuiLTable::Checkbox("Pixel scale", &autoScale))
+        {
+            pt->enabled = autoScale;
             transform.dirty(reg);
         }
 
