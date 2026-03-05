@@ -32,6 +32,9 @@ namespace ROCKY_NAMESPACE
             auto& state = *rt.getState();
             auto& viewport = state._commandBuffer->viewDependentState->viewportData->at(0);
 
+            // TODO: orthographic camera support
+            ROCKY_SOFT_ASSERT(is_perspective_projection_matrix(state.projectionMatrixStack.top()));
+
             double d = state.lodDistance(vsg::dsphere(0.0, 0.0, 0.0, 0.5)) / viewport[3]; // vp height
             d *= (renderSize / unitSize);
 
@@ -77,11 +80,11 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT ScreenSpaceGroup : public vsg::Inherit<vsg::Group, ScreenSpaceGroup>
     {
     public:
-        //! Whether to undo any rotation found in the origial model view matrix;
-        //! This will effectively billboard the geometry.
+        //! Snap to nearest pixel
         bool snap = true;
+
+        //! Overall scale factor
         double scale = 1.0;
-        //VSGContext vsgcontext;
 
         void traverse(vsg::RecordTraversal& rt) const override
         {
@@ -102,8 +105,6 @@ namespace ROCKY_NAMESPACE
 
             double dpr = 1.0;
             rt.getValue("rocky.dpr", dpr);
-
-            //double dpr = vsgcontext ? (double)vsgcontext->devicePixelRatio() : 1.0;
             modelview[0][0] = modelview[1][1] = scale * dpr;
 
             state.projectionMatrixStack.push(ortho);

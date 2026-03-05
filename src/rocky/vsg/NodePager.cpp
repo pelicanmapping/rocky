@@ -285,10 +285,23 @@ PagedNode::traverse(vsg::RecordTraversal& record) const
         // check whether the subtiles are in range.
         auto& vp = record.getCommandBuffer()->viewDependentState->viewportData->at(0);
         auto min_screen_height_ratio = pager->pixelError / vp[3];
-        auto d = record.getState()->lodDistance(bound);
-        bool child_in_range = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
 
-        priority = -d;
+        bool child_in_range = false;
+        auto* state = record.getState();
+        auto& proj = state->projectionMatrixStack.top();
+
+        if (is_orthographic_projection_matrix(proj))
+        {
+            auto d = std::abs(bound.r * proj[1][1]);
+            child_in_range = (d > min_screen_height_ratio);
+            priority = -d;
+        }
+        else // perspective
+        {
+            auto d = state->lodDistance(bound);
+            child_in_range = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
+            priority = -d;
+        }
 
         if (key == pager->debugKey)
         {

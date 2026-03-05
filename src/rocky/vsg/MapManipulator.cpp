@@ -1206,9 +1206,39 @@ MapManipulator::updateCamera()
 
         lookat->set(_viewMatrix);
 
+        updateProjection(camera.get());
+
         changed = oldMatrix != _viewMatrix;
     }
     return changed;
+}
+
+void
+MapManipulator::updateProjection(vsg::Camera* camera)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(camera, void());
+
+    auto perspective = camera->projectionMatrix.cast<vsg::Perspective>();
+    if (perspective)
+    {
+        _lastKnownPerspectiveFOV = perspective->fieldOfViewY;
+    }
+
+    else // orthographic tracks the last know perspective FOV:
+    {
+        auto ortho = camera->projectionMatrix.cast<vsg::Orthographic>();
+
+        ROCKY_SOFT_ASSERT(ortho);
+        if (ortho)
+        {
+            double aspect = camera->getViewport().width / camera->getViewport().height;
+            double fovY = _lastKnownPerspectiveFOV;
+            ortho->top = tan(glm::radians(fovY) * 0.5) * _state.distance;
+            ortho->right = ortho->top * aspect;
+            ortho->bottom = -ortho->top;
+            ortho->left = -ortho->right;
+        }
+    }
 }
 
 bool

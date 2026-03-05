@@ -87,13 +87,19 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
         {
             auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
             auto min_screen_height_ratio = (host->settings().tilePixelSize + host->settings().pixelError) / vp[3];
-            auto d = state->lodDistance(bound);
-            subtilesInRange = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
 
-            // TODO: someday, when we support orthographic cameras, look at this approach 
-            // that would theoritically keep the same LOD across the visible scene:
-            //double tile_height = surface->localbbox.max.y - surface->localbbox.min.y;
-            //return (d > 0.0) && (tile_height > (d * min_screen_height_ratio));
+            auto& proj = state->projectionMatrixStack.top();
+
+            if (is_orthographic_projection_matrix(proj))
+            {
+                auto d = std::abs(bound.r * proj[1][1]);
+                subtilesInRange = (d > min_screen_height_ratio);
+            }
+            else // perspective
+            {
+                auto d = state->lodDistance(bound);
+                subtilesInRange = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
+            }
 
             if (subtilesInRange && subtilesExist())
             {

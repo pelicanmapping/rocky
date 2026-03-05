@@ -413,6 +413,18 @@ namespace ROCKY_NAMESPACE
         return quaternion_from_unscaled_matrix<Q>(_mat);
     }
 
+    template<typename M>
+    inline bool is_perspective_projection_matrix(const M& m)
+    {
+        return m[3][3] == static_cast<typename M::value_type>(0);
+    }
+
+    template<typename M>
+    inline bool is_orthographic_projection_matrix(const M& m)
+    {
+        return m[3][3] != static_cast<typename M::value_type>(0);
+    }
+
     //! Multiplies two 4x4 matrices together, storing the result in OUT.
     //! 40% faster than using dmat::operator* (according to SL).
 #define ROCKY_FAST_MAT4_MULT(OUT, LHS, RHS) { \

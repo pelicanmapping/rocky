@@ -534,6 +534,7 @@ namespace ROCKY_NAMESPACE
         vsg::dvec2 _singleAxis;
         Action _lastAction;
         Action _continuousAction;
+        float _lastKnownPerspectiveFOV = 45.0f;
 
         // rendering required b/c something changed.
         bool _dirty;
@@ -552,5 +553,7 @@ namespace ROCKY_NAMESPACE
 
         //! returns true if the camera changed.
         bool updateCamera();
+
+        void updateProjection(vsg::Camera*);
     };
 }
