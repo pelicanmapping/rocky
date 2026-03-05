@@ -35,24 +35,29 @@ namespace ROCKY_NAMESPACE
                 auto& state = *rt.getState();
                 auto& viewport = state._commandBuffer->viewDependentState->viewportData->at(0);
 
-                // extract the scale from the modelview matrix.
                 auto& mvm = state.modelviewMatrixStack.top();
-                auto scale = vsg::length(vsg::dvec3(mvm[0][0], mvm[0][1], mvm[0][2]));
-
-                double d;
                 auto& proj = state.projectionMatrixStack.top();
-                _perspective = is_perspective_projection_matrix(proj);
-                if (_perspective)
-                    d = state.lodDistance(vsg::dsphere(0.0, 0.0, 0.0, 0.5)) / viewport[3];
-                else
-                    d = 2.0 / (-proj[1][1] * viewport[3]); // ortho: world units per pixel = (top-bottom)/viewport_height
 
-                _matrix = vsg::scale(scale * d);
+                if (is_perspective_projection_matrix(proj))
+                {
+                    // lodDistance factors in the MVM scale via rot_scale; multiplying back
+                    // by the extracted scale cancels it, leaving a depth-proportional pixel scale.
+                    auto scale = vsg::length(vsg::dvec3(mvm[0][0], mvm[0][1], mvm[0][2]));
+                    auto d = state.lodDistance(vsg::dsphere(0.0, 0.0, 0.0, 0.5)) / viewport[3];
+                    _matrix = vsg::scale(scale * d);
+                }
+
+                else
+                {
+                    // Ortho: world units per pixel = (top-bottom)/viewport_height.
+                    // mv * scale(d) naturally incorporates the MVM scale, so no pre-multiplication needed.
+                    auto d = 2.0 / (-proj[1][1] * viewport[3]);
+                    _matrix = vsg::scale(d);
+                }
 
                 if (unrotate)
                 {
-                    auto& mv = state.modelviewMatrixStack.top();
-                    auto rotation = quaternion_from_unscaled_matrix<vsg::dquat>(mv);
+                    auto rotation = quaternion_from_unscaled_matrix<vsg::dquat>(mvm);
                     _matrix = _matrix * vsg::rotate(vsg::inverse(rotation));
                 }
 
@@ -75,31 +80,10 @@ namespace ROCKY_NAMESPACE
 
         vsg::dmat4 transform(const vsg::dmat4& mv) const override
         {
-            if (enabled)
-            {
-                if (_perspective)
-                {
-                    return mv * _matrix;
-                }
-                else
-                {
-                    // remove the scale from the modelview matrix
-                    auto m = mv;
-                    m[0] = vsg::dvec4(vsg::normalize(vsg::dvec3(m[0][0], m[0][1], m[0][2])), 0.0);
-                    m[1] = vsg::dvec4(vsg::normalize(vsg::dvec3(m[1][0], m[1][1], m[1][2])), 0.0);
-                    m[2] = vsg::dvec4(vsg::normalize(vsg::dvec3(m[2][0], m[2][1], m[2][2])), 0.0);
-                    return m * _matrix;
-                }
-            }
-            else
-            {
-                return mv;
-            }
+            return enabled ? mv * _matrix : mv;
         }
 
-
     private:
-        mutable bool _perspective = true;
         mutable vsg::dmat4 _matrix;
     };
 
