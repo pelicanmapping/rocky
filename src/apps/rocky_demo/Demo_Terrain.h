@@ -108,7 +108,7 @@ auto Demo_Terrain = [](Application& app)
         if (ImGuiLTable::Checkbox("Tile skirts", &skirts))
         {
             if (skirts)
-                app.mapNode->terrainSettings().skirtRatio = 0.025f;
+                app.mapNode->terrainSettings().skirtRatio = 0.05f;
             else
                 app.mapNode->terrainSettings().skirtRatio = 0.0f;
 

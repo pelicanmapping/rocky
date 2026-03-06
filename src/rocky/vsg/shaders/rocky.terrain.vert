@@ -1,8 +1,6 @@
 #version 450
 #pragma import_defines(ROCKY_ATMOSPHERE)
 
-layout(set = 0, binding = 10) uniform sampler2D elevation_tex;
-
 layout(push_constant) uniform PushConstants {
     mat4 projection;
     mat4 modelview;
@@ -28,7 +26,10 @@ layout(location = 0) out Varyings {
     vec2 uv;
     vec3 upView;
     vec3 vertexView;
+    vec2 elevation_uv;
 } vary;
+
+layout(set = 0, binding = 10) uniform sampler2D elevation_tex;
 
 #if defined(ROCKY_ATMOSPHERE)
 #include "rocky.atmo.ground.vert.glsl"
@@ -62,7 +63,6 @@ float terrain_get_elevation(in vec2 uv)
             h = h * (tile.max_height - tile.min_height) + tile.min_height; // R16_UNORM
     }
     return h;
-
 }
 
 void main()
@@ -75,11 +75,13 @@ void main()
     atmos_vertex_main(position_view.xyz);
 #endif
 
-    mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
-    vary.upView = normal_matrix * in_normal;
+    mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));
+    vary.upView = normalize(normalMatrix * in_normal);
     
     vary.uv = (tile.color_matrix * vec4(in_uvw.st, 0, 1)).st;
     vary.vertexView = position_view.xyz / position_view.w;
+
+    vary.elevation_uv = (tile.elevation_matrix * vec4(in_uvw.st, 0, 1)).st;
     
     gl_Position = pc.projection * position_view;
 }
