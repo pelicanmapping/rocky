@@ -315,6 +315,8 @@ Spatial reference systems ensure that your map data aligns correctly, support ac
 
 # Annotations
 
+*This subsystem is completely optional. Since Rocky is built with [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph), you can use its API to populate your scene in any way you choose. Rocky also provides some [helper objects](#rocky-and-vulkanscenegraph) for integrating with VSG.*
+
 Rocky has a set of built-in primitives for displaying objects on the map.
 
 * Line - a string of 2D line segments
@@ -325,8 +327,6 @@ Rocky has a set of built-in primitives for displaying objects on the map.
 * Label - a simple text label (based on Widget)
 
 To create and manage these elements, Rocky uses an [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system) (ECS) driven by the popular [EnTT](https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. Suffice it to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
-
-*This subsystem is completely optional. Since Rocky is built with [VulkanSceneGraph](https://github.com/vsg-dev/VulkanSceneGraph), you can use its API to populate your scene in any way you choose.*
 
 ## Creating Entities and Components
 Let's look at a simple example.
