@@ -9,6 +9,7 @@
 #include <rocky/GeoPoint.h>
 #include <rocky/Math.h>
 #include <rocky/Viewpoint.h>
+#include <deque>
 #include <optional>
 #include <vector>
 
@@ -289,6 +290,21 @@ namespace ROCKY_NAMESPACE
             //! Whtehr to zoom towards the mouse cursor when zooming
             bool zoomToMouse = true;
 
+            //! Enable throw/fling after drag release
+            bool throwingEnabled = true;
+
+            //! Friction coefficient - velocity retained per 1/60s frame (0.95 = 5% decay)
+            double throwDecayRate = 0.95;
+
+            //! Minimum velocity (NDC/s) to initiate throw
+            double throwThreshold = 0.05;
+
+            //! History window for velocity calculation (seconds)
+            double throwHistoryTime = 0.15;
+
+            //! Maximum throw velocity cap (NDC/s)
+            double maxThrowVelocity = 4.0;
+
 
             //! Assigns behavior to the action of dragging the mouse while depressing one or
             //! more mouse buttons and modifier keys.
@@ -430,6 +446,12 @@ namespace ROCKY_NAMESPACE
             //vsg::time_point _previousTick;
         };
 
+        //! A single sample of drag movement for throw velocity calculation
+        struct DragSample {
+            vsg::time_point time;
+            vsg::dvec2 ndcDelta;
+        };
+
         // "ticks" the resident Task, which allows for multi-frame animation of navigation
         // movements.
         bool serviceTask(vsg::time_point);
@@ -471,6 +493,21 @@ namespace ROCKY_NAMESPACE
         virtual bool handleScrollAction(const Action& action, vsg::time_point time, double duration_s = DBL_MAX);
         virtual bool handlePointAction(const Action& type, float mx, float my, vsg::time_point time);
         virtual void handleMovementAction(const ActionType& type, vsg::dvec2 delta);
+
+        //! Adds a drag sample to the history buffer (called during mouse/touch drag)
+        void recordDragSample(vsg::time_point time, const vsg::dvec2& ndcDelta);
+
+        //! Calculates throw velocity from recent drag history
+        vsg::dvec2 calculateThrowVelocity(vsg::time_point releaseTime) const;
+
+        //! Clears drag history (called on button press)
+        void clearDragHistory();
+
+        //! Services the throw animation each frame (returns true if throw is still active)
+        bool serviceThrow(vsg::time_point now);
+
+        //! Cancels any active throw
+        void cancelThrow();
 
         void clearEvents();
         vsg::ref_ptr<MapNode> getMapNode() const;
@@ -525,6 +562,8 @@ namespace ROCKY_NAMESPACE
 
         bool _thrown;
         vsg::dvec2 _throwDelta;
+        vsg::dvec2 _throwVelocity;           // Current throw velocity (NDC/second)
+        std::deque<DragSample> _dragHistory; // Recent drag samples for velocity calculation
         vsg::dvec2 _delta;
         vsg::dmat4 _viewMatrix;
         State _state;
