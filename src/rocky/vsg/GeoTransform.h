@@ -8,7 +8,6 @@
 #include <rocky/vsg/Common.h>
 #include <rocky/ecs/Transform.h>
 #include <rocky/vsg/ecs/TransformDetail.h>
-#include <rocky/GeoPoint.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -18,7 +17,7 @@ namespace ROCKY_NAMESPACE
      * that is tangent to the earth at the transform's geo position.
      */
     class ROCKY_EXPORT GeoTransform : public vsg::Inherit<vsg::Group, GeoTransform>,
-        public ROCKY_NAMESPACE::Transform
+        public Transform
     {
     public:
         //! Construct an invalid geotransform

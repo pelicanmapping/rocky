@@ -37,6 +37,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Simulation.h"
 #include "Demo_TrackHistory.h"
 #include "Demo_Decluttering.h"
+#include "Demo_GeoTransform.h"
 #include "Demo_NodePager.h"
 #include "Demo_FeatureView.h"
 #include "Demo_MVTFeatures.h"
@@ -70,7 +71,7 @@ struct Demo
 std::vector<Demo> demos =
 {
     Demo{ "Map", Demo_Map },
-    Demo{ "Basics", {},
+    Demo{ "ECS Components", {},
     {
         Demo{ "Line", {}, {
             Demo{ "Line - Absolute position", Demo_Line_Absolute },
@@ -91,8 +92,12 @@ std::vector<Demo> demos =
         Demo{ "Icon", Demo_Icon },
         Demo{ "Model", Demo_Model },
         Demo{ "Label", Demo_Label },
-        Demo{ "Widget", Demo_Widget },
-        Demo{ "Node Pager", Demo_NodePager }
+        Demo{ "Widget", Demo_Widget }
+    } },
+    Demo{ "VSG Nodes", {},
+    {
+        Demo{ "GeoTransform", Demo_GeoTransform },
+        Demo{ "NodePager", Demo_NodePager }
     } },
     Demo{ "GIS", {},
     {
