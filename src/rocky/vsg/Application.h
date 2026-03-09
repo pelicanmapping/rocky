@@ -104,7 +104,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Group> mainScene;
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<rocky::SkyNode> skyNode;
-        vsg::ref_ptr<rocky::ECSNode> ecsNode;
+        vsg::ref_ptr<rocky::ECSNode> systemsNode;
 
         //! Continuous render mode.
         //! When true, the viewer will render frames continuously as fast as the CPU
@@ -188,8 +188,8 @@ namespace ROCKY_NAMESPACE
 
     template<typename T>
     T* Application::getSystem() {
-        if (!ecsNode) return nullptr;
-        for(auto& child : ecsNode->children) {
+        if (!systemsNode) return nullptr;
+        for(auto& child : systemsNode->children) {
             T* system = dynamic_cast<T*>(child.get());
             if (system) return system;
         }

@@ -203,6 +203,8 @@ namespace
         std::mutex _mutex;
 
         struct Task {
+            Task() = default;
+            Task(vsg::Operation* a, std::function<float()> b) : function(a), get_priority(b) {}
             vsg::ref_ptr<vsg::Operation> function;
             std::function<float()> get_priority;
         };
@@ -534,30 +536,22 @@ VSGContextImpl::getOrCreateComputeCommandGraph(vsg::ref_ptr<vsg::Device> device,
 }
 
 void
-VSGContextImpl::onNextUpdate(vsg::ref_ptr<vsg::Operation> function, std::function<float()> get_priority)
+VSGContextImpl::scheduleMeteredUpdate(vsg::Operation* operation, std::function<float()> getPriority)
 {
     auto pq = dynamic_cast<PriorityUpdateQueue*>(_priorityUpdateQueue.get());
     if (pq)
     {
         std::scoped_lock lock(pq->_mutex);
-
-        if (pq->referenceCount() == 1)
-        {
-            _viewer->updateOperations->add(_priorityUpdateQueue, vsg::UpdateOperations::ALL_FRAMES);
-        }
-
-        pq->_queue.push_back({ function, get_priority });
-
-        requestFrame();
+        pq->_queue.emplace_back(operation, getPriority);
     }
 }
 
 void
 VSGContextImpl::onNextUpdate(std::function<void(VSGContext)> function)
 {
-    _viewer->updateOperations->add(SimpleUpdateOperation::create(function, this));
-
-    requestFrame();
+    // makes it illegal to call this function recursively
+    std::scoped_lock lock(_functionsToRunDuringNextUpdateMutex);
+    _functionsToRunDuringNextUpdate.emplace_back(function);
 }
 
 vsg::CompileResult
@@ -666,14 +660,31 @@ VSGContextImpl::requestFrame()
     ++renderRequests;
 }
 
-bool
+void
 VSGContextImpl::update()
 {
-    bool updates_occurred = false;
-
-    // Context update callbacks
+    // Every-time update functions
     onUpdate.fire(this);
 
+    // One-time update functions
+    // Swap-and-run lets update functions re-queue themselves
+    if (!_functionsToRunDuringNextUpdate.empty())
+    {
+        std::vector<std::function<void(VSGContext)>> temp;
+        {
+            std::scoped_lock lock(_functionsToRunDuringNextUpdateMutex);
+            temp.swap(_functionsToRunDuringNextUpdate);
+        }
+        for (auto& f : temp)
+        {
+            f(this);
+        }
+    }
+
+    // One-shot update priority queue
+    _priorityUpdateQueue->run();
+
+    // Merge compilation results
     if (_compileResult)
     {
         std::unique_lock lock(_compileMutex);
@@ -681,7 +692,6 @@ VSGContextImpl::update()
         if (_compileResult.requiresViewerUpdate())
         {
             vsg::updateViewer(*_viewer, _compileResult);
-            updates_occurred = true;
         }
         _compileResult.reset();
 
@@ -698,5 +708,10 @@ VSGContextImpl::update()
         _gc.pop_front();
     }
 
-    return updates_occurred;
+    // keep the frames running if a database pager is active
+    auto& tasks = viewer()->recordAndSubmitTasks;
+    if (!tasks.empty() && tasks[0]->databasePager && tasks[0]->databasePager->numActiveRequests > 0)
+    {
+        requestFrame();
+    }
 }

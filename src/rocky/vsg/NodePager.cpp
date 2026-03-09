@@ -82,7 +82,7 @@ NodePager::initialize(VSGContext vsgcontext)
 
     // install an update operation that will flush the culling sentry each frame,
     // removing invisible nodes from the scene graph.
-    _sentryUpdate = vsgcontext->onUpdate([this](VSGContextRef vsgcontext)
+    _sentryUpdate = vsgcontext->onUpdate([this](VSGContext vsgcontext)
         {
             auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
 

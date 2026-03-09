@@ -19,14 +19,8 @@ namespace ROCKY_NAMESPACE
     class MapNode;
 
     class VSGContextImpl;
-
-#if 0
-    using VSGContext = std::shared_ptr<VSGContextImpl>;
-    using VSGContextRef = VSGContextImpl*;
-#else
     using VSGContext = VSGContextImpl*;
-    using VSGContextRef = VSGContext;
-#endif
+    using VSGContextRef = std::shared_ptr<VSGContextImpl>;
 
     namespace detail
     {
@@ -87,13 +81,6 @@ namespace ROCKY_NAMESPACE
 
     public:
 
-        //! Queue a function to run during the update pass
-        //! This is a safe way to do things that require modifying the scene
-        //! or compiling vulkan objects
-        void onNextUpdate(
-            vsg::ref_ptr<vsg::Operation> function,
-            std::function<float()> get_priority = {});
-
         //! Queue a function to run during the update pass.
         //! This is a safe way to do things that require modifying the scene
         //! or compiling vulkan objects
@@ -130,16 +117,19 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::CommandGraph> getComputeCommandGraph() const;
         vsg::ref_ptr<vsg::CommandGraph> getOrCreateComputeCommandGraph(vsg::ref_ptr<vsg::Device> device, int queueFamily);
 
-        //! Update any pending compile results. Returns true if updates occurred.
-        bool update();
+        //! Run me once per frame to execute pending tasks and integrate compile results
+        void update();
 
+        //! Queue an operation to run during a future update pass.
+        //! Only one queued operation will run per frame, the highest priority one
+        //! running first.
+        void scheduleMeteredUpdate(vsg::Operation* operation, std::function<float()> getPriority = {});
+
+        //! Destructor
         virtual ~VSGContextImpl();
 
     private:
         vsg::ref_ptr<vsg::Viewer> _viewer;
-
-        // for (some) update operations
-        vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
 
         mutable std::mutex _compileMutex;
         vsg::CompileResult _compileResult;
@@ -152,7 +142,15 @@ namespace ROCKY_NAMESPACE
 
         vsg::ref_ptr<VulkanExtensions> _vulkanExtensions;
 
+        // dispatcher for all update operations
         vsg::ref_ptr<vsg::Operation> _updateOperation;
+
+        // priority queue for one-shot priority tasks
+        vsg::ref_ptr<vsg::Operation> _priorityUpdateQueue;
+
+        // one-shot update function queue
+        std::mutex _functionsToRunDuringNextUpdateMutex;
+        std::vector<std::function<void(VSGContext)>> _functionsToRunDuringNextUpdate;
 
     private:
         //! Construct a new VSG-based application instance

@@ -442,5 +442,5 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io, std::
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.level) : -FLT_MAX;
     };
 
-    vsgcontext->onNextUpdate(merge_operation, priority_func);
+    vsgcontext->scheduleMeteredUpdate(merge_operation, priority_func);
 }

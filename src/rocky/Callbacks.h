@@ -16,14 +16,18 @@
 namespace ROCKY_NAMESPACE
 {
     //! A callback subscription.
-    using CallbackSub = std::shared_ptr<bool>;
+    using CallbackSubscription = std::shared_ptr<bool>;
 
     //! Collection of callback subscriptions.
-    struct CallbackSubs : public std::unordered_set<CallbackSub> {
-        inline CallbackSubs& operator += (CallbackSub sub) {
+    struct CallbackSubscriptions : public std::unordered_set<CallbackSubscription> {
+        inline CallbackSubscriptions& operator += (CallbackSubscription sub) {
             this->emplace(sub); return *this;
         }
     };
+
+    // backwards compat
+    using CallbackSub = CallbackSubscription;
+    using CallbackSubs = CallbackSubscriptions;
 
     template<typename F = void()>
     class Callback
@@ -39,16 +43,16 @@ namespace ROCKY_NAMESPACE
         //! Adds a callback function, and returns a subscription object.
         //! When the subscription object is destroyed the callback is deactivated.
         [[nodiscard]]
-        CallbackSub operator()(std::function<F>&& func) const {
+        CallbackSubscription operator()(std::function<F>&& func) const {
             std::lock_guard<std::mutex> lock(mutex);
-            auto sub = CallbackSub(new bool(true));
+            auto sub = CallbackSubscription(new bool(true));
             entries.emplace_back(SubRef(sub), func);
             return sub;
         }
 
         //! Remove a callback function associated with a subscription 
         //! returned from operator().
-        void remove(CallbackSub sub) const {
+        void remove(CallbackSubscription sub) const {
             std::lock_guard<std::mutex> lock(mutex);
             for (auto iter = entries.begin(); iter != entries.end(); ++iter) {
                 if (iter->first == sub) {

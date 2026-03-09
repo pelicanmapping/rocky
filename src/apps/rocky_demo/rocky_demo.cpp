@@ -45,6 +45,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_ElevationSampler.h"
 #include "Demo_Intersect.h"
 #include "Demo_Screenshot.h"
+#include "Demo_Synchro.h"
 
 template<class T>
 int layerError(T layer)
@@ -118,14 +119,15 @@ std::vector<Demo> demos =
     Demo{ "Camera", Demo_MapManipulator },
     Demo{ "Views", Demo_Views },
     Demo{ "Terrain", Demo_Terrain },
-    Demo{ "Experimental", {},
+    Demo{ "Sandbox", {},
     {
         Demo{ "Drawing", Demo_Draw },
         Demo{ "Geocoding", Demo_Geocoder },
         Demo{ "Render to texture", Demo_RTT },
         Demo{ "Serialization", Demo_Serialization },
         Demo{ "Screenshot", Demo_Screenshot },
-        Demo{ "Sky", Demo_Environment }
+        Demo{ "Sky", Demo_Environment },
+        Demo{ "Synchronization", Demo_Synchro }
     } },
     Demo{ "Stats", Demo_Stats },
     Demo{ "About", Demo_About }

@@ -276,7 +276,7 @@ auto Demo_TrackHistory = [](Application& app)
     {
         // make a System to handle track histories, and add it to the app.
         system = TrackHistorySystem::create(app.registry);
-        app.ecsNode->add(system);
+        app.systemsNode->add(system);
         system->reset();
     }
 

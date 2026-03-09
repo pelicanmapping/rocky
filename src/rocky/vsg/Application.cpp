@@ -216,26 +216,26 @@ Application::ctor(int& argc, char** argv)
     }
 
     // Create the ECS system manager and all its default systems.
-    ecsNode = ECSNode::create(registry, false);
+    systemsNode = ECSNode::create(registry, false);
 
     // Responds to changes in Transform components by updating the scene graph
     auto xform_system = TransformSystem::create(registry);
     _subs += xform_system->onChanges([&]() { vsgcontext->requestFrame(); });
-    ecsNode->add(xform_system);
+    systemsNode->add(xform_system);
 
     // Rendering components:
-    ecsNode->add(NodeSystemNode::create(registry));
-    ecsNode->add(MeshSystemNode::create(registry));
-    ecsNode->add(LineSystemNode::create(registry));
-    ecsNode->add(PointSystemNode::create(registry));
+    systemsNode->add(NodeSystemNode::create(registry));
+    systemsNode->add(MeshSystemNode::create(registry));
+    systemsNode->add(LineSystemNode::create(registry));
+    systemsNode->add(PointSystemNode::create(registry));
     
-    ecsNode->add(LabelSystem::create(registry));
+    systemsNode->add(LabelSystem::create(registry));
 
 #ifdef ROCKY_HAS_IMGUI
-    ecsNode->add(WidgetSystemNode::create(registry));
+    systemsNode->add(WidgetSystemNode::create(registry));
 #endif
 
-    mainScene->addChild(ecsNode);
+    mainScene->addChild(systemsNode);
 }
 
 Application::~Application()
@@ -278,9 +278,9 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
         display._commandGraphByWindow.begin()->second->queueFamily);
 
     // Initialize the ECS subsystem:
-    if (ecsNode)
+    if (systemsNode)
     {
-        ecsNode->initialize(vsgcontext);
+        systemsNode->initialize(vsgcontext);
     }
 
     // respond to the X or to hitting ESC
@@ -362,6 +362,7 @@ Application::recreateViewer()
 }
 #endif
 
+#if 0
 namespace
 {
     /**
@@ -391,6 +392,7 @@ namespace
         }
     };
 }
+#endif
 
 void
 Application::realize()
@@ -409,7 +411,16 @@ Application::realize()
         setupViewer(viewer);
 
         // install our frame update operation
-        viewer->updateOperations->add(AppUpdateOperation::create(*this), vsg::UpdateOperations::ALL_FRAMES);
+        //viewer->updateOperations->add(AppUpdateOperation::create(*this), vsg::UpdateOperations::ALL_FRAMES);
+
+        _subs += vsgcontext->onUpdate([&](VSGContext vsgcontext)
+            {
+                // ECS updates - rendering or modifying entities
+                if (systemsNode)
+                {
+                    systemsNode->update(vsgcontext);
+                }
+            });
 
         // mark the viewer ready so that subsequent changes will know to
         // use an asynchronous path.
