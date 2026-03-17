@@ -15,7 +15,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -608,7 +608,7 @@
 
 
 <h1 id="class-future">class future</h1>
-<p><em>Defined at src/rocky/weejobs.h#293</em></p>
+<p><em>Defined at src/rocky/weejobs.h#298</em></p>
 <p>Future holds the future result of an asynchronous operation.</p>
 <p>Usage:   Producer (usually an asynchronous function call) creates a future<T>   (the promise of a future result) and immediately returns it. The Consumer   then performs other work, and eventually (or immediately) checks available()   for a result or canceled() for cancelation. If availabile() is true,   Consumer calls value() to fetch the valid result.</p>
 <p>As long as at least two equivalent Future object (i.e. Futures pointing to the   same internal shared data) exist, the Future is considered valid. Once   that count goes to one, the Future is either available (the value is ready)   or empty (i.e., canceled or abandoned).</p>
@@ -618,89 +618,90 @@
 <h2 id="functions">Functions</h2>
 <h3 id="future">future<T></h3>
 <p><em>public void future<T>()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#311</em></p>
+<p><em>Defined at src/rocky/weejobs.h#316</em></p>
 <p>Default constructor</p>
 <h3 id="future_1">future<T></h3>
 <p><em>public void future<T>(const future<T> &amp; rhs)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#317</em></p>
+<p><em>Defined at src/rocky/weejobs.h#322</em></p>
 <p>Default copy constructor</p>
 <h3 id="empty">empty</h3>
 <p><em>public _Bool empty()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#320</em></p>
+<p><em>Defined at src/rocky/weejobs.h#325</em></p>
 <p>True is this Future is unused and not connected to any other Future</p>
 <h3 id="available">available</h3>
 <p><em>public _Bool available()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#326</em></p>
+<p><em>Defined at src/rocky/weejobs.h#331</em></p>
 <p>True if the promise was resolved and a result if available.</p>
 <h3 id="working">working</h3>
 <p><em>public _Bool working()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#333</em></p>
+<p><em>Defined at src/rocky/weejobs.h#338</em></p>
 <p>True if a promise exists, but has not yet been resolved; Presumably the asynchronous task is still working.</p>
 <h3 id="canceled">canceled</h3>
 <p><em>public _Bool canceled()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#339</em></p>
+<p><em>Defined at src/rocky/weejobs.h#344</em></p>
 <p>cancelable interface</p>
 <h3 id="value">value</h3>
 <p><em>public const T &amp; value()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#347</em></p>
+<p><em>Defined at src/rocky/weejobs.h#352</em></p>
 <p>Deference the result object. Make sure you check available() to check that the future was actually resolved; otherwise you will just get the default object.</p>
 <h3 id="operator-">operator-&gt;</h3>
 <p><em>public const T * operator-&gt;()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#353</em></p>
+<p><em>Defined at src/rocky/weejobs.h#358</em></p>
 <p>Dereference this object to const pointer to the result.</p>
 <h3 id="has_value">has_value</h3>
 <p><em>public _Bool has_value(const T &amp; arg)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#359</em></p>
+<p><em>Defined at src/rocky/weejobs.h#364</em></p>
 <p>Result is available AND equal to the argument.</p>
 <h3 id="release">release</h3>
 <p><em>public T release()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#366</em></p>
+<p><em>Defined at src/rocky/weejobs.h#371</em></p>
 <p>Same as value(), but if the result is available will reset the future before returning the result object.</p>
 <h3 id="join">join</h3>
 <p><em>public const T &amp; join()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#377</em></p>
+<p><em>Defined at src/rocky/weejobs.h#382</em></p>
 <p>Blocks until the result becomes available or the future is abandoned; then returns the result object.</p>
 <h3 id="join_1">join</h3>
 <p><em>public const T &amp; join(const cancelable * p)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#388</em></p>
+<p><em>Defined at src/rocky/weejobs.h#393</em></p>
 <p>Blocks until the result becomes available or the future is abandoned or a cancelation flag is set; then returns the result object. Be sure to check canceled() after calling join() to see if the return value is valid.</p>
 <h3 id="join_2">join</h3>
 <p><em>public const T &amp; join(const cancelable &amp; p)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#400</em></p>
+<p><em>Defined at src/rocky/weejobs.h#405</em></p>
 <p>Blocks until the result becomes available or the future is abandoned or a cancelation flag is set; then returns the result object. Be sure to check canceled() after calling join() to see if the return value is valid.</p>
 <h3 id="abandon">abandon</h3>
 <p><em>public void abandon()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#406</em></p>
+<p><em>Defined at src/rocky/weejobs.h#411</em></p>
 <p>Release reference to a promise, resetting this future to its default state</p>
 <h3 id="reset">reset</h3>
 <p><em>public void reset()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#412</em></p>
+<p><em>Defined at src/rocky/weejobs.h#417</em></p>
 <p>synonym for abandon.</p>
 <h3 id="resolve">resolve</h3>
 <p><em>public void resolve(const T &amp; value)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#418</em></p>
+<p><em>Defined at src/rocky/weejobs.h#423</em></p>
 <p>Resolve (fulfill) the promise with the provided result value.</p>
 <h3 id="resolve_1">resolve</h3>
 <p><em>public void resolve(T &amp;&amp; value)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#426</em></p>
+<p><em>Defined at src/rocky/weejobs.h#431</em></p>
 <p>Resolve (fulfill) the promise with an rvalue</p>
 <h3 id="resolve_2">resolve</h3>
 <p><em>public void resolve()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#434</em></p>
+<p><em>Defined at src/rocky/weejobs.h#439</em></p>
 <p>Resolve (fulfill) the promise with a default result</p>
 <h3 id="refs">refs</h3>
 <p><em>public unsigned int refs()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#444</em></p>
+<p><em>Defined at src/rocky/weejobs.h#449</em></p>
 <p>The number of objects, including this one, that reference the shared container. If this method returns 1, that means this is the only object with access to the data. This method will never return zero.</p>
 <h3 id="then_dispatch">then_dispatch</h3>
 <p><em>public future<R> then_dispatch(int func, const context &amp; con)</em></p>
 <p>Add a continuation to this future. Instead of the functor returning a value, it will instead have the option of resolving the incoming future/promise object. This is useful for operations that have their own way of running asynchronous code. Note: for some reason when you use this variant you must specific the template argument, e.g. result.then<int>(auto i, promise<int> p)</p>
 <h3 id="then_dispatch_1">then_dispatch</h3>
-<p><em>public void then_dispatch(int func, const context &amp; con)</em></p>
+<p><em>public void then_dispatch(runtime &amp; , int func, const context &amp; con)</em></p>
+<p><em>Defined at src/rocky/weejobs.h#1218</em></p>
 <p>Add a continuation to this future. The functor only takes an input value and has no return value (fire and forget).</p>
 <h3 id="then_dispatch_2">then_dispatch</h3>
-<p><em>public future<R> then_dispatch(F func, const context &amp; con)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#1075</em></p>
+<p><em>public future<R> then_dispatch(runtime &amp; rt, F func, const context &amp; con)</em></p>
+<p><em>Defined at src/rocky/weejobs.h#1120</em></p>
 
 
 

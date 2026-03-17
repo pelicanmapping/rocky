@@ -15,7 +15,7 @@
       
       
       <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -476,7 +476,7 @@
 
 
 <h1 id="struct-event">struct event</h1>
-<p><em>Defined at src/rocky/weejobs.h#80</em></p>
+<p><em>Defined at src/rocky/weejobs.h#85</em></p>
 <p>Event with a binary signaled state, for multi-threaded sychronization.</p>
 <p>The event has two states:  "set" means that a call to wait() will not block;  "unset" means that calls to wait() will block until another thread calls set().</p>
 <p>The event starts out unset.</p>
@@ -489,43 +489,43 @@
 <h2 id="functions">Functions</h2>
 <h3 id="event">event</h3>
 <p><em>public void event()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#84</em></p>
+<p><em>Defined at src/rocky/weejobs.h#89</em></p>
 <p>Construct a new event</p>
 <h3 id="event_1">~event</h3>
 <p><em>public void ~event()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#87</em></p>
+<p><em>Defined at src/rocky/weejobs.h#92</em></p>
 <p>DTOR</p>
 <h3 id="wait">wait</h3>
 <p><em>public _Bool wait()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#94</em></p>
+<p><em>Defined at src/rocky/weejobs.h#99</em></p>
 <p>Block until the event is set, then return true.</p>
 <h3 id="wait_1">wait</h3>
 <p><em>public _Bool wait(T timeout)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#106</em></p>
+<p><em>Defined at src/rocky/weejobs.h#111</em></p>
 <p>Block until the event is set or the timout expires. Return true if the event has set, otherwise false.</p>
 <h3 id="waitandreset">waitAndReset</h3>
 <p><em>public _Bool waitAndReset()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#116</em></p>
+<p><em>Defined at src/rocky/weejobs.h#121</em></p>
 <p>Block until the event is set; then reset it.</p>
 <h3 id="operator">operator=</h3>
 <p><em>public void operator=(_Bool value)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#125</em></p>
+<p><em>Defined at src/rocky/weejobs.h#130</em></p>
 <p>Set if true, reset if false.</p>
 <h3 id="set">set</h3>
 <p><em>public void set()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#133</em></p>
+<p><em>Defined at src/rocky/weejobs.h#138</em></p>
 <p>Set the event state, causing any waiters to unblock.</p>
 <h3 id="reset">reset</h3>
 <p><em>public void reset()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#144</em></p>
+<p><em>Defined at src/rocky/weejobs.h#149</em></p>
 <p>Reset (unset) the event state; new waiters will block until set() is called.</p>
 <h3 id="isset">isSet</h3>
 <p><em>public _Bool isSet()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#150</em></p>
+<p><em>Defined at src/rocky/weejobs.h#155</em></p>
 <p>Whether the event state is set (waiters will not block).</p>
 <h3 id="operator-bool">operator bool</h3>
 <p><em>public _Bool operator bool()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#155</em></p>
+<p><em>Defined at src/rocky/weejobs.h#160</em></p>
 <p>Synonymous with isSet()</p>
 
 

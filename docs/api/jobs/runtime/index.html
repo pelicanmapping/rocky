@@ -14,16 +14,16 @@
         
       
       
-      <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
-        <title>struct runtime - Rocky</title>
+        <title>class runtime - Rocky</title>
       
     
     
-      <link rel="stylesheet" href="../../../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
       
 
@@ -42,7 +42,7 @@
       
     
     
-    <script>__md_scope=new URL("../../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -60,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#struct-runtime" class="md-skip">
+        <a href="#class-runtime" class="md-skip">
           Skip to content
         </a>
       
@@ -76,7 +76,7 @@
 
 <header class="md-header md-header--shadow" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../../../.." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
+    <a href="../../.." title="Rocky" class="md-header__button md-logo" aria-label="Rocky" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              struct runtime
+              class runtime
             
           </span>
         </div>
@@ -174,7 +174,7 @@
 
 <nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../../../.." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
+    <a href="../../.." title="Rocky" class="md-nav__button md-logo" aria-label="Rocky" data-md-component="logo">
       
   
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
@@ -192,7 +192,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -266,7 +266,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../../README.md" class="md-nav__link">
+      <a href="../../README.md" class="md-nav__link">
         
   
   
@@ -321,17 +321,6 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#members" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Members
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#functions" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -366,10 +355,153 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#get_pool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_pool
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dispatch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dispatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#get_metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        get_metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#shutdown" class="md-nav__link">
     <span class="md-ellipsis">
       
         shutdown
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        alive
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_thread_name_function" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_thread_name_function
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_allow_work_stealing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_allow_work_stealing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total_pending" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        total_pending
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total_running" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        total_running
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total_postprocessing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        total_postprocessing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total_canceled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        total_canceled
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#total" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        total
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dispatch_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dispatch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dispatch_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dispatch
       
     </span>
   </a>
@@ -398,25 +530,73 @@
 
 
 
-<h1 id="struct-runtime">struct runtime</h1>
-<p><em>Defined at src/rocky/weejobs.h#723</em></p>
-<h2 id="members">Members</h2>
-<p>public int _alive</p>
-<p>public int _stealing_allowed</p>
-<p>public int _pools_mutex</p>
-<p>public int _pools</p>
-<p>public metrics _metrics</p>
-<p>public int _set_thread_name</p>
+<h1 id="class-runtime">class runtime</h1>
+<p><em>Defined at src/rocky/weejobs.h#720</em></p>
+<p>Main runtime instance.</p>
 <h2 id="functions">Functions</h2>
 <h3 id="runtime">runtime</h3>
 <p><em>public void runtime()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#883</em></p>
+<p><em>Defined at src/rocky/weejobs.h#928</em></p>
 <h3 id="runtime_1">~runtime</h3>
 <p><em>public void ~runtime()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#888</em></p>
+<p><em>Defined at src/rocky/weejobs.h#933</em></p>
+<h3 id="get_pool">get_pool</h3>
+<p><em>public jobpool * get_pool(const int &amp; name, unsigned int pool_size)</em></p>
+<p><em>Defined at src/rocky/weejobs.h#805</em></p>
+<p>Returns the job pool with the given name, creating a new one if it doesn't  already exist. If you don't specify a name, a default pool is used.</p>
+<p><strong>name</strong> Name of the pool to fetch (or create)</p>
+<p><strong>pool_size</strong> Number of threads in the pool (if it's a new pool)</p>
+<p><strong>return</strong> Pointer to the job pool</p>
+<h3 id="dispatch">dispatch</h3>
+<p><em>public void dispatch(int task, const context &amp; context)</em></p>
+<p>Dispatches a job with no return value. Fire and forget.</p>
+<p><strong>task</strong> Function to run in a thread. Prototype is void(void).</p>
+<p><strong>context</strong> Optional configuration for the asynchronous function call</p>
+<h3 id="get_metrics">get_metrics</h3>
+<p><em>public metrics * get_metrics()</em></p>
+<p><em>Defined at src/rocky/weejobs.h#964</em></p>
+<p>Metrics for all job pool</p>
 <h3 id="shutdown">shutdown</h3>
 <p><em>public void shutdown()</em></p>
-<p><em>Defined at src/rocky/weejobs.h#893</em></p>
+<p><em>Defined at src/rocky/weejobs.h#938</em></p>
+<p>stop all threads, wait for them to exit, and shut down the system</p>
+<h3 id="alive">alive</h3>
+<p><em>public _Bool alive()</em></p>
+<p><em>Defined at src/rocky/weejobs.h#959</em></p>
+<p>Whether the weejobs runtime is still alive (has not been shutdown)</p>
+<h3 id="set_thread_name_function">set_thread_name_function</h3>
+<p><em>public void set_thread_name_function(int f)</em></p>
+<p>Install a function that the SDK can use to set job pool thread names when it spawns them.</p>
+<h3 id="set_allow_work_stealing">set_allow_work_stealing</h3>
+<p><em>public void set_allow_work_stealing(_Bool value)</em></p>
+<p><em>Defined at src/rocky/weejobs.h#974</em></p>
+<p>Whether to allow jobpools to steal work from other jobpools when they are idle.</p>
+<h3 id="total_pending">total_pending</h3>
+<p><em>public int total_pending()</em></p>
+<p><em>Defined at src/rocky/weejobs.h#1260</em></p>
+<p>Total number of pending jobs across all schedulers</p>
+<h3 id="total_running">total_running</h3>
+<p><em>public int total_running()</em></p>
+<p><em>Defined at src/rocky/weejobs.h#1270</em></p>
+<p>Total number of running jobs across all schedulers</p>
+<h3 id="total_postprocessing">total_postprocessing</h3>
+<p><em>public int total_postprocessing()</em></p>
+<p><em>Defined at src/rocky/weejobs.h#1280</em></p>
+<p>Total number of running jobs across all schedulers</p>
+<h3 id="total_canceled">total_canceled</h3>
+<p><em>public int total_canceled()</em></p>
+<p><em>Defined at src/rocky/weejobs.h#1290</em></p>
+<p>Total number of canceled jobs across all schedulers</p>
+<h3 id="total">total</h3>
+<p><em>public int total()</em></p>
+<p><em>Defined at src/rocky/weejobs.h#1300</em></p>
+<p>Total number of active jobs in the system</p>
+<h3 id="dispatch_1">dispatch</h3>
+<p><em>public future<T> dispatch(F task, const context &amp; context)</em></p>
+<p><em>Defined at src/rocky/weejobs.h#852</em></p>
+<h3 id="dispatch_2">dispatch</h3>
+<p><em>public future<T> dispatch(F task, future<T> promise, const context &amp; context)</em></p>
+<p><em>Defined at src/rocky/weejobs.h#880</em></p>
 
 
 
@@ -466,10 +646,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../../../..", "features": [], "search": "../../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": [], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>
