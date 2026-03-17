@@ -12,12 +12,7 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_NodePager = [](Application& app)
 {
-    static const Color colors[4] = {
-        Color{1, 0, 0, 1}, // red
-        Color{0, 1, 0, 1}, // green
-        Color{0, 0, 1, 1}, // blue
-        Color{1, 1, 0, 1}  // yellow
-    };
+    static const Color colors[4] = { Color::Red, Color::Green, Color::Blue, Color::Yellow };
 
     static vsg::ref_ptr<NodePager> pager;
     static Profile profile("global-geodetic");
