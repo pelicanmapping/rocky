@@ -34,7 +34,7 @@
 
 // Version
 #define WEEJOBS_VERSION_MAJOR 1
-#define WEEJOBS_VERSION_MINOR 1
+#define WEEJOBS_VERSION_MINOR 2
 #define WEEJOBS_VERSION_REV   0
 #define WEEJOBS_STR_NX(s) #s
 #define WEEJOBS_STR(s) WEEJOBS_STR_NX(s)
@@ -1232,7 +1232,7 @@ namespace WEEJOBS_NAMESPACE
             std::weak_ptr<shared_t> weak_shared = _shared;
             auto copy_of_con = con;
 
-            _shared->_continuation = [func, weak_shared, copy_of_con]() mutable
+            _shared->_continuation = [rt, func, weak_shared, copy_of_con]() mutable
                 {
                     auto shared = weak_shared.lock();
                     if (shared)
