@@ -111,7 +111,7 @@ auto Demo_Stats = [](Application& app)
     }
 
     ImGui::SeparatorText("Job Pools");
-    auto* metrics = jobs::get_metrics();
+    auto* metrics = app.io().services().jobs.get_metrics();
     if (ImGuiLTable::Begin("Job Pools"))
     {
         for (auto m : metrics->all())

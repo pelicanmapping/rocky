@@ -64,7 +64,7 @@ NodePager::initialize(VSGContext vsgcontext)
     ROCKY_SOFT_ASSERT_AND_RETURN(profile.valid(), void());
     ROCKY_SOFT_ASSERT_AND_RETURN(createPayload != nullptr, void());
 
-    this->_vsgcontext = vsgcontext;
+    this->vsgcontext = vsgcontext;
 
     for (auto& child : children)
         vsgcontext->dispose(child);
@@ -149,7 +149,7 @@ NodePager::createSubtileLoader(const TileKey& key) const
 
                 if (result)
                 {
-                    pager->_vsgcontext->compile(result);
+                    pager->vsgcontext->compile(result);
                 }
             }
 
@@ -258,7 +258,7 @@ PagedNode::startLoading() const
 
     jobs::context jc;
     jc.name = key.str();
-    jc.pool = jobs::get_pool(pager->poolName, 4);
+    jc.pool = pager->vsgcontext->io.services().jobs.get_pool(pager->poolName, 4);
     jc.priority = [&]() { return priority; };
 
     auto load = pager->createSubtileLoader(key);
@@ -266,13 +266,13 @@ PagedNode::startLoading() const
 
     vsg::observer_ptr<PagedNode> parent_weak(const_cast<PagedNode*>(this));
 
-    auto load_job = [load, parent_weak, vsgcontext(pager->_vsgcontext), orig_revision(revision), io(pager->_vsgcontext->io)](Cancelable& c)
+    auto load_job = [load, parent_weak, vsgcontext(pager->vsgcontext), orig_revision(revision), io(pager->vsgcontext->io)](Cancelable& c)
         {
             vsg::ref_ptr<vsg::Node> result = load(io.with(c));
             return result;
         };
 
-    child = jobs::dispatch(load_job, jc);
+    child = pager->vsgcontext->io.services().jobs.dispatch(load_job, jc);
 }
 
 void
@@ -327,7 +327,7 @@ PagedNode::traverse(vsg::RecordTraversal& record) const
             }
             else if (child.working())
             {
-                pager->_vsgcontext->requestFrame();
+                pager->vsgcontext->requestFrame();
             }
             else if (child.canceled())
             {

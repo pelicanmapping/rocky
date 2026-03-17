@@ -87,6 +87,9 @@ namespace ROCKY_NAMESPACE
 
         //! URI deadpool; URI will use this if available.
         std::shared_ptr<DealpoolService> deadpool;
+
+        //! Jobs instance for scheduling asynchronous tasks
+        jobs::runtime jobs;
     };
 
     /**

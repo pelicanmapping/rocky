@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 
@@ -9,4 +9,6 @@
 #include "weejobs.h"
 
 // job system definition
+#ifdef WEEJOBS_USE_SINGLETON
 WEEJOBS_INSTANCE;
+#endif

@@ -101,13 +101,13 @@ ContextImpl::ContextImpl()
 #endif // ROCKY_HAS_GDAL
 
     // Tell the weejobs library how to set a thread name
-    jobs::set_thread_name_function([](const char* value) {
+    io.services().jobs.set_thread_name_function([](const char* value) {
         setThreadName(value); });
 }
 
 ContextImpl::~ContextImpl()
 {
-    jobs::shutdown();
+    io.services().jobs.shutdown();
 }
 
 UID rocky::createUID()

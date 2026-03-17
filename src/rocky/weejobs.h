@@ -9,14 +9,12 @@
 #include <cfloat>
 #include <chrono>
 #include <condition_variable>
-#include <cstdlib>
 #include <functional>
 #include <mutex>
 #include <thread>
 #include <type_traits>
 #include <vector>
 #include <string>
-#include <algorithm>
 #include <variant>
 
 // OPTIONAL: Define WEEJOBS_EXPORT if you want to use this library from multiple modules (DLLs)
@@ -28,6 +26,11 @@
 #ifndef WEEJOBS_NAMESPACE
 #define WEEJOBS_NAMESPACE jobs
 #endif
+
+// OPTIONAL: Define WEEJOBS_USE_SINGLETON to use a single global instance of the job system.
+// If defined, you must declare WEEJOBS_INSTANCE somewhere in a cpp file. Then you can access
+// the global singleton by calling jobs::instance().
+// #define WEEJOBS_USE_SINGLETON
 
 // Version
 #define WEEJOBS_VERSION_MAJOR 1
@@ -59,6 +62,8 @@ namespace WEEJOBS_NAMESPACE
     public:
         virtual bool canceled() const { return false; }
     };
+
+    class runtime;
 
     namespace detail
     {
@@ -451,7 +456,7 @@ namespace WEEJOBS_NAMESPACE
         //! value to the continuation function. The continuation function in turn must
         //! return a value (cannot be void).
         template<typename F, typename R = typename detail::result_of_t<F, const T&, cancelable&>>
-        WEEJOBS_NO_DISCARD inline future<R> then_dispatch(F func, const context& con = {});
+        WEEJOBS_NO_DISCARD inline future<R> then_dispatch(runtime&, F func, const context& con = {});
 
         //! Add a continuation to this future. Instead of the functor returning a value,
         //! it will instead have the option of resolving the incoming future/promise object.
@@ -463,7 +468,7 @@ namespace WEEJOBS_NAMESPACE
 
         //! Add a continuation to this future. The functor only takes an input value and has no
         //! return value (fire and forget).
-        inline void then_dispatch(std::function<void(const T&)> func, const context& con = {});
+        inline void then_dispatch(runtime&, std::function<void(const T&)> func, const context& con = {});
 
     private:
         std::shared_ptr<shared_t> _shared;
@@ -501,7 +506,7 @@ namespace WEEJOBS_NAMESPACE
             }
         };
 
-        inline bool steal_job(class jobpool* thief, detail::job& stolen);
+        //inline bool steal_job(class jobpool* thief, detail::job& stolen);
     }
 
     /**
@@ -656,13 +661,7 @@ namespace WEEJOBS_NAMESPACE
 
         //! Construct a new job pool.
         //! Do not call this directly - call getPool(name) instead.
-        jobpool(const std::string& name, unsigned concurrency) :
-            _target_concurrency(concurrency)
-        {
-            _metrics.name = name;
-            _metrics.concurrency = 0;
-            _queue.reserve(256);
-        }
+        jobpool(runtime& rt, const std::string& name, unsigned concurrency);
 
         //! Pulls queued jobs and runs them in whatever thread run() is called from.
         //! Runs in a loop until _done is set.
@@ -677,6 +676,7 @@ namespace WEEJOBS_NAMESPACE
         //! Wait for all threads to exit (after calling stop_threads)
         inline void join_threads();
 
+        class runtime& _runtime;
         std::atomic<bool> _can_steal_work = { true };
         std::vector<detail::job> _queue;
         mutable std::mutex _queue_mutex; // protect access to the queue
@@ -715,69 +715,125 @@ namespace WEEJOBS_NAMESPACE
     };
 
     /**
-    * Runtime singleton object;
-    * Declare with WEEJOBS_INSTANCE in one of your .cpp files.
+    * Main runtime instance.
     */
-    namespace detail
+    class runtime
     {
-        struct runtime
-        {
-            inline runtime();
-            inline ~runtime();
-            inline void shutdown();
+    public:
+        inline runtime();
+        inline ~runtime();
 
-            std::atomic<bool> _alive = { true };
-            std::atomic<bool> _stealing_allowed = { false };
-            std::mutex _pools_mutex;
-            std::vector<jobpool*> _pools;
-            metrics _metrics;
-            std::function<void(const char*)> _set_thread_name;
-        };
-    }
+        //! Returns the job pool with the given name, creating a new one if it doesn't 
+        //! already exist. If you don't specify a name, a default pool is used.
+        //! @param name Name of the pool to fetch (or create)
+        //! @param pool_size Number of threads in the pool (if it's a new pool)
+        //! @return Pointer to the job pool
+        inline jobpool* get_pool(const std::string& name = {}, unsigned pool_size = 2u);
 
-    //! Access to the runtime singleton - users need not call this
-    extern WEEJOBS_EXPORT detail::runtime& instance();
+        //! Dispatches a job with no return value. Fire and forget.
+        //! @param task Function to run in a thread. Prototype is void(void).
+        //! @param context Optional configuration for the asynchronous function call
+        inline void dispatch(std::function<void()> task, const context& context = {});
 
-    //! Returns the job pool with the given name, creating a new one if it doesn't 
-    //! already exist. If you don't specify a name, a default pool is used.
-    //! @param name Name of the pool to fetch (or create)
-    //! @param pool_size Number of threads in the pool (if it's a new pool)
-    //! @return Pointer to the job pool
-    inline jobpool* get_pool(const std::string& name = {}, unsigned pool_size = 2u)
+        //! Dispatches a job and immediately returns a future result.
+        //! @param task Function to run in a thread. Prototype is T(cancelable&)
+        //! @param context Optional configuration for the asynchronous function call
+        //! @return Future result of the async function call
+        template<typename F, typename T = typename detail::result_of_t<F, cancelable&>>
+        WEEJOBS_NO_DISCARD inline future<T> dispatch(F task, const context& context = {});
+
+        //! Dispatches a job and immediately returns a future result.
+        //! @param task Function to run in a thread. Prototype is T(cancelable&)
+        //! @param promise Optional user-supplied promise object
+        //! @param context Optional configuration for the asynchronous function call
+        //! @return Future result of the async function call
+        template<typename F, typename T = typename detail::result_of_t<F, cancelable&>>
+        WEEJOBS_NO_DISCARD inline future<T> dispatch(F task, future<T> promise, const context& context = {});
+
+        //! Metrics for all job pool
+        inline metrics* get_metrics();
+
+        //! stop all threads, wait for them to exit, and shut down the system
+        inline void shutdown();
+
+        //! Whether the weejobs runtime is still alive (has not been shutdown)
+        inline bool alive();
+
+        //! Install a function that the SDK can use to set job pool thread names
+        //! when it spawns them.
+        inline void set_thread_name_function(std::function<void(const char*)> f);
+
+        //! Whether to allow jobpools to steal work from other jobpools when they are idle.
+        inline void set_allow_work_stealing(bool value);
+
+        //! Total number of pending jobs across all schedulers
+        inline int total_pending() const;
+
+        //! Total number of running jobs across all schedulers
+        inline int total_running() const;
+
+        //! Total number of running jobs across all schedulers
+        inline int total_postprocessing() const;
+
+        //! Total number of canceled jobs across all schedulers
+        inline int total_canceled() const;
+
+        //! Total number of active jobs in the system
+        inline int total() const;
+
+    private:
+        inline void pool_dispatch(std::function<bool()> delegate, const context& context);
+
+        inline bool steal_job(jobpool* thief, detail::job& stolen);
+
+        std::atomic<bool> _alive = { true };
+        std::atomic<bool> _stealing_allowed = { false };
+        mutable std::mutex _pools_mutex;
+        std::vector<jobpool*> _pools;
+        metrics _metrics;
+        std::function<void(const char*)> _set_thread_name;
+
+        friend class jobpool;
+        template<typename T> friend class future;
+    };
+
+#ifdef WEEJOBS_USE_SINGLETON
+    //! Access to a runtime singleton - users need not call this
+    extern WEEJOBS_EXPORT runtime& instance();
+#endif
+
+    inline jobpool* runtime::get_pool(const std::string& name, unsigned pool_size)
     {
-        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        std::lock_guard<std::mutex> lock(_pools_mutex);
 
-        for (auto pool : instance()._pools)
+        for (auto pool : _pools)
         {
             if (pool->name() == name)
                 return pool;
         }
-        auto new_pool = new jobpool(name, pool_size);
-        instance()._pools.push_back(new_pool);
-        instance()._metrics._pools.push_back(&new_pool->_metrics);
+        auto new_pool = new jobpool(*this, name, pool_size);
+        _pools.push_back(new_pool);
+        _metrics._pools.push_back(&new_pool->_metrics);
         new_pool->start_threads();
         return new_pool;
     }
 
-    namespace detail
+    // dispatches a function to the appropriate job pool.
+    inline void runtime::pool_dispatch(std::function<bool()> delegate, const context& context)
     {
-        // dispatches a function to the appropriate job pool.
-        inline void pool_dispatch(std::function<bool()> delegate, const context& context)
+        auto pool = context.pool ? context.pool : get_pool({});
+        if (pool)
         {
-            auto pool = context.pool ? context.pool : get_pool({});
-            if (pool)
+            pool->_dispatch_delegate(delegate, context);
+
+            // if work stealing is enabled, wake up all pools
+            if (_stealing_allowed)
             {
-                pool->_dispatch_delegate(delegate, context);
+                std::lock_guard<std::mutex> lock(_pools_mutex);
 
-                // if work stealing is enabled, wake up all pools
-                if (instance()._stealing_allowed)
+                for (auto pool : _pools)
                 {
-                    std::lock_guard<std::mutex> lock(instance()._pools_mutex);
-
-                    for (auto pool : instance()._pools)
-                    {
-                        pool->_block.notify_all();
-                    }
+                    pool->_block.notify_all();
                 }
             }
         }
@@ -786,18 +842,14 @@ namespace WEEJOBS_NAMESPACE
     //! Dispatches a job with no return value. Fire and forget.
     //! @param task Function to run in a thread. Prototype is void(void).
     //! @param context Optional configuration for the asynchronous function call
-    inline void dispatch(std::function<void()> task, const context& context = {})
+    inline void runtime::dispatch(std::function<void()> task, const context& context)
     {
         auto delegate = [task]() mutable -> bool { task(); return true; };
-        detail::pool_dispatch(delegate, context);
+        pool_dispatch(delegate, context);
     }
 
-    //! Dispatches a job and immediately returns a future result.
-    //! @param task Function to run in a thread. Prototype is T(cancelable&)
-    //! @param context Optional configuration for the asynchronous function call
-    //! @return Future result of the async function call
-    template<typename F, typename T = typename detail::result_of_t<F, cancelable&>>
-    WEEJOBS_NO_DISCARD inline future<T> dispatch(F task, const context& context = {})
+    template<typename F, typename T>
+    WEEJOBS_NO_DISCARD inline future<T> runtime::dispatch(F task, const context& context)
     {
         future<T> promise;
         bool can_cancel = context.can_cancel;
@@ -819,18 +871,13 @@ namespace WEEJOBS_NAMESPACE
                 return good;
             };
 
-        detail::pool_dispatch(delegate, context);
+        pool_dispatch(delegate, context);
 
         return promise;
     }
 
-    //! Dispatches a job and immediately returns a future result.
-    //! @param task Function to run in a thread. Prototype is T(cancelable&)
-    //! @param promise Optional user-supplied promise object
-    //! @param context Optional configuration for the asynchronous function call
-    //! @return Future result of the async function call
-    template<typename F, typename T = typename detail::result_of_t<F, cancelable&>>
-    WEEJOBS_NO_DISCARD inline future<T> dispatch(F task, future<T> promise, const context& context = {})
+    template<typename F, typename T>
+    WEEJOBS_NO_DISCARD inline future<T> runtime::dispatch(F task, future<T> promise, const context& context)
     {
         bool can_cancel = context.can_cancel;
 
@@ -844,53 +891,51 @@ namespace WEEJOBS_NAMESPACE
                 return run;
             };
 
-        detail::pool_dispatch(delegate, context);
+        pool_dispatch(delegate, context);
 
         return promise;
     }
 
-    //! Metrics for all job pool
-    inline metrics* get_metrics()
+    // steal a job from another jobpool's queue (other than "thief").
+    inline bool runtime::steal_job(jobpool* thief, detail::job& stolen)
     {
-        return &instance()._metrics;
+        jobpool* pool_with_most_jobs = nullptr;
+        {
+            std::lock_guard<std::mutex> lock(_pools_mutex);
+
+            std::size_t max_num_jobs = 0u;
+            for (auto pool : _pools)
+            {
+                if (pool != thief)
+                {
+                    if (pool->_metrics.pending > max_num_jobs)
+                    {
+                        max_num_jobs = pool->_metrics.pending;
+                        pool_with_most_jobs = pool;
+                    }
+                }
+            }
+        }
+
+        if (pool_with_most_jobs)
+        {
+            return pool_with_most_jobs->_take_job(stolen, true);
+        }
+
+        return false;
     }
 
-    //! stop all threads, wait for them to exit, and shut down the system
-    inline void shutdown()
-    {
-        instance().shutdown();
-    }
-
-    //! Whether the weejobs runtime is still alive (has not been shutdown)
-    inline bool alive()
-    {
-        return instance()._alive;
-    }
-
-    //! Install a function that the SDK can use to set job pool thread names
-    //! when it spawns them.
-    inline void set_thread_name_function(std::function<void(const char*)> f)
-    {
-        instance()._set_thread_name = f;
-    }
-
-    //! Whether to allow jobpools to steal work from other jobpools when they are idle.
-    inline void set_allow_work_stealing(bool value)
-    {
-        instance()._stealing_allowed = value;
-    }
-
-    inline detail::runtime::runtime()
+    inline runtime::runtime()
     {
         //nop
     }
 
-    inline detail::runtime::~runtime()
+    inline runtime::~runtime()
     {
         shutdown();
     }
 
-    inline void detail::runtime::shutdown()
+    inline void runtime::shutdown()
     {
         _alive = false;
 
@@ -911,6 +956,35 @@ namespace WEEJOBS_NAMESPACE
         _pools.clear();
     }
 
+    inline bool runtime::alive()
+    {
+        return _alive;
+    }
+
+    inline metrics* runtime::get_metrics()
+    {
+        return &_metrics;
+    }
+
+    inline void runtime::set_thread_name_function(std::function<void(const char*)> f)
+    {
+        _set_thread_name = f;
+    }
+
+    inline void runtime::set_allow_work_stealing(bool value)
+    {
+        _stealing_allowed = value;
+    }
+
+    inline jobpool::jobpool(runtime& runtime, const std::string& name, unsigned concurrency) :
+        _runtime(runtime),
+        _target_concurrency(concurrency)
+    {
+        _metrics.name = name;
+        _metrics.concurrency = 0;
+        _queue.reserve(256);
+    }
+
     inline void jobpool::run()
     {
         while (!_done)
@@ -918,7 +992,7 @@ namespace WEEJOBS_NAMESPACE
             detail::job next;
             bool have_next = false;
             {
-                if (_can_steal_work && instance()._stealing_allowed)
+                if (_can_steal_work && _runtime._stealing_allowed)
                 {
                     {
                         std::unique_lock<std::mutex> lock(_queue_mutex);
@@ -934,7 +1008,7 @@ namespace WEEJOBS_NAMESPACE
 
                     if (!_done && !have_next)
                     {
-                        have_next = detail::steal_job(this, next);
+                        have_next = _runtime.steal_job(this, next);
                     }
                 }
                 else
@@ -996,9 +1070,9 @@ namespace WEEJOBS_NAMESPACE
 
             _threads.push_back(std::thread([this]
                 {
-                    if (instance()._set_thread_name)
+                    if (_runtime._set_thread_name)
                     {
-                        instance()._set_thread_name(_metrics.name.c_str());
+                        _runtime._set_thread_name(_metrics.name.c_str());
                     }
                     run();
                 }
@@ -1043,38 +1117,9 @@ namespace WEEJOBS_NAMESPACE
         _threads.clear();
     }
 
-    // steal a job from another jobpool's queue (other than "thief").
-    inline bool detail::steal_job(jobpool* thief, detail::job& stolen)
-    {
-        jobpool* pool_with_most_jobs = nullptr;
-        {
-            std::lock_guard<std::mutex> lock(instance()._pools_mutex);
-
-            std::size_t max_num_jobs = 0u;
-            for (auto pool : instance()._pools)
-            {
-                if (pool != thief)
-                {
-                    if (pool->_metrics.pending > max_num_jobs)
-                    {
-                        max_num_jobs = pool->_metrics.pending;
-                        pool_with_most_jobs = pool;
-                    }
-                }
-            }
-        }
-
-        if (pool_with_most_jobs)
-        {
-            return pool_with_most_jobs->_take_job(stolen, true);
-        }
-
-        return false;
-    }
-
     template<typename T>
     template<typename F, typename R>
-    inline future<R> future<T>::then_dispatch(F func, const context& con)
+    inline future<R> future<T>::then_dispatch(runtime& rt, F func, const context& con)
     {
         // The future result of F. 
         // In this case, the continuation task will return a value that the system will use to resolve the promise.
@@ -1095,7 +1140,7 @@ namespace WEEJOBS_NAMESPACE
 
             context copy_of_con = con;
 
-            _shared->_continuation = [func, copy_of_con, weak_shared, continuation_promise]() mutable
+            _shared->_continuation = [rt, func, copy_of_con, weak_shared, continuation_promise]() mutable
                 {
                     auto shared = weak_shared.lock();
 
@@ -1113,7 +1158,7 @@ namespace WEEJOBS_NAMESPACE
                                 continuation_promise.resolve(func(copy_of_value, continuation_promise));
                             };
 
-                        jobs::dispatch(wrapper, copy_of_con);
+                        rt.dispatch(wrapper, copy_of_con);
                     }
                 };
         }
@@ -1171,7 +1216,7 @@ namespace WEEJOBS_NAMESPACE
     }
 
     template<typename T>
-    inline void future<T>::then_dispatch(std::function<void(const T&)> func, const context& con)
+    inline void future<T>::then_dispatch(runtime& rt, std::function<void(const T&)> func, const context& con)
     {
         // lock the continuation and set it:
         {
@@ -1200,7 +1245,7 @@ namespace WEEJOBS_NAMESPACE
                                 return true;
                             };
 
-                        detail::pool_dispatch(fire_and_forget_delegate, copy_of_con);
+                        rt.pool_dispatch(fire_and_forget_delegate, copy_of_con);
                     }
                 };
         }
@@ -1212,62 +1257,64 @@ namespace WEEJOBS_NAMESPACE
     }
 
     //! Total number of pending jobs across all schedulers
-    inline int metrics::total_pending() const
+    inline int runtime::total_pending() const
     {
-        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        std::lock_guard<std::mutex> lock(_pools_mutex);
         int count = 0;
         for (auto pool : _pools)
-            count += pool->pending;
+            count += pool->_metrics.pending;
         return count;
     }
 
     //! Total number of running jobs across all schedulers
-    inline int metrics::total_running() const
+    inline int runtime::total_running() const
     {
-        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        std::lock_guard<std::mutex> lock(_pools_mutex);
         int count = 0;
         for (auto pool : _pools)
-            count += pool->running;
+            count += pool->_metrics.running;
         return count;
     }
 
     //! Total number of running jobs across all schedulers
-    inline int metrics::total_postprocessing() const
+    inline int runtime::total_postprocessing() const
     {
-        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        std::lock_guard<std::mutex> lock(_pools_mutex);
         int count = 0;
         for (auto pool : _pools)
-            count += pool->postprocessing;
+            count += pool->_metrics.postprocessing;
         return count;
     }
 
     //! Total number of canceled jobs across all schedulers
-    inline int metrics::total_canceled() const
+    inline int runtime::total_canceled() const
     {
-        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        std::lock_guard<std::mutex> lock(_pools_mutex);
         int count = 0;
         for (auto pool : _pools)
-            count += pool->canceled;
+            count += pool->_metrics.canceled;
         return count;
     }
 
     //! Total number of active jobs in the system
-    inline int metrics::total() const
+    inline int runtime::total() const
     {
-        std::lock_guard<std::mutex> lock(instance()._pools_mutex);
+        std::lock_guard<std::mutex> lock(_pools_mutex);
         int count = 0;
         for (auto pool : _pools)
-            count += pool->pending + pool->running + pool->postprocessing;
+            count += pool->_metrics.pending + pool->_metrics.running + pool->_metrics.postprocessing;
         return count;
     }
 
     // Use this macro ONCE in your application in a .cpp file to 
     // instaniate the weejobs runtime singleton.
+#ifdef WEEJOBS_USE_SINGLETON
 #define WEEJOBS_INSTANCE \
     namespace WEEJOBS_NAMESPACE { \
-        detail::runtime& instance() { \
+        runtime& instance() { \
             static detail::runtime runtime_singleton_instance; \
             return runtime_singleton_instance; \
         } \
     }
+#endif
 }

@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2025 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "TerrainEngine.h"
@@ -16,20 +16,13 @@
 using namespace ROCKY_NAMESPACE;
 
 
-TerrainEngine::TerrainEngine(
-    std::shared_ptr<const Map> new_map,
-    const Profile& new_profile,
-    const SRS& new_renderingSRS,
-    TerrainState& new_stateFactory,
-    //VSGContext new_context,
-    const TerrainSettings& new_settings,
-    TerrainTileHost* new_host) :
+TerrainEngine::TerrainEngine(std::shared_ptr<const Map> new_map, const Profile& new_profile, const SRS& new_renderingSRS,
+    TerrainState& new_stateFactory, VSGContext vsgcontext, const TerrainSettings& new_settings, TerrainTileHost* new_host) :
 
     map(new_map),
     profile(new_profile),
     renderingSRS(new_renderingSRS),
     stateFactory(new_stateFactory),
-    //context(new_context),
     settings(new_settings),
     geometryPool(new_renderingSRS),
     host(new_host)
@@ -37,7 +30,8 @@ TerrainEngine::TerrainEngine(
     ROCKY_SOFT_ASSERT(map, "Map is required");
     ROCKY_SOFT_ASSERT(profile.valid(), "Valid profile required");
 
-    jobs::get_pool(loadSchedulerName)->set_concurrency(settings.concurrency);
+
+    vsgcontext->io.services().jobs.get_pool(loadSchedulerName)->set_concurrency(settings.concurrency);
 
     // geometry pooling not supported for QSC yet.
     if (new_profile.srs().isQSC())
@@ -94,13 +88,14 @@ TerrainEngine::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> pare
     return tile;
 }
 
-bool TerrainEngine::update(VSGContext context)
+bool TerrainEngine::update(VSGContext vc)
 {
     bool changes = false;
 
-    geometryPool.sweep(context);
+    geometryPool.sweep(vc);
 
-    auto pool = jobs::get_pool(loadSchedulerName);
+    auto pool = vc->io.services().jobs.get_pool(loadSchedulerName);
+
     if (pool->concurrency() != settings.concurrency)
     {
         pool->set_concurrency(settings.concurrency);

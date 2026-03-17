@@ -313,11 +313,13 @@ TerrainTilePager::requestCreateChildren(TileInfo& info, std::shared_ptr<TerrainE
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.level) : -FLT_MAX;
     };
 
-    info.childrenCreator = jobs::dispatch(
+    auto& jobs = vsgcontext->io.services().jobs;
+
+    info.childrenCreator = jobs.dispatch(
         create_children,
         jobs::context {
             "create child " + info.tile->key.str(),
-            jobs::get_pool(engine->loadSchedulerName),
+            jobs.get_pool(engine->loadSchedulerName),
             priority_func,
             nullptr
         });
@@ -375,11 +377,13 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io, std::s
         return tile ? -(sqrt(tile->lastTraversalRange) * tile->key.level) : -FLT_MAX;
     };
 
-    info.dataLoader = jobs::dispatch(
+    auto& jobs = vsgcontext->io.services().jobs;
+
+    info.dataLoader = jobs.dispatch(
         load, 
         jobs::context {
             "load data " + key.str(),
-            jobs::get_pool(engine->loadSchedulerName),
+            jobs.get_pool(engine->loadSchedulerName),
             priority_func,
             nullptr
         } );

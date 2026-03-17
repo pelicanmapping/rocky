@@ -47,8 +47,8 @@ TerrainProfileNode::reset(VSGContext vsgcontext)
         profile,
         terrain.renderingSRS,
         terrain.terrainState,
-        //context,    // runtime API
-        settings(), // settings
+        vsgcontext,
+        settings(),
         this);      // host
 }
 

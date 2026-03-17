@@ -94,7 +94,7 @@ auto Demo_ElevationSampler = [](Application& app)
 
                     mouse = p.transform(SRS::WGS84);
 
-                    sample = jobs::dispatch([&app, point(p)](Cancelable& c)
+                    sample = app.io().services().jobs.dispatch([&app, point(p)](Cancelable& c)
                         {
                             return sampler.sample(point, app.io().with(c));
                         });

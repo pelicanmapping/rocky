@@ -380,7 +380,7 @@ auto Demo_Line_Shared = [](Application& app)
         app.vsgcontext->requestFrame();
     }
 
-    app.background.start("Animate shared lines", [&](Cancelable& task)
+    app.background.start("Animate shared lines", app.io(), [&](Cancelable& task)
         {
             while (!task.canceled())
             {

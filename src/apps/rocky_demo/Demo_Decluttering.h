@@ -38,7 +38,7 @@ auto Demo_Decluttering = [](Application& app)
     {
         declutter = DeclutterSystem::create(app.registry);
 
-        app.background.start("rocky::declutter", [&app](Cancelable& cancelable)
+        app.background.start("rocky::declutter", app.io(), [&app](Cancelable& cancelable)
             {
                 Log()->info("Declutter thread starting.");
 

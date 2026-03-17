@@ -71,7 +71,7 @@ auto Demo_Geocoder = [](Application& app)
 
                 std::string input(input_buf);
 
-                geocoding_task = jobs::dispatch([&app, input](jobs::cancelable& c) -> Result<std::vector<Feature>>
+                geocoding_task = app.io().services().jobs.dispatch([&app, input](jobs::cancelable& c) -> Result<std::vector<Feature>>
                     {
                         if (c.canceled())
                             return Failure_OperationCanceled;

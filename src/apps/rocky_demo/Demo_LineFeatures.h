@@ -24,7 +24,7 @@ auto Demo_LineFeatures = [](Application& app)
     {
         if (data.empty())
         {
-            data = jobs::dispatch([](auto& cancelable)
+            data = app.io().services().jobs.dispatch([](auto& cancelable)
                 {
                     auto fs = rocky::GDALFeatureSource::create();
                     fs->uri = "https://readymap.org/readymap/filemanager/download/public/countries.geojson";

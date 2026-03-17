@@ -101,14 +101,17 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        VSGContext _vsgcontext;
+        VSGContext vsgcontext;
+
+        friend class PagedNode;
+
+    private:
+
         mutable detail::SentryTracker<vsg::ref_ptr<vsg::Node>> _sentry;
         mutable std::mutex _sentry_mutex;
         CallbackSub _sentryUpdate;
         std::uint64_t _lastUpdateFrame = 0u;
         SRS _renderingSRS;
-
-        friend class PagedNode;
 
         //! Creates a node for a TileKey.
         vsg::ref_ptr<vsg::Node> createNode(const TileKey& key, const IOOptions& io) const;

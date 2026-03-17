@@ -337,7 +337,7 @@ rocky::detail::setThreadName(const char* name)
 }
 
 BackgroundServices::Promise
-BackgroundServices::start(const std::string& name, Function function)
+BackgroundServices::start(const std::string& name, IOOptions& io, Function function)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(function, {});
     ROCKY_SOFT_ASSERT_AND_RETURN(!name.empty(), {});
@@ -353,8 +353,8 @@ BackgroundServices::start(const std::string& name, Function function)
             return true;
         };
 
-    jobs::context context{ std::string(name), jobs::get_pool(name, 1) };
-    tasks.emplace_back(jobs::dispatch(delegate, context));
+    jobs::context context{ std::string(name), io.services().jobs.get_pool(name, 1) };
+    tasks.emplace_back(io.services().jobs.dispatch(delegate, context));
 
     return tasks.back();
 }

@@ -22,6 +22,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    class IOOptions;
+
     namespace detail
     {
         const std::string EMPTY_STRING = {};
@@ -410,7 +412,7 @@ namespace ROCKY_NAMESPACE
             using Promise = Task;
 
             //! Run a function in a thread with the given name.
-            Promise start(const std::string& name, Function function);
+            Promise start(const std::string& name, IOOptions& io, Function function);
 
             //! Signal all background threads to quite and wait for them to finish.
             void quit();

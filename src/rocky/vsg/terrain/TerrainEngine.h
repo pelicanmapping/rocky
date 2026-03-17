@@ -27,7 +27,7 @@ namespace ROCKY_NAMESPACE
             const Profile& profile,
             const SRS& renderingSRS,
             TerrainState& stateFactory,
-            //VSGContext context,
+            VSGContext context,
             const TerrainSettings& settings,
             TerrainTileHost* host);
 
@@ -35,9 +35,6 @@ namespace ROCKY_NAMESPACE
 
         //! Terrain settings.
         const TerrainSettings& settings;
-
-        //! runtime operations (scene graph, views, etc)
-        //VSGContext context;
 
         //! the map this terrain is rendering
         std::shared_ptr<const Map> map;

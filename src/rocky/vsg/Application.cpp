@@ -256,7 +256,7 @@ Application::~Application()
 #endif
 
     Log()->debug("Waiting for all jobs to stop...");
-    jobs::shutdown();
+    io().services().jobs.shutdown();
 
     vsgcontext = nullptr;
 }

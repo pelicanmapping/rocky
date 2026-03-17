@@ -41,7 +41,7 @@ namespace
 
         void run()
         {
-            app.background.start("rocky::simulation", [this](jobs::cancelable& token)
+            app.background.start("rocky::simulation", app.io(), [this](jobs::cancelable& token)
                 {
                     Log()->info("Simulation thread starting.");
                     while (!token.canceled())
