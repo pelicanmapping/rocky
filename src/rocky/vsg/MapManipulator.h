@@ -289,6 +289,21 @@ namespace ROCKY_NAMESPACE
             //! Whtehr to zoom towards the mouse cursor when zooming
             bool zoomToMouse = true;
 
+            //! Enable velocity-based scroll zoom (vs discrete task-based)
+            bool scrollZoomEnabled = true;
+
+            //! Acceleration per scroll event (zoom units per scroll notch)
+            double scrollZoomAcceleration = 0.3;
+
+            //! Friction coefficient - velocity retained per 1/60s frame (0.88 = 12% decay)
+            double scrollZoomFriction = 0.88;
+
+            //! Minimum velocity to keep animating
+            double scrollZoomThreshold = 0.001;
+
+            //! Maximum zoom velocity cap (prevents jarring zoom from rapid scrolling)
+            double maxScrollZoomVelocity = 3.0;
+
 
             //! Assigns behavior to the action of dragging the mouse while depressing one or
             //! more mouse buttons and modifier keys.
@@ -430,6 +445,12 @@ namespace ROCKY_NAMESPACE
             //vsg::time_point _previousTick;
         };
 
+        //! State for velocity-based scroll zoom
+        struct ZoomVelocityState {
+            double velocity = 0.0;
+            bool isActive = false;
+        };
+
         // "ticks" the resident Task, which allows for multi-frame animation of navigation
         // movements.
         bool serviceTask(vsg::time_point);
@@ -471,6 +492,12 @@ namespace ROCKY_NAMESPACE
         virtual bool handleScrollAction(const Action& action, vsg::time_point time, double duration_s = DBL_MAX);
         virtual bool handlePointAction(const Action& type, float mx, float my, vsg::time_point time);
         virtual void handleMovementAction(const ActionType& type, vsg::dvec2 delta);
+
+        //! Services the zoom velocity animation each frame
+        bool serviceZoomInertia(vsg::time_point now);
+
+        //! Cancels any active zoom inertia
+        void cancelZoomInertia();
 
         void clearEvents();
         vsg::ref_ptr<MapNode> getMapNode() const;
@@ -526,6 +553,7 @@ namespace ROCKY_NAMESPACE
         bool _thrown;
         vsg::dvec2 _throwDelta;
         vsg::dvec2 _delta;
+        ZoomVelocityState _zoomInertia;
         vsg::dmat4 _viewMatrix;
         State _state;
         Task _task;
