@@ -29,7 +29,7 @@ auto Demo_FeatureView = [](Application& app)
             // Helper utility to build renderable components from our Feature:
             FeatureView view;
             view.features.emplace_back(std::move(feature));
-            view.styles.lineStyle.color = Color::Yellow;
+            view.styles.lineStyle.color = StockColor::Yellow;
             view.styles.lineStyle.stipplePattern = 0xF0F0; // dashed line
             view.styles.lineStyle.depthOffset = 50000;
 

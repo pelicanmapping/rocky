@@ -105,33 +105,9 @@ namespace
     }
 }
 
-const Color Color::White    ( 0xffffffff, Color::RGBA );
-const Color Color::Silver   ( 0xc0c0c0ff, Color::RGBA );
-const Color Color::Gray     ( 0x808080ff, Color::RGBA );
-const Color Color::Black    ( 0x000000ff, Color::RGBA );
-const Color Color::Red      ( 0xff0000ff, Color::RGBA );
-const Color Color::Maroon   ( 0x800000ff, Color::RGBA );
-const Color Color::Yellow   ( 0xffff00ff, Color::RGBA );
-const Color Color::Olive    ( 0x808000ff, Color::RGBA );
-const Color Color::Lime     ( 0x00ff00ff, Color::RGBA );
-const Color Color::Green    ( 0x008000ff, Color::RGBA );
-const Color Color::Aqua     ( 0x00ffffff, Color::RGBA );
-const Color Color::Teal     ( 0x008080ff, Color::RGBA );
-const Color Color::Blue     ( 0x0000ffff, Color::RGBA );
-const Color Color::Navy     ( 0x000080ff, Color::RGBA );
-const Color Color::Fuchsia  ( 0xff00ffff, Color::RGBA );
-const Color Color::Purple   ( 0x800080ff, Color::RGBA );
-const Color Color::Orange   ( 0xffa500ff, Color::RGBA );
-
-const Color Color::DarkGray ( 0x404040ff, Color::RGBA );
-const Color Color::Magenta  ( 0xc000c0ff, Color::RGBA );
-const Color Color::Cyan     ( 0x00ffffff, Color::RGBA );
-const Color Color::Brown    ( 0xaa5500ff, Color::RGBA );
-const Color Color::Transparent(0x00000000,Color::RGBA);
-
 Color::Color(std::uint32_t v, Format format)
 {
-    if (format == RGBA)
+    if (format == Format::RGBA)
     {
         r = (float)((v >> 24)) / 255.0f;
         g = (float)((v & 0xFF0000) >> 16) / 255.0f;
@@ -147,13 +123,7 @@ Color::Color(std::uint32_t v, Format format)
     }
 }
 
-Color::Color(const Color& rhs, float alpha) :
-    glm::fvec4(rhs)
-{
-    a = alpha;
-}
-
-/** Parses a hex color string ("#rrggbb", "#rrggbbaa", "0xrrggbb", etc.) into an RGBA color. */
+/** Parses a hex Color string ("#rrggbb", "#rrggbbaa", "0xrrggbb", etc.) into an RGBA Color. */
 Color::Color(const std::string& input, Format format)
 {
     // ascii-only toLower + trim:
@@ -297,7 +267,7 @@ Color::Color(const std::string& input, Format format)
         float Y = ((float)c.b) / 255.0f;
         float Z = ((float)c.a) / 255.0f;
 
-        if (format == RGBA)
+        if (format == Format::RGBA)
             set(W, X, Y, Z);
         else // ABGR
             set(Z, Y, X, W);
@@ -310,12 +280,12 @@ Color::set(float in_r, float in_g, float in_b, float in_a)
     r = in_r, g = in_g, b = in_b, a = in_a;
 }
 
-/** Makes an HTML color ("#rrggbb" or "#rrggbbaa") from an RGBA color. */
+/** Makes an HTML Color ("#rrggbb" or "#rrggbbaa") from an RGBA Color. */
 std::string
 Color::toHTML(Format format) const
 {
     float f[4];
-    if (format == RGBA)
+    if (format == Format::RGBA)
         f[0] = r, f[1] = g, f[2] = b, f[3] = a;
     else
         f[0] = a, f[1] = b, f[2] = g, f[3] = r;
@@ -329,7 +299,7 @@ Color::toHTML(Format format) const
 }
 
 Color
-Color::brightness(float perc) const
+Color::brighten(float perc) const
 {
     return Color(r*perc, g*perc, b*perc, a);
 }
@@ -337,7 +307,7 @@ Color::brightness(float perc) const
 unsigned
 Color::as(Format format) const
 {
-    if (format == RGBA)
+    if (format == Format::RGBA)
     {
         return
             (((unsigned)(r*255.0)) << 24) |
@@ -358,8 +328,8 @@ Color::as(Format format) const
 glm::fvec4
 Color::asHSL() const
 {
-    static const auto step = [](float a, float b) { return a < b ? 0.0f : 1.0f; };
-    static const glm::fvec4 K(0.0f, -1.0f / 3.0f, 2.0f / 3.0f, -1.0f);
+    const auto step = [](float a, float b) { return a < b ? 0.0f : 1.0f; };
+    const glm::fvec4 K(0.0f, -1.0f / 3.0f, 2.0f / 3.0f, -1.0f);
     glm::fvec4 A(b, g, K.w, K.z);
     glm::fvec4 B(g, b, K.x, K.y);
     glm::fvec4 p = glm::mix(A, B, step(b, g));
@@ -375,13 +345,13 @@ Color::asHSL() const
         a);
 }
 
-void
-Color::fromHSL(const glm::fvec4& hsl)
+Color
+Color::fromHSL(const glm::fvec4& hsla)
 {
-    set(hsl[0], hsl[1], hsl[2], a);
-    float H = x, S = y, V = z;
+    Color out;
+    float H = hsla.x, S = hsla.y, V = hsla.z;
     if (S == 0.0f) {
-        set(1.0f, 1.0f, 1.0f, a);
+        out = Color(1.0f, 1.0f, 1.0f, hsla.a);
     }
     else {
         float VH = H * 6.0f;
@@ -396,8 +366,9 @@ Color::fromHSL(const glm::fvec4& hsl)
         else if (VI == 3.0f) { VR = V1, VG = V2, VB = V; }
         else if (VI == 4.0f) { VR = V3, VG = V1, VB = V; }
         else { VR = V, VG = V1, VB = V2; }
-        set(VR, VG, VB, a);
+        out = Color(VR, VG, VB, hsla.a);
     }
+    return out;
 }
 
 glm::u8vec4
@@ -413,7 +384,7 @@ Color::asNormalizedRGBA() const
 std::vector<Color>
 Color::createRandomColorRamp(unsigned count, int seed)
 {
-    // Code is adapted from QGIS random color ramp feature,
+    // Code is adapted from QGIS random Color ramp feature,
     // which found the idea here (http://basecase.org/env/on-rainbows)
     // of adding the "golden ratio" to the hue angle in order to
     // minimize hue overlap and repetition.
@@ -428,7 +399,7 @@ Color::createRandomColorRamp(unsigned count, int seed)
     std::mt19937 gen(seed >= 0 ? seed : 0);
     std::uniform_int_distribution<> prng(0, 360);
     
-    float hueAngle = (float)prng(gen);// prng.next(360);
+    float hueAngle = (float)prng(gen);
     glm::fvec4 hsv(0, 0, 0, 1);
 
     std::vector<Color> output;

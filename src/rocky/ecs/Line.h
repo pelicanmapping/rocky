@@ -15,7 +15,7 @@ namespace ROCKY_NAMESPACE
     struct ROCKY_EXPORT LineStyle : public Component<LineStyle>
     {
         // if alpha is zero, use the line's per-vertex color instead
-        Color color = Color{ 1, 1, 1, 1 };
+        Color color = StockColor::White;
         float width = 2.0f; // pixels
         std::uint16_t stipplePattern = 0xFFFF;
         int stippleFactor = 1;

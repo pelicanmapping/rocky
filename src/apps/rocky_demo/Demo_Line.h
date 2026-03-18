@@ -34,7 +34,7 @@ auto Demo_Line_Absolute = [](Application& app)
 
                 // Style our line.
                 auto& style = r.emplace<LineStyle>(entity);
-                style.color = Color::Yellow;
+                style.color = StockColor::Yellow;
                 style.width = 3.0f;
                 style.depthOffset = 10000.0f;
 
@@ -110,14 +110,14 @@ auto Demo_Line_Dynamic_Allocation_Test = [](Application& app)
 
                     // Style our line.
                     auto& lineStyle = r.emplace<LineStyle>(entity);
-                    lineStyle.color = Color::Lime;
+                    lineStyle.color = StockColor::Lime;
                     lineStyle.width = 3.0f;
 
                     auto& line = r.emplace<Line>(entity, lineGeom, lineStyle);
 
 
                     auto& pointStyle = r.emplace<PointStyle>(entity);
-                    pointStyle.color = Color::Yellow;
+                    pointStyle.color = StockColor::Yellow;
                     pointStyle.width = 10.0f;
                     pointStyle.depthOffset = 1000.0f;
 
@@ -232,7 +232,7 @@ auto Demo_Line_Relative = [](Application& app)
 
         // Make a style with color and line width
         auto& style = registry.emplace<LineStyle>(entity);
-        style.color = Color::Red;
+        style.color = StockColor::Red;
 
         // Attach a line component to our new entity:
         auto& line = registry.emplace<Line>(entity, geometry, style);
@@ -307,17 +307,17 @@ auto Demo_Line_Shared = [](Application& app)
         // One style that all Lines will share:
         styles[0] = entities.emplace_back(reg.create());
         LineStyle& style0 = reg.emplace<LineStyle>(styles[0]);
-        style0.color = Color::Red;
+        style0.color = StockColor::Red;
         style0.width = 2.0f;
 
         styles[1] = entities.emplace_back(reg.create());
         LineStyle& style1 = reg.emplace<LineStyle>(styles[1]);
-        style1.color = Color::Yellow;
+        style1.color = StockColor::Yellow;
         style1.width = 2.0f;
         
         styles[2] = entities.emplace_back(reg.create());
         LineStyle& style2 = reg.emplace<LineStyle>(styles[2]);
-        style2.color = Color::Lime;
+        style2.color = StockColor::Lime;
         style2.width = 2.0f;
 
         // Create a few different line objects.

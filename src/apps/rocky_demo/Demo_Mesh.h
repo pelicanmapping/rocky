@@ -332,7 +332,7 @@ auto Demo_Mesh_Shared = [](Application& app)
         // Create a few different styles.
         styles[0] = entities.emplace_back(reg.create());
         auto& style0 = reg.emplace<MeshStyle>(styles[0]);
-        style0.color = Color::Red;
+        style0.color = StockColor::Red;
 
         styles[1] = entities.emplace_back(reg.create());
         auto& style1 = reg.emplace<MeshStyle>(styles[1]);
@@ -563,7 +563,7 @@ auto Demo_Mesh_Lighting = [](Application& app)
         }
 
         auto& style = reg.emplace<MeshStyle>(entity);
-        style.color = Color::Lime;
+        style.color = StockColor::Lime;
         style.lighting = true;
 
         auto& mesh = reg.emplace<Mesh>(entity, geom, style);

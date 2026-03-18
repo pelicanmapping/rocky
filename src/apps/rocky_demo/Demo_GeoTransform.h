@@ -19,7 +19,7 @@ auto Demo_GeoTransform = [](Application& app)
         // Create a simple VSG model using the Builder.
         vsg::Builder builder;
         vsg::GeometryInfo gi;
-        gi.color = to_vsg(Color::Lime);
+        gi.color = to_vsg(StockColor::Lime);
         auto node = builder.createCone(gi, vsg::StateInfo{});
 
         // Compile it.

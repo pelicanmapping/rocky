@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
     struct MeshStyle : public Component<MeshStyle>
     {
         //! Default color for the mesh
-        Color color = { 1, 1, 1, 1 };
+        Color color = StockColor::White;
 
         //! If true, use the per-vertex colors defined in the associated MeshGeometry
         bool useGeometryColors = false;

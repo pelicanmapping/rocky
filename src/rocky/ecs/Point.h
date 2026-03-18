@@ -13,7 +13,7 @@ namespace ROCKY_NAMESPACE
 {
     struct ROCKY_EXPORT PointStyle : public Component<PointStyle>
     {
-        Color color = Color{ 1, 1, 1, 1 }; // used when useGeometryColors == false
+        Color color = StockColor::White; // used when useGeometryColors == false
         float width = 3.0f; // pixels; used then useGeometryWidths = false
         float antialias = 0.25f;
         float depthOffset = 0.0f; // meters

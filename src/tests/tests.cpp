@@ -211,7 +211,7 @@ TEST_CASE("Image")
     }
 
     image = Image::create(Image::R8G8B8A8_UNORM, 256, 256);
-    image->fill(Color::Orange);
+    image->fill(StockColor::Orange);
     Image::Pixel value = image->read(17, 17);
     //std::cout << value.r << ", " << value.g << ", " << value.b << ", " << value.a << std::endl;
     CHECK(glm::epsilonEqual(value.r, 1.0f, 0.01f));

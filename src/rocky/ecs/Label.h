@@ -20,7 +20,7 @@ namespace ROCKY_NAMESPACE
         std::string fontName;
 
         //! Color or the text
-        Color textColor = Color::White;
+        Color textColor = StockColor::White;
 
         //! Size of the text, in points
         float textSize = 24.0f;
@@ -35,10 +35,10 @@ namespace ROCKY_NAMESPACE
         float borderSize = 0.0f;
 
         //! Border color, when borderSize > 0
-        Color borderColor = Color::Lime;
+        Color borderColor = StockColor::Lime;
 
         //! Background color
-        Color backgroundColor = Color(0, 0, 0, 0);
+        Color backgroundColor = StockColor::Transparent;
 
         //! Padding between the text and the border (pixels)
         glm::fvec2 padding = { 2.0f, 2.0f };

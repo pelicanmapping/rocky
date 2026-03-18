@@ -70,7 +70,7 @@ auto Demo_RTT = [](Application& app)
         // Create a simple VSG model using the Builder.
         vsg::Builder builder;
         vsg::GeometryInfo gi;       
-        gi.color = to_vsg(Color::Cyan);
+        gi.color = to_vsg(StockColor::Cyan);
         vsg::StateInfo si;
         si.lighting = false, si.wireframe = true;
         auto rtt_node = builder.createBox(gi, si);

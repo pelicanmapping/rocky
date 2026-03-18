@@ -60,12 +60,12 @@ namespace
                     // default track style
                     trackStyles[0] = reg.create();
                     auto& style1 = reg.emplace<LineStyle>(trackStyles[0]);
-                    style1.color = Color::Lime;
+                    style1.color = StockColor::Lime;
                     style1.width = 2.0f;
 
                     trackStyles[1] = reg.create();
                     auto& style2 = reg.emplace<LineStyle>(trackStyles[1]);
-                    style2.color = Color::Red;
+                    style2.color = StockColor::Red;
                     style2.width = 2.0f;
                 });
         }

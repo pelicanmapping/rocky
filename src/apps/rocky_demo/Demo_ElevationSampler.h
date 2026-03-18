@@ -63,7 +63,7 @@ auto Demo_ElevationSampler = [](Application& app)
                 geom.points = { {-t, 0, 0}, {t, 0, 0}, {0, -t, 0}, {0, t, 0}, {0, 0, -t}, {0, 0, t} };
 
                 auto& style = r.emplace<LineStyle>(entity);
-                style.color = Color::Cyan;
+                style.color = StockColor::Cyan;
                 style.width = 4.0f;
 
                 r.emplace<Line>(entity, geom, style);

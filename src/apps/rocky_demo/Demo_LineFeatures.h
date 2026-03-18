@@ -49,7 +49,7 @@ auto Demo_LineFeatures = [](Application& app)
                 });
 
             // apply a style for geometry creation:
-            featureView.styles.lineStyle.color = Color::Yellow;
+            featureView.styles.lineStyle.color = StockColor::Yellow;
             featureView.styles.lineStyle.width = 2.0f;
             featureView.styles.lineStyle.resolution = 10000.0f;
             featureView.styles.lineStyle.depthOffset = 12000.0f;

@@ -23,7 +23,7 @@ auto Demo_Geocoder = [](Application& app)
             outline = reg.create();
             auto& geom = reg.emplace<LineGeometry>(outline);
             auto& style = reg.emplace<LineStyle>(outline);
-            style.color = Color::Yellow;
+            style.color = StockColor::Yellow;
             style.depthOffset = 9000.0f; //meters
             reg.emplace<Line>(outline, geom, style);
 
@@ -134,7 +134,7 @@ auto Demo_Geocoder = [](Application& app)
                                     FeatureView featureView;
                                     featureView.entity = placemark.outline; // ...to update an existing entity
                                     featureView.features = { myfeature };
-                                    featureView.styles.lineStyle.color = Color::Yellow;
+                                    featureView.styles.lineStyle.color = StockColor::Yellow;
                                     featureView.styles.lineStyle.depthOffset = 9000.0f; // meters
                                     featureView.generate(app.mapNode->srs(), app.registry);
 

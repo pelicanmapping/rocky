@@ -80,7 +80,7 @@ auto Demo_MVTFeatures = [](Application& app)
                 fview.origin = key.extent().centroid();
 
                 // set up the styling for the FeatureView to use for lines and meshes.
-                fview.styles.lineStyle.color = Color::Red;
+                fview.styles.lineStyle.color = StockColor::Red;
                 fview.styles.lineStyle.width = 5.0f;
                 fview.styles.lineStyle.depthOffset = 10; // meters
 

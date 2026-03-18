@@ -94,7 +94,7 @@ auto Demo_Draw = [](Application& app)
                 geom.points.reserve(4);
 
                 auto& style = r.emplace<LineStyle>(entity);
-                style.color = Color::Yellow;
+                style.color = StockColor::Yellow;
                 style.width = 3;
                 style.depthOffset = 20000;
 

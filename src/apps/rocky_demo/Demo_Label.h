@@ -26,7 +26,7 @@ auto Demo_Label = [](Application& app)
         style.outlineSize = 1.0f;
         style.backgroundColor = Color(0, 0, 0.5f, 0.75f);
         style.borderSize = 1.0f;
-        style.borderColor = Color::Cyan;
+        style.borderColor = StockColor::Cyan;
         style.padding = { 4.0f, 3.0f };
         style.fontName = std::filesystem::path(ROCKY_DEMO_DEFAULT_FONT).lexically_normal().string();
 

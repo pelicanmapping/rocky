@@ -12,7 +12,7 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_NodePager = [](Application& app)
 {
-    static const Color colors[4] = { Color::Red, Color::Green, Color::Blue, Color::Yellow };
+    static const Color colors[4] = { StockColor::Red, StockColor::Green, StockColor::Blue, StockColor::Yellow };
 
     static vsg::ref_ptr<NodePager> pager;
     static Profile profile("global-geodetic");
@@ -71,7 +71,7 @@ auto Demo_NodePager = [](Application& app)
                 vsg::box box(vsg::vec3(-r, -r, -r), vsg::vec3(r, r, r));
 
                 vsg::GeometryInfo gi(box);
-                gi.color = to_vsg(Color::Cyan);
+                gi.color = to_vsg(StockColor::Cyan);
                 gi.transform = to_vsg(key.profile.srs().ellipsoid().topocentricToGeocentricMatrix(to_glm(bs.center)));
 
                 vsg::StateInfo si;

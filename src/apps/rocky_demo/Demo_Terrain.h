@@ -26,14 +26,14 @@ namespace
         vsg::GeometryInfo gi;
         gi.dx = { width, 0, 0 }, gi.dy = { 0, width, 0 }, gi.dz = { 0, 0, len*0.95f };
 
-        gi.color = to_vsg(Color::Cyan);
+        gi.color = to_vsg(StockColor::Cyan);
         group->addChild(builder.createCylinder(gi, si));
 
-        gi.color = to_vsg(Color::Lime);
+        gi.color = to_vsg(StockColor::Lime);
         gi.transform = vsg::rotate(vsg::dquat({ 0,0,1 }, { 1,0,0 }));
         group->addChild(builder.createCylinder(gi, si));
 
-        gi.color = to_vsg(Color::Red);
+        gi.color = to_vsg(StockColor::Red);
         gi.transform = vsg::rotate(vsg::dquat({ 0,0,1 }, { 0,1,0 }));
         group->addChild(builder.createCylinder(gi, si));
 

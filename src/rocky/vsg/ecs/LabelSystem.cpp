@@ -88,7 +88,7 @@ LabelSystem::LabelSystem(Registry& registry) :
                 auto flags = (i.windowFlags | ImGuiWindowFlags_NoBackground) & ~ImGuiWindowFlags_AlwaysAutoResize;
                 ImGui::Begin((i.uid + "_callout").c_str(), nullptr, flags);
                 auto* drawList = ImGui::GetWindowDrawList();
-                auto calloutColor = style.borderColor.as(Color::ABGR);
+                auto calloutColor = style.borderColor.as(Color::Format::ABGR);
                 ImVec2 start{ a.x - UL.x, a.y - UL.y };
                 ImVec2 end{ b.x - UL.x, b.y - UL.y };
                 drawList->AddLine(start, end, calloutColor, style.borderSize);

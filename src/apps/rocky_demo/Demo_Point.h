@@ -36,18 +36,18 @@ auto Demo_Point = [](Application& app)
                     auto world = xform(glm::dvec3(lon, 10.0 * sin(lon / 22.5), 120000.0));
                     geometry.points.emplace_back(world);
 
-                    auto hsl = Color::White.asHSL();
+                    auto hsl = StockColor::White.asHSL();
                     hsl[0] = (float)((lon + 180.0) / 360.0); // hue
                     hsl[1] = 1.0f; // saturation
                     hsl[2] = 0.5f; // lightness
-                    geometry.colors.emplace_back().fromHSL(hsl);
+                    geometry.colors.emplace_back(Color::fromHSL(hsl));
                     
                     geometry.widths.emplace_back(8.0f + 6.0f * sin(lon / 45.0));
                 }
 
                 // Style our points.
                 auto& style = r.emplace<PointStyle>(entity);
-                style.color = Color::Cyan;
+                style.color = StockColor::Cyan;
                 style.width = 8.0f;
                 style.antialias = 0.5f;
 
