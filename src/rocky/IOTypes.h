@@ -89,7 +89,7 @@ namespace ROCKY_NAMESPACE
         std::shared_ptr<DealpoolService> deadpool;
 
         //! Jobs instance for scheduling asynchronous tasks
-        jobs::runtime jobs;
+        WEEJOBS_NAMESPACE::runtime jobs;
     };
 
     /**

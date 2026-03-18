@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -8,6 +8,7 @@
 #include <rocky/weejobs.h>
 #include <vector>
 #include <list>
+#include <algorithm> // for std::remove
 
 namespace ROCKY_NAMESPACE
 {
