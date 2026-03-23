@@ -15,7 +15,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -314,6 +314,141 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#members" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Members
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Functions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Functions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#iooptions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IOOptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iooptions_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IOOptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#iooptions_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IOOptions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        operator=
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#from" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        from
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#with" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        with
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#canceled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        canceled
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#services" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        services
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        operator=
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -330,7 +465,45 @@
 
 
 <h1 id="class-iooptions">class IOOptions</h1>
+<p><em>Defined at src/rocky/IOTypes.h#102</em></p>
+<p>Options and services passed along to IO operations.</p>
 <p>specializations.</p>
+<h2 id="members">Members</h2>
+<p>public unsigned int maxNetworkAttempts</p>
+<p>public int networkConnectionTimeout</p>
+<p>public int referrer</p>
+<h2 id="functions">Functions</h2>
+<h3 id="iooptions">IOOptions</h3>
+<p><em>public void IOOptions()</em></p>
+<h3 id="iooptions_1">IOOptions</h3>
+<p><em>public void IOOptions(const IOOptions &amp; rhs)</em></p>
+<p><em>Defined at src/rocky/IOTypes.h#106</em></p>
+<h3 id="iooptions_2">IOOptions</h3>
+<p><em>public void IOOptions(IOOptions &amp;&amp; rhs)</em></p>
+<p><em>Defined at src/rocky/IOTypes.h#107</em></p>
+<h3 id="operator">operator=</h3>
+<p><em>public IOOptions &amp; operator=(IOOptions &amp;&amp; )</em></p>
+<p><em>Defined at src/rocky/IOTypes.h#142</em></p>
+<p>inlines</p>
+<h3 id="from">from</h3>
+<p><em>public IOOptions from(const int &amp; referrer)</em></p>
+<p><em>Defined at src/rocky/IOTypes.h#156</em></p>
+<p>Clone this options structure and set a new referrer.</p>
+<h3 id="with">with</h3>
+<p><em>public IOOptions with(int &amp; c)</em></p>
+<p><em>Defined at src/rocky/IOTypes.h#162</em></p>
+<p>Clone this options structure and include the cancelable token. Use this to pass options to operations that support cancellation.</p>
+<h3 id="canceled">canceled</h3>
+<p><em>public _Bool canceled()</em></p>
+<p><em>Defined at src/rocky/IOTypes.h#168</em></p>
+<p>Was the current operation canceled?</p>
+<h3 id="services">services</h3>
+<p><em>public Services &amp; services()</em></p>
+<p><em>Defined at src/rocky/IOTypes.h#172</em></p>
+<p>Access to shared services</p>
+<h3 id="operator_1">operator=</h3>
+<p><em>public IOOptions &amp; operator=(const IOOptions &amp; rhs)</em></p>
+<p><em>Defined at src/rocky/IOTypes.h#133</em></p>
 
 
 

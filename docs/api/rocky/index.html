@@ -15,7 +15,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -850,6 +850,7 @@
 
 
 <h1 id="namespace-rocky">namespace rocky</h1>
+<p>A collection of types used by the various I/O systems.</p>
 <h2 id="records">Records</h2>
 <ul>
 <li><a href="Object/">Object</a></li>
@@ -858,24 +859,29 @@
 <li><a href="Failure/">Failure</a></li>
 <li><a href="Result/">Result</a></li>
 <li><a href="Status/">Status</a></li>
+<li><a href="IOOptions/">IOOptions</a></li>
+<li><a href="Image/">Image</a></li>
+<li><a href="Layer/">Layer</a></li>
+<li><a href="ContextImpl/">ContextImpl</a></li>
+<li><a href="GeoExtent/">GeoExtent</a></li>
+<li><a href="Content/">Content</a></li>
+<li><a href="Services/">Services</a></li>
 <li><a href="json_parse_result/">json_parse_result</a></li>
 <li><a href="CachePolicy/">CachePolicy</a></li>
 <li><a href="Color/">Color</a></li>
 <li><a href="Angle/">Angle</a></li>
 <li><a href="Distance/">Distance</a></li>
 <li><a href="Duration/">Duration</a></li>
-<li><a href="Hyperlink/">Hyperlink</a></li>
 <li><a href="Speed/">Speed</a></li>
 <li><a href="ScreenSize/">ScreenSize</a></li>
+<li><a href="Hyperlink/">Hyperlink</a></li>
 <li><a href="Profile/">Profile</a></li>
 <li><a href="ProxySettings/">ProxySettings</a></li>
 <li><a href="DateTime/">DateTime</a></li>
 <li><a href="SRS/">SRS</a></li>
-<li><a href="GeoExtent/">GeoExtent</a></li>
 <li><a href="GeoPoint/">GeoPoint</a></li>
 <li><a href="URI/">URI</a></li>
 <li><a href="Viewpoint/">Viewpoint</a></li>
-<li><a href="IOOptions/">IOOptions</a></li>
 </ul>
 <h2 id="functions">Functions</h2>
 <h3 id="json_pretty">json_pretty</h3>
@@ -890,25 +896,25 @@
 <p>unqualify a C++ class name</p>
 <h3 id="parse_json">parse_json</h3>
 <p><em>json_parse_result parse_json(int input)</em></p>
-<p><em>Defined at src/rocky/json.h#63</em></p>
+<p><em>Defined at src/rocky/json.h#64</em></p>
 <h3 id="set">set</h3>
 <p><em>void set(int &amp; obj, const char * name, const T &amp; var)</em></p>
-<p><em>Defined at src/rocky/json.h#76</em></p>
+<p><em>Defined at src/rocky/json.h#77</em></p>
 <h3 id="set_1">set</h3>
 <p><em>void set(int &amp; obj, const T &amp; var)</em></p>
-<p><em>Defined at src/rocky/json.h#88</em></p>
+<p><em>Defined at src/rocky/json.h#89</em></p>
 <h3 id="get_to">get_to</h3>
 <p><em>_Bool get_to(const int &amp; obj, const char * name, T &amp; var)</em></p>
-<p><em>Defined at src/rocky/json.h#98</em></p>
+<p><em>Defined at src/rocky/json.h#99</em></p>
 <h3 id="get_to_1">get_to</h3>
 <p><em>void get_to(const int &amp; obj, T &amp; var)</em></p>
-<p><em>Defined at src/rocky/json.h#117</em></p>
+<p><em>Defined at src/rocky/json.h#118</em></p>
 <h3 id="get_string">get_string</h3>
 <p><em>int get_string(const int &amp; obj)</em></p>
-<p><em>Defined at src/rocky/json.h#126</em></p>
+<p><em>Defined at src/rocky/json.h#127</em></p>
 <h3 id="to_string">to_string</h3>
 <p><em>int to_string(const int &amp; obj)</em></p>
-<p><em>Defined at src/rocky/json.h#137</em></p>
+<p><em>Defined at src/rocky/json.h#138</em></p>
 <h3 id="to_json">to_json</h3>
 <p><em>void to_json(int &amp; j, const class CachePolicy &amp; obj)</em></p>
 <h3 id="from_json">from_json</h3>
@@ -930,17 +936,17 @@
 <h3 id="from_json_4">from_json</h3>
 <p><em>void from_json(const int &amp; j, class Duration &amp; obj)</em></p>
 <h3 id="to_json_5">to_json</h3>
-<p><em>void to_json(int &amp; j, const struct Hyperlink &amp; obj)</em></p>
-<h3 id="from_json_5">from_json</h3>
-<p><em>void from_json(const int &amp; j, struct Hyperlink &amp; obj)</em></p>
-<h3 id="to_json_6">to_json</h3>
 <p><em>void to_json(int &amp; j, const class Speed &amp; obj)</em></p>
-<h3 id="from_json_6">from_json</h3>
+<h3 id="from_json_5">from_json</h3>
 <p><em>void from_json(const int &amp; j, class Speed &amp; obj)</em></p>
-<h3 id="to_json_7">to_json</h3>
+<h3 id="to_json_6">to_json</h3>
 <p><em>void to_json(int &amp; j, const class ScreenSize &amp; obj)</em></p>
-<h3 id="from_json_7">from_json</h3>
+<h3 id="from_json_6">from_json</h3>
 <p><em>void from_json(const int &amp; j, class ScreenSize &amp; obj)</em></p>
+<h3 id="to_json_7">to_json</h3>
+<p><em>void to_json(int &amp; j, const struct Hyperlink &amp; obj)</em></p>
+<h3 id="from_json_7">from_json</h3>
+<p><em>void from_json(const int &amp; j, struct Hyperlink &amp; obj)</em></p>
 <h3 id="to_json_8">to_json</h3>
 <p><em>void to_json(int &amp; j, const class Profile &amp; obj)</em></p>
 <h3 id="from_json_8">from_json</h3>

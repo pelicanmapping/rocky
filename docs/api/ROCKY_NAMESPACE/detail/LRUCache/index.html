@@ -15,7 +15,7 @@
       
       
       <link rel="icon" href="../../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -454,47 +454,47 @@
 
 
 <h1 id="class-lrucache">class LRUCache</h1>
-<p><em>Defined at src/rocky/Cache.h#121</em></p>
+<p><em>Defined at src/rocky/Cache.h#130</em></p>
 <p>LRUCache is a thread-safe implementation of a Least Recently Used (LRU) cache. It stores key-value pairs and evicts the least recently used item when the cache reaches its capacity. The cache is protected by a mutex to ensure thread safety. Adapted from https://www.geeksforgeeks.org/lru-cache-implementation Optimized by Copilot</p>
 <h2 id="functions">Functions</h2>
 <h3 id="lrucache">LRUCache<K, V></h3>
 <p><em>public void LRUCache<K, V>(int capacity)</em></p>
-<p><em>Defined at src/rocky/Cache.h#136</em></p>
+<p><em>Defined at src/rocky/Cache.h#145</em></p>
 <p>Constructs an LRUCache with the specified capacity.</p>
 <p><strong>capacity_</strong> The maximum number of items the cache can hold.</p>
 <h3 id="setcapacity">setCapacity</h3>
 <p><em>public void setCapacity(int value)</em></p>
-<p><em>Defined at src/rocky/Cache.h#143</em></p>
+<p><em>Defined at src/rocky/Cache.h#152</em></p>
 <p>Sets the cache capacity and clears all current entries and statistics.</p>
 <p><strong>value</strong> The new maximum number of items the cache can hold.</p>
 <h3 id="get">get</h3>
 <p><em>public int get(const K &amp; key)</em></p>
-<p><em>Defined at src/rocky/Cache.h#158</em></p>
+<p><em>Defined at src/rocky/Cache.h#167</em></p>
 <p>Retrieves the value associated with the given key, if present. Moves the accessed item to the most recently used position.</p>
 <p><strong>key</strong> The key to look up.</p>
 <p><strong>return</strong> An optional containing the value if found, or empty if not found.</p>
 <h3 id="put">put</h3>
 <p><em>public void put(const K &amp; key, const V &amp; value)</em></p>
-<p><em>Defined at src/rocky/Cache.h#179</em></p>
+<p><em>Defined at src/rocky/Cache.h#188</em></p>
 <p>Inserts or updates the value for the given key. If the key already exists, updates its value and moves it to the most recently used position. If the cache is full, evicts the least recently used item.</p>
 <p><strong>key</strong> The key to insert or update.</p>
 <p><strong>value</strong> The value to associate with the key.</p>
 <h3 id="capacity">capacity</h3>
 <p><em>public int capacity()</em></p>
-<p><em>Defined at src/rocky/Cache.h#201</em></p>
+<p><em>Defined at src/rocky/Cache.h#210</em></p>
 <p>Returns the maximum number of items the cache can hold.</p>
 <h3 id="size">size</h3>
 <p><em>public int size()</em></p>
-<p><em>Defined at src/rocky/Cache.h#206</em></p>
+<p><em>Defined at src/rocky/Cache.h#215</em></p>
 <h3 id="hits">hits</h3>
 <p><em>public int hits()</em></p>
-<p><em>Defined at src/rocky/Cache.h#212</em></p>
+<p><em>Defined at src/rocky/Cache.h#221</em></p>
 <h3 id="misses">misses</h3>
 <p><em>public int misses()</em></p>
-<p><em>Defined at src/rocky/Cache.h#217</em></p>
+<p><em>Defined at src/rocky/Cache.h#226</em></p>
 <h3 id="clear">clear</h3>
 <p><em>public void clear()</em></p>
-<p><em>Defined at src/rocky/Cache.h#223</em></p>
+<p><em>Defined at src/rocky/Cache.h#232</em></p>
 <p>Clears all entries from the cache and resets statistics.</p>
 
 
