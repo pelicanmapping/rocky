@@ -103,10 +103,9 @@ namespace ROCKY_NAMESPACE
         }
 
         // Horizon culling:
-        if (!_horizon)
-        {
-            rv.getValue("rocky.horizon", _horizon);
-        }
+        // Always refresh; the horizon pointer can change when
+        // the rendering profile switches between geocentric and flat.
+        rv.getValue("rocky.horizon", _horizon);
 
         if (_horizon)
         {

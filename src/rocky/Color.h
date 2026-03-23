@@ -13,7 +13,7 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Pre-set colors (convenience class).
+     * 4-channel Color
      */
     class ROCKY_EXPORT Color : public glm::fvec4
     {

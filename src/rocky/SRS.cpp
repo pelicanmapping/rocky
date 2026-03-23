@@ -720,7 +720,7 @@ SRS::wkt() const
     return g_srs_factory.get_wkt(definition());
 }
 
-const Units&
+UnitsType
 SRS::units() const
 {
     return isGeodetic() ? Units::DEGREES : Units::METERS;
@@ -829,7 +829,7 @@ SRS::transformUnits(const Distance& distance, const SRS& outSRS, const Angle& la
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(outSRS.valid(), distance.value());
 
-    if (distance.units().isLinear() && outSRS.isGeodetic())
+    if (distance.units().isDistance() && outSRS.isGeodetic())
     {
         return Units::DEGREES.convertTo(
             outSRS.units(),
@@ -837,7 +837,7 @@ SRS::transformUnits(const Distance& distance, const SRS& outSRS, const Angle& la
                 distance.as(Units::METERS),
                 latitude.as(Units::DEGREES)));
     }
-    else if (distance.units().isAngular() && outSRS.isProjected())
+    else if (distance.units().isAngle() && outSRS.isProjected())
     {
         return Units::METERS.convertTo(
             outSRS.units(),
@@ -852,16 +852,16 @@ SRS::transformUnits(const Distance& distance, const SRS& outSRS, const Angle& la
 }
 
 double
-SRS::transformDistance(const Distance& input, const Units& outputUnits, const Angle& referenceLatitude) const
+SRS::transformDistance(const Distance& input, const UnitsType& outputUnits, const Angle& referenceLatitude) const
 {
     auto inputUnits = input.units();
 
-    if (inputUnits.isAngle() && outputUnits.isLinear())
+    if (inputUnits.isAngle() && outputUnits.isDistance())
     {
         auto meters = ellipsoid().longitudinalDegreesToMeters(input.as(Units::DEGREES), referenceLatitude.as(Units::DEGREES));
         return Units::convert(Units::METERS, outputUnits, meters);
     }
-    else if (inputUnits.isLinear() && outputUnits.isAngle())
+    else if (inputUnits.isDistance() && outputUnits.isAngle())
     {
         auto degrees = ellipsoid().metersToLongitudinalDegrees(input.as(Units::METERS), referenceLatitude.as(Units::DEGREES));
         return Units::convert(Units::DEGREES, outputUnits, degrees);

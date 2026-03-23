@@ -93,7 +93,8 @@ Application::ctor(int& argc, char** argv)
     }
 
     // new VSG context
-    vsgcontext = VSGContextFactory::create(viewer, argc, argv);
+    _vsgcontextSingleton = VSGContextFactory::create(viewer, argc, argv);
+    vsgcontext = _vsgcontextSingleton.get();
 
     if (!vsgcontext->status.ok())
     {
@@ -257,8 +258,6 @@ Application::~Application()
 
     Log()->debug("Waiting for all jobs to stop...");
     io().services().jobs.shutdown();
-
-    vsgcontext = nullptr;
 }
 
 void
@@ -616,7 +615,7 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
     // add the event handler that will pass events from VSG to ImGui:
     auto send = SendEventsToImGuiContext::create(group->window, group->imguiContext());
     viewData.guiEventVisitor = send;
-    auto& handlers = display.vsgcontext->viewer()->getEventHandlers();
+    auto& handlers = vsgcontext->viewer()->getEventHandlers();
     handlers.insert(handlers.begin(), send);
 
     // request a frame when the sender handles an ImGui event:

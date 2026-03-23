@@ -53,7 +53,7 @@ namespace ROCKY_NAMESPACE
 
             using data_t = std::pair<std::shared_ptr<V>, METADATA>;
 
-            std::optional<data_t> get(const K& key) //override
+            std::optional<data_t> get(const K& key)
             {
                 std::shared_lock lock(_mutex);
 
@@ -86,6 +86,15 @@ namespace ROCKY_NAMESPACE
                         }
                     }
                 }
+            }
+
+            void clear()
+            {
+                std::shared_lock lock(_mutex);
+                _lut.clear();
+                _hits = 0;
+                _misses = 0;
+                _puts = 0;
             }
 
             std::size_t capacity() const

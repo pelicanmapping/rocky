@@ -65,7 +65,8 @@ TEST_CASE("json")
     ROCKY_NAMESPACE::from_json(j_uri, uri2);
     CHECK((uri2.base() == "file.xml"));
 
-    auto context = ContextFactory::create();
+    auto contextSingleton = ContextFactory::create();
+    auto context = contextSingleton.get();
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "file.xml";
     auto map = rocky::Map::create();
@@ -564,7 +565,7 @@ TEST_CASE("SRS")
         auto ellipsoid = SRS::WGS84.ellipsoid();
         REQUIRE(ellipsoid.semiMajorAxis() == 6378137.0);
 
-        Units units;
+        UnitsType units;
         units = SRS::WGS84.units();
         CHECK(units == Units::DEGREES);
         units = SRS::SPHERICAL_MERCATOR.units();
@@ -742,7 +743,8 @@ TEST_CASE("Earth File")
     auto result = importer.read(earthFile, {});
     CHECKED_IF(result.ok())
     {
-        VSGContext context = VSGContextFactory::create(nullptr);
+        auto contextSingleton = VSGContextFactory::create(nullptr);
+        auto context = contextSingleton.get();
         CHECK(context->status.ok());
 
         auto mapNode = MapNode::create(context);

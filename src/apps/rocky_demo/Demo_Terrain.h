@@ -146,7 +146,7 @@ auto Demo_Terrain = [](Application& app)
         float* bg = (float*)&app.mapNode->terrainSettings().backgroundColor.mutable_value();
         ImGuiLTable::ColorEdit3("Background color", bg);
 
-        static std::vector<std::string> options = { "global-geodetic", "global-qsc", "spherical-mercator" };
+        static std::vector<std::string> options = { "global-geodetic", "global-qsc", "spherical-mercator", "plate-carree" };
         int index = indexOf(options, app.mapNode->profile.wellKnownName());
         if (index >= 0)
         {

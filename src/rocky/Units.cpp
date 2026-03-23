@@ -1,160 +1,16 @@
-/**
- * rocky c++
- * Copyright 2023 Pelican Mapping
+/* rocky
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "Units.h"
 #include "Utils.h"
-#include <mutex>
+#include "IOTypes.h"
 #include <string>
 
 using namespace ROCKY_NAMESPACE;
-using namespace ROCKY_NAMESPACE::detail;
 
-namespace
+UnitsParser::UnitsParser()
 {
-    static std::unordered_map<std::string, const Units*> s_unitsTable;
-    static std::mutex s_unitsTable_mutex;
-
-    template<typename T>
-    bool parseValueAndUnits(const std::string& input, T& out_value, Units& out_units, const Units& defaultUnits)
-    {
-        // parse the numeric part into "value", and point "ptr" at the first
-        // non-numeric character in the string.
-        std::size_t pos;
-        try {
-            out_value = std::stod(input.c_str(), &pos);
-            if (std::isnan(out_value))
-                return false;
-        }
-        catch (...) {
-            return false;
-        }
-
-        std::string unitsStr = trim(input.substr(pos));
-
-        if (unitsStr.empty())
-        {
-            out_units = defaultUnits;
-            //return false;
-        }
-        else
-        {
-            Units units;
-            if (Units::parse(unitsStr, units))
-                out_units = units;
-            else if (unitsStr.back() != 's' && Units::parse(unitsStr + 's', units))
-                out_units = units;
-            else {
-                //error!
-                return false;
-            }
-        }
-
-        return true;
-    }
-}
-
-//------------------------------------------------------------------------
-
-
-
-Units::Units(const std::string& name, const std::string& abbr, const Units::Type& type, double toBase) :
-    _name(name),
-    _abbr(abbr),
-    _type(type),
-    _toBase(toBase),
-    _distance(0L),
-    _time(0L)
-{
-    //nop
-}
-
-Units::Units(const std::string& name, const std::string& abbr, const Units& distance, const Units& time) :
-    _name(name),
-    _abbr(abbr),
-    _type(TYPE_SPEED),
-    _toBase(1.0),
-    _distance(&distance),
-    _time(&time)
-{
-    //nop
-}
-
-bool
-Units::parse(const std::string& name, Units& output)
-{
-    std::unique_lock lock(s_unitsTable_mutex);
-    auto i = s_unitsTable.find(name);
-    if (i != s_unitsTable.end())
-    {
-        output = *(i->second);
-        return true;
-    }
-    return false;
-}
-
-bool
-Units::parse( const std::string& input, float& out_value, Units& out_units, const Units& defaultUnits )
-{
-    return parseValueAndUnits(input, out_value, out_units, defaultUnits);
-}
-
-bool
-Units::parse( const std::string& input, double& out_value, Units& out_units, const Units& defaultUnits )
-{
-    return parseValueAndUnits(input, out_value, out_units, defaultUnits);
-}
-
-// Factor converts unit into METERS:
-const Units Units::CENTIMETERS       ( "centimeters",    "cm",  Units::TYPE_LINEAR, 0.01 ); 
-const Units Units::FEET              ( "feet",           "ft",  Units::TYPE_LINEAR, 0.3048 );
-const Units Units::FEET_US_SURVEY    ( "feet(us)",       "ft",  Units::TYPE_LINEAR, 12.0/39.37 );
-const Units Units::KILOMETERS        ( "kilometers",     "km",  Units::TYPE_LINEAR, 1000.0 );
-const Units Units::METERS            ( "meters",         "m",   Units::TYPE_LINEAR, 1.0 );
-const Units Units::MILES             ( "miles",          "mi",  Units::TYPE_LINEAR, 1609.334 );
-const Units Units::MILLIMETERS       ( "millimeters",    "mm",  Units::TYPE_LINEAR, 0.001 );
-const Units Units::YARDS             ( "yards",          "yd",  Units::TYPE_LINEAR, 0.9144 );
-const Units Units::NAUTICAL_MILES    ( "nautical miles", "nm",  Units::TYPE_LINEAR, 1852.0 );
-const Units Units::DATA_MILES        ( "data miles",     "dm",  Units::TYPE_LINEAR, 1828.8 );
-const Units Units::INCHES            ( "inches",         "in",  Units::TYPE_LINEAR, 0.0254 );
-const Units Units::FATHOMS           ( "fathoms",        "fm",  Units::TYPE_LINEAR, 1.8288 );
-const Units Units::KILOFEET          ( "kilofeet",       "kf",  Units::TYPE_LINEAR, 304.8 );
-const Units Units::KILOYARDS         ( "kiloyards",      "kyd", Units::TYPE_LINEAR, 914.4 );
-
-// Factor converts unit into RADIANS:
-const Units Units::DEGREES           ( "degrees",        "\xb0",Units::TYPE_ANGULAR, 0.017453292519943295 );
-const Units Units::RADIANS           ( "radians",        "rad", Units::TYPE_ANGULAR, 1.0 );
-const Units Units::BAM               ( "BAM",            "bam", Units::TYPE_ANGULAR, 6.283185307179586476925286766559 );
-const Units Units::NATO_MILS         ( "mils",           "mil", Units::TYPE_ANGULAR, 9.8174770424681038701957605727484e-4 );
-const Units Units::DECIMAL_HOURS     ( "hours",          "h",   Units::TYPE_ANGULAR, 15.0*0.017453292519943295 );
-
-// Factor convert unit into SECONDS:
-const Units Units::DAYS              ( "days",           "d",   Units::TYPE_TEMPORAL, 86400.0 );
-const Units Units::HOURS             ( "hours",          "hr",  Units::TYPE_TEMPORAL, 3600.0 );
-const Units Units::MICROSECONDS      ( "microseconds",   "us",  Units::TYPE_TEMPORAL, 0.000001 );
-const Units Units::MILLISECONDS      ( "milliseconds",   "ms",  Units::TYPE_TEMPORAL, 0.001 );
-const Units Units::MINUTES           ( "minutes",        "min", Units::TYPE_TEMPORAL, 60.0 );
-const Units Units::SECONDS           ( "seconds",        "s",   Units::TYPE_TEMPORAL, 1.0 );
-const Units Units::WEEKS             ( "weeks",          "wk",  Units::TYPE_TEMPORAL, 604800.0 );
-
-const Units Units::FEET_PER_SECOND      ( "feet per second",         "ft/s", Units::FEET,           Units::SECONDS );
-const Units Units::YARDS_PER_SECOND     ( "yards per second",        "yd/s", Units::YARDS,          Units::SECONDS );
-const Units Units::METERS_PER_SECOND    ( "meters per second",       "m/s",  Units::METERS,         Units::SECONDS );
-const Units Units::KILOMETERS_PER_SECOND( "kilometers per second",   "km/s", Units::KILOMETERS,     Units::SECONDS );
-const Units Units::KILOMETERS_PER_HOUR  ( "kilometers per hour",     "kmh",  Units::KILOMETERS,     Units::HOURS );
-const Units Units::MILES_PER_HOUR       ( "miles per hour",          "mph",  Units::MILES,          Units::HOURS );
-const Units Units::DATA_MILES_PER_HOUR  ( "data miles per hour",     "dm/h", Units::DATA_MILES,     Units::HOURS );
-const Units Units::KNOTS                ( "nautical miles per hour", "kts",  Units::NAUTICAL_MILES, Units::HOURS );
-
-const Units Units::PIXELS               ( "pixels", "px", Units::TYPE_SCREEN_SIZE, 1.0 );
-
-
-void
-Units::registerAll()
-{
-    std::unique_lock lock(s_unitsTable_mutex);
-
     auto units = {
         &Units::CENTIMETERS,
         &Units::FEET,
@@ -199,48 +55,94 @@ Units::registerAll()
 
     for (auto& ptr : units)
     {
-        s_unitsTable[toLower(ptr->getName())] = ptr;
+        _table[ptr->name()] = *ptr;
     }
 }
 
+std::optional<UnitsType>
+UnitsParser::parseUnits(std::string_view name) const
+{
+    std::unique_lock lock(_mutex);
+    auto i = _table.find(name.data());
+    if (i != _table.end())
+        return i->second;
+    else
+        return std::nullopt;
+}
+
+std::optional<QualifiedValue>
+UnitsParser::parse(std::string_view input, const UnitsType& defaultUnits) const
+{
+    QualifiedValue out;
+    char* endptr = nullptr;
+
+    // parse the numeric part into "value", and point "pos" at the first
+    // non-numeric character in the string.
+
+    out.value = std::strtod(input.data(), &endptr);
+
+    if (std::isnan(out.value))
+        return std::nullopt;
+
+    std::string unitsStr = endptr ? detail::trim(endptr) : "";
+
+    if (unitsStr.empty())
+    {
+        out.units = defaultUnits;
+    }
+    else
+    {
+        auto units = parseUnits(unitsStr);
+        if (!units.has_value())
+        {
+            return std::nullopt;
+        }
+
+        out.units = units.value();
+    }
+
+    return out;
+}
 
 int
-Units::unitTest()
+UnitsParser::unitTest() const
 {
-    double value;
-    Units  units;
-
     // test parsing scientific notation
     {
-        Units::parse( "123e-003m", value, units, Units::MILES);
-        if ( value != 123e-003 || units != Units::METERS )
+        auto out = parse("123e-003m", Units::MILES);
+        if (!out.has_value() || out->value != 123e-003 || out->units != Units::METERS)
             return 101;
-
-        Units::parse( "123e+003m", value, units, Units::MILES );
-        if ( value != 123e+003 || units != Units::METERS )
+    }
+    {
+        auto out = parse("123e+003m", Units::MILES);
+        if (!out.has_value() || out->value != 123e+003 || out->units != Units::METERS)
             return 102;
-
-        Units::parse( "123E-003m", value, units, Units::MILES );
-        if ( value != 123E-003 || units != Units::METERS )
+    }
+    {
+        auto out = parse("123E-003m", Units::MILES);
+        if (!out.has_value() || out->value != 123E-003 || out->units != Units::METERS)
             return 103;
-
-        Units::parse( "123E+003m", value, units, Units::MILES );
-        if ( value != 123E+003 || units != Units::METERS )
+    }
+    {
+        auto out = parse("123E+003m", Units::MILES);
+        if (!out.has_value() || out->value != 123E+003 || out->units != Units::METERS)
             return 104;
     }
 
     // normal parsing
     {
-        Units::parse( "123m", value, units, Units::MILES );
-        if ( value != 123 || units != Units::METERS )
+        auto out = parse("123m", Units::MILES);
+        if (!out.has_value() || out->value != 123 || out->units != Units::METERS)
             return 201;
-        
-        Units::parse( "123km", value, units, Units::MILES );
-        if ( value != 123 || units != Units::KILOMETERS )
+    }
+    {
+        auto out = parse("123km", Units::MILES);
+        if (!out.has_value() || out->value != 123 || out->units != Units::KILOMETERS)
             return 202;
-        
-        Units::parse( "1.2rad", value, units, Units::DEGREES );
-        if ( value != 1.2 || units != Units::RADIANS )
+    }
+    {
+        auto out = parse("1.2rad", Units::DEGREES);
+        if (!out.has_value() || out->value != 1.2 || out->units != Units::RADIANS)
             return 203;
     }
 
@@ -257,34 +159,39 @@ namespace ROCKY_NAMESPACE
         j = obj.to_parseable_string();
     }
     void from_json(const json& j, Distance& obj) {
-        obj = Distance(get_string(j), Units::METERS);
+        auto v = UnitsParser().parse(get_string(j), Units::METERS);
+        if (v.has_value()) obj = Distance(v->value, v->units);
     }
 
     void to_json(json& j, const Angle& obj) {
         j = obj.to_parseable_string();
     }
     void from_json(const json& j, Angle& obj) {
-        obj = Angle(get_string(j), Units::DEGREES);
+        auto v = UnitsParser().parse(get_string(j), Units::DEGREES);
+        if (v.has_value()) obj = Angle(v->value, v->units);
     }
 
     void to_json(json& j, const Duration& obj) {
         j = obj.to_parseable_string();
     }
     void from_json(const json& j, Duration& obj) {
-        obj = Duration(get_string(j), Units::SECONDS);
+        auto v = UnitsParser().parse(get_string(j), Units::SECONDS);
+        if (v.has_value()) obj = Duration(v->value, v->units);
     }
 
     void to_json(json& j, const Speed& obj) {
         j = obj.to_parseable_string();
     }
     void from_json(const json& j, Speed& obj) {
-        obj = Speed(get_string(j), Units::METERS_PER_SECOND);
+        auto v = UnitsParser().parse(get_string(j), Units::METERS_PER_SECOND);
+        if (v.has_value()) obj = Speed(v->value, v->units);
     }
 
     void to_json(json& j, const ScreenSize& obj) {
         j = obj.to_parseable_string();
     }
     void from_json(const json& j, ScreenSize& obj) {
-        obj = ScreenSize(get_string(j), Units::PIXELS);
+        auto v = UnitsParser().parse(get_string(j), Units::PIXELS);
+        if (v.has_value()) obj = ScreenSize(v->value, v->units);
     }
 }

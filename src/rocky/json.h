@@ -6,6 +6,7 @@
 #pragma once
 #include "Common.h"
 #include "Result.h"
+#include "IOTypes.h"
 
 #if !defined(ROCKY_BUILDING_SDK) && !defined(ROCKY_EXPOSE_JSON_FUNCTIONS)
 #error json.h is an internal header file; do not include it directly :)
@@ -143,16 +144,16 @@ namespace ROCKY_NAMESPACE
 #define ROCKY_DEFINE_JSON_SERIALIZERS(TYPE) \
     TYPE ; \
     extern ROCKY_EXPORT void to_json(json& j, const TYPE& obj); \
-    extern ROCKY_EXPORT void from_json(const json& j, TYPE& obj)
+    extern ROCKY_EXPORT void from_json(const json& j, TYPE& obj);
 
     ROCKY_DEFINE_JSON_SERIALIZERS(class CachePolicy);
     ROCKY_DEFINE_JSON_SERIALIZERS(class Color);
     ROCKY_DEFINE_JSON_SERIALIZERS(class Angle);
     ROCKY_DEFINE_JSON_SERIALIZERS(class Distance);
     ROCKY_DEFINE_JSON_SERIALIZERS(class Duration);
-    ROCKY_DEFINE_JSON_SERIALIZERS(struct Hyperlink);
     ROCKY_DEFINE_JSON_SERIALIZERS(class Speed);
     ROCKY_DEFINE_JSON_SERIALIZERS(class ScreenSize);
+    ROCKY_DEFINE_JSON_SERIALIZERS(struct Hyperlink);
     ROCKY_DEFINE_JSON_SERIALIZERS(class Profile);
     ROCKY_DEFINE_JSON_SERIALIZERS(class ProxySettings);
     ROCKY_DEFINE_JSON_SERIALIZERS(class DateTime);

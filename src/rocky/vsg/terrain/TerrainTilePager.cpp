@@ -49,8 +49,7 @@ TerrainTilePager::releaseAll()
 void
 TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg::RecordTraversal& rv)
 {
-    if (_settings.supportMultiThreadedRecord)
-        _mutex.lock();
+    ScopedPredicateLock lock(_mutex, _settings.supportMultiThreadedRecord);
 
     // first, update the tracker to keep this tile alive.
     auto& info = _tiles[tile->key];
@@ -89,9 +88,9 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
             auto& parent_info = _tiles[parent->key];
             if (!parent_info.tile)
             {
-                ROCKY_SOFT_ASSERT_AND_RETURN(parent_info.tile, void());
+                ROCKY_SOFT_ASSERT(parent_info.tile);
             }
-            if (parent_info.tile && parent_info.dataMerger.available() && info.dataLoader.empty())
+            else if (parent_info.dataMerger.available() && info.dataLoader.empty())
             {
                 _loadData.push_back(tile->key);
             }
@@ -103,17 +102,14 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
     // the (synchronous) update cycle in VSG.
     if (info.dataLoader.available() && info.dataMerger.empty())
     {
-        _mergeData.push_back(tile->key);
+        _mergeData.emplace_back(tile->key);
     }
 
     // Tile updates are TBD.
     if (tile->needsUpdate)
     {
-        _updateData.push_back(tile->key);
+        _updateData.emplace_back(tile->key);
     }
-
-    if (_settings.supportMultiThreadedRecord)
-        _mutex.unlock();
 }
 
 bool

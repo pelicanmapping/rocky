@@ -8,6 +8,7 @@
 #include <rocky/Result.h>
 #include <rocky/Threading.h>
 #include <rocky/Cache.h>
+#include <rocky/Units.h>
 #include <optional>
 #include <string>
 #include <cstdint>
@@ -90,6 +91,9 @@ namespace ROCKY_NAMESPACE
 
         //! Jobs instance for scheduling asynchronous tasks
         WEEJOBS_NAMESPACE::runtime jobs;
+
+        //! Parser for units types
+        UnitsParser unitsParser;
     };
 
     /**

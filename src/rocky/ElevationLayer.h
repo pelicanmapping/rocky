@@ -8,6 +8,7 @@
 #include <rocky/TileLayer.h>
 #include <rocky/GeoImage.h>
 #include <rocky/Heightfield.h>
+#include <rocky/Units.h>
 
 namespace ROCKY_NAMESPACE
 {

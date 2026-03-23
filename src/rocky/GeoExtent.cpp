@@ -138,7 +138,7 @@ GeoExtent::getCentroid(double& out_x, double& out_y) const
 }
 
 double
-GeoExtent::width(const Units& units) const
+GeoExtent::width(const UnitsType& units) const
 {
     if (!valid())
         return 0.0;
@@ -153,7 +153,7 @@ GeoExtent::width(const Units& units) const
 }
 
 double
-GeoExtent::height(const Units& units) const
+GeoExtent::height(const UnitsType& units) const
 {
     if (!valid())
         return 0.0;

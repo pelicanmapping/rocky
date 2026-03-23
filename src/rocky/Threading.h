@@ -131,6 +131,40 @@ namespace ROCKY_NAMESPACE
             Gate<T>* _gate = nullptr;
             T _key;
         };
+
+        /**
+        * Scoped lock that only locks if the predicate returns true
+        */
+        template<class LOCKABLE>
+        struct ScopedPredicateLock
+        {
+            LOCKABLE& _mutex;
+            bool _ownsLock = false;
+
+            ScopedPredicateLock(LOCKABLE& mutex, bool pred) :
+                _mutex(mutex),
+                _ownsLock(pred)
+            {
+                if (_ownsLock)
+                    _mutex.lock();
+            }
+
+            template<typename PREDICATE>
+            ScopedPredicateLock(LOCKABLE& mutex, PREDICATE&& pred) :
+                _mutex(mutex),
+                _ownsLock(pred())
+            {
+                static_assert(std::is_invocable_r_v<bool, PREDICATE>, "Predicate must match prototype bool(void)");
+                if (_ownsLock)
+                    _mutex.lock();
+            }
+
+            ~ScopedPredicateLock()
+            {
+                if (_ownsLock)
+                    _mutex.unlock();
+            }
+        };
     }
 
 } // namepsace rocky::util

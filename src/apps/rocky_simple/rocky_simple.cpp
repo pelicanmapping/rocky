@@ -133,7 +133,7 @@ int no_app(int argc, char** argv)
     auto vsgcontext = rocky::VSGContextFactory::create(viewer);
 
     // make a MapNode with that context.
-    auto mapNode = rocky::MapNode::create(vsgcontext);
+    auto mapNode = rocky::MapNode::create(vsgcontext.get());
 
     auto layer = rocky::TMSImageLayer::create();
     layer->uri = "https://readymap.org/readymap/tiles/1.0.0/7/";
@@ -178,7 +178,7 @@ int no_app(int argc, char** argv)
     // add some event handlers.
     viewer->addEventHandler(vsg::CloseHandler::create(viewer));
 
-    viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, vsgcontext));
+    viewer->addEventHandler(rocky::MapManipulator::create(mapNode, window, camera, vsgcontext.get()));
 
     // compile everything.
     viewer->compile();

@@ -67,13 +67,13 @@ namespace ROCKY_NAMESPACE
         inline double width() const { return _width; }
 
         //! East-to-est span in specified units
-        double width(const Units& units) const;
+        double width(const UnitsType& units) const;
 
         //! North-to-south span of the extent
         inline double height() const { return _height; }
 
         //! North-to-south span in specified units
-        double height(const Units& units) const;
+        double height(const UnitsType& units) const;
 
         //! Gets the centroid of the bounds
         GeoPoint centroid() const;

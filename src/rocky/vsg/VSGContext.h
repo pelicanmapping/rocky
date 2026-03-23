@@ -20,7 +20,6 @@ namespace ROCKY_NAMESPACE
 
     class VSGContextImpl;
     using VSGContext = VSGContextImpl*;
-    using VSGContextRef = std::shared_ptr<VSGContextImpl>;
 
     namespace detail
     {
@@ -174,16 +173,16 @@ namespace ROCKY_NAMESPACE
         return _viewer;
     }
 
-#if 1
-    struct VSGContextSingleton : public std::unique_ptr<VSGContextImpl> {
+    class VSGContextSingleton
+    {
+    public:
         VSGContextSingleton() = default;
-        VSGContextSingleton(VSGContextImpl* ptr) : std::unique_ptr<VSGContextImpl>(ptr) {}
-        inline operator VSGContext () { return get(); }
-        inline operator VSGContext () const { return get(); }
+        VSGContextSingleton(VSGContextImpl* ptr) : _unique(ptr) {}
+        inline VSGContext get() { return _unique.get(); }
+        inline const VSGContext get() const { return _unique.get(); }
+    private:
+        std::unique_ptr<VSGContextImpl> _unique;
     };
-#else
-    using VSGContextSingleton = VSGContext;
-#endif
 
     /**
     * Factory singleton for creating a VSGContext instance.

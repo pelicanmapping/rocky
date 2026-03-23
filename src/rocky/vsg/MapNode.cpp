@@ -159,6 +159,13 @@ MapNode::traverse(vsg::RecordTraversal& record) const
 
         record.setValue("rocky.horizon", &_horizon);
     }
+    else
+    {
+        // Clear stale horizon data to prevent incorrect culling
+        // when switching from geocentric to a non-geocentric profile.
+        ViewLocal<Horizon>* no_horizon = nullptr;
+        record.setValue("rocky.horizon", no_horizon);
+    }
 
     record.setValue("rocky.worldsrs", srs());
 
@@ -263,10 +270,27 @@ MapNode::createViewpoint(const std::vector<GeoPoint>& points, vsg::Camera* camer
 
     double eyeDist = 1.0;
     double fovy_deg = 45.0, ar = 1.0;
-    double znear = 1.0, zfar = 1000.0;
+    double zfar = 1000.0;
 
     // Calculate the centroid, which will become the focal point of the view:
     auto centroidWorld = extent.centroid().transform(srs());
+
+    if (profile.srs().isGeodetic())
+    {
+        auto C = centroidWorld;
+        C = glm::normalize(C);
+        C.z = fabs(C.z);
+        double t = glm::dot(C, glm::dvec3(0, 0, 1)); // dot product
+        zfar = glm::mix(profile.srs().ellipsoid().semiMajorAxis(), profile.srs().ellipsoid().semiMinorAxis(), t);
+        eyeDist = zfar * 2.0;
+    }
+    else
+    {
+        vsg::LookAt lookAt;
+        lookAt.set(camera->viewMatrix->transform());
+        eyeDist = vsg::length(lookAt.eye);
+        zfar = eyeDist;
+    }
 
     if (isPerspective)
     {
@@ -275,63 +299,21 @@ MapNode::createViewpoint(const std::vector<GeoPoint>& points, vsg::Camera* camer
         // we can project our control points onto a common plane.
         auto persp = projMatrix->cast<vsg::Perspective>();
 
-        znear = persp->nearDistance;
-        zfar = persp->farDistance;
         fovy_deg = persp->fieldOfViewY;
         ar = persp->aspectRatio;
 
-        znear = 1.0;
-
-        if (profile.srs().isGeodetic())
-        {
-            auto C = centroidWorld;
-            C = glm::normalize(C);
-            C.z = fabs(C.z);
-            double t = glm::dot(C, glm::dvec3(0, 0, 1)); // dot product
-            zfar = glm::mix(profile.srs().ellipsoid().semiMajorAxis(), profile.srs().ellipsoid().semiMinorAxis(), t);
-            eyeDist = zfar * 2.0;
-        }
-        else
-        {
-            vsg::LookAt lookAt;
-            lookAt.set(camera->viewMatrix->transform());
-            eyeDist = vsg::length(lookAt.eye);
-            zfar = eyeDist;
-        }
-
-        persp->nearDistance = znear;
+        persp->nearDistance = 1.0;
         persp->farDistance = zfar;
     }
 
-#if 0
     else // isOrtho
     {
-        fovy_deg = _vfov;
-        double L, R, B, T, N, F;
-        ProjectionMatrix::getOrtho(projMatrix, L, R, B, T, N, F);
-        ar = (R - L) / (T - B);
+        auto ortho = projMatrix->cast<vsg::Orthographic>();
 
-        if (_mapSRS->isGeographic())
-        {
-            osg::Vec3d C = centroid;
-            C.normalize();
-            C.z() = fabs(C.z());
-            double t = C * osg::Vec3d(0, 0, 1); // dot product
-
-            zfar = mix(_mapSRS->getEllipsoid().getRadiusEquator(),
-                _mapSRS->getEllipsoid().getRadiusPolar(),
-                t);
-            eyeDist = zfar * 2.0;
-        }
-        else
-        {
-            osg::Vec3d eye, center, up2;
-            viewMatrix.getLookAt(eye, center, up2);
-            eyeDist = eye.length();
-            zfar = eyeDist;
-        }
+        ar = (ortho->right - ortho->left) / (ortho->top - ortho->bottom);
+        ortho->nearDistance = 1.0;
+        ortho->farDistance = zfar;
     }
-#endif
 
     // Set up a new view matrix to look down on that centroid:
     glm::dvec3 lookAt, up;

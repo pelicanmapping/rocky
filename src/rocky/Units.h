@@ -1,191 +1,209 @@
-/**
- * rocky c++
- * Copyright 2023 Pelican Mapping
+/* rocky
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
-
 #include <rocky/Common.h>
+#include <unordered_map>
+#include <mutex>
+#include <optional>
 
 namespace ROCKY_NAMESPACE
 {
-    class ROCKY_EXPORT Units
+    namespace Units
+    {
+        enum class Domain
+        {
+            DISTANCE,
+            ANGLE,
+            TIME,
+            SPEED,
+            SCREEN,
+            INVALID
+        };
+    }
+
+    class ROCKY_EXPORT UnitsType
     {
     public:
-        // linear
-        static const Units CENTIMETERS;
-        static const Units DATA_MILES;
-        static const Units FATHOMS;
-        static const Units FEET;
-        static const Units FEET_US_SURVEY;  // http://www.wsdot.wa.gov/reference/metrics/foottometer.htm
-        static const Units INCHES;
-        static const Units KILOFEET;
-        static const Units KILOMETERS;
-        static const Units KILOYARDS;
-        static const Units METERS;
-        static const Units MILES;           // statute miles
-        static const Units MILLIMETERS;
-        static const Units NAUTICAL_MILES;
-        static const Units YARDS;
+        inline bool valid() const {
+            return
+                _type == Units::Domain::SPEED ? (_distance != nullptr && _time != nullptr) :
+                _type != Units::Domain::INVALID;
+        }
 
-        // angular
-        static const Units BAM;
-        static const Units DEGREES;
-        static const Units NATO_MILS; // http://www.convertworld.com/en/angle/Mil+(NATO).html
-        static const Units RADIANS;
-        static const Units DECIMAL_HOURS;
+        inline bool canConvert(const UnitsType& to) const;
 
-        // temporal
-        static const Units DAYS;
-        static const Units HOURS;
-        static const Units MICROSECONDS;
-        static const Units MILLISECONDS;
-        static const Units MINUTES;
-        static const Units SECONDS;
-        static const Units WEEKS;
+        inline bool convertTo(const UnitsType& to, double input, double& output) const;
 
-        // speed
-        static const Units FEET_PER_SECOND;
-        static const Units YARDS_PER_SECOND;
-        static const Units METERS_PER_SECOND;
-        static const Units KILOMETERS_PER_SECOND;
-        static const Units KILOMETERS_PER_HOUR;
-        static const Units MILES_PER_HOUR;
-        static const Units DATA_MILES_PER_HOUR;
-        static const Units KNOTS;
+        inline double convertTo(const UnitsType& to, double input) const;
 
-        // screen
-        static const Units PIXELS;
+        const std::string& name() const { return _name; }
 
-        // unit types.
-        enum Type
-        { 
-            TYPE_LINEAR, 
-            TYPE_ANGULAR, 
-            TYPE_TEMPORAL, 
-            TYPE_SPEED, 
-            TYPE_SCREEN_SIZE,
-            TYPE_INVALID
-        };
+        const std::string& abbr() const { return _abbr; }
 
+        const Units::Domain& domain() const { return _type; }
+
+        bool operator == (const UnitsType& rhs) const {
+            return
+                valid() &&
+                rhs.valid() &&
+                _type == rhs._type &&
+                _toBase == rhs._toBase &&
+                (_type != Units::Domain::SPEED || *_distance == *rhs._distance) &&
+                (_type != Units::Domain::SPEED || *_time == *rhs._time);
+        }
+
+        bool operator != (const UnitsType& rhs) const {
+            return !operator==(rhs);
+        }
+
+        bool isDistance() const { return _type == Units::Domain::DISTANCE; }
+        bool isAngle() const { return _type == Units::Domain::ANGLE; }
+        bool isTime() const { return _type == Units::Domain::TIME; }
+        bool isSpeed() const { return _type == Units::Domain::SPEED; }
+        bool isScreenSize() const { return _type == Units::Domain::SCREEN; }
+
+        // Make a new unit definition (LINEAR, ANGULAR, TEMPORAL, SCREEN)
+        UnitsType(const char* name, const char* abbr, const Units::Domain& type, double toBase) :
+            _name(name),
+            _abbr(abbr),
+            _type(type),
+            _toBase(toBase) {
+        }
+
+        // Maks a new unit definition (SPEED)
+        UnitsType(const char* name, const char* abbr, const UnitsType& distance, const UnitsType& time) :
+            _name(name),
+            _abbr(abbr),
+            _type(Units::Domain::SPEED),
+            _toBase(1.0),
+            _distance(&distance),
+            _time(&time) {
+        }
+
+        UnitsType() {}
+
+        std::string _name;
+        std::string _abbr;
+        Units::Domain _type = Units::Domain::INVALID;
+        double _toBase = 0.0;
+        const UnitsType* _distance = nullptr;
+        const UnitsType* _time = nullptr;
+    };
+
+    struct QualifiedValue
+    {
+        double value = 0.0;
+        UnitsType units;
+    };
+
+    class ROCKY_EXPORT UnitsParser
+    {
     public:
+        UnitsParser();
 
-        static bool parse( const std::string& input, Units& output );
+        std::optional<UnitsType> parseUnits(std::string_view input) const;
+        std::optional<QualifiedValue> parse(std::string_view input, const UnitsType& defaultUnits) const;
 
-        // parses a value+units string (like "15cm" or "24px")
-        static bool parse( const std::string& input, double& out_value, Units& out_units, const Units& defaultUnits );
-        static bool parse( const std::string& input, float& out_value, Units& out_units, const Units& defaultUnits );
+        int unitTest() const;
 
-        static bool convert( const Units& from, const Units& to, double input, double& output ) {
-            if ( canConvert(from, to) ) {
-                if ( from._type == TYPE_LINEAR || from._type == TYPE_ANGULAR || from._type == TYPE_TEMPORAL )
-                    convertSimple( from, to, input, output );
-                else if ( from._type == TYPE_SPEED )
-                    convertSpeed( from, to, input, output );
+    private:
+        std::unordered_map<std::string, UnitsType> _table;
+        mutable std::mutex _mutex;
+    };
+
+    namespace Units
+    {
+        // Distances; factor converts to METERS:
+        const UnitsType CENTIMETERS("centimeters", "cm", Units::Domain::DISTANCE, 0.01);
+        const UnitsType FEET("feet", "ft", Units::Domain::DISTANCE, 0.3048);
+        const UnitsType FEET_US_SURVEY("feet(us)", "ft", Units::Domain::DISTANCE, 12.0 / 39.37);
+        const UnitsType KILOMETERS("kilometers", "km", Units::Domain::DISTANCE, 1000.0);
+        const UnitsType METERS("meters", "m", Units::Domain::DISTANCE, 1.0);
+        const UnitsType MILES("miles", "mi", Units::Domain::DISTANCE, 1609.334);
+        const UnitsType MILLIMETERS("millimeters", "mm", Units::Domain::DISTANCE, 0.001);
+
+        const UnitsType YARDS("yards", "yd", Units::Domain::DISTANCE, 0.9144);
+        const UnitsType NAUTICAL_MILES("nautical miles", "nm", Units::Domain::DISTANCE, 1852.0);
+        const UnitsType DATA_MILES("data miles", "dm", Units::Domain::DISTANCE, 1828.8);
+        const UnitsType INCHES("inches", "in", Units::Domain::DISTANCE, 0.0254);
+        const UnitsType FATHOMS("fathoms", "fm", Units::Domain::DISTANCE, 1.8288);
+        const UnitsType KILOFEET("kilofeet", "kf", Units::Domain::DISTANCE, 304.8);
+        const UnitsType KILOYARDS("kiloyards", "kyd", Units::Domain::DISTANCE, 914.4);
+
+        // Factor converts unit into RADIANS:
+        const UnitsType DEGREES("degrees", "\xb0", Units::Domain::ANGLE, 0.017453292519943295);
+        const UnitsType RADIANS("radians", "rad", Units::Domain::ANGLE, 1.0);
+        const UnitsType BAM("BAM", "bam", Units::Domain::ANGLE, 6.283185307179586476925286766559);
+        const UnitsType NATO_MILS("mils", "mil", Units::Domain::ANGLE, 9.8174770424681038701957605727484e-4);
+        const UnitsType DECIMAL_HOURS("hours", "h", Units::Domain::ANGLE, 15.0 * 0.017453292519943295);
+
+        // Factor convert unit into SECONDS:
+        const UnitsType DAYS("days", "d", Units::Domain::TIME, 86400.0);
+        const UnitsType HOURS("hours", "hr", Units::Domain::TIME, 3600.0);
+        const UnitsType MICROSECONDS("microseconds", "us", Units::Domain::TIME, 0.000001);
+        const UnitsType MILLISECONDS("milliseconds", "ms", Units::Domain::TIME, 0.001);
+        const UnitsType MINUTES("minutes", "min", Units::Domain::TIME, 60.0);
+        const UnitsType SECONDS("seconds", "s", Units::Domain::TIME, 1.0);
+        const UnitsType WEEKS("weeks", "wk", Units::Domain::TIME, 604800.0);
+
+        const UnitsType FEET_PER_SECOND("feet per second", "ft/s", Units::FEET, Units::SECONDS);
+        const UnitsType YARDS_PER_SECOND("yards per second", "yd/s", Units::YARDS, Units::SECONDS);
+        const UnitsType METERS_PER_SECOND("meters per second", "m/s", Units::METERS, Units::SECONDS);
+        const UnitsType KILOMETERS_PER_SECOND("kilometers per second", "km/s", Units::KILOMETERS, Units::SECONDS);
+        const UnitsType KILOMETERS_PER_HOUR("kilometers per hour", "kmh", Units::KILOMETERS, Units::HOURS);
+        const UnitsType MILES_PER_HOUR("miles per hour", "mph", Units::MILES, Units::HOURS);
+        const UnitsType DATA_MILES_PER_HOUR("data miles per hour", "dm/h", Units::DATA_MILES, Units::HOURS);
+        const UnitsType KNOTS("nautical miles per hour", "kts", Units::NAUTICAL_MILES, Units::HOURS);
+
+        const UnitsType PIXELS("pixels", "px", Units::Domain::SCREEN, 1.0);
+
+        inline bool canConvert(const UnitsType& from, const UnitsType& to) {
+            return from.domain() == to.domain();
+        }
+
+        inline void convertSimple(const UnitsType& from, const UnitsType& to, double input, double& output) {
+            output = input * from._toBase / to._toBase;
+        }
+
+        inline void convertSpeed(const UnitsType& from, const UnitsType& to, double input, double& output) {
+            double t = from._distance->convertTo(*to._distance, input);
+            output = to._time->convertTo(*from._time, t);
+        }
+
+        inline bool convert(const UnitsType& from, const UnitsType& to, double input, double& output) {
+            if (canConvert(from, to)) {
+                if (from.isDistance() || from.isAngle() || from.isTime())
+                    convertSimple(from, to, input, output);
+                else if (from.isSpeed())
+                    convertSpeed(from, to, input, output);
                 return true;
             }
             return false;
         }
 
-        static double convert( const Units& from, const Units& to, double input ) {
+        inline double convert(const UnitsType& from, const UnitsType& to, double input) {
             double output = input;
-            convert( from, to, input, output );
+            convert(from, to, input, output);
             return output;
         }
 
-        static bool canConvert( const Units& from, const Units& to ) {
-            return from._type == to._type;
-        }
+        //extern ROCKY_EXPORT void registerAll(UnitsRepo& repo);
 
-        bool canConvert( const Units& to ) const {
-            return _type == to._type;
-        }
+        //extern ROCKY_EXPORT int unitTest(const UnitsRepo& repo);
+    }
 
-        bool convertTo( const Units& to, double input, double& output )  const {
-            return convert( *this, to, input, output );
-        }
-
-        double convertTo( const Units& to, double input ) const {
-            return convert( *this, to, input );
-        }
-        
-        const std::string& getName() const { return _name; }
-
-        const std::string& getAbbr() const { return _abbr; }
-
-        const Type& getType() const { return _type; }
-
-        bool operator == ( const Units& rhs ) const {
-            return _type == rhs._type && _toBase == rhs._toBase; }
-        
-        bool operator != ( const Units& rhs ) const {
-            return _type != rhs._type || _toBase != rhs._toBase; }
-
-        bool isLinear() const { return _type == TYPE_LINEAR; }
-        bool isDistance() const { return _type == TYPE_LINEAR; }
-
-        bool isAngular() const { return _type == TYPE_ANGULAR; }
-        bool isAngle() const { return _type == TYPE_ANGULAR; }
-
-        bool isTemporal() const { return _type == TYPE_TEMPORAL; }
-        bool isTime() const { return _type == TYPE_TEMPORAL; }
-
-        bool isSpeed() const { return _type == TYPE_SPEED; }
-
-        bool isScreenSize() const { return _type == TYPE_SCREEN_SIZE; }
-
-    public:
-
-        // Make a new unit definition (LINEAR, ANGULAR, TEMPORAL, SCREEN)
-        Units( const std::string& name, const std::string& abbr, const Type& type, double toBase );
-
-        // Maks a new unit definition (SPEED)
-        Units( const std::string& name, const std::string& abbr, const Units& distance, const Units& time );
-
-        Units() : _type(TYPE_INVALID), _toBase(0.0), _distance(0L), _time(0L) { }
-
-    private:
-
-        static void convertSimple( const Units& from, const Units& to, double input, double& output ) {
-            output = input * from._toBase / to._toBase;
-        }
-        static void convertSpeed( const Units& from, const Units& to, double input, double& output ) {
-            double t = from._distance->convertTo( *to._distance, input );
-            output = to._time->convertTo( *from._time, t );
-        }
-
-
-        std::string _name, _abbr;
-        Type _type;
-        double _toBase;
-        const Units* _distance;
-        const Units* _time;
-        
-        // called by Registry to register system units
-        static void registerAll();
-
-    public:
-
-        // returns 0 upon success, error code on failure
-        static int unitTest();
-
-    };
-    
     namespace detail
     {
         template<typename T> class qualified_double
         {
         public:
-            qualified_double(double value, const Units& units) : _value(value), _units(units) { }
+            qualified_double(double value, const UnitsType& units) : _value(value), _units(units) {}
 
-            qualified_double(const T& rhs) : _value(rhs._value), _units(rhs._units) { }
+            qualified_double(const T& rhs) : _value(rhs._value), _units(rhs._units) {}
 
-            // parses the qualified number from a parseable string (e.g., "123km")
-            qualified_double(const std::string& parseable, const Units& defaultUnits) : _value(0.0), _units(defaultUnits) {
-                Units::parse(parseable, _value, _units, defaultUnits);
-            }
-
-            void set(double value, const Units& units) {
+            void set(double value, const UnitsType& units) {
                 _value = value;
                 _units = units;
             }
@@ -198,13 +216,13 @@ namespace ROCKY_NAMESPACE
             T operator + (const T& rhs) const {
                 return _units.canConvert(rhs._units) ?
                     T(_value + rhs.as(_units), _units) :
-                    T(0, Units());
+                    T(0, {});
             }
 
             T operator - (const T& rhs) const {
                 return _units.canConvert(rhs._units) ?
                     T(_value - rhs.as(_units), _units) :
-                    T(0, Units());
+                    T(0, {});
             }
 
             T operator * (double rhs) const {
@@ -239,11 +257,11 @@ namespace ROCKY_NAMESPACE
                 return _units.canConvert(rhs._units) && _value >= rhs.as(_units);
             }
 
-            double as(const Units& convertTo) const {
+            double as(const UnitsType& convertTo) const {
                 return _units.convertTo(convertTo, _value);
             }
 
-            T to(const Units& convertTo) const {
+            T to(const UnitsType& convertTo) const {
                 return T(as(convertTo), convertTo);
             }
 
@@ -251,10 +269,10 @@ namespace ROCKY_NAMESPACE
             double value() const { return _value; }
 
             //! Access the units part directly
-            const Units& units() const { return _units; }
+            const UnitsType& units() const { return _units; }
 
             std::string to_string() const {
-                return std::to_string(_value) + _units.getAbbr();
+                return std::to_string(_value) + _units.abbr();
             }
 
             virtual std::string to_parseable_string() const {
@@ -263,22 +281,22 @@ namespace ROCKY_NAMESPACE
 
         protected:
             double _value;
-            Units  _units;
+            UnitsType _units;
         };
     }
 
     class Distance : public detail::qualified_double<Distance> {
     public:
-        Distance() : qualified_double<Distance>(0, Units::METERS) { }
-        Distance(double value, const Units& units =Units::METERS) : qualified_double<Distance>(value, units) { }
-        Distance(const std::string& str, const Units& defaultUnits) : qualified_double<Distance>(str, defaultUnits) { }
+        Distance() : detail::qualified_double<Distance>(0, Units::METERS) {}
+        Distance(double value) : detail::qualified_double<Distance>(value, Units::METERS) {}
+        Distance(double value, const UnitsType& units) : detail::qualified_double<Distance>(value, units) {}
     };
 
     class Angle : public detail::qualified_double<Angle> {
     public:
-        Angle() : qualified_double<Angle>(0, Units::DEGREES) { }
-        Angle(double value, const Units& units =Units::DEGREES) : qualified_double<Angle>(value, units) { }
-        Angle(const std::string& str, const Units& defaultUnits) : qualified_double<Angle>(str, defaultUnits) { }
+        Angle() : detail::qualified_double<Angle>(0, Units::DEGREES) {}
+        Angle(double value) : detail::qualified_double<Angle>(value, Units::DEGREES) {}
+        Angle(double in_value, const UnitsType& in_units) : detail::qualified_double<Angle>(in_value, in_units) {}
         std::string asParseableString() const {
             if (_units == Units::DEGREES) return std::to_string(_value);
             else return to_string();
@@ -287,22 +305,38 @@ namespace ROCKY_NAMESPACE
 
     class Duration : public detail::qualified_double<Duration> {
     public:
-        Duration() : qualified_double<Duration>(0, Units::SECONDS) { }
-        Duration(double value, const Units& units =Units::SECONDS) : qualified_double<Duration>(value, units) { }
-        Duration(const std::string& str, const Units& defaultUnits) : qualified_double<Duration>(str, defaultUnits) { }
+        Duration() : detail::qualified_double<Duration>(0, Units::SECONDS) {}
+        Duration(double value) : detail::qualified_double<Duration>(value, Units::SECONDS) {}
+        Duration(double in_value, const UnitsType& in_units) : detail::qualified_double<Duration>(in_value, in_units) {}
     };
+    typedef Duration Temporal; // backwards compat
 
     class Speed : public detail::qualified_double<Speed> {
     public:
-        Speed() : qualified_double<Speed>(0, Units::METERS_PER_SECOND) { }
-        Speed(double value, const Units& units) : qualified_double<Speed>(value, units) { }
-        Speed(const std::string& str, const Units& defaultUnits) : qualified_double<Speed>(str, defaultUnits) { }
+        Speed() : detail::qualified_double<Speed>(0, Units::METERS_PER_SECOND) {}
+        Speed(double value) : detail::qualified_double<Speed>(value, Units::METERS_PER_SECOND) {}
+        Speed(double value, const UnitsType& units) : detail::qualified_double<Speed>(value, units) {}
     };
 
     class ScreenSize : public detail::qualified_double<ScreenSize> {
     public:
-        ScreenSize() : qualified_double<ScreenSize>(0, Units::PIXELS) { }
-        ScreenSize(double value, const Units& units =Units::PIXELS) : qualified_double<ScreenSize>(value, units) { }
-        ScreenSize(const std::string& str, const Units& defaultUnits) : qualified_double<ScreenSize>(str, defaultUnits) { }
+        ScreenSize() : detail::qualified_double<ScreenSize>(0, Units::PIXELS) {}
+        ScreenSize(double value) : detail::qualified_double<ScreenSize>(value, Units::PIXELS) {}
+        ScreenSize(double value, const UnitsType& units) : detail::qualified_double<ScreenSize>(value, units) {}
     };
+
+
+
+    // UnitsType inlines
+    inline bool UnitsType::canConvert(const UnitsType& to) const {
+        return _type == to._type;
+    }
+
+    inline bool UnitsType::convertTo(const UnitsType& to, double input, double& output)  const {
+        return Units::convert(*this, to, input, output);
+    }
+
+    inline double UnitsType::convertTo(const UnitsType& to, double input) const {
+        return Units::convert(*this, to, input);
+    }
 }

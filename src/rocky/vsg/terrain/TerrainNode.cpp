@@ -125,7 +125,7 @@ TerrainNode::TerrainNode(VSGContext vsgcontext) :
     // create the graphics pipeline to render this map
     if (!terrainState.setupTerrainStateGroup(*this, vsgcontext))
     {
-        status = Failure("Failed to set up terrain state group");
+        status = Failure("Failed to set up terrain state group. Shaders not found?");
     }
 }
 
@@ -247,14 +247,12 @@ TerrainNode::createProfiles(VSGContext context)
     {
         for (auto& subprofile : profile.subprofiles())
         {
-            auto profileNode = TerrainProfileNode::create(subprofile, *this);
-            this->addChild(profileNode);
+            this->addChild(TerrainProfileNode::create(subprofile, *this));
         }
     }
     else
     {
-        auto profileNode = TerrainProfileNode::create(profile, *this);
-        this->addChild(profileNode);
+        this->addChild(TerrainProfileNode::create(profile, *this));
     }
 
     return ResultVoidOK;

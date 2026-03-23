@@ -61,19 +61,18 @@ namespace ROCKY_NAMESPACE
         friend class ContextFactory;
     };
 
-#if 1
-    using Context = ContextImpl*; // std::unique_ptr<ContextImpl>;
+    using Context = ContextImpl*;
 
-    struct ContextSingleton : public std::unique_ptr<ContextImpl> {
+    class ContextSingleton
+    {
+    public:
         ContextSingleton() = default;
-        ContextSingleton(ContextImpl* ptr) : std::unique_ptr<ContextImpl>(ptr) {}
-        inline operator Context () { return get(); }
-        inline operator Context () const { return get(); }
+        ContextSingleton(ContextImpl* ptr) : _unique(ptr) {}
+        inline Context get() { return _unique.get(); }
+        inline const Context get() const { return _unique.get(); }
+    private:
+        std::unique_ptr<ContextImpl> _unique;
     };
-#else
-    using Context = std::shared_ptr<ContextImpl>;
-    using ContextSingleton = Context;
-#endif
 
     class ContextFactory
     {
@@ -81,7 +80,7 @@ namespace ROCKY_NAMESPACE
         template<typename... Args>
         static ContextSingleton create(Args&&... args) {
             return ContextSingleton(new ContextImpl(std::forward<Args>(args)...));
-        };
+        }
     };
 }
 

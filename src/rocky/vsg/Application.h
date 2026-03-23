@@ -89,8 +89,8 @@ namespace ROCKY_NAMESPACE
         //! ECS registry associated with this Application
         Registry registry = Registry::create();
 
-        //! VSG context object
-        rocky::VSGContextSingleton vsgcontext;
+        //! Pointer to the singleton VSGContext object
+        VSGContext vsgcontext = nullptr;
 
         //! Keeps track of windows and views
         DisplayManager display;
@@ -154,6 +154,7 @@ namespace ROCKY_NAMESPACE
         inline T* getSystem();
 
     private:
+        VSGContextSingleton _vsgcontextSingleton;
         bool _apilayer = false;
         bool _debuglayer = false;
         bool _debuglayerUnique = false;
