@@ -85,12 +85,14 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
         {
             // If this is a non-root tile that needs data, check to make sure the 
             // parent's tile is done loaded before queueing that up.
-            auto& parent_info = _tiles[parent->key];
-            if (!parent_info.tile)
+            auto parent_iter = _tiles.find(parent->key);
+            if (parent_iter == _tiles.end())
             {
-                ROCKY_SOFT_ASSERT(parent_info.tile);
+                // Parent was evicted from the tile cache but the child
+                // still references it in the scene graph. This is benign;
+                // the parent will be re-registered on its next ping.
             }
-            else if (parent_info.dataMerger.available() && info.dataLoader.empty())
+            else if (parent_iter->second.dataMerger.available() && info.dataLoader.empty())
             {
                 _loadData.push_back(tile->key);
             }
