@@ -110,7 +110,7 @@ namespace ROCKY_NAMESPACE
         //! When true, the viewer will render frames continuously as fast as the CPU
         //! (or the VSYNC) will allow. When false, the viewer will only paint a frame
         //! when requested to do so by setting renderRequests to a non-zero value or
-        //! by calling vsgcontetx->requestFrame().
+        //! by calling vsgcontext->requestFrame().
         bool renderContinuously = false;
 
         //! When true, the application will automatically create a main window

@@ -42,6 +42,8 @@ namespace ROCKY_NAMESPACE
     //! e.g.: Use this when running intersections on the scene to include ECS components!
     extern ROCKY_EXPORT void visit(vsg::ConstVisitor* visitor, vsg::View* view, vsg::Object* object = nullptr);
 
+    //! Return the View containing the window coordinate (mouse position)
+    extern ROCKY_EXPORT vsg::View* viewAtWindowCoords(vsg::Viewer* viewer, int x, int y);
 
     /**
     * DisplayManager is a helper class that manages the creation and destruction of

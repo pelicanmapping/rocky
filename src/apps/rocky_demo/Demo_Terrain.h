@@ -81,16 +81,22 @@ auto Demo_Terrain = [](Application& app)
         setWireframeTopology->topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
     }
 
+    auto view = viewAtWindowCoords(app.viewer, ImGui::GetMousePos().x, ImGui::GetMousePos().y);
+    if (!view) return;
+
+    auto mapNode = detail::find<MapNode>(view);
+    if (!mapNode) return;
+
     if (ImGuiLTable::Begin("terrain"))
     {
         ImGuiLTable::SliderFloat("Pixel error", &app.mapNode->terrainSettings().pixelError.mutable_value(), 0.0f, 512.0f, "%.0f");
 
-        auto& c = app.mapNode->terrainNode->children;
+        auto& c = mapNode->terrainNode->children;
         bool wireframe = c.front() == setWireframeTopology;
 
         if (app.vsgcontext->device()->getPhysicalDevice()->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
         {
-            ImGuiLTable::Checkbox("Triangles", &app.mapNode->terrainNode->wireOverlay.mutable_value());
+            ImGuiLTable::Checkbox("Triangles", &mapNode->terrainNode->wireOverlay.mutable_value());
         }
 
         if (ImGuiLTable::Checkbox("Wireframe", &wireframe))
@@ -101,18 +107,18 @@ auto Demo_Terrain = [](Application& app)
                 c.erase(c.begin());
         }
 
-        ImGuiLTable::Checkbox("Lighting", &app.mapNode->terrainSettings().lighting.mutable_value());
-        ImGuiLTable::Checkbox("Normals", &app.mapNode->terrainSettings().debugNormals.mutable_value());
+        ImGuiLTable::Checkbox("Lighting", &mapNode->terrainSettings().lighting.mutable_value());
+        ImGuiLTable::Checkbox("Normals", &mapNode->terrainSettings().debugNormals.mutable_value());
 
-        bool skirts = app.mapNode->terrainSettings().skirtRatio.value() > 0.0f;
+        bool skirts = mapNode->terrainSettings().skirtRatio.value() > 0.0f;
         if (ImGuiLTable::Checkbox("Tile skirts", &skirts))
         {
             if (skirts)
-                app.mapNode->terrainSettings().skirtRatio = 0.05f;
+                mapNode->terrainSettings().skirtRatio = 0.05f;
             else
-                app.mapNode->terrainSettings().skirtRatio = 0.0f;
+                mapNode->terrainSettings().skirtRatio = 0.0f;
 
-            app.mapNode->terrainNode->reset(app.vsgcontext);
+            mapNode->terrainNode->reset(app.vsgcontext);
         }
 
         static bool showAxes = false;
@@ -121,7 +127,7 @@ auto Demo_Terrain = [](Application& app)
             if (showAxes)
             {
                 if (!axesLayer)
-                    app.mapNode->map->add(axesLayer = createAxesLayer(app, app.mapNode->srs().ellipsoid(), app.vsgcontext));
+                    mapNode->map->add(axesLayer = createAxesLayer(app, mapNode->srs().ellipsoid(), app.vsgcontext));
 
                 auto r = axesLayer->open(app.io());
                 if (r.failed())
@@ -135,37 +141,16 @@ auto Demo_Terrain = [](Application& app)
             app.vsgcontext->requestFrame();
         }
 
-        int maxLevel = app.mapNode->terrainSettings().maxLevel.value();
+        int maxLevel = mapNode->terrainSettings().maxLevel.value();
         if (ImGuiLTable::SliderInt("Max level", &maxLevel, 0, 23))
         {
-            app.mapNode->terrainSettings().maxLevel = maxLevel;
+            mapNode->terrainSettings().maxLevel = maxLevel;
         }
 
-        ImGuiLTable::SliderInt("L2 cache size", (int*)&app.mapNode->terrainSettings().tileCacheSize.mutable_value(), 0, 4096);
+        ImGuiLTable::SliderInt("L2 cache size", (int*)&mapNode->terrainSettings().tileCacheSize.mutable_value(), 0, 4096);
 
-        float* bg = (float*)&app.mapNode->terrainSettings().backgroundColor.mutable_value();
-        ImGuiLTable::ColorEdit3("Background color", bg);
-
-        static std::vector<std::string> options = { "global-geodetic", "global-qsc", "spherical-mercator", "plate-carree" };
-        int index = indexOf(options, app.mapNode->profile.wellKnownName());
-        if (index >= 0)
-        {
-            if (ImGuiLTable::BeginCombo("Rendering profile", options[index].c_str()))
-            {
-                for (int i = 0; i < options.size(); ++i)
-                {
-                    if (ImGui::RadioButton(options[i].c_str(), index == i))
-                    {
-                        app.mapNode->profile = Profile(options[i]);
-                        if (auto view = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0))
-                            if (auto manip = MapManipulator::get(view))
-                                manip->home();
-                        app.vsgcontext->requestFrame();
-                    }
-                }
-                ImGuiLTable::EndCombo();
-            }
-        }
+        float* nodata = (float*)&mapNode->terrainSettings().backgroundColor.mutable_value();
+        ImGuiLTable::ColorEdit3("No-data color", nodata);
 
         ImGuiLTable::End();
     }

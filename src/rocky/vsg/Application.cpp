@@ -244,18 +244,6 @@ Application::~Application()
     Log()->debug("Quitting background services...");
     background.quit();
 
-#if 0
-    if (root)
-        root->children.clear();
-
-    root = nullptr;
-    mainScene = nullptr;
-    mapNode = nullptr;
-    skyNode = nullptr;
-    ecsNode = nullptr;
-    viewer = nullptr;
-#endif
-
     Log()->debug("Waiting for all jobs to stop...");
     io().services().jobs.shutdown();
 }
@@ -334,65 +322,6 @@ Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
 #endif
 }
 
-#if 0
-void
-Application::recreateViewer() 
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(viewer, void());
-
-    // Makes a new viewer, copying settings from the old viewer.
-    vsg::EventHandlers handlers = viewer->getEventHandlers();
-
-    // before we destroy it,
-    // wait until the device is idle to avoid changing state while it's being used.
-    viewer->deviceWaitIdle();
-
-    viewer = createViewer();
-
-    instance->viewer = viewer;
-    
-    for (auto i : displayConfiguration.windows)
-        viewer->addWindow(i.first);
-
-    for (auto& j : handlers)
-        viewer->addEventHandler(j);
-
-    setupViewer(viewer);
-}
-#endif
-
-#if 0
-namespace
-{
-    /**
-    * Framely operation that runs all of our update logic.
-    */
-    class AppUpdateOperation : public vsg::Inherit<vsg::Operation, AppUpdateOperation>
-    {
-    public:
-        Application& app;
-
-        AppUpdateOperation(Application& in_app) : app(in_app) {}
-
-        void run() override
-        {
-            // ECS updates - rendering or modifying entities
-            if (app.ecsNode)
-            {
-                app.ecsNode->update(app.vsgcontext);
-            }
-
-            // keep the frames running if the pager is active
-            auto& tasks = app.viewer->recordAndSubmitTasks;
-            if (!tasks.empty() && tasks[0]->databasePager && tasks[0]->databasePager->numActiveRequests > 0)
-            {
-                app.vsgcontext->requestFrame();
-            }
-        }
-    };
-}
-#endif
-
 void
 Application::realize()
 {
@@ -409,9 +338,7 @@ Application::realize()
 
         setupViewer(viewer);
 
-        // install our frame update operation
-        //viewer->updateOperations->add(AppUpdateOperation::create(*this), vsg::UpdateOperations::ALL_FRAMES);
-
+        // Callback that will update the ECS systems each frame
         _subs += vsgcontext->onUpdate([&](VSGContext vsgcontext)
             {
                 // ECS updates - rendering or modifying entities

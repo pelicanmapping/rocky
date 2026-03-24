@@ -95,6 +95,38 @@ ROCKY_NAMESPACE::pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, in
         return Failure{};
 }
 
+vsg::View*
+ROCKY_NAMESPACE::viewAtWindowCoords(vsg::Viewer* viewer, int x, int y)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer, nullptr);
+
+    for (auto& task : viewer->recordAndSubmitTasks)
+    {
+        for (auto cg_iter = task->commandGraphs.rbegin(); cg_iter != task->commandGraphs.rend(); ++cg_iter)
+        {
+            auto& cg = *cg_iter;
+            auto finder = vsg::visit<FindViews>(cg);
+
+            for (auto i = finder.views.rbegin(); i != finder.views.rend(); ++i)
+            {
+                auto& view = *i;
+
+                if (view->camera)
+                {
+                    const auto& vp = view->camera->getViewport();
+
+                    if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
+                    {
+                        return view;
+                    }
+                }
+            }
+        }
+    }
+
+    return nullptr;
+}
+
 
 namespace
 {
@@ -504,8 +536,12 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
         if (_app && (rocky_auto_view || add_manipulator))
         {
-            auto manip = MapManipulator::create(_app->mapNode, window, view->camera, vsgcontext);
-            setManipulatorForView(manip, view);
+            auto mapNode = detail::find<MapNode>(view);
+            if (mapNode)
+            {
+                auto manip = MapManipulator::create(mapNode, window, view->camera, vsgcontext);
+                setManipulatorForView(manip, view);
+            }
         }
 
 #ifdef ROCKY_HAS_IMGUI

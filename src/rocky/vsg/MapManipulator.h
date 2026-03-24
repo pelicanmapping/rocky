@@ -29,10 +29,7 @@ namespace ROCKY_NAMESPACE
     {
     public:
         //! Construct a new manipulator
-        MapManipulator(
-            vsg::ref_ptr<MapNode> mapNode,
-            vsg::ref_ptr<vsg::Window> window,
-            vsg::ref_ptr<vsg::Camera> camera,
+        MapManipulator(MapNode* mapNode, vsg::Window* window, vsg::Camera* camera,
             VSGContext context);
 
         virtual ~MapManipulator();

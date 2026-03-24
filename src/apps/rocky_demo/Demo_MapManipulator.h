@@ -49,26 +49,6 @@ auto Demo_MapManipulator = [](Application& app)
                 ImGuiLTable::Checkbox("Lock azimuth", &manip->settings.lockAzimuthWhilePanning);
                 ImGuiLTable::Checkbox("Zoom to mouse", &manip->settings.zoomToMouse);
 
-                auto camera = first_view->camera;
-                bool useOrtho = camera->projectionMatrix->is_compatible(typeid(vsg::Orthographic));
-                static float fovY_saved = 45.0f;
-
-                if (ImGuiLTable::Checkbox("Orthographic", &useOrtho))
-                {
-                    if (useOrtho)
-                    {
-                        auto persp = camera->projectionMatrix->cast<vsg::Perspective>();
-                        fovY_saved = persp->fieldOfViewY;
-                        camera->projectionMatrix = vsg::Orthographic::create(-1.0, 1.0, -1.0, 1.0, persp->nearDistance, persp->farDistance);
-                    }
-                    else
-                    {
-                        auto ortho = camera->projectionMatrix->cast<vsg::Orthographic>();
-                        double ar = (double)camera->getViewport().width / (double)camera->getViewport().height;
-                        camera->projectionMatrix = vsg::Perspective::create(fovY_saved, ar, ortho->nearDistance, ortho->farDistance);
-                    }
-                }
-
                 ImGuiLTable::End();
             }
 

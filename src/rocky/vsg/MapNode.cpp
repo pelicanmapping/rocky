@@ -109,7 +109,6 @@ MapNode::srs() const
 bool
 MapNode::update(VSGContext context)
 {
-    //ROCKY_HARD_ASSERT_STATUS(context.status());
     ROCKY_HARD_ASSERT(map != nullptr && terrainNode != nullptr);
 
     bool changes = false;

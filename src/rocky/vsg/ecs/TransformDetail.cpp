@@ -22,6 +22,8 @@ TransformDetail::update(vsg::RecordTraversal& record)
     // only if something has changed since last time:
     bool transform_changed = (view.revision != sync.revision);
 
+    auto& cached = view.cached;
+
     if (transform_changed)
     {
         view.revision = sync.revision;

@@ -20,6 +20,7 @@ namespace
     struct SimulatedPlatform
     {
         std::string name;
+        unsigned sequence = 0;
     };
 
     // Simple simulation system runinng in its own thread.
@@ -61,22 +62,23 @@ namespace
     {
         std::vector<entt::entity> entities;
 
-        auto renderEntity = [&image, &showPosition, context](WidgetInstance& i)
+        auto renderEntity = [&image, &showPosition, count, context](WidgetInstance& i)
             {
                 auto& platform = i.registry.get<SimulatedPlatform>(i.entity);
                 auto& xform = i.registry.get<Transform>(i.entity);
 
                 auto pointECEF = xform.position.transform(SRS::ECEF);
-
-                float red = ((int)i.entity % 3) == 0 ? 0.5f : 0.0f;
-                float green = ((int)i.entity % 3) == 1 ? 0.5f : 0.0f;
-                float blue = ((int)i.entity % 3) == 2 ? 0.5f : 0.0f;
+                
+                float red = 0.0f, green = 0.0f, blue = 0.0f;
+                if (platform.sequence < (count / 3)) blue = 0.5f;
+                else if (platform.sequence < (2 * count / 3)) green = 0.5f;
+                else red = 0.5f;
 
                 ImGui::SetCurrentContext(i.context);
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(1, 1));
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 7.0f);
                 ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(red, green, blue, 0.65f));
-                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 0.0f));
+                ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1, 1, 1, 1.0f));
 
                 ImGui::SetNextWindowPos(
                     ImVec2{ i.position.x - image.size().x/2, i.position.y - image.size().y / 2 },
@@ -153,6 +155,7 @@ namespace
 
             auto& platform = registry.emplace<SimulatedPlatform>(entity);
             platform.name = std::string("Sim " + std::to_string((std::int64_t)entity));
+            platform.sequence = i;
 
             double lat = -80.0 + rand_unit(mt) * 160.0;
             double lon = -180 + rand_unit(mt) * 360.0;
@@ -182,7 +185,7 @@ namespace
             // Decluttering control. The presence of this component will allow the entity
             // to participate in decluttering when it's enabled.
             auto& declutter = registry.emplace<Declutter>(entity);
-            declutter.priority = alt;
+            declutter.priority = (float)platform.sequence;
 
             entities.emplace_back(entity);
         }

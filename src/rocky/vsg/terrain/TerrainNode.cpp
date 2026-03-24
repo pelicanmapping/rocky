@@ -230,8 +230,6 @@ TerrainNode::reset(VSGContext context)
 
     ROCKY_HARD_ASSERT(this->referenceCount() > 0);
 
-    context->compile(vsg::ref_ptr<TerrainNode>(this));
-
     // cache the terrain layers so we can detect changes later:
     if (map)
     {

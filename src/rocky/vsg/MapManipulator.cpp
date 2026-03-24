@@ -353,9 +353,7 @@ MapManipulator::Settings::getAction(int event_type, int input_mask, int modkey_m
 
 /************************************************************************/
 
-MapManipulator::MapManipulator(vsg::ref_ptr<MapNode> mapNode, vsg::ref_ptr<vsg::Window> window,
-    vsg::ref_ptr<vsg::Camera> camera, VSGContext context) :
-
+MapManipulator::MapManipulator(MapNode* mapNode, vsg::Window* window, vsg::Camera* camera, VSGContext context) :
     Inherit(),
     _mapNode_weakptr(mapNode),
     _window_weakptr(window),

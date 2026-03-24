@@ -23,6 +23,16 @@ namespace ROCKY_NAMESPACE
         vsg::dmat4 mvp;       // modelview-projection matrix
         vsg::vec4 viewport;   // pixel-space viewport
         bool passingCull = true; // whether the transform passes frustum/horizon culling
+
+        // Cached global data
+        struct Cached
+        {
+            SRS world_srs;
+            const Ellipsoid* world_ellipsoid = nullptr;
+            SRSOperation pos_to_world;
+            ViewLocal<Horizon>* horizon = nullptr;
+        };
+        Cached cached;
     };
 
     //! Per-VSG-view TransformViewData.
@@ -42,16 +52,6 @@ namespace ROCKY_NAMESPACE
 
         // Per-view data, calculated during the record traversal
         ViewLocal<TransformViewDetail> views;
-
-        // Cached global data
-        struct Cached
-        {
-            SRS world_srs;
-            const Ellipsoid* world_ellipsoid = nullptr;
-            SRSOperation pos_to_world;
-            ViewLocal<Horizon>* horizon = nullptr;
-        };
-        Cached cached;
 
         //! Updates the per-view data for the given record traversal.
         //! Return true if any updates were made due to a dirty Transform.
