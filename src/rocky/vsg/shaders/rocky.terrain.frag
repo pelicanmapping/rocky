@@ -73,6 +73,13 @@ vec3 get_normal()
     vec2 duv_dy = dFdy(vary.elevation_uv);
 
     float det   = duv_dx.x * duv_dy.y - duv_dx.y * duv_dy.x;
+
+    // On skirt faces the elevation UVs are constant across the vertical
+    // extent, which makes the Jacobian singular. Fall back to the
+    // interpolated vertex normal in that case.
+    if (abs(det) == 0)
+        return normalize(vary.upView);
+
     vec3 dpos_du = (dp_dx * duv_dy.y - dp_dy * duv_dx.y) / det;
     vec3 dpos_dv = (dp_dy * duv_dx.x - dp_dx * duv_dy.x) / det;
 
