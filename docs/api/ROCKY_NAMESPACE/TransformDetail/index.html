@@ -421,18 +421,19 @@
 
 
 <h1 id="struct-transformdetail">struct TransformDetail</h1>
-<p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#41</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#43</em></p>
 <p>Per-VSG-view TransformViewData. This is an ECS component that the TransformSystem will automatically  attach to each entity that has a Transform component.</p>
 <h2 id="members">Members</h2>
 <p>public int sync</p>
+<p>public float devicePixelRatio</p>
 <p>public int views</p>
 <h2 id="functions">Functions</h2>
 <h3 id="transformdetail">TransformDetail</h3>
 <p><em>public void TransformDetail()</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#44</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#46</em></p>
 <p>Construct the object, and force the sychronization Transform to be dirty.</p>
 <h3 id="update">update</h3>
-<p><em>public _Bool update(int &amp; )</em></p>
+<p><em>public _Bool update(int &amp; , const int * )</em></p>
 <p>Updates the per-view data for the given record traversal. Return true if any updates were made due to a dirty Transform.</p>
 <h3 id="push">push</h3>
 <p><em>public void push(int &amp; )</em></p>
@@ -442,7 +443,7 @@
 <p>Pop a matrix recorded with push(...)</p>
 <h3 id="passingcull">passingCull</h3>
 <p><em>public _Bool passingCull(int )</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#72</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#77</em></p>
 <p>True if this transform is visible in the provided view state</p>
 <p>inline functions</p>
 
