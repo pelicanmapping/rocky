@@ -545,6 +545,11 @@ namespace
                     if (io.canceled())
                         return Failure_OperationCanceled;
 
+                    if (--max_attempts == 0)
+                    {
+                        return Failure(Failure::ServiceUnavailable, httplib::to_string(res.error()));
+                    }
+
                     std::this_thread::sleep_for(1s);
                 }
             }

@@ -28,12 +28,6 @@ namespace ROCKY_NAMESPACE
         URIResponse(const Content& in_content, std::chrono::duration<double> in_duration) :
             content(in_content), duration_s(in_duration) {
         }
-        //URIResponse(Content&& in_content, std::chrono::duration<double> in_duration) :
-        //    content(std::move(in_content)),
-        //    duration_s(in_duration)
-        //{
-        //    //nop
-        //}
     };
 
     /**

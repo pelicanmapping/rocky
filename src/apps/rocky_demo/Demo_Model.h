@@ -18,15 +18,13 @@ auto Demo_Model = [](Application& app)
     if (entity == entt::null)
     {
         auto [_, reg] = app.registry.write();
-#if 1
+
         // Create a simple VSG model using the Builder.
         vsg::Builder builder;
         vsg::GeometryInfo gi;
         gi.color = to_vsg(StockColor::Cyan);
-        auto node = builder.createSphere(gi, vsg::StateInfo{});
-#else
-        auto node = vsg::read_cast<vsg::Node>("H:/devel/vsg/vsgexamples/repo/data/models/teapot.vsgt");
-#endif
+        auto node = builder.createBox(gi, vsg::StateInfo{});
+
         app.vsgcontext->compile(node);
 
         vsg::ComputeBounds cb;
