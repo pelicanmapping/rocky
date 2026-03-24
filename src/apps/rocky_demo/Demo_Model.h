@@ -101,7 +101,6 @@ auto Demo_Model = [](Application& app)
         {
             transform.localMatrix = glm::mat4_cast(rot) * glm::scale(glm::dmat4(1), glm::dvec3(scale));
             transform.dirty(reg);
-            pt->renderSize = scale;
         }
 
         if (ImGuiLTable::Checkbox("Pixel scale", &autoScale))

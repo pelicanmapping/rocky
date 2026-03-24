@@ -19,14 +19,17 @@ namespace ROCKY_NAMESPACE
     class /*ROCKY_EXPORT*/ PixelScaleTransform : public vsg::Inherit<vsg::Transform, PixelScaleTransform>
     {
     public:
-        //! Whether to undo any rotation found in the origial model view matrix;
-        //! This will effectively billboard the geometry.
+        //! Whether this transform is active
         bool enabled = true;
-        bool unrotate = false;
-        bool snap = false;
-        float unitSize = 1.0f;
-        float renderSize = 1.0f;
 
+        //! Whether to undo any rotation found in the original model view matrix;
+        //! This will effectively billboard the geometry.
+        bool unrotate = false;
+
+        //! Whether to "snap" to the nearest full pixel
+        bool snap = false;
+
+    public:
         void accept(vsg::RecordTraversal& rt) const override
         {
             if (enabled)
