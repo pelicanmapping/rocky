@@ -181,13 +181,18 @@ GeoImage::read(const GeoPoint& p, int layer) const
     double u = (p.x - _extent.xmin()) / _extent.width();
     double v = (p.y - _extent.ymin()) / _extent.height();
 
-    // out of bounds?
-    if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
+    // out of bounds? Use a small epsilon to tolerate floating-point
+    // precision at exact tile boundaries during cross-profile reprojection.
+    constexpr double eps = 1e-6;
+    if (u < -eps || u > 1.0 + eps || v < -eps || v > 1.0 + eps)
     {
         return ResultFail;
     }
 
-    return _image->read_bilinear((float)u, (float)v, layer);
+    return _image->read_bilinear(
+        (float)std::clamp(u, 0.0, 1.0),
+        (float)std::clamp(v, 0.0, 1.0),
+        layer);
 }
 
 GeoImage::ReadResult
@@ -198,13 +203,18 @@ GeoImage::read(double x, double y, int layer) const
     double u = (x - _extent.xmin()) / _extent.width();
     double v = (y - _extent.ymin()) / _extent.height();
 
-    // out of bounds?
-    if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
+    // out of bounds? Use a small epsilon to tolerate floating-point
+    // precision at exact tile boundaries during cross-profile reprojection.
+    constexpr double eps = 1e-6;
+    if (u < -eps || u > 1.0 + eps || v < -eps || v > 1.0 + eps)
     {
         return ResultFail;
     }
 
-    return _image->read_bilinear((float)u, (float)v, layer);
+    return _image->read_bilinear(
+        (float)std::clamp(u, 0.0, 1.0),
+        (float)std::clamp(v, 0.0, 1.0),
+        layer);
 }
 
 GeoImage::ReadResult

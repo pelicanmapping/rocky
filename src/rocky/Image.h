@@ -296,7 +296,7 @@ namespace ROCKY_NAMESPACE
     {
         _layouts[pixelFormat()].write(
             pixel,
-            _data + (width() * height() * layer + height() * t + s) * _layouts[pixelFormat()].bytes_per_pixel,
+            _data + (width() * height() * layer + width() * t + s) * _layouts[pixelFormat()].bytes_per_pixel,
             _layouts[pixelFormat()].num_components);
     }
 
