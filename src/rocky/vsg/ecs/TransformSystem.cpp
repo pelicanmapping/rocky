@@ -43,11 +43,12 @@ TransformSystem::update(VSGContext context)
 {
     auto [lock, registry] = _registry.read();
 
-    registry.view<Transform, TransformDetail>().each([](auto& transform, auto& detail)
+    registry.view<Transform, TransformDetail>().each([context](auto& transform, auto& detail)
         {
             if (transform.revision != detail.sync.revision)
             {
                 detail.sync = transform;
+                detail.devicePixelRatio = context->devicePixelRatio();
             }
         });
 }
@@ -59,9 +60,14 @@ TransformSystem::traverse(vsg::RecordTraversal& record) const
 
     bool something_changed = false;
 
-    registry.view<TransformDetail>().each([&](auto& transform_detail)
+    registry.view<TransformDetail, PixelScale>().each([&](auto& transform_detail, auto& pixel_scale)
         {
-            something_changed = transform_detail.update(record) || something_changed;
+            something_changed = transform_detail.update(record, &pixel_scale) || something_changed;
+        });
+
+    registry.view<TransformDetail>(entt::exclude<PixelScale>).each([&](auto& transform_detail)
+        {
+            something_changed = transform_detail.update(record, nullptr) || something_changed;
         });
 
     if (something_changed && onChanges)

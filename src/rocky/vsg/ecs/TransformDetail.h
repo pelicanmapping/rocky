@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/ecs/Transform.h>
+#include <rocky/ecs/PixelScale.h>
 #include <rocky/Rendering.h>
 #include <rocky/SRS.h>
 #include <rocky/Ellipsoid.h>
@@ -17,7 +18,8 @@ namespace ROCKY_NAMESPACE
     struct TransformViewDetail
     {
         int revision = -1;    // revision of this data, for syncing
-        vsg::dmat4 model;     // model matrix
+        vsg::dmat4 model;     // model matrix (possibly adjusted by dynamic scale)
+        vsg::dmat4 baseModel; // model matrix before dynamic scale adjustment
         vsg::dmat4 proj;      // projection matrix
         vsg::dmat4 modelview; // modelview matrix
         vsg::dmat4 mvp;       // modelview-projection matrix
@@ -50,12 +52,15 @@ namespace ROCKY_NAMESPACE
         // safely and frame-accurately perform asynchronous Transform updates.
         Transform sync;
 
+        //! Device pixel ratio as set by the TransformSystem; used for dynamic scaling
+        float devicePixelRatio = 1.0;
+
         // Per-view data, calculated during the record traversal
         ViewLocal<TransformViewDetail> views;
 
         //! Updates the per-view data for the given record traversal.
         //! Return true if any updates were made due to a dirty Transform.
-        bool update(vsg::RecordTraversal&);
+        bool update(vsg::RecordTraversal&, const PixelScale*);
 
         //! Push the matrix associated with this transform onto the record stack
         void push(vsg::RecordTraversal&) const;

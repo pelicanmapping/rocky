@@ -1,15 +1,15 @@
 /**
  * rocky c++
- * Copyright 2025 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "TransformDetail.h"
-#include "../VSGUtils.h"
+#include <rocky/vsg/VSGUtils.h>
 
 using namespace ROCKY_NAMESPACE;
 
 bool
-TransformDetail::update(vsg::RecordTraversal& record)
+TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelScale)
 {
     auto viewID = record.getCommandBuffer()->viewID;
     auto& view = views[viewID];
@@ -58,6 +58,8 @@ TransformDetail::update(vsg::RecordTraversal& record)
                     ROCKY_FAST_MAT4_MULT(temp, view.model, sync.localMatrix);
                     view.model = to_vsg(temp);
                 }
+
+                view.baseModel = view.model;
             }
         }
 
@@ -67,15 +69,60 @@ TransformDetail::update(vsg::RecordTraversal& record)
             // so we don't have to look it up every frame
             record.getValue("rocky.horizon", cached.horizon);
         }
+
+        // reset
+        view.model = view.baseModel;
     }
 
     view.proj = state->projectionMatrixStack.top();
+    view.viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
     auto& mvm = state->modelviewMatrixStack.top();
+
+    // Extract the model matrix's inherent scale (from localMatrix, etc.)
+    auto model_scale = vsg::length(vsg::dvec3(view.baseModel[0][0], view.baseModel[0][1], view.baseModel[0][2]));
+    auto scaled_radius = model_scale * sync.radius;
+    auto culling_radius = scaled_radius;
+
+    if (pixelScale && pixelScale->enabled)
+    {
+        // Start from the unscaled base model so we don't compound scale adjustments.
+        if (!transform_changed) // dont' do it twice
+            view.model = view.baseModel;
+
+        double ppu = 0.0; // pixels per world unit at the entity's location
+
+        if (is_perspective_projection_matrix(view.proj))
+        {
+            // Entity center in view space
+            auto eye_pos = mvm * view.model[3];
+            double dist = -eye_pos.z / eye_pos.w;
+            if (dist > 0.0)
+                ppu = std::abs(view.proj[1][1]) * view.viewport[3] * 0.5 / dist;
+        }
+        else
+        {
+            // Ortho: pixels per unit is independent of distance
+            ppu = std::abs(view.proj[1][1]) * view.viewport[3] * 0.5;
+        }
+
+        // account for system dpr
+        ppu *= devicePixelRatio;
+
+        //double radius = std::max(sync.radius, 0.5);
+        if (ppu > 0.0 && model_scale > 0.0)
+        {
+            double pixelSize = std::max(scaled_radius, 0.5) * ppu;
+            double clamped = std::clamp(pixelSize, (double)pixelScale->minPixels, (double)pixelScale->maxPixels);
+            if (clamped != pixelSize)
+            {
+                auto f = clamped / pixelSize;
+                view.model = view.model * vsg::scale(f, f, f);
+                culling_radius *= f;
+            }
+        }
+    }
     ROCKY_FAST_MAT4_MULT(view.modelview, mvm, view.model);
     ROCKY_FAST_MAT4_MULT(view.mvp, view.proj, view.modelview);
-
-    view.viewport = (*state->_commandBuffer->viewDependentState->viewportData)[0];
-
 
     view.passingCull = true;
 
@@ -87,7 +134,7 @@ TransformDetail::update(vsg::RecordTraversal& record)
         double tx = 1.0, ty = 1.0, tz = 1.0;
         if (sync.radius > 0.0)
         {
-            auto rv = view.modelview[3] + vsg::dvec4(sync.radius, sync.radius, 0, 0);
+            auto rv = view.modelview[3] + vsg::dvec4(culling_radius, culling_radius, 0, 0);
             auto rc = (view.proj * rv);
 
             tx += std::abs((rc.x / rc.w) - clip.x);
@@ -104,7 +151,7 @@ TransformDetail::update(vsg::RecordTraversal& record)
     if (view.passingCull && sync.horizonCulled && cached.horizon && cached.world_srs.isGeocentric())
     {
         auto& horizon = *cached.horizon;
-        if (!horizon[viewID].isVisible(view.model[3][0], view.model[3][1], view.model[3][2], sync.radius))
+        if (!horizon[viewID].isVisible(view.model[3][0], view.model[3][1], view.model[3][2], culling_radius))
         {
             view.passingCull = false;
         }

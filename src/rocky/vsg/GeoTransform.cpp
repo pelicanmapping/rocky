@@ -15,7 +15,7 @@ GeoTransform::traverse(vsg::RecordTraversal& record) const
         _transformDetail.sync = *this;
     }
 
-    _transformDetail.update(record);
+    _transformDetail.update(record, nullptr);
 
     RenderingState rs{
         record.getCommandBuffer()->viewID,

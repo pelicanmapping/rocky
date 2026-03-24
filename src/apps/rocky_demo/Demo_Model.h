@@ -13,7 +13,6 @@ auto Demo_Model = [](Application& app)
     static entt::entity entity = entt::null;
     static double scale = 50000.0;
     static bool autoScale = false;
-    static vsg::ref_ptr<PixelScaleTransform> pt;
 
     if (entity == entt::null)
     {
@@ -36,17 +35,19 @@ auto Demo_Model = [](Application& app)
 
         // The model component; we just set the node directly.
         auto& model = reg.emplace<NodeGraph>(entity);
-        pt = PixelScaleTransform::create();
-        pt->enabled = false;
-        pt->addChild(node);
-        model.node = pt;
+        model.node = node;
 
         // A transform component to place and move it on the map
         auto& transform = reg.emplace<Transform>(entity);
         transform.position = GeoPoint(SRS::WGS84, 50, 0, 0);
         transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale));
         transform.topocentric = true;
-        transform.radius = radius * scale;
+        transform.radius = radius;
+
+        // A DynamicScale component
+        auto& ps = reg.emplace<PixelScale>(entity);
+        ps.enabled = false;
+        ps.minPixels = 16.0f;
 
         app.vsgcontext->requestFrame();
     }
@@ -101,10 +102,16 @@ auto Demo_Model = [](Application& app)
             transform.dirty(reg);
         }
 
-        if (ImGuiLTable::Checkbox("Pixel scale", &autoScale))
+        auto& ps = reg.get<PixelScale>(entity);
+        if (ImGuiLTable::Checkbox("Pixel scale", &ps.enabled))
         {
-            pt->enabled = autoScale;
             transform.dirty(reg);
+        }
+
+        if (ps.enabled)
+        {
+            ImGuiLTable::SliderFloat("  Min pixels", &ps.minPixels, 0.0f, 256.0f);
+            ImGuiLTable::SliderFloat("  Max pixels", &ps.maxPixels, 0.0f, 4096.0f);
         }
 
         ImGuiLTable::End();
