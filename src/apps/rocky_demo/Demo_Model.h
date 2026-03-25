@@ -102,6 +102,9 @@ auto Demo_Model = [](Application& app)
             transform.dirty(reg);
         }
 
+        // Test for PixelScale component.
+        // NB: if the pixel size looks too big, it's probably because (a) it's an approximation, and/or
+        // (b) the device pixel ratio is not being set by the application.
         auto& ps = reg.get<PixelScale>(entity);
         if (ImGuiLTable::Checkbox("Pixel scale", &ps.enabled))
         {

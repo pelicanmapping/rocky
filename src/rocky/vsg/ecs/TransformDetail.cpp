@@ -108,10 +108,9 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
         // account for system dpr
         ppu *= devicePixelRatio;
 
-        //double radius = std::max(sync.radius, 0.5);
         if (ppu > 0.0 && model_scale > 0.0)
         {
-            double pixelSize = std::max(scaled_radius, 0.5) * ppu;
+            double pixelSize = 2.0 * std::max(scaled_radius, 0.5) * ppu;
             double clamped = std::clamp(pixelSize, (double)pixelScale->minPixels, (double)pixelScale->maxPixels);
             if (clamped != pixelSize)
             {
