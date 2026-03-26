@@ -355,6 +355,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#reset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#update" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -432,6 +443,9 @@
 <p><em>public void TransformDetail()</em></p>
 <p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#46</em></p>
 <p>Construct the object, and force the sychronization Transform to be dirty.</p>
+<h3 id="reset">reset</h3>
+<p><em>public void reset(int viewID)</em></p>
+<p>Reset any cached data fro the given view</p>
 <h3 id="update">update</h3>
 <p><em>public _Bool update(int &amp; , const int * )</em></p>
 <p>Updates the per-view data for the given record traversal. Return true if any updates were made due to a dirty Transform.</p>
@@ -443,7 +457,7 @@
 <p>Pop a matrix recorded with push(...)</p>
 <h3 id="passingcull">passingCull</h3>
 <p><em>public _Bool passingCull(int )</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#77</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#80</em></p>
 <p>True if this transform is visible in the provided view state</p>
 <p>inline functions</p>
 
