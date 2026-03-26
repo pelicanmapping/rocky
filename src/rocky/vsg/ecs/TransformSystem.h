@@ -7,6 +7,7 @@
 
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/ecs/System.h>
+#include <rocky/SRS.h>
 #include <rocky/Callbacks.h>
 
 namespace ROCKY_NAMESPACE
@@ -27,5 +28,14 @@ namespace ROCKY_NAMESPACE
 
         //! Callback to invoke if the update/traverse resulted in any changes
         Callback<> onChanges;
+
+    private:
+        struct ViewDetail
+        {
+            SRS worldSRS;
+        };
+
+        // Per-view data, calculated during the record traversal
+        mutable ViewLocal<ViewDetail> views;
     };
 }

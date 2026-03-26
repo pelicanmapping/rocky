@@ -68,7 +68,7 @@ auto Demo_Decluttering = [](Application& app)
         static const char* sorting[] = { "Priority", "Distance" };
         ImGuiLTable::Combo("Sort by", (int*)&declutter->sorting, sorting, 2);
 
-        ImGuiLTable::SliderFloat("Buffer", &declutter->bufferPixels, 0.0f, 50.0f, "%.0f px");
+        ImGuiLTable::SliderFloat("Buffer", &declutter->bufferPixels, -25.0f, 50.0f, "%.0f px");
         ImGuiLTable::SliderFloat("Frequency", &updateHertz, 1.0f, 30.0f, "%.0f hz");
 
         if (declutteringEnabled)

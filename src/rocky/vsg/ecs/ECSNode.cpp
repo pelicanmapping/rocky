@@ -77,7 +77,7 @@ SimpleSystemNodeBase::update(VSGContext vsgcontext)
 ECSNode::ECSNode(Registry& reg) :
     registry(reg)
 {
-    //factory.start();
+    // nop
 }
 
 ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
@@ -90,7 +90,6 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
         add(MeshSystemNode::create(registry));
         add(LineSystemNode::create(registry));
         add(PointSystemNode::create(registry));
-        //add(IconSystemNode::create(registry));
         add(LabelSystem::create(registry));
 #ifdef ROCKY_HAS_IMGUI
         add(WidgetSystemNode::create(registry));
@@ -100,7 +99,7 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
 
 ECSNode::~ECSNode()
 {
-    //factory.quit();
+    // nop
 }
 
 void

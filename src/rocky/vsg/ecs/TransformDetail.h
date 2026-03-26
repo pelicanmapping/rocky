@@ -34,7 +34,7 @@ namespace ROCKY_NAMESPACE
             SRSOperation pos_to_world;
             ViewLocal<Horizon>* horizon = nullptr;
         };
-        Cached cached;
+        Cached cache;
     };
 
     //! Per-VSG-view TransformViewData.
@@ -57,6 +57,9 @@ namespace ROCKY_NAMESPACE
 
         // Per-view data, calculated during the record traversal
         ViewLocal<TransformViewDetail> views;
+
+        //! Reset any cached data fro the given view
+        void reset(std::uint32_t viewID);
 
         //! Updates the per-view data for the given record traversal.
         //! Return true if any updates were made due to a dirty Transform.

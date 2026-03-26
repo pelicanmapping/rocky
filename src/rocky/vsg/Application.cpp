@@ -217,24 +217,14 @@ Application::ctor(int& argc, char** argv)
     }
 
     // Create the ECS system manager and all its default systems.
-    systemsNode = ECSNode::create(registry, false);
+    systemsNode = ECSNode::create(registry, true);
 
-    // Responds to changes in Transform components by updating the scene graph
-    auto xform_system = TransformSystem::create(registry);
-    _subs += xform_system->onChanges([&]() { vsgcontext->requestFrame(); });
-    systemsNode->add(xform_system);
-
-    // Rendering components:
-    systemsNode->add(NodeSystemNode::create(registry));
-    systemsNode->add(MeshSystemNode::create(registry));
-    systemsNode->add(LineSystemNode::create(registry));
-    systemsNode->add(PointSystemNode::create(registry));
-    
-    systemsNode->add(LabelSystem::create(registry));
-
-#ifdef ROCKY_HAS_IMGUI
-    systemsNode->add(WidgetSystemNode::create(registry));
-#endif
+    auto xformSystem = systemsNode->get<TransformSystem>();
+    if (xformSystem)
+    {
+        // Responds to changes in Transform components by updating the scene graph
+        _subscriptions += xformSystem->onChanges([&]() { vsgcontext->requestFrame(); });
+    }
 
     mainScene->addChild(systemsNode);
 }
@@ -339,7 +329,7 @@ Application::realize()
         setupViewer(viewer);
 
         // Callback that will update the ECS systems each frame
-        _subs += vsgcontext->onUpdate([&](VSGContext vsgcontext)
+        _subscriptions += vsgcontext->onUpdate([&](VSGContext vsgcontext)
             {
                 // ECS updates - rendering or modifying entities
                 if (systemsNode)
@@ -546,7 +536,7 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
     handlers.insert(handlers.begin(), send);
 
     // request a frame when the sender handles an ImGui event:
-    _subs += send->onEvent([&](const vsg::UIEvent& e)
+    _subscriptions += send->onEvent([&](const vsg::UIEvent& e)
         {
             if (e.cast<vsg::FrameEvent>()) return;
             vsgcontext->requestFrame();
@@ -555,7 +545,7 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
     if (installAutomaticIdleFunctions)
     {
         // when the user adds a new GUI node, we need to add it to the idle functions
-        _subs += group->onNodeAdded([&, ic(group->imguiContext())](vsg::ref_ptr<ImGuiContextNode> node)
+        _subscriptions += group->onNodeAdded([&, ic(group->imguiContext())](vsg::ref_ptr<ImGuiContextNode> node)
             {
                 // add the node to the idle functions so it can render
                 vsg::observer_ptr<ImGuiContextNode> node_weak(node);

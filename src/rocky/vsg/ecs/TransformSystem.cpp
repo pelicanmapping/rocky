@@ -58,19 +58,38 @@ TransformSystem::traverse(vsg::RecordTraversal& record) const
 {
     auto [lock, registry] = _registry.read();
 
-    bool something_changed = false;
+    // detect a profile/srs change so we can tell TransforDetail's to clear caches.
+    bool srs_changed = false;
+    auto viewID = record.getCommandBuffer()->viewID;
+    auto& view = views[viewID];
+    SRS worldSRS;
+    if (record.getValue("rocky.worldsrs", worldSRS) && worldSRS != view.worldSRS)
+    {
+        view.worldSRS = worldSRS;
+        srs_changed = true;
+    }
+
+    bool at_least_one_transform_changed = false;
 
     registry.view<TransformDetail, PixelScale>().each([&](auto& transform_detail, auto& pixel_scale)
         {
-            something_changed = transform_detail.update(record, &pixel_scale) || something_changed;
+            if (srs_changed)
+                transform_detail.reset(viewID);
+
+            at_least_one_transform_changed = transform_detail.update(record, &pixel_scale)
+                || at_least_one_transform_changed;
         });
 
     registry.view<TransformDetail>(entt::exclude<PixelScale>).each([&](auto& transform_detail)
         {
-            something_changed = transform_detail.update(record, nullptr) || something_changed;
+            if (srs_changed)
+                transform_detail.reset(viewID);
+
+            at_least_one_transform_changed = transform_detail.update(record, nullptr)
+                || at_least_one_transform_changed;
         });
 
-    if (something_changed && onChanges)
+    if (at_least_one_transform_changed && onChanges)
     {
         onChanges.fire();
     }

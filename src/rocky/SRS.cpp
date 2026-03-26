@@ -8,7 +8,7 @@
 #include "Context.h"
 
 #include <proj.h>
-#include <map>
+#include <unordered_map>
 
 #define LC "[SRS] "
 
@@ -82,7 +82,7 @@ namespace
     };
 
     //! SRS data factory and PROJ main interface
-    struct SRSFactory : public std::map<std::string, SRSEntry>
+    struct SRSFactory : public std::unordered_map<std::string, SRSEntry>
     {
         SRSFactory() = default;
 

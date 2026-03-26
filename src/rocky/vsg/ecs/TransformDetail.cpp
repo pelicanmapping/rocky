@@ -8,6 +8,13 @@
 
 using namespace ROCKY_NAMESPACE;
 
+void
+TransformDetail::reset(std::uint32_t viewID)
+{
+    views[viewID].revision = -1;
+    views[viewID].cache = {};
+}
+
 bool
 TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelScale)
 {
@@ -22,30 +29,30 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
     // only if something has changed since last time:
     bool transform_changed = (view.revision != sync.revision);
 
-    auto& cached = view.cached;
+    auto& cache = view.cache;
 
     if (transform_changed)
     {
         view.revision = sync.revision;
 
         // first time through, cache information about the world SRS and ellipsoid for this view.
-        if (!cached.pos_to_world)
+        if (!cache.pos_to_world)
         {
-            if (record.getValue("rocky.worldsrs", cached.world_srs))
+            if (record.getValue("rocky.worldsrs", cache.world_srs))
             {
-                cached.pos_to_world = sync.position.srs.to(cached.world_srs);
-                cached.world_ellipsoid = &cached.world_srs.ellipsoid(); // for speed :)
+                cache.pos_to_world = sync.position.srs.to(cache.world_srs);
+                cache.world_ellipsoid = &cache.world_srs.ellipsoid();
             }
         }
 
-        if (cached.pos_to_world)
+        if (cache.pos_to_world)
         {
             glm::dvec3 worldpos;
-            if (cached.pos_to_world(sync.position, worldpos))
+            if (cache.pos_to_world(sync.position, worldpos))
             {
-                if (sync.topocentric && cached.world_srs.isGeocentric())
+                if (sync.topocentric && cache.world_srs.isGeocentric())
                 {
-                    view.model = to_vsg(cached.world_ellipsoid->topocentricToGeocentricMatrix(worldpos));
+                    view.model = to_vsg(cache.world_ellipsoid->topocentricToGeocentricMatrix(worldpos));
                 }
                 else
                 {
@@ -63,11 +70,11 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
             }
         }
 
-        if (!cached.horizon)
+        if (!cache.horizon)
         {
             // cache this view's horizon pointer in the local view data
             // so we don't have to look it up every frame
-            record.getValue("rocky.horizon", cached.horizon);
+            record.getValue("rocky.horizon", cache.horizon);
         }
 
         // reset
@@ -147,9 +154,9 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
     }
 
     // horizon cull, if active (geocentric only)
-    if (view.passingCull && sync.horizonCulled && cached.horizon && cached.world_srs.isGeocentric())
+    if (view.passingCull && sync.horizonCulled && cache.horizon && cache.world_srs.isGeocentric())
     {
-        auto& horizon = *cached.horizon;
+        auto& horizon = *cache.horizon;
         if (!horizon[viewID].isVisible(view.model[3][0], view.model[3][1], view.model[3][2], culling_radius))
         {
             view.passingCull = false;

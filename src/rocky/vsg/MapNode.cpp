@@ -147,10 +147,7 @@ MapNode::traverse(vsg::RecordTraversal& record) const
 
     if (srs().isGeocentric())
     {
-        if (!horizon)
-        {
-            horizon.setEllipsoid(srs().ellipsoid());
-        }
+        horizon.setEllipsoid(srs().ellipsoid());
 
         auto eye = vsg::inverse(record.getState()->modelviewMatrixStack.top()) * vsg::dvec3(0, 0, 0);
         bool is_ortho = record.getState()->projectionMatrixStack.top()(3, 3) != 0.0;

@@ -101,6 +101,9 @@ namespace ROCKY_NAMESPACE
             systems.emplace_back(system.get());
         }
 
+        //! Gets a pointer to the first typed system found, or null if not found.
+        template<typename T> T* get();
+
         //! Initialize of all connected system nodes. This should be invoked
         //! any time a new viewer is created.
         //! @param runtime The runtime object to pass to the systems
@@ -114,5 +117,16 @@ namespace ROCKY_NAMESPACE
         std::vector<std::shared_ptr<System>> non_node_systems;
         Registry registry;
     };
+
+    // inline 
+    template<typename T> T* ECSNode::get()
+    {
+        for (auto& system : systems)
+        {
+            if (auto cast = dynamic_cast<T*>(system))
+                return cast;
+        }
+        return nullptr;
+    }
 
 }

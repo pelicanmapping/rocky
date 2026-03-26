@@ -164,7 +164,7 @@ namespace ROCKY_NAMESPACE
         int _framesSinceLastRender = 0; // for non-continuous rendering
         bool _lastFrameOK = true;
         int _framesUntilStopRender = 2; // for non-continuous rendering
-        CallbackSubs _subs;
+        CallbackSubs _subscriptions;
 
         void ctor(int& argc, char** argv);
 
