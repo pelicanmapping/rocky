@@ -445,7 +445,7 @@
 <p>Construct the object, and force the sychronization Transform to be dirty.</p>
 <h3 id="reset">reset</h3>
 <p><em>public void reset(int viewID)</em></p>
-<p>Reset any cached data fro the given view</p>
+<p>Reset any cached data for the given view so the object can recalibrate itself after an SRS change (e.g.)</p>
 <h3 id="update">update</h3>
 <p><em>public _Bool update(int &amp; , const int * )</em></p>
 <p>Updates the per-view data for the given record traversal. Return true if any updates were made due to a dirty Transform.</p>
@@ -457,7 +457,7 @@
 <p>Pop a matrix recorded with push(...)</p>
 <h3 id="passingcull">passingCull</h3>
 <p><em>public _Bool passingCull(int )</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#80</em></p>
+<p><em>Defined at src/rocky/vsg/ecs/TransformDetail.h#81</em></p>
 <p>True if this transform is visible in the provided view state</p>
 <p>inline functions</p>
 
