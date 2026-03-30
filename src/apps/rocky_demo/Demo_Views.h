@@ -147,23 +147,32 @@ auto Demo_Views = [](Application& app)
                 if (ImGui::Button("Add a mini-map inset"))
                 {
                     // First make a camera for the new view, placed at a random location.
-                    const double nearFarRatio = 0.00001;
-                    const double vfov = 30.0;
-                    const int width = 320, height = 200;
-                    double R = app.mapNode->srs().ellipsoid().semiMajorAxis();
+                    const int width = 480, height = 480;
                     int win_width = window->extent2D().width, win_height = window->extent2D().height;
-                    int x = std::max(0, (next_int(rng) % win_width) - width);
-                    int y = std::max(0, (next_int(rng) % win_height) - height);
-                    double ar = (double)width / (double)height;
+                    int x = win_width - width;
+                    int y = 0;
 
+#if 1
                     auto camera = vsg::Camera::create(
                         vsg::Orthographic::create(-1, 1, -1, 1, -1e10, 1e10),
                         vsg::LookAt::create(),
                         vsg::ViewportState::create(x, y, width, height));
+#else
+                    // First make a camera for the new view, placed at a random location.
+                    const double nearFarRatio = 0.00001;
+                    const double vfov = 30.0;
+                    double R = app.mapNode->srs().ellipsoid().semiMajorAxis();
+                    double ar = (double)width / (double)height;
+
+                    auto camera = vsg::Camera::create(
+                        vsg::Perspective::create(vfov, ar, R * nearFarRatio, R * 20.0),
+                        vsg::LookAt::create(),
+                        vsg::ViewportState::create(x, y, width, height));
+#endif
 
                     auto new_mapNode = MapNode::create(app.vsgcontext);
-                    new_mapNode->profile = Profile("spherical-mercator");
                     new_mapNode->map = app.mapNode->map;
+                    new_mapNode->profile = Profile("spherical-mercator");
 
                     auto group = vsg::Group::create();
                     group->addChild(new_mapNode);
@@ -207,9 +216,9 @@ auto Demo_Views = [](Application& app)
                             app.display.addViewToWindow(newView, window, true);
                             auto rg = app.display.renderGraph(newView);
                             auto& color = rg->clearValues[0].color.float32;
-                            color[0] = float(next_int(rng) % 255) / 255.0f;
-                            color[1] = float(next_int(rng) % 255) / 255.0f;
-                            color[2] = float(next_int(rng) % 255) / 255.0f;
+                            color[0] = float(next_int(rng) % 64) / 255.0f;
+                            color[1] = float(next_int(rng) % 64) / 255.0f;
+                            color[2] = float(next_int(rng) % 64) / 255.0f;
                             app.display.refreshView(newView);
                         };
 

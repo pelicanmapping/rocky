@@ -14,10 +14,6 @@ using namespace ROCKY_NAMESPACE::detail;
 NodeSystemNode::NodeSystemNode(Registry& registry) :
     Inherit(registry)
 {
-    // temporary transform used by the visitor traversal(s)
-    _tempMT = vsg::MatrixTransform::create();
-    _tempMT->children.resize(1);
-
     registry.write([&](entt::registry& r)
         {
             // install the ENTT callbacks for managing internal data:
@@ -61,24 +57,6 @@ NodeSystemNode::initialize(VSGContext vsgcontext)
 }
 
 void
-NodeSystemNode::compile(vsg::Context& compileContext)
-{
-    if (status.failed()) return;
-
-    // called during a compile traversal .. e.g., then adding a new View/RenderGraph.
-    _registry.read([&](entt::registry& reg)
-        {
-            reg.view<NodeGraph>().each([&](auto& component)
-                {
-                    // nop
-                });
-        });
-
-    Inherit::compile(compileContext);
-}
-
-
-void
 NodeSystemNode::traverse(vsg::RecordTraversal& record) const
 {
     if (status.failed()) return;
@@ -92,23 +70,23 @@ NodeSystemNode::traverse(vsg::RecordTraversal& record) const
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
-            auto view = reg.view<NodeGraph, ActiveState, Visibility>();
+            auto iter = reg.view<NodeGraph, ActiveState, Visibility>();
 
-            view.each([&](auto entity, auto& comp, auto& active, auto& visibility)
+            iter.each([&](auto entity, auto& ng, auto& active, auto& visibility)
                 {
-                    if (comp.node && visible(visibility, rs))
+                    if (ng.node && visible(visibility, rs))
                     {
                         auto* xformDetail = reg.try_get<TransformDetail>(entity);
                         if (xformDetail)
                         {
                             if (xformDetail->views[rs.viewID].passingCull)
                             {
-                                _drawList.emplace_back(comp.node, xformDetail);
+                                _drawList.emplace_back(ng.node, xformDetail);
                             }
                         }
                         else
                         {
-                            _drawList.emplace_back(comp.node, nullptr);
+                            _drawList.emplace_back(ng.node, nullptr);
                         }
                     }
                 });
@@ -134,19 +112,38 @@ NodeSystemNode::traverse(vsg::RecordTraversal& record) const
 }
 
 void
-NodeSystemNode::traverse(vsg::ConstVisitor& v) const
+NodeSystemNode::traverse(vsg::Visitor& visitor)
+{
+    // Supports the CompileTraversal, for one, which needs to compile the node
+    // for any new View that appears
+    _registry.read([&](entt::registry& reg)
+        {
+            reg.view<NodeGraph>().each([&](auto& ng)
+                {
+                    if (ng.node)
+                    {
+                        ng.node->accept(visitor);
+                    }
+                });
+        });
+
+    Inherit::traverse(visitor);
+}
+
+void
+NodeSystemNode::traverse(vsg::ConstVisitor& visitor) const
 {
     if (status.failed()) return;
 
     // it might be an ECS visitor, in which case we'll communicate the entity being visited
-    auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&v);
+    auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&visitor);
     std::uint32_t viewID = ecsVisitor ? ecsVisitor->viewID : 0;
 
     _registry.read([&](entt::registry& reg)
         {
-            auto view = reg.view<NodeGraph, ActiveState>();
+            auto iter = reg.view<NodeGraph, ActiveState>();
 
-            view.each([&](auto entity, auto& comp, auto& active)
+            iter.each([&](auto entity, auto& comp, auto& active)
                 {
                     if (comp.node)
                     {
@@ -155,35 +152,38 @@ NodeSystemNode::traverse(vsg::ConstVisitor& v) const
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
                         if (transformDetail)
-                        {
+                        {                            
                             _tempMT->matrix = transformDetail->views[viewID].model;
                             _tempMT->children[0] = comp.node;
-                            _tempMT->accept(v);
+                            _tempMT->accept(visitor);
                         }
                         else
                         {
-                            comp.node->accept(v);
+                            comp.node->accept(visitor);
                         }
                     }
                 });
         });
 
-    Inherit::traverse(v);
+    Inherit::traverse(visitor);
+}
+
+void
+NodeSystemNode::compile(vsg::Context& cc)
+{
+    //_registry.read([&](entt::registry& reg)
+    //    {
+    //        reg.view<NodeGraph>().each([&](auto& component)
+    //            {
+    //            });
+    //    });
+    Inherit::compile(cc);
 }
 
 void
 NodeSystemNode::update(VSGContext vsgcontext)
 {
     if (status.failed()) return;
-
-#if 0
-    // start by disposing of any old static objects
-    if (!s_toDispose->children.empty())
-    {
-        dispose(s_toDispose);
-        s_toDispose = vsg::Objects::create();
-    }
-#endif
 
     // process any objects marked dirty
     _registry.read([&](entt::registry& reg)

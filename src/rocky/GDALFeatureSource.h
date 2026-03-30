@@ -50,6 +50,9 @@ namespace ROCKY_NAMESPACE
         //! Number of features, or -1 if the count isn't available
         int featureCount() const override;
 
+        //! Metadata
+        inline const Metadata& metadata() const;
+
         // destructor
         virtual ~GDALFeatureSource();
 
@@ -87,6 +90,10 @@ namespace ROCKY_NAMESPACE
             friend class GDALFeatureSource;
         };
     };
+
+    inline const FeatureSource::Metadata& GDALFeatureSource::metadata() const {
+        return _metadata;
+    }
 
 #endif // ROCKY_HAS_GDAL
 }

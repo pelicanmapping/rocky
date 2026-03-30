@@ -111,13 +111,14 @@ namespace ROCKY_NAMESPACE
 
         struct LineGeometryDetail
         {
-            vsg::ref_ptr<vsg::Node> root;
-            vsg::ref_ptr<LineGeometryNode> geomNode;
+            struct View
+            {
+                //std::optional<std::uint32_t> shareOtherViewID;
+                vsg::ref_ptr<vsg::Node> root;
+                vsg::ref_ptr<LineGeometryNode> geomNode;
+            };
 
-            inline void recycle() {
-                root = nullptr;
-                geomNode = nullptr;
-            }
+            ViewLocal<View> views;
         };
     }
 
@@ -139,8 +140,6 @@ namespace ROCKY_NAMESPACE
             WRITE_DEPTH = 1 << 0,
             NUM_PIPELINES = 1
         };
-        //! Returns a mask of supported features for the given mesh
-        //int featureMask(const Line&) const override;
 
         //! One-time initialization of the system    
         void initialize(VSGContext) override;
@@ -152,13 +151,13 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::RecordTraversal&) const override;
 
         void traverse(vsg::ConstVisitor&) const override;
+        void traverse(vsg::Visitor&) override;
 
         // vsg::Compilable
         void compile(vsg::Context& cc) override;
 
     private:
         mutable detail::LineStyleDetail _defaultStyleDetail;
-        mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
         mutable float _devicePixelRatio = 1.0f;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Line& line) {
@@ -166,10 +165,13 @@ namespace ROCKY_NAMESPACE
         }
 
         // Called when a line geometry component is found in the dirty list
-        void createOrUpdateGeometry(const LineGeometry& geom, detail::LineGeometryDetail&, VSGContext context);
+        void createOrUpdateGeometry(const LineGeometry&, detail::LineGeometryDetail&);
 
         // Called when a line style is found in the dirty list
-        void createOrUpdateStyle(const LineStyle& style, detail::LineStyleDetail& styleDetail);
+        void createOrUpdateStyle(const LineStyle&, detail::LineStyleDetail&);
+
+        // Called when a specific view's properties change (e.g. srs switch)
+        void createOrUpdateGeometryForView(ViewIDType, const LineGeometry&, detail::LineGeometryDetail&);
     };
 
 
@@ -201,9 +203,9 @@ namespace ROCKY_NAMESPACE
 
             assignArrays({ _current, _previous, _next, _colors });
 
-            std::size_t indices_to_allocate =
-                topology == LineTopology::Strip ? (requiredCapacity - 1) * 6 :
-                (requiredCapacity / 2) * 6; // Segments
+            std::size_t indices_to_allocate = 6 *
+                (topology == LineTopology::Strip ? (requiredCapacity - 1) : // Strip
+                (requiredCapacity / 2)); // Segments
 
             _indices = vsg::uintArray::create(indices_to_allocate * 4);
             assignIndices(_indices);

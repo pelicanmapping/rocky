@@ -10,62 +10,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    namespace detail
-    {
-        class ROCKY_EXPORT SimpleSystemNodeBase : 
-            public vsg::Inherit<vsg::Compilable, SimpleSystemNodeBase>,
-            public System
-        {
-        protected:
-            SimpleSystemNodeBase(Registry& in_registry);
-
-            void update(VSGContext vsgcontext) override;
-
-            inline void requestCompile(vsg::Object* object) {
-                _toCompile->addChild(vsg::ref_ptr<vsg::Object>(object));
-            }
-            inline void dispose(vsg::Object* object) {
-                _toDispose->addChild(vsg::ref_ptr<vsg::Object>(object));
-            }
-            inline void requestUpload(vsg::BufferInfo* bi) {
-                _buffersToUpload.emplace_back(bi);
-            }
-            inline void requestUpload(vsg::BufferInfoList& bil) {
-                _buffersToUpload.insert(_buffersToUpload.end(), bil.begin(), bil.end());
-            }
-            inline void requestUpload(vsg::ImageInfo* bi) {
-                _imagesToUpload.emplace_back(bi);
-            }
-            inline void requestUpload(vsg::ImageInfoList& bil) {
-                _imagesToUpload.insert(_imagesToUpload.end(), bil.begin(), bil.end());
-            }
-
-        public: // vsg::Compilable
-
-            virtual void compile(vsg::Context& cc) override {
-                for (auto& p : _pipelines) {
-                    p.commands->compile(cc);
-                }
-            };
-
-        protected:
-            struct Pipeline
-            {
-                vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> config;
-                vsg::ref_ptr<vsg::Commands> commands;
-            };
-            std::vector<Pipeline> _pipelines;
-            bool _pipelinesCompiled = false;
-
-
-        private:
-            vsg::ref_ptr<vsg::Objects> _toCompile;
-            vsg::ref_ptr<vsg::Objects> _toDispose;
-            vsg::BufferInfoList _buffersToUpload;
-            vsg::ImageInfoList _imagesToUpload;
-        };
-    }
-
     /**
     * VSG Group node that contains systems.
     */
@@ -129,4 +73,151 @@ namespace ROCKY_NAMESPACE
         return nullptr;
     }
 
+
+
+
+
+    namespace detail
+    {
+        class ROCKY_EXPORT SimpleSystemNodeBase :
+            public vsg::Inherit<vsg::Compilable, SimpleSystemNodeBase>,
+            public System
+        {
+        protected:
+            SimpleSystemNodeBase(Registry& in_registry);
+
+            void update(VSGContext vsgcontext) override;
+
+            inline void requestCompile(vsg::Object* object) const {
+                _toCompile->addChild(vsg::ref_ptr<vsg::Object>(object));
+            }
+            inline void dispose(vsg::Object* object) const {
+                _toDispose->addChild(vsg::ref_ptr<vsg::Object>(object));
+            }
+            inline void requestUpload(vsg::BufferInfo* bi) const {
+                _buffersToUpload.emplace_back(bi);
+            }
+            inline void requestUpload(vsg::BufferInfoList& bil) const {
+                _buffersToUpload.insert(_buffersToUpload.end(), bil.begin(), bil.end());
+            }
+            inline void requestUpload(vsg::ImageInfo* bi) const {
+                _imagesToUpload.emplace_back(bi);
+            }
+            inline void requestUpload(vsg::ImageInfoList& bil) const {
+                _imagesToUpload.insert(_imagesToUpload.end(), bil.begin(), bil.end());
+            }
+
+        public: // vsg::Compilable
+
+            virtual void compile(vsg::Context& cc) override {
+                for (auto& p : _pipelines) {
+                    p.commands->compile(cc);
+                }
+            };
+
+            virtual void traverse(vsg::Visitor&) override;
+            virtual void traverse(vsg::ConstVisitor&) const override;
+
+        protected:
+            struct Pipeline
+            {
+                vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> config;
+                vsg::ref_ptr<vsg::Commands> commands;
+            };
+            std::vector<Pipeline> _pipelines;
+            bool _pipelinesCompiled = false;
+            mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
+
+            // Information specific to one view. Indexed by viewID.
+            struct ViewInfo
+            {
+                // set when the view's SRS changes, which triggers a geometry update for that view.
+                bool dirty = false;
+
+                // the last frame that the view was rendered; used to detect a closed view and clean up its resources
+                FrameCountType lastFrame = std::numeric_limits<FrameCountType>::max();
+
+                // cached SRS definition for this view.
+                // We do not store an actual SRS (SIOF hazard)
+                std::string srsDef;
+            };
+            mutable ViewLocal<ViewInfo> _viewInfo;
+
+            template<class COMPONENT_T, class GEOM_DETAIL_T>
+            void handleConstVisitor(vsg::ConstVisitor& visitor) const;
+
+            template<class GEOM_DETAIL_T>
+            void handleVisitor(vsg::Visitor& visitor);
+
+        private:
+            mutable vsg::ref_ptr<vsg::Objects> _toCompile;
+            mutable vsg::ref_ptr<vsg::Objects> _toDispose;
+            mutable vsg::BufferInfoList _buffersToUpload;
+            mutable vsg::ImageInfoList _imagesToUpload;
+        };
+
+
+
+        template<class GEOM_DETAIL_T>
+        void SimpleSystemNodeBase::handleVisitor(vsg::Visitor& visitor)
+        {
+            if (status.failed()) return;
+
+            // Supports the CompileTraversal, for one, which needs to compile the node
+            // for any new View that appears
+            _registry.read([&](entt::registry& reg)
+                {
+                    reg.view<GEOM_DETAIL_T>().each([&](auto& component)
+                        {
+                            for (auto& view : component.views)
+                            {
+                                if (view.root)
+                                    view.root->accept(visitor);
+                            }
+                        });
+                });
+        }
+
+
+        template<class COMPONENT_T, class GEOM_DETAIL_T>
+        void SimpleSystemNodeBase::handleConstVisitor(vsg::ConstVisitor& visitor) const
+        {
+            if (status.failed()) return;
+
+            // it might be an ECS visitor, in which case we'll communicate the entity being visited
+            auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&visitor);
+            std::uint32_t viewID = ecsVisitor ? ecsVisitor->viewID : 0;
+
+            _registry.read([&](entt::registry& reg)
+                {
+                    reg.view<COMPONENT_T, ActiveState>().each([&](auto entity, auto& comp, auto& active)
+                        {
+                            auto* geomDetail = reg.try_get<GEOM_DETAIL_T>(comp.geometry);
+                            if (geomDetail)
+                            {
+                                auto& geomView = geomDetail->views[viewID];
+                                if (geomView.root)
+                                {
+                                    if (ecsVisitor)
+                                        ecsVisitor->currentEntity = entity;
+
+                                    auto* transformDetail = reg.try_get<TransformDetail>(entity);
+                                    if (transformDetail)
+                                    {
+                                        _tempMT->matrix = transformDetail->views[viewID].model;
+                                        _tempMT->children[0] = geomView.root;
+                                        _tempMT->accept(visitor);
+                                    }
+                                    else
+                                    {
+                                        geomView.root->accept(visitor);
+                                    }
+                                }
+                            }
+                        });
+                });
+
+            _tempMT->children[0] = nullptr;
+        }
+    }
 }

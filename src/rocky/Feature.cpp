@@ -141,9 +141,13 @@ Feature::transformInPlace(const SRS& to_srs)
         return false;
 
     // Transform the geometry points:
+    auto xform = srs.to(to_srs);
+    if (!xform)
+        return false;
+
     geometry.eachPart([&](Geometry& part)
         {
-            srs.to(to_srs).transformRange(part.points.begin(), part.points.end());
+            xform.transformArray(part.points.data(), part.points.size());
         });
 
     // Update the SRS:

@@ -227,134 +227,6 @@ GeoExtent::splitAcrossAntimeridian(GeoExtent& out_west, GeoExtent& out_east) con
     return out_west.valid() && out_east.valid();
 }
 
-#if 0
-namespace
-{
-    bool transformExtentToMBR(
-        const SRS& fromSRS,
-        const SRS& toSRS,
-        double& in_out_xmin,
-        double& in_out_ymin,
-        double& in_out_xmax,
-        double& in_out_ymax)
-    {
-        ROCKY_SOFT_ASSERT_AND_RETURN(fromSRS.valid() && toSRS.valid(), false);
-
-        // Transform all points and take the maximum bounding rectangle the resulting points
-        std::vector<glm::dvec3> v;
-
-        // Start by clamping to the out_srs' legal bounds, if possible.
-        // TODO: rethink this to be more generic.
-        if (fromSRS.isGeodetic() && !toSRS.isGeodetic())
-        {
-            auto to_geo = toSRS.to(fromSRS);
-            Box b = toSRS.bounds(); // long,lat degrees
-            glm::dvec3 min(b.xmin, b.ymin, 0);
-            glm::dvec3 max(b.xmax, b.ymax, 0);
-            to_geo(min, min);
-            to_geo(max, max);
-
-            if (b.valid())
-            {
-                in_out_xmin = clamp(in_out_xmin, min.x, max.x);
-                in_out_xmax = clamp(in_out_xmax, min.x, max.x);
-                in_out_ymin = clamp(in_out_ymin, min.y, max.y);
-                in_out_ymax = clamp(in_out_ymax, min.y, max.y);
-            }
-        }
-
-        double height = in_out_ymax - in_out_ymin;
-        double width = in_out_xmax - in_out_xmin;
-
-        // first point is a centroid. This we will use to make sure none of the corner points
-        // wraps around if the target SRS is geographic.
-        v.push_back(glm::dvec3(in_out_xmin + width * 0.5, in_out_ymin + height * 0.5, 0)); // centroid.
-
-        // add the four corners
-        v.push_back(glm::dvec3(in_out_xmin, in_out_ymin, 0)); // ll
-        v.push_back(glm::dvec3(in_out_xmin, in_out_ymax, 0)); // ul
-        v.push_back(glm::dvec3(in_out_xmax, in_out_ymax, 0)); // ur
-        v.push_back(glm::dvec3(in_out_xmax, in_out_ymin, 0)); // lr
-
-        //We also sample along the edges of the bounding box and include them in the 
-        //MBR computation in case you are dealing with a projection that will cause the edges
-        //of the bounding box to be expanded.  This was first noticed when dealing with converting
-        //Hotline Oblique Mercator to WGS84
-
-        //Sample the edges
-        unsigned int numSamples = 5;
-        double dWidth = width / (numSamples - 1);
-        double dHeight = height / (numSamples - 1);
-
-        //Left edge
-        for (unsigned int i = 0; i < numSamples; i++)
-        {
-            v.push_back(glm::dvec3(in_out_xmin, in_out_ymin + dHeight * (double)i, 0));
-        }
-
-        //Right edge
-        for (unsigned int i = 0; i < numSamples; i++)
-        {
-            v.push_back(glm::dvec3(in_out_xmax, in_out_ymin + dHeight * (double)i, 0));
-        }
-
-        //Top edge
-        for (unsigned int i = 0; i < numSamples; i++)
-        {
-            v.push_back(glm::dvec3(in_out_xmin + dWidth * (double)i, in_out_ymax, 0));
-        }
-
-        //Bottom edge
-        for (unsigned int i = 0; i < numSamples; i++)
-        {
-            v.push_back(glm::dvec3(in_out_xmin + dWidth * (double)i, in_out_ymin, 0));
-        }
-
-        auto xform = fromSRS.to(toSRS);
-
-        if (xform.transformRange(v.begin(), v.end()))
-        {
-            in_out_xmin = DBL_MAX;
-            in_out_ymin = DBL_MAX;
-            in_out_xmax = -DBL_MAX;
-            in_out_ymax = -DBL_MAX;
-
-            // For a geographic target, make sure the new extents contain the centroid
-            // because they might have wrapped around or run into a precision failure.
-            // v[0]=centroid, v[1]=LL, v[2]=UL, v[3]=UR, v[4]=LR
-            if (toSRS.isGeodetic())
-            {
-                if (v[1].x > v[0].x || v[2].x > v[0].x) in_out_xmin = -180.0;
-                if (v[3].x < v[0].x || v[4].x < v[0].x) in_out_xmax = 180.0;
-            }
-
-            // enforce an MBR:
-            for (unsigned int i = 0; i < v.size(); i++)
-            {
-                in_out_xmin = std::min(v[i].x, in_out_xmin);
-                in_out_ymin = std::min(v[i].y, in_out_ymin);
-                in_out_xmax = std::max(v[i].x, in_out_xmax);
-                in_out_ymax = std::max(v[i].y, in_out_ymax);
-            }
-
-            if (toSRS.isGeodetic())
-            {
-                in_out_xmin = std::max(in_out_xmin, -180.0);
-                in_out_ymin = std::max(in_out_ymin, -90.0);
-                in_out_xmax = std::min(in_out_xmax, 180.0);
-                in_out_ymax = std::min(in_out_ymax, 90.0);
-            }
-
-            volatile int ii = 0;
-
-            return true;
-        }
-
-        return false;
-    }
-}
-#endif
-
 GeoExtent
 GeoExtent::transform(const SRS& to_srs) const 
 {
@@ -539,7 +411,7 @@ GeoExtent::computeBoundingGeoCircle() const
                 glm::dvec3(west(), north(), 0.0)
             };
             
-            srs().to(SRS::ECEF).transformRange(p.begin(), p.end());
+            srs().to(SRS::ECEF).transformArray(p.data(), p.size());
             
             const auto lengthSquared = [](const glm::dvec3& v) {
                 return glm::dot(v, v); };
@@ -990,7 +862,7 @@ GeoExtent::createWorldBoundingSphere(double minElev, double maxElev) const
 
         // transform to world coords:
         auto to_world = srs().to(SRS::ECEF);
-        to_world.transformRange(samplePoints.begin(), samplePoints.end());
+        to_world.transformArray(samplePoints.data(), samplePoints.size());
 
         // Compute the bounding box of the sample points
         Box bb;

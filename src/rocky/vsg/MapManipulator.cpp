@@ -443,7 +443,11 @@ MapManipulator::dirty()
     getEulerAngles(_state.localRotation, nullptr, &old_pitch_rad);
 
     double old_pitch_deg = glm::degrees(old_pitch_rad);
-    double new_pitch_deg = std::clamp(old_pitch_deg, settings.minPitch, settings.maxPitch);
+    double new_pitch_deg = 
+        _isOrtho ? -90.0 :
+        std::clamp(old_pitch_deg, settings.minPitch, settings.maxPitch);
+
+    _state.localRotation = getQuaternion(0.0, glm::radians(new_pitch_deg));
 
     setDistance(_state.distance);
 }
@@ -1216,25 +1220,24 @@ MapManipulator::updateProjection(vsg::Camera* camera)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(camera, void());
 
-    auto perspective = camera->projectionMatrix.cast<vsg::Perspective>();
-    if (perspective)
-    {
-        _lastKnownPerspectiveFOV = perspective->fieldOfViewY;
-    }
+    bool wasOrtho = _isOrtho;
+    auto ortho = camera->projectionMatrix.cast<vsg::Orthographic>();
+    _isOrtho = (ortho != nullptr);
 
-    else // orthographic tracks the last know perspective FOV:
+    if (ortho)
     {
-        auto ortho = camera->projectionMatrix.cast<vsg::Orthographic>();
+        auto ar = camera->viewportState->getViewport().width / camera->viewportState->getViewport().height;
+        auto h = 0.5 * _state.distance;
+        ortho->left = -h * ar;
+        ortho->right = h * ar;
+        ortho->bottom = -h;
+        ortho->top = h;
+        ortho->nearDistance = 1.0;
+        ortho->farDistance = 1.1 * _state.distance;
 
-        ROCKY_SOFT_ASSERT(ortho);
-        if (ortho)
+        if (_isOrtho != wasOrtho)
         {
-            double aspect = camera->getViewport().width / camera->getViewport().height;
-            double fovY = _lastKnownPerspectiveFOV;
-            ortho->top = tan(glm::radians(fovY) * 0.5) * _state.distance;
-            ortho->right = ortho->top * aspect;
-            ortho->bottom = -ortho->top;
-            ortho->left = -ortho->right;
+            dirty();
         }
     }
 }
@@ -1523,6 +1526,9 @@ MapManipulator::pan(double dx, double dy)
 void
 MapManipulator::rotate(double dx, double dy)
 {
+    if (_isOrtho)
+        return;
+
     // clamp the local pitch delta; never allow the pitch to hit -90.
     double minp = glm::radians(std::min(settings.minPitch, -89.9));
     double maxp = glm::radians(std::max(settings.maxPitch, -0.1));

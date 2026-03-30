@@ -292,20 +292,25 @@ Ellipsoid::geodesicGroundDistance(const glm::dvec3& p1, const glm::dvec3& p2) co
 glm::dvec3
 Ellipsoid::geodesicInterpolate(const glm::dvec3& lla1_deg, const glm::dvec3& lla2_deg, double t) const
 {
-    glm::dvec3 output;
+    auto geoc1 = geodeticToGeocentric(lla1_deg);
+    auto geoc2 = geodeticToGeocentric(lla2_deg);
 
-    double deltaZ = lla2_deg.z - lla1_deg.z;
+    return geocentricToGeodetic(geocentricInterpolate(geoc1, geoc2, t));
+}
 
+glm::dvec3
+Ellipsoid::geocentricInterpolate(const glm::dvec3& geoc1, const glm::dvec3& geoc2, double t) const
+{
     // transform to unit-sphere frame:
-    auto w1 = glm::normalize(geodeticToGeocentric(lla1_deg) * _ellipsoidToUnitSphere);
-    auto w2 = glm::normalize(geodeticToGeocentric(lla2_deg) * _ellipsoidToUnitSphere);
+    auto w1 = geoc1 * _ellipsoidToUnitSphere;
+    auto w2 = geoc2 * _ellipsoidToUnitSphere;
 
     // Geometric slerp in unit sphere space
     // https://en.wikipedia.org/wiki/Slerp#Geometric_Slerp
     double dp = glm::dot(w1, w2);
     if (dp == 1.0)
     {
-        return lla1_deg;
+        return geoc1;
     }
 
     double angle = acos(dp);
@@ -313,7 +318,7 @@ Ellipsoid::geodesicInterpolate(const glm::dvec3& lla1_deg, const glm::dvec3& lla
     double s = sin(angle);
     if (s == 0.0)
     {
-        return lla1_deg;
+        return geoc1;
     }
 
     double c1 = sin((1.0 - t) * angle) / s;
@@ -321,13 +326,7 @@ Ellipsoid::geodesicInterpolate(const glm::dvec3& lla1_deg, const glm::dvec3& lla
 
     glm::dvec3 n = w1 * c1 + w2 * c2;
 
-    // convert back to world space and apply altitude lerp
-    n = n * _unitSphereToEllipsoid;
-
-    output = geocentricToGeodetic(n);
-    output.z = lla1_deg.z + t * deltaZ;
-
-    return output;
+    return n * _unitSphereToEllipsoid;
 }
 
 glm::dvec3

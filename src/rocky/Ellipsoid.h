@@ -81,6 +81,16 @@ namespace ROCKY_NAMESPACE
             const glm::dvec3& longlat2_deg,
             double t) const;
 
+        //! Geocentric interpolation between two points, following the great ellipse path between them
+        //! @param geoc1 Start point in XYZ coords
+        //! @param geoc1 End point in XYZ coords
+        //! @param t Interpolation factor (0 = start, 1 = end)
+        //! @return Interpolated point in XYZ
+        glm::dvec3 geocentricInterpolate(
+            const glm::dvec3& geoc1,
+            const glm::dvec3& geoc2,
+            double t) const;
+
         //! Intersects a geocentric line with the ellipsoid.
         //! Upon success return true and place the first intersection point in "out".
         //! @param geocStart Start point of the geocentric line

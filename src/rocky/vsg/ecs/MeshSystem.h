@@ -93,9 +93,13 @@ namespace ROCKY_NAMESPACE
         // internal data paired with MeshGeometry
         struct MeshGeometryDetail
         {
-            vsg::ref_ptr<vsg::Node> rootNode;
-            vsg::ref_ptr<MeshGeometryNode> geomNode;
-            std::size_t capacity = 0;
+            struct View
+            {
+                vsg::ref_ptr<vsg::Node> root;
+                vsg::ref_ptr<MeshGeometryNode> geomNode;
+                std::size_t capacity = 0;
+            };
+            ViewLocal<View> views;
         };
 
         // internal data paired with MeshTexture
@@ -115,21 +119,6 @@ namespace ROCKY_NAMESPACE
         //! Construct the mesh renderer
         MeshSystemNode(Registry& registry);
 
-        //! Supported features in a mask format
-        enum Features
-        {
-            DEFAULT = 0,
-            NUM_PIPELINES = 1
-            //TEXTURE        = 1 << 0,
-            //DYNAMIC_STYLE  = 1 << 1,
-            //WRITE_DEPTH    = 1 << 2,
-            //CULL_BACKFACES = 1 << 3,
-            //NUM_PIPELINES  = 16
-        };
-
-        //! Returns a mask of supported features for the given mesh
-        int featureMask(const Mesh&) const;
-
         //! One-time initialization of the system        
         void initialize(VSGContext) override;
 
@@ -138,6 +127,7 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::RecordTraversal&) const override;
 
         void traverse(vsg::ConstVisitor& v) const override;
+        void traverse(vsg::Visitor& v) override;
 
         // vsg::Compilable
         void compile(vsg::Context& cc) override;
@@ -151,10 +141,12 @@ namespace ROCKY_NAMESPACE
         // Default mesh style to use if a Mesh doesn't have one
         mutable detail::MeshStyleDetail _defaultMeshStyleDetail;
         mutable std::vector<detail::MeshStyleDetail*> _styleDetailBins;
-        mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
 
         // Called when a line geometry component is found in the dirty list
-        void createOrUpdateGeometry(const MeshGeometry&, detail::MeshGeometryDetail&, VSGContext);
+        void createOrUpdateGeometry(const MeshGeometry&, detail::MeshGeometryDetail&);
+
+        // Called when a specific view's properties change (e.g. srs switch)
+        void createOrUpdateGeometryForView(ViewIDType, const MeshGeometry&, detail::MeshGeometryDetail&);
 
         // Called when a line style is found in the dirty list
         void createOrUpdateStyle(const MeshStyle&, detail::MeshStyleDetail&, entt::registry&, VSGContext);

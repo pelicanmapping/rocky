@@ -107,7 +107,7 @@ MapNode::srs() const
 }
 
 bool
-MapNode::update(VSGContext context)
+MapNode::update(VSGContext vsgcontext)
 {
     ROCKY_HARD_ASSERT(map != nullptr && terrainNode != nullptr);
 
@@ -115,7 +115,7 @@ MapNode::update(VSGContext context)
 
     if (terrainNode->map == nullptr || terrainNode->profile != profile)
     {
-        auto st = terrainNode->setMap(map, profile, srs(), context);
+        auto st = terrainNode->setMap(map, profile, srs(), vsgcontext);
 
         if (st.failed())
         {
@@ -126,7 +126,7 @@ MapNode::update(VSGContext context)
     // on our first update, open any layers that are marked to automatic opening.
     if (!_openedLayers)
     {
-        auto r = map->openAllLayers(context->io);
+        auto r = map->openAllLayers(vsgcontext->io);
         if (r.failed())
         {
             Log()->warn("Failed to open at least one layer... " + r.error().message);
@@ -135,7 +135,7 @@ MapNode::update(VSGContext context)
         _openedLayers = true;
     }
 
-    return terrainNode->update(context);
+    return terrainNode->update(vsgcontext);
 }
 
 void

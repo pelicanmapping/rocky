@@ -58,7 +58,8 @@ namespace ROCKY_NAMESPACE
         // Per-view data, calculated during the record traversal
         ViewLocal<TransformViewDetail> views;
 
-        //! Reset any cached data fro the given view
+        //! Reset any cached data for the given view so the object
+        //! can recalibrate itself after an SRS change (e.g.)
         void reset(std::uint32_t viewID);
 
         //! Updates the per-view data for the given record traversal.

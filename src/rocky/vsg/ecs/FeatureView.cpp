@@ -54,33 +54,57 @@ namespace
     template<class T>
     void tessellate_line_segment(const T& from, const T& to, const SRS& input_srs, const GeodeticInterpolation interp, float max_span, std::vector<T>& output, bool add_last_point)
     {
-        ROCKY_SOFT_ASSERT_AND_RETURN(input_srs.isGeodetic(), void());
+        ROCKY_SOFT_ASSERT_AND_RETURN(input_srs.isGeodetic() || input_srs.isGeocentric(), void());
 
         auto& ellipsoid = input_srs.ellipsoid();
         std::list<T> list{ from, to };
         auto iter = list.begin();
-        for (;;)
+
+        if (input_srs.isGeodetic())
         {
-            auto save = iter;
-            auto& p1 = *iter++;
-            if (iter == list.end())
-                break;
-            auto& p2 = *iter;
-
-            if (ellipsoid.geodesicGroundDistance(p1, p2) > max_span)
+            for (;;)
             {
-                T midpoint;
+                auto save = iter;
+                auto& p1 = *iter++;
+                if (iter == list.end())
+                    break;
+                auto& p2 = *iter;
 
-                if (interp == GeodeticInterpolation::GreatCircle)
+                if (ellipsoid.geodesicGroundDistance(p1, p2) > max_span)
                 {
-                    midpoint = ellipsoid.geodesicInterpolate(p1, p2, 0.5);
+                    T midpoint;
+
+                    if (interp == GeodeticInterpolation::GreatCircle)
+                    {
+                        midpoint = ellipsoid.geodesicInterpolate(p1, p2, 0.5);
+                    }
+                    else // GeodeticInterpolation::RhumbLine
+                    {
+                        midpoint = (p1 + p2) * 0.5;
+                    }
+                    list.insert(iter, midpoint);
+                    iter = save;
                 }
-                else // GeodeticInterpolation::RhumbLine
+            }
+        }
+        else if (input_srs.isGeocentric())
+        {
+            auto max_span_squared = max_span * max_span;
+
+            for (;;)
+            {
+                auto save = iter;
+                auto& p1 = *iter++;
+                if (iter == list.end())
+                    break;
+                auto& p2 = *iter;
+
+                if (glm::dot(p2 - p1, p2 - p1) > max_span_squared) // dot is length squared
                 {
-                    midpoint = (p1 + p2) * 0.5;
+                    T midpoint = ellipsoid.geocentricInterpolate(p1, p2, 0.5);
+                    list.insert(iter, midpoint);
+                    iter = save;
                 }
-                list.insert(iter, midpoint);
-                iter = save;
             }
         }
 
@@ -98,7 +122,7 @@ namespace
         if (input.size() > 0)
         {
             // only geodetic coordinates get tessellated for now:
-            if (input_srs.isGeodetic())
+            if (input_srs.isGeodetic() || input_srs.isGeocentric())
             {
                 for (unsigned i = 1; i < input.size(); ++i)
                 {
@@ -148,7 +172,7 @@ namespace
 
                 // transform:
                 auto feature_to_world = feature.srs.to(output_srs);
-                feature_to_world.transformRange(tessellated.begin(), tessellated.end());
+                feature_to_world.transformArray(tessellated.data(), tessellated.size());
 
                 // localize:
                 if (origin.valid())
@@ -187,8 +211,6 @@ namespace
 
         // max length:
         max_span = final_max_span;
-
-        //line.style = styles.line;
     }
 
     void compile_polygon_feature_with_weemesh(const Feature& feature, const StyleSheet& styles, 
@@ -225,7 +247,7 @@ namespace
         // transform the geometry to gnomonic coordinates, and establish the extent.
         local_geom.eachPart([&](Geometry& part)
             {
-                feature_to_geo.transformRange(part.points.begin(), part.points.end());
+                feature_to_geo.transformArray(part.points.data(), part.points.size());
                 geo_to_gnomonic(part.points.begin(), part.points.end(), centroid, gnomonic_scale);
                 local_ex.expandBy(part.points.begin(), part.points.end());
             });
@@ -323,7 +345,7 @@ namespace
         }
 
         // And into the final projection:
-        geo_to_world.transformRange(m.verts.begin(), m.verts.end());
+        geo_to_world.transformArray(m.verts.data(), m.verts.size());
 
         // localize:
         if (origin.valid())
@@ -368,8 +390,12 @@ namespace
 entt::entity
 FeatureView::generate(const SRS& output_srs, Registry& registry)
 {
+    //ROCKY_SOFT_ASSERT_AND_RETURN(!output_srs.isGeocentric(), entt::null);
+
     Workspace ws;
     ws.lineGeom.topology = LineTopology::Segments;
+    ws.lineGeom.srs = output_srs;
+    ws.meshGeom.srs = output_srs;
 
     for (auto& feature : features)
     {

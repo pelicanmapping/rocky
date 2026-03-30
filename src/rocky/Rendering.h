@@ -9,11 +9,15 @@
 
 namespace ROCKY_NAMESPACE
 {
+    //! Type of the VSG viewID
+    using ViewIDType = std::uint32_t;
+    using FrameCountType = std::uint64_t;
+
     //! State information at the time of rendering a view.
     struct RenderingState
     {
-        std::uint32_t viewID;
-        std::uint64_t frame;
+        ViewIDType viewID;
+        FrameCountType frame;
     };
 
     //! ViewLocal is a container that holds data on a per-view basis.

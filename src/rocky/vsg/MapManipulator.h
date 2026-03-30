@@ -519,7 +519,7 @@ namespace ROCKY_NAMESPACE
         option<vsg::ButtonPressEvent> _buttonPress;
         option<vsg::KeyPressEvent> _keyPress;
         vsg::time_point _previousTime;
-
+        bool _isOrtho = false;
         bool _thrown;
         vsg::dvec2 _throwDelta;
         vsg::dvec2 _delta;

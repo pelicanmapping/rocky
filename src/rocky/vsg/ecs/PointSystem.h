@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2025 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -95,15 +95,20 @@ namespace ROCKY_NAMESPACE
 
         struct PointGeometryDetail
         {
-            vsg::ref_ptr<vsg::Node> rootNode;
-            vsg::ref_ptr<PointGeometryNode> geomNode;
-            std::size_t capacity = 0;
+            struct View
+            {
+                vsg::ref_ptr<vsg::Node> root;
+                vsg::ref_ptr<PointGeometryNode> geomNode;
+                std::size_t capacity = 0;
 
-            inline void recycle() {
-                rootNode = nullptr;
-                geomNode = nullptr;
-                capacity = 0;
-            }
+                inline void recycle() {
+                    root = nullptr;
+                    geomNode = nullptr;
+                    capacity = 0;
+                }
+            };
+
+            ViewLocal<View> views;
         };
     }
 
@@ -138,28 +143,27 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::RecordTraversal&) const override;
 
         void traverse(vsg::ConstVisitor&) const override;
+        void traverse(vsg::Visitor& v) override;
 
         // vsg::Compilable
         void compile(vsg::Context& cc) override;
 
     private:
         mutable detail::PointStyleDetail _defaultStyleDetail;
-        mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
         mutable float _devicePixelRatio = -1.0;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Point&) {
             return _pipelines[0].config->layout;
         }
 
-        // Called when a Line is marked dirty (i.e., upon first creation or when either the
-        // style of the geometry entity is reassigned).
-        //void createOrUpdateComponent(const Point&, detail::PointDetail&, detail::PointGeometryDetail*);
-
         // Called when a point geometry component is found in the dirty list
-        void createOrUpdateGeometry(const PointGeometry& geom, detail::PointGeometryDetail&, VSGContext context);
+        void createOrUpdateGeometry(const PointGeometry& geom, detail::PointGeometryDetail&);
 
         // Called when a point style is found in the dirty list
         void createOrUpdateStyle(const PointStyle& style, detail::PointStyleDetail& styleDetail);
+
+        // Called when a specific view's properties change (e.g. srs switch)
+        void createOrUpdateGeometryForView(ViewIDType, const PointGeometry&, detail::PointGeometryDetail&);
     };
 
 

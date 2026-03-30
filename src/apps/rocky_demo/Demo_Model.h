@@ -44,7 +44,7 @@ auto Demo_Model = [](Application& app)
         transform.topocentric = true;
         transform.radius = radius;
 
-        // A DynamicScale component
+        // Test the PixelScale component
         auto& ps = reg.emplace<PixelScale>(entity);
         ps.enabled = false;
         ps.minPixels = 16.0f;

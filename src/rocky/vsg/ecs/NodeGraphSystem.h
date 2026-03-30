@@ -30,15 +30,14 @@ namespace ROCKY_NAMESPACE
         //! VSG record traversal
         void traverse(vsg::RecordTraversal&) const override;
 
-        //! VSG visitor traversal
+        //! VSG visitor traversals
         void traverse(vsg::ConstVisitor& v) const override;
+        void traverse(vsg::Visitor& v) override;
 
         // vsg::Compilable
         void compile(vsg::Context& cc) override;
 
     private:
-        mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
-
         // render leaf for collecting and drawing meshes
         struct Drawable
         {

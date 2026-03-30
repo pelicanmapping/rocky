@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -390,7 +390,11 @@ namespace ROCKY_NAMESPACE
         //! @param x X coordinate to clamp
         //! @param y Y coordinate to clamp
         //! @return True if the point was altered by the clamping.
-        bool clamp(double& x, double& y) const;
+        bool clamp(double& x, double& y, double& z) const;
+
+        //! Clamp a range of points as with the clamp(x,y) function.
+        template<typename DVEC3>
+        bool clampArray(DVEC3* inout, std::size_t count) const;
 
         //! Error message if something returns false
         const std::string& errorMessage() const;
@@ -415,6 +419,7 @@ namespace ROCKY_NAMESPACE
 
         bool forward(void* handle, double* x, double* y, double* z, std::size_t stride, std::size_t count) const;
         bool inverse(void* handle, double* x, double* y, double* z, std::size_t stride, std::size_t count) const;
+
         friend class SRS;
     };
 
@@ -424,5 +429,35 @@ namespace ROCKY_NAMESPACE
             return _valid.value();
         else
             return _establish_valid();
+    }
+
+    template<typename DVEC3>
+    inline bool SRSOperation::clampArray(DVEC3* inout, std::size_t count) const {
+        if (_nop) return true;
+        if (count < 1) return true;
+
+        auto& gb = _to.geodeticBounds();
+        if (!gb.valid()) return false;
+
+        SRSOperation to_geo;
+        if (!_from.isGeodetic())
+            to_geo = _from.to(_from.geodeticSRS());
+
+        for (std::size_t i = 0; i < count; ++i) {
+            if (to_geo) {
+                to_geo.transform(inout[i][0], inout[i][1], inout[i][2]);
+                inout[i][0] = std::max(gb.xmin, std::min(gb.xmax, inout[i][0]));
+                inout[i][1] = std::max(gb.ymin, std::min(gb.ymax, inout[i][1]));
+                to_geo.inverse(inout[i][0], inout[i][1], inout[i][2]);
+            }
+            else {
+                inout[i] = {
+                    std::max(gb.xmin, std::min(gb.xmax, inout[i].x)),
+                    std::max(gb.ymin, std::min(gb.ymax, inout[i].y)),
+                    inout[i].z
+                };
+            }
+        }
+        return true;
     }
 }

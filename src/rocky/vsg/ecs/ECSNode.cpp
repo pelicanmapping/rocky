@@ -8,7 +8,6 @@
 #include "MeshSystem.h"
 #include "LineSystem.h"
 #include "PointSystem.h"
-//#include "IconSystem.h"
 #include "LabelSystem.h"
 #include "WidgetSystem.h"
 #include "TransformSystem.h"
@@ -25,6 +24,9 @@ SimpleSystemNodeBase::SimpleSystemNodeBase(Registry& in_registry) :
 {
     _toCompile = vsg::Objects::create();
     _toDispose = vsg::Objects::create();
+
+    _tempMT = vsg::MatrixTransform::create();
+    _tempMT->children.resize(1);
 }
 
 void
@@ -72,6 +74,29 @@ SimpleSystemNodeBase::update(VSGContext vsgcontext)
     System::update(vsgcontext);
 }
 
+void
+SimpleSystemNodeBase::traverse(vsg::Visitor& visitor)
+{
+    if (status.failed()) return;
+
+    for (auto& pipeline : _pipelines)
+    {
+        pipeline.commands->accept(visitor);
+    }
+    Inherit::traverse(visitor);
+}
+
+void
+SimpleSystemNodeBase::traverse(vsg::ConstVisitor& visitor) const
+{
+    if (status.failed()) return;
+
+    for (auto& pipeline : _pipelines)
+    {
+        pipeline.commands->accept(visitor);
+    }
+    Inherit::traverse(visitor);
+}
 
 
 ECSNode::ECSNode(Registry& reg) :

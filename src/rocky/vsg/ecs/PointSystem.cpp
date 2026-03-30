@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2025 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "PointSystem.h"
@@ -123,7 +123,11 @@ namespace
     }
     void on_destroy_PointGeometryDetail(entt::registry& r, entt::entity e)
     {
-        dispose(r.get<PointGeometryDetail>(e).rootNode);
+        for (auto& view : r.get<PointGeometryDetail>(e).views)
+        {
+            dispose(view.root);
+            view = {};
+        }
     }
 
     void on_update_Point(entt::registry& r, entt::entity e)
@@ -267,8 +271,11 @@ PointSystemNode::compile(vsg::Context& compileContext)
 
             reg.view<PointGeometryDetail>().each([&](auto& geomDetail)
                 {
-                    if (geomDetail.geomNode)
-                        geomDetail.geomNode->compile(compileContext);
+                    for (auto& geomView : geomDetail.views)
+                    {
+                        if (geomView.geomNode)
+                            geomView.geomNode->compile(compileContext);
+                    }
                 });
         });
 
@@ -276,64 +283,87 @@ PointSystemNode::compile(vsg::Context& compileContext)
 }
 
 void
-PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometryDetail& geomDetail, VSGContext vsgcontext)
+PointSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const PointGeometry& geom, PointGeometryDetail& geomDetail)
 {
     // NB: registry is read-locked
 
-    bool reallocate =
-        geomDetail.geomNode == nullptr ||
-        geomDetail.geomNode->allocatedCapacity < geom.points.capacity();
+    auto& geomView = geomDetail.views[viewID];
+    auto& view = _viewInfo[viewID];
+
+    // If the view is removed, dispose of its nodes:
+    if (view.srsDef.empty())
+    {
+        if (geomView.root)
+        {
+            dispose(geomView.root);
+            dispose(geomView.geomNode);
+            geomView = {};
+        }
+        view.dirty = false;
+        return;
+    }
+
+    SRS srs(view.srsDef);
+    ROCKY_SOFT_ASSERT_AND_RETURN(srs, void());
+
+    bool reallocate = view.dirty;
+    view.dirty = false;
+
+    reallocate =
+        reallocate ||
+        geomView.root == nullptr ||
+        geomView.geomNode == nullptr ||
+        geomView.geomNode->allocatedCapacity < geom.points.capacity();
 
     if (reallocate)
     {
-        if (geomDetail.geomNode)
-            vsgcontext->dispose(geomDetail.geomNode);
+        if (geomView.geomNode)
+            dispose(geomView.geomNode);
 
-        geomDetail.geomNode = PointGeometryNode::create();
+        geomView.geomNode = PointGeometryNode::create();
 
         vsg::ref_ptr<vsg::Node> root;
         vsg::dmat4 localizer_matrix;
 
         if (geom.srs.valid())
         {
-            GeoPoint anchor(geom.srs, 0, 0);
-            if (!geom.points.empty())
-                anchor = GeoPoint(geom.srs, (geom.points.front() + geom.points.back()) * 0.5);
-
-            ROCKY_SOFT_ASSERT_AND_RETURN(anchor.valid(), void());
-            auto [xform, offset] = anchor.parseAsReferencePoint();
+            glm::dvec3 precisionOffset(0, 0, 0);
+            auto xform = geom.srs.to(srs);
 
             // make a copy that we will use to transform and offset:
             if (!geom.points.empty())
             {
                 std::vector<glm::dvec3> copy(geom.points);
-                xform.transformRange(copy.begin(), copy.end());
-                for (auto& point : copy)
-                    point -= offset;
+                xform.clampArray(copy.data(), copy.size());
+                xform.transformArray(copy.data(), copy.size());
 
-                geomDetail.geomNode->set(copy, geom.colors, geom.widths);
+                precisionOffset = (copy.front() + copy.back()) * 0.5;
+                for (auto& point : copy)
+                    point -= precisionOffset;
+
+                geomView.geomNode->set(copy, geom.colors, geom.widths);
             }
             else
             {
-                geomDetail.geomNode->set(geom.points, geom.colors, geom.widths);
+                geomView.geomNode->set(geom.points, geom.colors, geom.widths);
             }
 
 
-            localizer_matrix = vsg::translate(to_vsg(offset));
+            localizer_matrix = vsg::translate(to_vsg(precisionOffset));
             auto localizer = vsg::MatrixTransform::create(localizer_matrix);
-            localizer->addChild(geomDetail.geomNode);
+            localizer->addChild(geomView.geomNode);
             root = localizer;
         }
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.colors, geom.widths);
-            root = geomDetail.geomNode;
+            geomView.geomNode->set(geom.points, geom.colors, geom.widths);
+            root = geomView.geomNode;
         }
 
-        geomDetail.rootNode = root;
+        geomView.root = root;
 
-        requestCompile(geomDetail.geomNode);
+        requestCompile(geomView.geomNode);
     }
 
     else // existing node -- update:
@@ -343,32 +373,43 @@ PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometry
 
         if (geom.srs.valid() && geom.points.size() > 0)
         {
-            GeoPoint anchor(geom.srs, (geom.points.front() + geom.points.back()) * 0.5);
-
-            ROCKY_SOFT_ASSERT_AND_RETURN(anchor.valid(), void());
-
-            auto [xform, offset] = anchor.parseAsReferencePoint();
+            glm::dvec3 precisionOffset(0, 0, 0);
+            auto xform = geom.srs.to(srs);
 
             // make a copy that we will use to transform and offset:
             std::vector<glm::dvec3> copy(geom.points);
-            xform.transformRange(copy.begin(), copy.end());
+
+            xform.clampArray(copy.data(), copy.size());
+            xform.transformArray(copy.data(), copy.size());
+
+            precisionOffset = (copy.front() + copy.back()) * 0.5;
             for (auto& point : copy)
-                point -= offset;
+                point -= precisionOffset;
 
-            geomDetail.geomNode->set(copy, geom.colors, geom.widths);
+            geomView.geomNode->set(copy, geom.colors, geom.widths);
 
-            auto mt = find<vsg::MatrixTransform>(geomDetail.rootNode);
-            mt->matrix = vsg::translate(to_vsg(offset));
+            auto mt = find<vsg::MatrixTransform>(geomView.root);
+            mt->matrix = vsg::translate(to_vsg(precisionOffset));
             localizer_matrix = mt->matrix;
         }
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.colors, geom.widths);
+            geomView.geomNode->set(geom.points, geom.colors, geom.widths);
         }
 
         // upload the changed arrays
-        requestUpload(geomDetail.geomNode->arrays);
+        requestUpload(geomView.geomNode->arrays);
+    }
+}
+
+void
+PointSystemNode::createOrUpdateGeometry(const PointGeometry& geom, PointGeometryDetail& geomDetail)
+{
+    // NB: registry is read-locked
+    for (ViewIDType viewID = 0; viewID < _viewInfo.size(); ++viewID)
+    {
+        createOrUpdateGeometryForView(viewID, geom, geomDetail);
     }
 }
 
@@ -411,6 +452,22 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
     std::vector<PointStyleDetail*> styleDetails;
     styleDetails.emplace_back(&_defaultStyleDetail);
 
+    SRS srs;
+    record.getValue("rocky.worldsrs", srs);
+
+    auto& view = _viewInfo[rs.viewID];
+
+    // I'm alive
+    view.lastFrame = rs.frame;
+
+    // Did my SRS change? Because if it did, we need to regenerate
+    if (view.srsDef.empty() || view.srsDef != srs.definition())
+    {
+        view.srsDef = srs.definition();
+        view.dirty = true;
+        return;
+    }
+
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
@@ -420,35 +477,37 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
                 });
 
             int count = 0;
-            auto view = reg.view<Point, ActiveState, Visibility>();
 
-            view.each([&](auto entity, auto& point, auto& active, auto& visibility)
+            auto iter = reg.view<Point, ActiveState, Visibility>();
+            iter.each([&](auto entity, auto& point, auto& active, auto& visibility)
                 {
-                    auto* geom = reg.try_get<PointGeometryDetail>(point.geometry);
-                    if (!geom || !geom->rootNode)
+                    auto* geomDetail = reg.try_get<PointGeometryDetail>(point.geometry);
+                    if (!geomDetail)
                         return;
 
-                    auto* styleDetail = &_defaultStyleDetail;
-                    auto* style = reg.try_get<PointStyle>(point.style);
-                    if (style)
-                    {
-                        styleDetail = &reg.get<PointStyleDetail>(point.style);
-                    }
+                    auto& geomView = geomDetail->views[rs.viewID];
 
-                    if (visible(visibility, rs))
+                    if (geomView.root && visible(visibility, rs))
                     {
+                        auto* styleDetail = &_defaultStyleDetail;
+                        auto* style = reg.try_get<PointStyle>(point.style);
+                        if (style)
+                        {
+                            styleDetail = &reg.get<PointStyleDetail>(point.style);
+                        }
+
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
                         if (transformDetail)
                         {
                             if (transformDetail->views[rs.viewID].passingCull)
                             {
-                                styleDetail->drawList.emplace_back(PointDrawable{ geom->rootNode, transformDetail });
+                                styleDetail->drawList.emplace_back(PointDrawable{ geomView.root, transformDetail });
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(PointDrawable{ geom->rootNode, nullptr });
+                            styleDetail->drawList.emplace_back(PointDrawable{ geomView.root, nullptr });
                             ++count;
                         }
                     }
@@ -491,42 +550,14 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
 void
 PointSystemNode::traverse(vsg::ConstVisitor& v) const
 {
-    for (auto& pipeline : _pipelines)
-    {
-        pipeline.commands->accept(v);
-    }
+    handleConstVisitor<Point, PointGeometryDetail>(v);
+    Inherit::traverse(v);
+}
 
-    // it might be an ECS visitor, in which case we'll communicate the entity being visited
-    auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&v);
-    std::uint32_t viewID = ecsVisitor ? ecsVisitor->viewID : 0;
-
-    _registry.read([&](entt::registry& reg)
-        {
-            auto view = reg.view<Point, ActiveState>();
-
-            view.each([&](auto entity, auto& point, auto& active)
-                {
-                    auto* geom = reg.try_get<PointGeometryDetail>(point.geometry);
-                    if (geom && geom->rootNode)
-                    {
-                        if (ecsVisitor)
-                            ecsVisitor->currentEntity = entity;
-
-                        auto* transformDetail = reg.try_get<TransformDetail>(entity);
-                        if (transformDetail)
-                        {
-                            _tempMT->matrix = transformDetail->views[viewID].model;
-                            _tempMT->children[0] = geom->rootNode;
-                            _tempMT->accept(v);
-                        }
-                        else
-                        {
-                            geom->rootNode->accept(v);
-                        }
-                    }
-                });
-        });
-
+void
+PointSystemNode::traverse(vsg::Visitor& v)
+{
+    handleVisitor<PointGeometryDetail>(v);
     Inherit::traverse(v);
 }
 
@@ -542,20 +573,18 @@ PointSystemNode::update(VSGContext vsgcontext)
         s_toDispose = vsg::Objects::create();
     }
 
-    if (vsgcontext->devicePixelRatio() != _devicePixelRatio)
-    {
-        _devicePixelRatio = vsgcontext->devicePixelRatio();
-
-        // If the DPR changed, dirty all styles so the new dpr will get applied
-        _registry.read([&](entt::registry& reg)
-            {
-                for (auto&& [e, style] : reg.view<PointStyle>().each())
-                    style.dirty(reg);
-            });
-    }
-
     _registry.read([&](entt::registry& reg)
         {
+            // check whether the device pixel ratio has changed; if so we need to redo the style
+            if (vsgcontext->devicePixelRatio() != _devicePixelRatio)
+            {
+                _devicePixelRatio = vsgcontext->devicePixelRatio();
+
+                // If the DPR changed, dirty all styles so the new dpr will get applied
+                for (auto&& [e, style] : reg.view<PointStyle>().each())
+                    style.dirty(reg);
+            }
+
             PointStyle::eachDirty(reg, [&](entt::entity e)
                 {
                     const auto& [style, styleDetail] = reg.get<PointStyle, PointStyleDetail>(e);
@@ -565,8 +594,31 @@ PointSystemNode::update(VSGContext vsgcontext)
             PointGeometry::eachDirty(reg, [&](entt::entity e)
                 {
                     const auto& [geom, geomDetail] = reg.get<PointGeometry, PointGeometryDetail>(e);
-                    createOrUpdateGeometry(geom, geomDetail, vsgcontext);
-                });                   
+                    createOrUpdateGeometry(geom, geomDetail);
+                });
+
+            // Regenerate all geometry for any view that has changed (e.g., an SRS switch or adding a new view)
+            for (ViewIDType viewID = 0; viewID < _viewInfo.size(); ++viewID)
+            {
+                auto& view = _viewInfo[viewID];
+
+                // Check for view expiration (no record traversal)
+                auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
+                if (view.lastFrame < frame - 1u)
+                {
+                    view.srsDef.clear();
+                    view.dirty = true;
+                    view.lastFrame = std::numeric_limits<FrameCountType>::max();
+                }
+
+                if (view.dirty)
+                {
+                    reg.view<PointGeometry, PointGeometryDetail>().each([&](auto e, auto& geom, auto& geomDetail)
+                        {
+                            createOrUpdateGeometryForView(viewID, geom, geomDetail);
+                        });
+                }
+            }
         });
 
     Inherit::update(vsgcontext);

@@ -23,9 +23,12 @@ auto Demo_Line_Absolute = [](Application& app)
 
                 // Build the geometry.
                 auto& geometry = r.emplace<LineGeometry>(entity);
+                geometry.srs = app.mapNode->srs();
 
-                // Let's transform geodetic (long, lat) points into our world SRS:
+                // Let's transform geodetic (long, lat) points into our world SRS.
+                // This is not strictly necessary but can improve performance.
                 auto xform = SRS::WGS84.to(app.mapNode->srs());
+
                 for (double lon = -180; lon <= 0.0; lon += 0.25)
                 {
                     auto world = xform(glm::dvec3(lon, 20.0, 0.0));
@@ -83,14 +86,17 @@ auto Demo_Line_Dynamic_Allocation_Test = [](Application& app)
         auto tessellate = [&](LineGeometry& line, PointGeometry& point)
             {
                 line.points.clear();
-                point.points.clear();
+                line.srs = SRS::WGS84;
 
-                auto xform = SRS::WGS84.to(app.mapNode->srs());
+                point.points.clear();
+                point.srs = SRS::WGS84;
+
+                //auto xform = SRS::WGS84.to(app.mapNode->srs());
                 for (double lon = -180; lon <= 180; lon += step)
                 {
-                    auto world = xform(glm::dvec3(lon, 00.0, 1e6));
-                    line.points.emplace_back(world);
-                    point.points.emplace_back(world);
+                    glm::dvec3 p(lon, 00.0, 1e6);
+                    line.points.emplace_back(p);
+                    point.points.emplace_back(p);
                 }
             };
 
@@ -107,7 +113,6 @@ auto Demo_Line_Dynamic_Allocation_Test = [](Application& app)
 
                     tessellate(lineGeom, pointGeom);
 
-
                     // Style our line.
                     auto& lineStyle = r.emplace<LineStyle>(entity);
                     lineStyle.color = StockColor::Lime;
@@ -115,7 +120,7 @@ auto Demo_Line_Dynamic_Allocation_Test = [](Application& app)
 
                     auto& line = r.emplace<Line>(entity, lineGeom, lineStyle);
 
-
+                    // Style out points.
                     auto& pointStyle = r.emplace<PointStyle>(entity);
                     pointStyle.color = StockColor::Yellow;
                     pointStyle.width = 10.0f;
@@ -164,13 +169,12 @@ auto Demo_Line_Per_Vertex_Colors = [](Application& app)
 
                 // Build the geometry.
                 auto& geometry = r.emplace<LineGeometry>(entity);
+                geometry.srs = SRS::WGS84;
 
-                // Let's transform geodetic (long, lat) points into our world SRS:
-                auto xform = SRS::WGS84.to(app.mapNode->srs());
+                // Build the line:
                 for (double lon = -180; lon <= 0.0; lon += 2.0)
                 {
-                    auto world = xform(glm::dvec3(lon, -20.0, 25000.0));
-                    geometry.points.emplace_back(world);
+                    geometry.points.emplace_back(lon, -20.0, 25000.0);
                 }
 
                 // Generate some pretty per-vertex colors:
@@ -222,6 +226,7 @@ auto Demo_Line_Relative = [](Application& app)
         entity = registry.create();
 
         // Create the line geometry, which will be relative to a transform.
+        // In this case we do NOT assign an SRS to the geometry.
         auto& geometry = registry.emplace<LineGeometry>(entity);
         const double size = 500000;
         geometry.points = {

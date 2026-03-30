@@ -23,9 +23,7 @@ auto Demo_Point = [](Application& app)
 
                 // Build the geometry.
                 auto& geometry = r.emplace<PointGeometry>(entity);
-
-                // Let's transform geodetic (long, lat) points into our world SRS:
-                auto xform = SRS::WGS84.to(app.mapNode->srs());
+                geometry.srs = SRS::WGS84;
 
                 geometry.points.reserve(360);
                 geometry.colors.reserve(360);
@@ -33,8 +31,7 @@ auto Demo_Point = [](Application& app)
 
                 for (double lon = -180; lon < 180; lon += 1.0)
                 {
-                    auto world = xform(glm::dvec3(lon, 10.0 * sin(lon / 22.5), 120000.0));
-                    geometry.points.emplace_back(world);
+                    geometry.points.emplace_back(lon, 10.0 * sin(lon / 22.5), 120000.0);
 
                     auto hsl = StockColor::White.asHSL();
                     hsl[0] = (float)((lon + 180.0) / 360.0); // hue

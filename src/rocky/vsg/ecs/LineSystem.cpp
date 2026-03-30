@@ -125,7 +125,11 @@ namespace
     }
     void on_destroy_LineGeometryDetail(entt::registry& r, entt::entity e)
     {
-        dispose(r.get<LineGeometryDetail>(e).root);
+        for (auto& view : r.get<LineGeometryDetail>(e).views)
+        {
+            dispose(view.root);
+            view = {};
+        }
     }
 
     void on_update_Line(entt::registry& r, entt::entity e)
@@ -145,10 +149,6 @@ namespace
 LineSystemNode::LineSystemNode(Registry& registry) :
     Inherit(registry)
 {
-    // temporary transform used by the visitor traversal(s)
-    _tempMT = vsg::MatrixTransform::create();
-    _tempMT->children.resize(1);
-
     _registry.write([&](entt::registry& r)
         {
             // install the ecs callbacks for Lines
@@ -267,8 +267,11 @@ LineSystemNode::compile(vsg::Context& compileContext)
 
             reg.view<LineGeometryDetail>().each([&](auto& geomDetail)
                 {
-                    if (geomDetail.geomNode)
-                        geomDetail.geomNode->compile(compileContext);
+                    for (auto& geomView : geomDetail.views)
+                    {
+                        if (geomView.geomNode)
+                            geomView.geomNode->compile(compileContext);
+                    }
                 });
         });
 
@@ -276,19 +279,39 @@ LineSystemNode::compile(vsg::Context& compileContext)
 }
 
 void
-LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDetail& geomDetail, VSGContext vsgcontext)
+LineSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const LineGeometry& geom, LineGeometryDetail& geomDetail)
 {
     // NB: registry is read-locked
 
-    bool reallocate = false;
+    auto& geomView = geomDetail.views[viewID];
+    auto& view = _viewInfo[viewID];
 
-    if (!geomDetail.root)
+    // If the view is removed, dispose of its nodes:
+    if (view.srsDef.empty())
+    {
+        if (geomView.root)
+        {
+            dispose(geomView.root);
+            dispose(geomView.geomNode);
+            geomView = {};
+        }
+        view.dirty = false;
+        return;
+    }
+
+    SRS srs(view.srsDef);
+    ROCKY_SOFT_ASSERT_AND_RETURN(srs, void());
+
+    bool reallocate = view.dirty;
+    view.dirty = false;
+
+    if (!geomView.root)
     {
         reallocate = true;
     }
     else
     {
-        if (geomDetail.geomNode && geom.points.capacity() > geomDetail.geomNode->allocatedCapacity)
+        if (geomView.geomNode && geom.points.capacity() > geomView.geomNode->allocatedCapacity)
         {
             reallocate = true;
         }
@@ -297,54 +320,52 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
     if (reallocate)
     {
         // discard the old node and create a new one.
-        if (geomDetail.geomNode)
-            vsgcontext->dispose(geomDetail.geomNode);
+        if (geomView.geomNode)
+            dispose(geomView.geomNode);
 
-        geomDetail.geomNode = LineGeometryNode::create();
+        geomView.geomNode = LineGeometryNode::create();
 
         vsg::ref_ptr<vsg::Node> root;
         vsg::dmat4 localizer_matrix;
 
         if (geom.srs.valid())
         {
-            GeoPoint anchor(geom.srs, 0, 0);
-            if (!geom.points.empty())
-                anchor = GeoPoint(geom.srs, (geom.points.front() + geom.points.back()) * 0.5);
-
-            ROCKY_SOFT_ASSERT_AND_RETURN(anchor.valid(), void());
-            auto [xform, offset] = anchor.parseAsReferencePoint();
+            glm::dvec3 precisionOffset(0, 0, 0);
+            auto xform = geom.srs.to(srs);
 
             // make a copy that we will use to transform and offset:
             if (!geom.points.empty())
             {
                 std::vector<glm::dvec3> copy(geom.points);
-                xform.transformRange(copy.begin(), copy.end());
-                for (auto& point : copy)
-                    point -= offset;
+                xform.clampArray(copy.data(), copy.size());
+                xform.transformArray(copy.data(), copy.size());
 
-                geomDetail.geomNode->set(copy, geom.colors, geom.topology);
+                precisionOffset = (copy.front() + copy.back()) * 0.5;
+                for (auto& point : copy)
+                    point -= precisionOffset;
+
+                geomView.geomNode->set(copy, geom.colors, geom.topology);
             }
             else
             {
-                geomDetail.geomNode->set(geom.points, geom.colors, geom.topology);
+                geomView.geomNode->set(geom.points, geom.colors, geom.topology);
             }
 
-
-            localizer_matrix = vsg::translate(to_vsg(offset));
+            localizer_matrix = vsg::translate(to_vsg(precisionOffset));
             auto localizer = vsg::MatrixTransform::create(localizer_matrix);
-            localizer->addChild(geomDetail.geomNode);
+            localizer->addChild(geomView.geomNode);
             root = localizer;
         }
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.colors, geom.topology);
-            root = geomDetail.geomNode;
+            geomView.geomNode->set(geom.points, geom.colors, geom.topology);
+            root = geomView.geomNode;
         }
 
-        geomDetail.root = root;
+        geomView.root = root;
 
-        requestCompile(geomDetail.root);
+        requestCompile(geomView.root);
     }
 
     else // existing node -- update:
@@ -354,33 +375,43 @@ LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDet
 
         if (geom.srs.valid() && geom.points.size() > 0)
         {
-            GeoPoint anchor(geom.srs, (geom.points.front() + geom.points.back()) * 0.5);
-
-            ROCKY_SOFT_ASSERT_AND_RETURN(anchor.valid(), void());
-
-            auto [xform, offset] = anchor.parseAsReferencePoint();
+            glm::dvec3 precisionOffset(0, 0, 0);
+            auto xform = geom.srs.to(srs);
 
             // make a copy that we will use to transform and offset:
             std::vector<glm::dvec3> copy(geom.points);
-            xform.transformRange(copy.begin(), copy.end());
+            xform.clampArray(copy.data(), copy.size());
+            xform.transformArray(copy.data(), copy.size());
+
+            precisionOffset = (copy.front() + copy.back()) * 0.5;
             for (auto& point : copy)
-                point -= offset;
+                point -= precisionOffset;
 
-            geomDetail.geomNode->set(copy, geom.colors, geom.topology);
+            geomView.geomNode->set(copy, geom.colors, geom.topology);
 
-            auto mt = find<vsg::MatrixTransform>(geomDetail.root);
-            mt->matrix = vsg::translate(to_vsg(offset));
+            auto mt = find<vsg::MatrixTransform>(geomView.root);
+            mt->matrix = vsg::translate(to_vsg(precisionOffset));
             localizer_matrix = mt->matrix;
         }
         else
         {
             // no reference point -- push raw geometry
-            geomDetail.geomNode->set(geom.points, geom.colors, geom.topology);
+            geomView.geomNode->set(geom.points, geom.colors, geom.topology);
         }
 
         // upload the changed arrays
-        requestUpload(geomDetail.geomNode->arrays);
-        requestUpload(geomDetail.geomNode->indices);
+        requestUpload(geomView.geomNode->arrays);
+        requestUpload(geomView.geomNode->indices);
+    }
+}
+
+void
+LineSystemNode::createOrUpdateGeometry(const LineGeometry& geom, LineGeometryDetail& geomDetail)
+{
+    // NB: registry is read-locked
+    for (ViewIDType viewID = 0; viewID < _viewInfo.size(); ++viewID)
+    {
+        createOrUpdateGeometryForView(viewID, geom, geomDetail);
     }
 }
 
@@ -423,6 +454,22 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
     std::vector<LineStyleDetail*> styleDetails;
     styleDetails.emplace_back(&_defaultStyleDetail);
 
+    SRS srs;
+    record.getValue("rocky.worldsrs", srs);
+
+    auto& view = _viewInfo[rs.viewID];
+
+    // I'm alive
+    view.lastFrame = rs.frame;
+
+    // Did my SRS change? Because if it did, we need to regenerate
+    if (view.srsDef.empty() || view.srsDef != srs.definition())
+    {
+        view.srsDef = srs.definition();
+        view.dirty = true;
+        return;
+    }
+
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
@@ -432,33 +479,35 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
                 });
 
             int count = 0;
-            auto view = reg.view<Line, ActiveState, Visibility>();
 
-            view.each([&](auto entity, auto& line, auto& active, auto& visibility)
+            auto iter = reg.view<Line, ActiveState, Visibility>();
+            iter.each([&](auto entity, auto& line, auto& active, auto& visibility)
                 {
-                    auto* geom = reg.try_get<LineGeometryDetail>(line.geometry);
-                    if (!geom)
-                        return;                        
-                        
-                    auto* styleDetail = &_defaultStyleDetail;
-                    auto* style = reg.try_get<LineStyle>(line.style);
-                    if (style)
-                        styleDetail = &reg.get<LineStyleDetail>(line.style);
+                    auto* geomDetail = reg.try_get<LineGeometryDetail>(line.geometry);
+                    if (!geomDetail)
+                        return;
 
-                    if (geom->root && visible(visibility, rs))
+                    auto& geomView = geomDetail->views[rs.viewID];
+
+                    if (geomView.root && visible(visibility, rs))
                     {
+                        auto* styleDetail = &_defaultStyleDetail;
+                        auto* style = reg.try_get<LineStyle>(line.style);
+                        if (style)
+                            styleDetail = &reg.get<LineStyleDetail>(line.style);
+
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
                         if (transformDetail)
                         {
                             if (transformDetail->views[rs.viewID].passingCull)
                             {
-                                styleDetail->drawList.emplace_back(LineDrawable{ geom->root, transformDetail });
+                                styleDetail->drawList.emplace_back(LineDrawable{ geomView.root, transformDetail });
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(LineDrawable{ geom->root, nullptr });
+                            styleDetail->drawList.emplace_back(LineDrawable{ geomView.root, nullptr });
                             ++count;
                         }
                     }
@@ -468,14 +517,18 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
             // TODO: swap vectors into unprotected space to free up the readlock?
             if (count > 0)
             {
+                // Start by binding the pipeline:
                 _pipelines[0].commands->accept(record);
 
+                // For each style:
                 for (auto& styleDetail : styleDetails)
-                {
+                {                    
                     if (!styleDetail->drawList.empty())
                     {
+                        // Bind the style's UBOs and other state:
                         styleDetail->bind->accept(record);
 
+                        // And record each node pertaining to this style:
                         for (auto& drawable : styleDetail->drawList)
                         {
                             if (drawable.xformDetail)
@@ -491,6 +544,7 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
                             }
                         }
 
+                        // We are done with the drawlist so clear it out.
                         styleDetail->drawList.clear();
                     }
                 }
@@ -501,50 +555,22 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
 void
 LineSystemNode::traverse(vsg::ConstVisitor& v) const
 {
-    for (auto& pipeline : _pipelines)
-    {
-        pipeline.commands->accept(v);
-    }
+    handleConstVisitor<Line, LineGeometryDetail>(v);
+    Inherit::traverse(v);
+}
 
-    // it might be an ECS visitor, in which case we'll communicate the entity being visited
-    auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&v);
-    std::uint32_t viewID = ecsVisitor ? ecsVisitor->viewID : 0;
-
-    _registry.read([&](entt::registry& reg)
-        {
-            auto view = reg.view<Line, ActiveState>();
-
-            view.each([&](auto entity, auto& line, auto& active)
-                {
-                    auto* geom = reg.try_get<LineGeometryDetail>(line.geometry);
-
-                    if (geom && geom->root)
-                    {
-                        if (ecsVisitor)
-                            ecsVisitor->currentEntity = entity;
-
-                        auto* transformDetail = reg.try_get<TransformDetail>(entity);
-                        if (transformDetail)
-                        {
-                            _tempMT->matrix = transformDetail->views[viewID].model;
-                            _tempMT->children[0] = geom->root;
-                            _tempMT->accept(v);
-                        }
-                        else
-                        {
-                            geom->root->accept(v);
-                        }
-                    }
-                });
-        });
-
+void
+LineSystemNode::traverse(vsg::Visitor& v)
+{
+    handleVisitor<LineGeometryDetail>(v);
     Inherit::traverse(v);
 }
 
 void
 LineSystemNode::update(VSGContext vsgcontext)
 {
-    if (status.failed()) return;
+    if (status.failed())
+        return;
 
     // start by disposing of any old static objects
     if (!s_toDispose->children.empty())
@@ -553,20 +579,19 @@ LineSystemNode::update(VSGContext vsgcontext)
         s_toDispose = vsg::Objects::create();
     }
 
-    if (vsgcontext->devicePixelRatio() != _devicePixelRatio)
-    {
-        _devicePixelRatio = vsgcontext->devicePixelRatio();
-
-        // If the DPR changed, dirty all styles so the new dpr will get applied
-        _registry.read([&](entt::registry& reg)
-            {
-                for (auto&& [e, style] : reg.view<LineStyle>().each())
-                    style.dirty(reg);
-            });
-    }
-
     _registry.read([&](entt::registry& reg)
         {
+            // check whether the device pixel ratio has changed; if so we need to redo the style
+            if (vsgcontext->devicePixelRatio() != _devicePixelRatio)
+            {
+                _devicePixelRatio = vsgcontext->devicePixelRatio();
+
+                // If the DPR changed, dirty all styles so the new dpr will get applied
+                for (auto&& [e, style] : reg.view<LineStyle>().each())
+                    style.dirty(reg);
+            }
+
+            // check for dirty styles
             LineStyle::eachDirty(reg, [&](entt::entity e)
                 {
                     const auto [style, styleDetail] = reg.try_get<LineStyle, LineStyleDetail>(e);
@@ -574,12 +599,36 @@ LineSystemNode::update(VSGContext vsgcontext)
                         createOrUpdateStyle(*style, *styleDetail);
                 });
 
+            // check for dirty geometry:
             LineGeometry::eachDirty(reg, [&](entt::entity e)
                 {
                     const auto [geom, geomDetail] = reg.try_get<LineGeometry, LineGeometryDetail>(e);
                     if (geom && geomDetail)
-                        createOrUpdateGeometry(*geom, *geomDetail, vsgcontext);
-                });                  
+                        createOrUpdateGeometry(*geom, *geomDetail);
+                });
+
+            // Regenerate all geometry for any view that has changed (e.g., an SRS switch or adding a new view)
+            for (ViewIDType viewID = 0; viewID < _viewInfo.size(); ++viewID)
+            {
+                auto& view = _viewInfo[viewID];
+
+                // Check for view expiration (no record traversal)
+                auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
+                if (view.lastFrame < frame - 1u)
+                {
+                    view.srsDef.clear();
+                    view.dirty = true;
+                    view.lastFrame = std::numeric_limits<FrameCountType>::max();
+                }
+
+                if (view.dirty)
+                {
+                    reg.view<LineGeometry, LineGeometryDetail>().each([&](auto e, auto& geom, auto& geomDetail)
+                        {
+                            createOrUpdateGeometryForView(viewID, geom, geomDetail);
+                        });
+                }
+            }
         });
 
     Inherit::update(vsgcontext);
@@ -628,9 +677,12 @@ void
 LineGeometry::recycle(entt::registry& reg)
 {
     auto& geomDetail = reg.get<LineGeometryDetail>(owner);
-    if (geomDetail.geomNode)
+    for (auto& geomView : geomDetail.views)
     {
-        geomDetail.geomNode->setCount(0);
+        if (geomView.geomNode)
+        {
+            geomView.geomNode->setCount(0);
+        }
     }
     points.clear();
     dirty(reg);

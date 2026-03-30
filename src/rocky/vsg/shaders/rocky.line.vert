@@ -54,11 +54,16 @@ out gl_PerVertex {
 // clamping it beyond the near clip plane if necessary.
 vec3 apply_depth_offset(in vec3 vertex, float offset, float n)
 {
-    float t_n = (-n + 1.0) / -vertex.z; // [0..1] -> [n+1 .. vertex]
-    if (t_n <= 0.0) return vertex; // already behind near plane
-    float len = length(vertex);
-    float t_offset = 1.0 - (offset/len);
-    return vertex * max(t_n, t_offset);
+    if (n > 0.0) {
+        float t_n = (-n + 1.0) / -vertex.z; // [0..1] -> [n+1 .. vertex]
+        if (t_n <= 0.0) return vertex; // already behind near plane
+        float len = length(vertex);
+        float t_offset = 1.0 - (offset/len);
+        return vertex * max(t_n, t_offset);
+    }
+    else {
+        return vertex + vec3(0, 0, offset);
+    }
 }
 
 void main()
@@ -92,7 +97,10 @@ void main()
     vec2 viewport_size = vsg_viewports.viewport[0].zw;
 
     float bias = line.style.depthOffset;
-    float nearz = -pc.projection[3][2] / (pc.projection[2][2] + 1.0);
+
+    float nearz = pc.projection[3][3] == 0 ?
+        -pc.projection[3][2] / (pc.projection[2][2] + 1.0) : // perspective
+        -1.0; //-(pc.projection[3][2] + 1.0) / pc.projection[2][2];  // orthographic
 
     vec4 curr_view = pc.modelview * vec4(in_vertex, 1);
     curr_view.xyz  = apply_depth_offset(curr_view.xyz, bias, nearz);
@@ -114,16 +122,17 @@ void main()
 
     // The following vertex comparisons must be done in model 
     // space because the equivalency gets mashed after projection.
+    const float epsilon = 1e-7;
 
     // starting point uses (next - current)
-    if (in_vertex == in_vertex_prev)
+    if (distance(in_vertex, in_vertex_prev) < epsilon)
     {
         dir = normalize(next_pixel - curr_pixel);
         vary.stippleDir = dir;
     }
 
     // ending point uses (current - previous)
-    if (in_vertex == in_vertex_next)
+    else if (distance(in_vertex, in_vertex_next) < epsilon)
     {
         dir = normalize(curr_pixel - prev_pixel);
         vary.stippleDir = dir;

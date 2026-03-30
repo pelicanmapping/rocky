@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "SRS.h"
@@ -1037,8 +1037,14 @@ SRSOperation::transformBounds(const Box& in) const
 }
 
 bool
-SRSOperation::clamp(double& x, double& y) const
+SRSOperation::clamp(double& x, double& y, double& z) const
 {
+    glm::dvec3 temp(x, y, z);
+    bool ok = clampArray(&temp, 1);
+    if (ok)
+        x = temp.x, y = temp.y, z = temp.z;
+    return ok;
+#if 0
     auto& gb = _to.geodeticBounds();
     if (!gb.valid())
         return false;
@@ -1063,6 +1069,7 @@ SRSOperation::clamp(double& x, double& y) const
     bool clamped = (x != temp.x) || (y != temp.y);
     x = temp.x, y = temp.y;
     return clamped;
+#endif
 }
 
 std::string

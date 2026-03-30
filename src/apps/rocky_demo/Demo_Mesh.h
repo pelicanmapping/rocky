@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -21,6 +21,7 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
         // Attach a mesh component:
         auto& geom = reg.emplace<MeshGeometry>(entity);
+        geom.srs = SRS::WGS84;
 
         // Make some geometry.
         const double step = 2.5;
@@ -28,17 +29,14 @@ auto Demo_Mesh_Absolute = [](Application& app)
         const double min_lon = 0.0, max_lon = 35.0;
         const double min_lat = 15.0, max_lat = 35.0;
 
-        // A transform from WGS84 to the world SRS:
-        auto xform = SRS::WGS84.to(app.mapNode->srs());
-
         for (double lon = 0.0; lon < 35.0; lon += step)
         {
             for(double lat = 15.0; lat < 35.0; lat += step)
             {
-                auto v1 = xform(glm::dvec3(lon, lat, alt));
-                auto v2 = xform(glm::dvec3(lon + step, lat, alt));
-                auto v3 = xform(glm::dvec3(lon + step, lat + step, alt));
-                auto v4 = xform(glm::dvec3(lon, lat + step, alt));
+                auto v1 = glm::dvec3(lon, lat, alt);
+                auto v2 = glm::dvec3(lon + step, lat, alt);
+                auto v3 = glm::dvec3(lon + step, lat + step, alt);
+                auto v4 = glm::dvec3(lon, lat + step, alt);
                 
                 std::uint32_t i = (std::uint32_t)geom.vertices.size();
                 geom.vertices.insert(geom.vertices.end(), { v1, v2, v3, v4 });

@@ -151,7 +151,11 @@ namespace
     }
     void on_destroy_MeshGeometryDetail(entt::registry& r, entt::entity e)
     {
-        dispose(r.get<MeshGeometryDetail>(e).rootNode);
+        for (auto& view : r.get<MeshGeometryDetail>(e).views)
+        {
+            dispose(view.root);
+            view = {};
+        }
     }
     void on_destroy_MeshTexture(entt::registry& r, entt::entity e)
     {
@@ -264,10 +268,10 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
         return;
     }
 
-    _pipelines.resize(NUM_PIPELINES);
+    _pipelines.resize(1);
 
     // create all pipeline permutations.
-    for (int feature_mask = 0; feature_mask < NUM_PIPELINES; ++feature_mask)
+    for (int feature_mask = 0; feature_mask < 1; ++feature_mask)
     {
         auto& c = _pipelines[feature_mask];
 
@@ -357,8 +361,11 @@ MeshSystemNode::compile(vsg::Context& compileContext)
 
             reg.view<MeshGeometryDetail>().each([&](auto& geomDetail)
                 {
-                    if (geomDetail.geomNode)
-                        geomDetail.geomNode->compile(compileContext);
+                    for (auto& geomView : geomDetail.views)
+                    {
+                        if (geomView.geomNode)
+                            geomView.geomNode->compile(compileContext);
+                    }
                 });
         });
 
@@ -366,76 +373,117 @@ MeshSystemNode::compile(vsg::Context& compileContext)
 }
 
 void
-MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDetail& geomDetail, VSGContext vsgcontext)
+MeshSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const MeshGeometry& geom, MeshGeometryDetail& geomDetail)
 {
     // NB: registry is read-locked
 
-    if (geomDetail.geomNode)
+    auto& geomView = geomDetail.views[viewID];
+    auto& view = _viewInfo[viewID];
+
+    // If the view is removed, dispose of its nodes:
+    if (view.srsDef.empty())
     {
-        vsgcontext->dispose(geomDetail.geomNode);
-    }
-
-    geomDetail.geomNode = MeshGeometryNode::create();
-
-    vsg::ref_ptr<vsg::Node> root;
-    vsg::dmat4 localizer_matrix;
-
-    auto copyArrays = [&](auto& verts)
+        if (geomView.root)
         {
-            auto& gn = geomDetail.geomNode;
-
-            gn->_verts.resize(verts.size());
-            std::transform(verts.begin(), verts.end(), gn->_verts.begin(),
-                [](const glm::dvec3& v) { return to_vsg(v); });
-
-            gn->_colors.resize(std::max(geom.colors.size(), verts.size()));
-            std::transform(geom.colors.begin(), geom.colors.end(), gn->_colors.begin(),
-                [](const glm::fvec4& c) { return to_vsg(c); });
-
-            gn->_normals.resize(std::max(geom.normals.size(), verts.size()));
-            std::transform(geom.normals.begin(), geom.normals.end(), gn->_normals.begin(),
-                [](const glm::fvec3& n) { return to_vsg(n); });
-
-            gn->_uvs.resize(std::max(geom.uvs.size(), verts.size()));
-            std::transform(geom.uvs.begin(), geom.uvs.end(), gn->_uvs.begin(),
-                [](const glm::fvec2& uv) { return to_vsg(uv); });
-
-            gn->_indices = geom.indices;
-        };
-
-    if (geom.srs.valid())
-    {
-        if (geom.vertices.size() > 0)
-        {
-            GeoPoint anchor(geom.srs, geom.vertices.front());
-            auto [xform, offset] = anchor.parseAsReferencePoint();
-
-            // transform and localize:
-            std::vector<glm::dvec3> verts(geom.vertices); // copy
-            xform.transformRange(verts.begin(), verts.end());
-            for (auto& v : verts)
-                v -= offset;
-
-            copyArrays(verts);
-
-            auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(offset)));
-            localizer->addChild(geomDetail.geomNode);
-            root = localizer;
+            dispose(geomView.root);
+            dispose(geomView.geomNode);
+            geomView = {};
         }
+        view.dirty = false;
+        return;
     }
-    else
+
+    SRS srs(view.srsDef);
+    ROCKY_SOFT_ASSERT_AND_RETURN(srs, void());
+
+    bool reallocate = view.dirty;
+    view.dirty = false;
+
+    if (!geomView.root)
     {
-        if (geom.vertices.size() > 0)
+        reallocate = true;
+    }
+
+    if (reallocate)
+    {
+        if (geomView.geomNode)
+            dispose(geomView.geomNode);
+
+        geomView.geomNode = MeshGeometryNode::create();
+
+        vsg::ref_ptr<vsg::Node> root;
+        vsg::dmat4 localizer_matrix;
+
+        auto copyArrays = [&](auto& verts)
+            {
+                auto& gn = geomView.geomNode;
+
+                gn->_verts.resize(verts.size());
+                std::transform(verts.begin(), verts.end(), gn->_verts.begin(),
+                    [](const glm::dvec3& v) { return to_vsg(v); });
+
+                gn->_colors.resize(std::max(geom.colors.size(), verts.size()));
+                std::transform(geom.colors.begin(), geom.colors.end(), gn->_colors.begin(),
+                    [](const glm::fvec4& c) { return to_vsg(c); });
+
+                gn->_normals.resize(std::max(geom.normals.size(), verts.size()));
+                std::transform(geom.normals.begin(), geom.normals.end(), gn->_normals.begin(),
+                    [](const glm::fvec3& n) { return to_vsg(n); });
+
+                gn->_uvs.resize(std::max(geom.uvs.size(), verts.size()));
+                std::transform(geom.uvs.begin(), geom.uvs.end(), gn->_uvs.begin(),
+                    [](const glm::fvec2& uv) { return to_vsg(uv); });
+
+                gn->_indices = geom.indices;
+            };
+
+        if (geom.srs.valid())
         {
-            copyArrays(geom.vertices);
+            if (geom.vertices.size() > 0)
+            {
+                glm::dvec3 precisionOffset(0, 0, 0);
+                auto xform = geom.srs.to(srs);
+
+                // transform and localize:
+                std::vector<glm::dvec3> copy(geom.vertices); // copy
+                xform.clampArray(copy.data(), copy.size());
+                xform.transformArray(copy.data(), copy.size());
+
+                precisionOffset = (copy.front() + copy.back()) * 0.5;
+                for (auto& point : copy)
+                    point -= precisionOffset;
+
+                copyArrays(copy);
+
+                auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(precisionOffset)));
+                localizer->addChild(geomView.geomNode);
+                root = localizer;
+            }
+        }
+        else
+        {
+            if (geom.vertices.size() > 0)
+            {
+                copyArrays(geom.vertices);
+            }
+
+            root = geomView.geomNode;
         }
 
-        root = geomDetail.geomNode;
+        geomView.root = root;
+
+        requestCompile(geomView.geomNode);
     }
+}
 
-    geomDetail.rootNode = root;
-
-    requestCompile(geomDetail.geomNode);
+void
+MeshSystemNode::createOrUpdateGeometry(const MeshGeometry& geom, MeshGeometryDetail& geomDetail)
+{
+    // NB: registry is read-locked
+    for (ViewIDType viewID = 0; viewID < _viewInfo.size(); ++viewID)
+    {
+        createOrUpdateGeometryForView(viewID, geom, geomDetail);
+    }
 }
 
 
@@ -518,7 +566,6 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
             }
 
             styleDetail.styleTexture->imageInfoList = vsg::ImageInfoList{ tex->imageInfo };
-            //uniforms.style.hasTexture = 1;
             needsCompile = true;
         }
     }
@@ -549,19 +596,6 @@ MeshSystemNode::addOrUpdateTexture(const MeshTexture& tex, MeshTextureDetail& te
         });
 }
 
-
-int
-MeshSystemNode::featureMask(const Mesh& mesh) const
-{
-    int feature_set = 0;
-
-    //if (mesh.texture != entt::null) feature_set |= TEXTURE;
-    //if (mesh.style.has_value()) feature_set |= DYNAMIC_STYLE;
-    //if (mesh.writeDepth) feature_set |= WRITE_DEPTH;
-    //if (mesh.cullBackfaces) feature_set |= CULL_BACKFACES;
-    return feature_set;
-}
-
 void
 MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 {
@@ -574,6 +608,24 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 
     _styleDetailBins.clear();
     _styleDetailBins.emplace_back(&_defaultMeshStyleDetail);
+
+
+    SRS srs;
+    record.getValue("rocky.worldsrs", srs);
+
+    auto& view = _viewInfo[rs.viewID];
+
+    // I'm alive
+    view.lastFrame = rs.frame;
+
+    // Did my SRS change? Because if it did, we need to regenerate
+    if (view.srsDef.empty() || view.srsDef != srs.definition())
+    {
+        view.srsDef = srs.definition();
+        view.dirty = true;
+        return;
+    }
+
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
@@ -583,35 +635,37 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                 });
 
             int count = 0;
-            auto view = reg.view<Mesh, ActiveState, Visibility>();
 
-            view.each([&](auto entity, auto& comp, auto& active, auto& visibility)
+            auto iter = reg.view<Mesh, ActiveState, Visibility>();
+            iter.each([&](auto entity, auto& comp, auto& active, auto& visibility)
                 {
-                    auto* geom = reg.try_get<MeshGeometryDetail>(comp.geometry);
-                    if (!geom || !geom->rootNode)
+                    auto* geomDetail = reg.try_get<MeshGeometryDetail>(comp.geometry);
+                    if (!geomDetail)
                         return;
 
-                    auto* styleDetail = &_defaultMeshStyleDetail;
-                    auto* style = reg.try_get<MeshStyle>(comp.style);
-                    if (style)
-                    {
-                        styleDetail = &reg.get<MeshStyleDetail>(comp.style);
-                    }
+                    auto& geomView = geomDetail->views[rs.viewID];
 
-                    if (visible(visibility, rs))
+                    if (geomView.root && visible(visibility, rs))
                     {
+                        auto* styleDetail = &_defaultMeshStyleDetail;
+                        auto* style = reg.try_get<MeshStyle>(comp.style);
+                        if (style)
+                        {
+                            styleDetail = &reg.get<MeshStyleDetail>(comp.style);
+                        }
+
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
                         if (transformDetail)
                         {
                             if (transformDetail->views[rs.viewID].passingCull)
                             {
-                                styleDetail->drawList.emplace_back(MeshDrawable{ geom->rootNode, transformDetail });
+                                styleDetail->drawList.emplace_back(MeshDrawable{ geomView.root, transformDetail });
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(MeshDrawable{ geom->rootNode, nullptr });
+                            styleDetail->drawList.emplace_back(MeshDrawable{ geomView.root, nullptr });
                             ++count;
                         }
                     }
@@ -657,44 +711,14 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 void
 MeshSystemNode::traverse(vsg::ConstVisitor& v) const
 {
-    if (status.failed()) return;
+    handleConstVisitor<Mesh, MeshGeometryDetail>(v);
+    Inherit::traverse(v);
+}
 
-    for (auto& pipeline : _pipelines)
-    {
-        pipeline.commands->accept(v);
-    }
-
-    // it might be an ECS visitor, in which case we'll communicate the entity being visited
-    auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&v);
-    std::uint32_t viewID = ecsVisitor ? ecsVisitor->viewID : 0;
-
-    _registry.read([&](entt::registry& reg)
-        {
-            auto view = reg.view<Mesh, ActiveState>();
-
-            view.each([&](auto entity, auto& comp, auto& active)
-                {
-                    auto* geom = reg.try_get<MeshGeometryDetail>(comp.geometry);
-                    if (geom && geom->rootNode)
-                    {
-                        if (ecsVisitor)
-                            ecsVisitor->currentEntity = entity;
-
-                        auto* transformDetail = reg.try_get<TransformDetail>(entity);
-                        if (transformDetail)
-                        {
-                            _tempMT->matrix = transformDetail->views[viewID].model;
-                            _tempMT->children[0] = geom->rootNode;
-                            _tempMT->accept(v);
-                        }
-                        else
-                        {
-                            geom->rootNode->accept(v);
-                        }
-                    }
-                });
-        });
-
+void
+MeshSystemNode::traverse(vsg::Visitor& v)
+{
+    handleVisitor<MeshGeometryDetail>(v);
     Inherit::traverse(v);
 }
 
@@ -728,8 +752,31 @@ MeshSystemNode::update(VSGContext vsgcontext)
             MeshGeometry::eachDirty(reg, [&](entt::entity e)
                 {
                     const auto& [geom, geomDetail] = reg.get<MeshGeometry, MeshGeometryDetail>(e);
-                    createOrUpdateGeometry(geom, geomDetail, vsgcontext);
+                    createOrUpdateGeometry(geom, geomDetail);
                 });
+
+            // Regenerate all geometry for any view that has changed (e.g., an SRS switch or adding a new view)
+            for (ViewIDType viewID = 0; viewID < _viewInfo.size(); ++viewID)
+            {
+                auto& view = _viewInfo[viewID];
+
+                // Check for view expiration (no record traversal)
+                auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
+                if (view.lastFrame < frame - 1u)
+                {
+                    view.srsDef.clear();
+                    view.dirty = true;
+                    view.lastFrame = std::numeric_limits<FrameCountType>::max();
+                }
+
+                if (view.dirty)
+                {
+                    reg.view<MeshGeometry, MeshGeometryDetail>().each([&](auto e, auto& geom, auto& geomDetail)
+                        {
+                            createOrUpdateGeometryForView(viewID, geom, geomDetail);
+                        });
+                }
+            }
         });
 
     Inherit::update(vsgcontext);

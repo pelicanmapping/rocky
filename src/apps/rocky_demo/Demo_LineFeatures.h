@@ -15,7 +15,7 @@ auto Demo_LineFeatures = [](Application& app)
     
     struct LoadedFeatures {
         Result<> status;
-        std::shared_ptr<rocky::FeatureSource> fs;
+        std::shared_ptr<FeatureSource> fs;
     };
     static Future<LoadedFeatures> data;
     static std::vector<entt::entity> entities;
@@ -26,7 +26,7 @@ auto Demo_LineFeatures = [](Application& app)
         {
             data = app.io().services().jobs.dispatch([](auto& cancelable)
                 {
-                    auto fs = rocky::GDALFeatureSource::create();
+                    auto fs = GDALFeatureSource::create();
                     fs->uri = "https://readymap.org/readymap/filemanager/download/public/countries.geojson";
                     auto status = fs->open();
                     return LoadedFeatures{ status, fs };
@@ -52,9 +52,9 @@ auto Demo_LineFeatures = [](Application& app)
             featureView.styles.lineStyle.color = StockColor::Yellow;
             featureView.styles.lineStyle.width = 2.0f;
             featureView.styles.lineStyle.resolution = 10000.0f;
-            featureView.styles.lineStyle.depthOffset = 12000.0f;
+            featureView.styles.lineStyle.depthOffset = 25000.0f;
 
-            auto entity = featureView.generate(app.mapNode->srs(), app.registry);
+            auto entity = featureView.generate(SRS::ECEF, app.registry);
 
             if (entity != entt::null)
                 entities.emplace_back(entity);
@@ -69,12 +69,19 @@ auto Demo_LineFeatures = [](Application& app)
 
     else if (ImGuiLTable::Begin("Line features"))
     {
-        auto [lock, registry] = app.registry.read();
+        auto [lock, reg] = app.registry.read();
 
-        auto& v = registry.get<Visibility>(entities.front()).visible[0];
+        auto& v = reg.get<Visibility>(entities.front()).visible[0];
         if (ImGuiLTable::Checkbox("Show", &v))
         {
-            setVisible(registry, entities.begin(), entities.end(), v);
+            setVisible(reg, entities.begin(), entities.end(), v);
+        }
+
+        auto& line = reg.get<Line>(entities.front());
+        auto& style = reg.get<LineStyle>(line.style);
+        if (ImGuiLTable::SliderFloat("Depth offset", &style.depthOffset, 0.0f, 100000.0f))
+        {
+            style.dirty(reg);
         }
 
         ImGuiLTable::End();
