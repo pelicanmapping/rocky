@@ -85,7 +85,7 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 
         if (subdivisionPossible)
         {
-            auto& vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
+            auto vp = state->_commandBuffer->viewDependentState->viewportData->at(0);
             auto min_screen_height_ratio = (host->settings().tilePixelSize + host->settings().pixelError) / vp[3];
 
             auto& proj = state->projectionMatrixStack.top();

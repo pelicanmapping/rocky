@@ -20,7 +20,8 @@ namespace ROCKY_NAMESPACE
     public:
         enum class Format {
             RGBA,
-            ABGR
+            ABGR,
+            ARGB            
         };
 
         /** Creates a new default color */

@@ -315,13 +315,21 @@ Color::as(Format format) const
             (((unsigned)(b*255.0)) << 8) |
             (((unsigned)(a*255.0)));
     }
-    else // format == ABGR
+    else if (format == Format::ABGR) // format == ABGR
     {
         return
             (((unsigned)(a*255.0)) << 24) |
             (((unsigned)(b*255.0)) << 16) |
             (((unsigned)(g*255.0)) << 8) |
             (((unsigned)(r*255.0)));
+    }
+    else // if (format == Format::ARGB)
+    {
+        return
+            (((unsigned)(a * 255.0)) << 24) |
+            (((unsigned)(r * 255.0)) << 16) |
+            (((unsigned)(g * 255.0)) << 8) |
+            (((unsigned)(b * 255.0)));
     }
 }
 

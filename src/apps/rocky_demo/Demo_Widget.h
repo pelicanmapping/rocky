@@ -151,6 +151,27 @@ auto Demo_Widget = [](Application& app)
 
         registry.emplace<Line>(entity, droplineGeom, droplineStyle);
 
+        // TESTING:
+        {
+            auto border = registry.create();
+            auto& w = registry.emplace<Widget>(border);
+            w.render = [&](WidgetInstance& i)
+                {
+                    if (i.view.viewID > 0)
+                    {
+                        const float thickness = 4.0f;
+
+                        ImGui::GetForegroundDrawList(ImGui::GetMainViewport())->AddRect(
+                            ImVec2{ (float)i.view.viewport.xmin, (float)i.view.viewport.ymin },
+                            ImVec2{ (float)i.view.viewport.xmax, (float)i.view.viewport.ymax },
+                            StockColor::Yellow.as(Color::Format::ABGR),
+                            0.0f,
+                            0,
+                            thickness);
+                    }
+                };
+        }
+
         app.vsgcontext->requestFrame();
     }
 

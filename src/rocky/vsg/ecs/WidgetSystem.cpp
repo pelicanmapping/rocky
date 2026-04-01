@@ -61,7 +61,7 @@ void
 WidgetSystemNode::initialize(VSGContext context)
 {
     // register me as a gui rendering callback.
-    auto recorder = [this](RenderingState& rs, void* imguiContext)
+    auto recorder = [this](const RenderingState& rs, void* imguiContext)
         {
             auto [lock, reg] = _registry.read();
 
@@ -75,39 +75,68 @@ WidgetSystemNode::initialize(VSGContext context)
                 ImGuiWindowFlags_NoSavedSettings
 #ifdef IMGUI_HAS_DOCK
                 | ImGuiWindowFlags_NoDocking
+                | ImGuiWindowFlags_NoDocking
 #endif
                 ;
 
             _focusedEntities.clear();
 
-            auto view = reg.view<Widget, WidgetRenderable, TransformDetail, Visibility, ActiveState>();
-            for (auto&& [entity, widget, renderable, xdetail, visibility, active] : view.each())
+            // widgets with a Transform:
+            auto iter = reg.view<Widget, WidgetRenderable, TransformDetail, Visibility, ActiveState>();
+            for (auto&& [entity, widget, renderable, xdetail, visibility, active] : iter.each())
             {
-                if (visible(visibility, rs) && xdetail.passingCull(rs))
+                if (widget.render != nullptr && visible(visibility, rs) && xdetail.passingCull(rs))
                 {
-                    if (widget.render)
+                    WidgetInstance i{
+                            widget,
+                            renderable.uid,
+                            reg,
+                            rs,
+                            entity,
+                            defaultWindowFlags,
+                            renderable.screen[rs.viewID],
+                            (ImGuiContext*)imguiContext,
+                            false // focus
+                    };
+
+                    // Note: widget render needs to call ImGui::SetCurrentContext(i.context)
+                    // because of the DLL boundary
+                    widget.render(i);
+
+                    // remember any widgets that want focus.
+                    if (i.hasFocus)
                     {
-                        WidgetInstance i{
-                               widget,
-                               renderable.uid,
-                               reg,
-                               entity,
-                               defaultWindowFlags,
-                               renderable.screen[rs.viewID],
-                               (ImGuiContext*)imguiContext,
-                               rs.viewID,
-                               false // focus
-                        };
+                        _focusedEntities.emplace(entity);
+                    }
+                }
+            }
 
-                        // Note: widget render needs to call ImGui::SetCurrentContext(i.context)
-                        // because of the DLL boundary
-                        widget.render(i);
+            // widgets WITHOUT a Transform:
+            auto iter2 = reg.view<Widget, WidgetRenderable, Visibility, ActiveState>(entt::exclude<TransformDetail>);
+            for (auto&& [entity, widget, renderable, visibility, active] : iter2.each())
+            {
+                if (widget.render != nullptr && visible(visibility, rs))
+                {
+                    WidgetInstance i{
+                            widget,
+                            renderable.uid,
+                            reg,
+                            rs,
+                            entity,
+                            defaultWindowFlags,
+                            renderable.screen[rs.viewID],
+                            (ImGuiContext*)imguiContext,
+                            false // focus
+                    };
 
-                        // remember any widgets that want focus.
-                        if (i.hasFocus)
-                        {
-                            _focusedEntities.emplace(entity);
-                        }
+                    // Note: widget render needs to call ImGui::SetCurrentContext(i.context)
+                    // because of the DLL boundary
+                    widget.render(i);
+
+                    // remember any widgets that want focus.
+                    if (i.hasFocus)
+                    {
+                        _focusedEntities.emplace(entity);
                     }
                 }
             }

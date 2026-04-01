@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
         }
     };
 
-    inline bool visible(const Visibility& vis, RenderingState& rs)
+    inline bool visible(const Visibility& vis, const RenderingState& rs)
     {
         auto delta = (std::int64_t)rs.frame - vis.frame[rs.viewID];
         return vis.visible[rs.viewID] && delta <= 1;
@@ -73,17 +73,4 @@ namespace ROCKY_NAMESPACE
             setVisible(registry, *it, value, view_index);
         }
     }
-
-    //! Whether an entity is active and visible in the given view
-    //! @param r Entity registry
-    //! @param e Entity id
-    //! @param view_index Index of view to check visibility
-    //! @return True if visible in that view
-    //inline bool visible(entt::registry& registry, entt::entity e, int view_index)
-    //{
-    //    // assume a readlock on the registry
-    //    ROCKY_SOFT_ASSERT_AND_RETURN(e != entt::null, false);
-
-    //    return registry.get<Visibility>(e).visible[view_index];
-    //}
 }

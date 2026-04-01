@@ -219,7 +219,7 @@ if(ROCKY_RENDERER_VSG)
          set(ROCKY_HAS_VSGXCHANGE TRUE)
     endif()
     
-    set(ROCKY_MAX_NUMBER_OF_VIEWS "4" CACHE STRING "Maximum number of VSG views to support")
+    set(ROCKY_MAX_NUMBER_OF_VIEWS "8" CACHE STRING "Maximum number of VSG views to support")
     
     # validate ROCKY_MAX_NUMBER_OF_VIEWS
     if(NOT ROCKY_MAX_NUMBER_OF_VIEWS MATCHES "^[0-9]+$")

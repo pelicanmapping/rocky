@@ -11,6 +11,35 @@ using namespace ROCKY_NAMESPACE;
 
 auto Demo_Views = [](Application& app)
 {
+    static entt::entity borderEntity = entt::null;
+
+    // Create a widget that will draw a border around inset views.
+    if (borderEntity == entt::null)
+    {
+        auto [_, reg] = app.registry.write();
+
+        borderEntity = reg.create();
+        auto& w = reg.emplace<Widget>(borderEntity);
+        w.render = [&](WidgetInstance& i)
+            {
+                const float thickness = 3.0f; // pixels
+
+                ImGui::SetCurrentContext(i.context);
+
+                ImGui::GetForegroundDrawList(ImGui::GetMainViewport())->AddRect(
+                    ImVec2{ (float)i.view.viewport.xmin, (float)i.view.viewport.ymin },
+                    ImVec2{ (float)i.view.viewport.xmax, (float)i.view.viewport.ymax },
+                    StockColor::White.as(Color::Format::ABGR),
+                    0.0f, // rounding
+                    0,    // ImDrawFlags
+                    thickness);
+            };
+
+        // no border on view 0 by default:
+        auto& vis = reg.get<Visibility>(borderEntity);
+        vis.visible[0] = false;
+    }
+
     // iterate over all managed windows:
     int window_id = 0;
     for (auto window : app.viewer->windows())
@@ -37,6 +66,11 @@ auto Demo_Views = [](Application& app)
                         ImGuiLTable::ColorEdit3("Clear color", rg->clearValues[0].color.float32);
                     }
 
+                    app.registry.read([&](entt::registry& reg)
+                        {
+                            auto& visibility = reg.get<Visibility>(borderEntity);
+                            ImGuiLTable::Checkbox("Border", &visibility.visible[view->viewID]);
+                        });
 
                     auto mapNode = detail::find<MapNode>(view);
                     if (mapNode)
@@ -77,31 +111,6 @@ auto Demo_Views = [](Application& app)
                             ImGuiLTable::Text("Camera:", "%s", (is_perspective_projection_matrix(view->camera->projectionMatrix->transform())) ? "Perspective" : "Orthographic");
                         }
                     }
-
-
-#if 0
-                    // Perspective/Orthographic camera:
-                    auto camera = view->camera;
-                    bool useOrtho = camera->projectionMatrix->is_compatible(typeid(vsg::Orthographic));
-                    static float fovY_saved = 45.0f;
-
-                    if (ImGuiLTable::Checkbox("Orthographic", &useOrtho))
-                    {
-                        if (useOrtho)
-                        {
-                            auto persp = camera->projectionMatrix->cast<vsg::Perspective>();
-                            fovY_saved = persp->fieldOfViewY;
-                            camera->projectionMatrix = vsg::Orthographic::create(-1.0, 1.0, -1.0, 1.0, persp->nearDistance, persp->farDistance);
-                        }
-                        else
-                        {
-                            auto ortho = camera->projectionMatrix->cast<vsg::Orthographic>();
-                            double ar = (double)camera->getViewport().width / (double)camera->getViewport().height;
-                            camera->projectionMatrix = vsg::Perspective::create(fovY_saved, ar, ortho->nearDistance, ortho->farDistance);
-                        }
-                    }
-#endif
-
 
                     if (num > 1)  // don't allow position/size editing the first view
                     {
@@ -159,26 +168,13 @@ auto Demo_Views = [](Application& app)
                     // First make a camera for the new view, placed at a random location.
                     const int width = 480, height = 480;
                     int win_width = window->extent2D().width, win_height = window->extent2D().height;
-                    int x = win_width - width;
-                    int y = 0;
+                    int x = win_width - width - 10;
+                    int y = 10;
 
-#if 1
                     auto camera = vsg::Camera::create(
                         vsg::Orthographic::create(-1, 1, -1, 1, -1e10, 1e10),
                         vsg::LookAt::create(),
                         vsg::ViewportState::create(x, y, width, height));
-#else
-                    // First make a camera for the new view, placed at a random location.
-                    const double nearFarRatio = 0.00001;
-                    const double vfov = 30.0;
-                    double R = app.mapNode->srs().ellipsoid().semiMajorAxis();
-                    double ar = (double)width / (double)height;
-
-                    auto camera = vsg::Camera::create(
-                        vsg::Perspective::create(vfov, ar, R * nearFarRatio, R * 20.0),
-                        vsg::LookAt::create(),
-                        vsg::ViewportState::create(x, y, width, height));
-#endif
 
                     auto new_mapNode = MapNode::create(app.vsgcontext);
                     new_mapNode->map = app.mapNode->map;

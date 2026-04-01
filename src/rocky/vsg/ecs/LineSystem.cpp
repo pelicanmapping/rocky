@@ -446,9 +446,11 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
 {
     if (status.failed()) return;
 
-    RenderingState rs {
+    auto vp = record.getCommandBuffer()->viewDependentState->view->camera->getViewport();
+    RenderingState rs{
         record.getCommandBuffer()->viewID,
-        record.getFrameStamp()->frameCount
+        record.getFrameStamp()->frameCount,
+        { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
     };
 
     std::vector<LineStyleDetail*> styleDetails;

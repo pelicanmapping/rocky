@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/Common.h>
+#include <rocky/Rendering.h>
 #if defined(ROCKY_HAS_IMGUI) && __has_include(<imgui.h>)
 #include <imgui.h>
 #include <entt/entt.hpp>
@@ -29,11 +30,11 @@ namespace ROCKY_NAMESPACE
         struct Widget& widget;
         const std::string& uid;
         entt::registry& registry;
+        const RenderingState& view;
         entt::entity entity;
         int windowFlags;
         ImVec2 position;
         ImGuiContext* context;
-        std::uint32_t viewID;
         bool hasFocus = false;
 
         inline bool checkFocus() {

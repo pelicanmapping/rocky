@@ -72,7 +72,7 @@ ROCKY_NAMESPACE::pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, in
 
                 if (view->camera)
                 {
-                    const auto& vp = view->camera->getViewport();
+                    const auto vp = view->camera->getViewport();
 
                     if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
                     {
@@ -113,7 +113,7 @@ ROCKY_NAMESPACE::viewAtWindowCoords(vsg::Viewer* viewer, int x, int y)
 
                 if (view->camera)
                 {
-                    const auto& vp = view->camera->getViewport();
+                    const auto vp = view->camera->getViewport();
 
                     if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
                     {
@@ -566,19 +566,21 @@ DisplayManager::addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::
 
             // We still need to process ImGui events even if we're not rendering the frame,
             // so install this "idle" function:
-            auto func = [&, viewID(view->viewID), imguicontext]()
+            auto func = [view, vsgcontext(vsgcontext), viewID(view->viewID), imguicontext]()
                 {
-                    RenderingState vrs{
-                        viewID,
-                        vsgcontext->viewer()->getFrameStamp()->frameCount
-                    };
+                    auto vp = view->camera->getViewport();
+                     RenderingState rs{
+                         view->viewID,
+                         vsgcontext->viewer()->getFrameStamp()->frameCount,
+                         { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
+                     };
 
                     ImGui::SetCurrentContext(imguicontext);
                     ImGui::GetIO().DeltaTime = ImGui::GetIO().DeltaTime <= 0.0f ? 0.016f : ImGui::GetIO().DeltaTime;
                     ImGui::NewFrame();
                     for (auto& record : vsgcontext->guiRecorders)
                     {
-                        record(vrs, imguicontext);
+                        record(rs, imguicontext);
                     }
                     ImGui::EndFrame();
                 };
@@ -827,7 +829,7 @@ DisplayManager::pointAtWindowCoords(vsg::ref_ptr<vsg::Window> window, int x, int
     {
         if (view->camera)
         {
-            const auto& vp = view->camera->getViewport();
+            const auto vp = view->camera->getViewport();
             if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
             {
                 auto point = ROCKY_NAMESPACE::pointAtWindowCoords(view, x, y);

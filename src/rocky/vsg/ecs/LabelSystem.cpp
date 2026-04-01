@@ -53,7 +53,7 @@ LabelSystem::LabelSystem(Registry& registry) :
 
 #ifdef USE_DYNAMIC_FONTS
             // Load the font if necessary
-            auto& font = styleDetail.fonts[i.viewID];
+            auto& font = styleDetail.fonts[i.view.viewID];
             if (font == nullptr && !styleDetail.fontName.empty())
             {
                 font = getOrCreateFont(styleDetail.fontName, i.context);

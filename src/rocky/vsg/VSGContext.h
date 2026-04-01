@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE
 
     namespace detail
     {
-        using GuiRecorder = std::function<void(RenderingState&, void* guiContext)>;
+        using GuiRecorder = std::function<void(const RenderingState&, void* guiContext)>;
         using GuiRecorders = std::deque<GuiRecorder>;
     }
 

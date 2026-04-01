@@ -5,7 +5,7 @@
  */
 #pragma once
 #include <rocky/Common.h>
-#include <array>
+#include <rocky/Math.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -18,6 +18,7 @@ namespace ROCKY_NAMESPACE
     {
         ViewIDType viewID;
         FrameCountType frame;
+        Rect viewport;
     };
 
     //! ViewLocal is a container that holds data on a per-view basis.
