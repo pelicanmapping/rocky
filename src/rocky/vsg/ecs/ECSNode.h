@@ -145,9 +145,13 @@ namespace ROCKY_NAMESPACE
             };
             mutable ViewLocal<ViewInfo> _viewInfo;
 
+            // Subclass can call this to deal with a const visitor in a standard way
+            // (example: intersection visitor, computebounds visitor)
             template<class COMPONENT_T, class GEOM_DETAIL_T>
             void handleConstVisitor(vsg::ConstVisitor& visitor) const;
 
+            // Subclass can call this to deal with a non-const visitor in a standard way
+            // (example: compile visitor)
             template<class GEOM_DETAIL_T>
             void handleVisitor(vsg::Visitor& visitor);
 

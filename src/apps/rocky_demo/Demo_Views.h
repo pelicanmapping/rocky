@@ -55,6 +55,15 @@ auto Demo_Views = [](Application& app)
                                         // Set the new profile:
                                         mapNode->profile = Profile(options[i]);
 
+                                        // Set the appropriate camera projection type:
+                                        if (mapNode->profile.srs().isProjected()) {
+                                            view->camera->projectionMatrix = vsg::Orthographic::create(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+                                        }
+                                        else {
+                                            double ar = (double)view->camera->getViewport().width / (double)view->camera->getViewport().height;
+                                            view->camera->projectionMatrix = vsg::Perspective::create(45.0, ar, 1.0, 1000.0);
+                                        }
+
                                         // Reset the view's manipulator if it has one:
                                         if (auto manip = MapManipulator::get(view))
                                             manip->home();
@@ -65,11 +74,12 @@ auto Demo_Views = [](Application& app)
                                 }
                                 ImGuiLTable::EndCombo();
                             }
+                            ImGuiLTable::Text("Camera:", "%s", (is_perspective_projection_matrix(view->camera->projectionMatrix->transform())) ? "Perspective" : "Orthographic");
                         }
                     }
 
 
-
+#if 0
                     // Perspective/Orthographic camera:
                     auto camera = view->camera;
                     bool useOrtho = camera->projectionMatrix->is_compatible(typeid(vsg::Orthographic));
@@ -90,7 +100,7 @@ auto Demo_Views = [](Application& app)
                             camera->projectionMatrix = vsg::Perspective::create(fovY_saved, ar, ortho->nearDistance, ortho->farDistance);
                         }
                     }
-
+#endif
 
 
                     if (num > 1)  // don't allow position/size editing the first view

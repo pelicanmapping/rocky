@@ -1224,20 +1224,29 @@ MapManipulator::updateProjection(vsg::Camera* camera)
     auto ortho = camera->projectionMatrix.cast<vsg::Orthographic>();
     _isOrtho = (ortho != nullptr);
 
-    if (ortho)
+    if (settings.autoManageProjectionMatrix)
     {
-        auto ar = camera->viewportState->getViewport().width / camera->viewportState->getViewport().height;
-        auto h = 0.5 * _state.distance;
-        ortho->left = -h * ar;
-        ortho->right = h * ar;
-        ortho->bottom = -h;
-        ortho->top = h;
-        ortho->nearDistance = 1.0;
-        ortho->farDistance = 1.1 * _state.distance;
-
-        if (_isOrtho != wasOrtho)
+        if (ortho)
         {
-            dirty();
+            auto ar = camera->viewportState->getViewport().width / camera->viewportState->getViewport().height;
+            auto h = 0.5 * _state.distance;
+            ortho->left = -h * ar;
+            ortho->right = h * ar;
+            ortho->bottom = -h;
+            ortho->top = h;
+            ortho->nearDistance = 1.0;
+            ortho->farDistance = 1.1 * _state.distance;
+
+            if (_isOrtho != wasOrtho)
+            {
+                dirty();
+            }
+        }
+        else if (auto mapNode = getMapNode())
+        {
+            auto persp = camera->projectionMatrix.cast<vsg::Perspective>();
+            persp->nearDistance = 1.0;
+            persp->farDistance = std::max(2.0 * _state.distance, mapNode->srs().ellipsoid().semiMajorAxis() * 2.0);
         }
     }
 }

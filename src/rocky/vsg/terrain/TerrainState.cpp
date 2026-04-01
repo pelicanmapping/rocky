@@ -81,7 +81,8 @@ TerrainState::createDefaultDescriptors(VSGContext context)
     texturedefs.color = { COLOR_TEX_NAME, COLOR_TEX_BINDING, vsg::Sampler::create(), {} };
     texturedefs.color.sampler->minFilter = VK_FILTER_LINEAR;
     texturedefs.color.sampler->magFilter = VK_FILTER_LINEAR;
-    texturedefs.color.sampler->maxLod = 5;
+    texturedefs.color.sampler->minLod = 0;
+    texturedefs.color.sampler->maxLod = VK_LOD_CLAMP_NONE;
     texturedefs.color.sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
     texturedefs.color.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     texturedefs.color.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -92,7 +93,8 @@ TerrainState::createDefaultDescriptors(VSGContext context)
         context->sharedObjects->share(texturedefs.color.sampler);
 
     texturedefs.elevation = { ELEVATION_TEX_NAME, ELEVATION_TEX_BINDING, vsg::Sampler::create(), {} };
-    texturedefs.elevation.sampler->maxLod = 16;
+    texturedefs.elevation.sampler->minLod = 0;
+    texturedefs.elevation.sampler->maxLod = VK_LOD_CLAMP_NONE;
     texturedefs.elevation.sampler->minFilter = VK_FILTER_LINEAR;
     texturedefs.elevation.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     texturedefs.elevation.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -316,6 +318,9 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
         renderModel.color.image = layer.image.image();
         renderModel.color.matrix = layer.matrix;
 
+        auto width = renderModel.color.image->width();
+        auto height = renderModel.color.image->height();
+
         auto data = wrapImageInVSG(renderModel.color.image);
         if (data)
         {
@@ -328,9 +333,13 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
             // and not the actual image data.
             data->properties.dataVariance = vsg::STATIC_DATA_UNREF_AFTER_TRANSFER;
 
+            auto imageInfo = vsg::ImageInfo::create(texturedefs.color.sampler, data);
+
+            if (texturedefs.color.sampler->mipmapMode == VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                imageInfo->computeNumMipMapLevels();
+
             descriptors.color = vsg::DescriptorImage::create(
-                texturedefs.color.sampler,
-                data,
+                imageInfo,
                 texturedefs.color.uniform_binding,
                 0, // array element (TODO: increment if we change to an array)
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
@@ -362,9 +371,13 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
             // and not the actual image data.
             data->properties.dataVariance = vsg::STATIC_DATA_UNREF_AFTER_TRANSFER;
 
+            auto imageInfo = vsg::ImageInfo::create(texturedefs.elevation.sampler, data);
+
+            if (texturedefs.elevation.sampler->mipmapMode == VK_SAMPLER_MIPMAP_MODE_LINEAR)
+                imageInfo->computeNumMipMapLevels();
+
             descriptors.elevation = vsg::DescriptorImage::create(
-                texturedefs.elevation.sampler,
-                data,
+                imageInfo,
                 texturedefs.elevation.uniform_binding,
                 0, // array element
                 VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);

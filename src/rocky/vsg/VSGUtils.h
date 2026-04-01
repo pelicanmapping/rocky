@@ -241,9 +241,9 @@ namespace ROCKY_NAMESPACE
         auto data = wrapImageData(image);
         data->properties.origin = vsg::TOP_LEFT;
 #if VSG_API_VERSION_LESS(1,1,12)
-        data->properties.maxNumMipmaps = 1;
+        data->properties.maxNumMipmaps = 0;
 #else
-        data->properties.mipLevels = 1;
+        data->properties.mipLevels = 0;
 #endif
 
         return data;
@@ -346,9 +346,9 @@ namespace ROCKY_NAMESPACE
         auto data = moveImageData(image);
         data->properties.origin = vsg::TOP_LEFT;
 #if VSG_API_VERSION_LESS(1,1,12)
-        data->properties.maxNumMipmaps = 1;
+        data->properties.maxNumMipmaps = 0;
 #else
-        data->properties.mipLevels = 1;
+        data->properties.mipLevels = 0;
 #endif
 
         return data;
@@ -428,14 +428,10 @@ namespace ROCKY_NAMESPACE
     inline vsg::ref_ptr<vsg::DescriptorImage> createTexture(Image::Ptr image,
         vsg::ref_ptr<vsg::Device> vsg_device)
     {
-        //auto vsg_context = vsg::Context::create(vsg_device);
-
-        //auto imageInfo = vsg::ImageInfo::create();
-
         auto colorImage = vsg::Image::create(moveImageData(image));
         colorImage->imageType = VK_IMAGE_TYPE_2D;
         colorImage->format = toVkPixelFormat(image->pixelFormat());
-        colorImage->mipLevels = 1;
+        colorImage->mipLevels = 0;
         colorImage->arrayLayers = 1;
         colorImage->samples = VK_SAMPLE_COUNT_1_BIT;
         colorImage->tiling = VK_IMAGE_TILING_OPTIMAL;

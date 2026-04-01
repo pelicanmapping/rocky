@@ -352,8 +352,8 @@ namespace ROCKY_NAMESPACE
             //! Max y offset in meters
             //double maxYOffset = 0.0;
 
-            //! Whether to automatically adjust an orthographic camera so that it "tracks" the last known FOV and Aspect Ratio.
-            //bool orthoTracksPerspective = true;
+            //! Whether to automatically adjust and manage the camera's projection matrix.
+            bool autoManageProjectionMatrix = true;
 
             //! Whether or not to keep the camera from going through the terrain surface
             //bool terrainAvoidance = false;
