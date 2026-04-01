@@ -717,6 +717,8 @@ The *Views* panel in `rocky_demo` has a drop-down to select the profile so you c
 
 ### spherical-mercator
 *spherical-mercator* is an almost-global 2D profile for flat maps. This is the most common format for online "slippy" web maps like OpenStreetMap or Google Maps.<br/>
+<img width="480" height="480" alt="spherical-mercator" src="https://github.com/user-attachments/assets/73a8867c-3654-4f92-b77b-87bb0d8b736e" />
+
 
 ## VSG and Math Functions
 Rocky uses the [glm](https://github.com/g-truc/glm) library for math operations, whereas VulkanSceneGraph has its own math objects. Luckily they are practically identical
