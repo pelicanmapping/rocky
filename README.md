@@ -47,7 +47,7 @@ bootstrap-vcpkg.bat
 ```
 That will download and build all the dependencies (takes a while) and generate your CMake project and Visual Studio solution file.
 
-If you would rather not use vcpkg, you can build and install the [dependencies](#acknowledgements) yourself, or use your favorite package manager (like `apt` on Linux). We also provide a `bootstream-vcpkg.sh` script for Linux.
+If you would rather not use vcpkg, you can build and install the [dependencies](#acknowledgements) yourself, or use your favorite package manager (like `apt` on Linux). We also provide a `bootstrap-vcpkg.sh` script for Linux.
 
 > *Note: Rocky requires Vulkan SDK 1.3.268 or newer.*
 
@@ -99,7 +99,7 @@ int main(int argc, char** argv)
 
 ## CMakeLists.txt
 ```cmake
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.20)
 project(myApp VERSION 0.1.0 LANGUAGES CXX C)
 find_package(rocky CONFIG REQUIRED)
 add_executable(myApp main.cpp)
@@ -408,6 +408,7 @@ While the example here will show you the basics, we recommend you read up on the
 ## Control Components
 *Control Components* do not render anything, but rather affect how other components attached to your entity behave.
 
+### Transform
 As we've already seen, you can position an entity using a `Transform` component:
 ```c++
 // Use a 'write' block to emplace the Transform.
@@ -425,6 +426,7 @@ app.registry.write([&](entt::registry& registry)
     });
 ```
 
+### Visibility
 Use the `Visibility` component to toggle an entity's visibility. (Rocky automatically adds a `Visibility` whenever you create one of the built-in primitive types - you don't have to emplace it yourself.) The component is actually an array so you can control visibility on a per-view basis.
 ```c++
 // Set visibility on a particular view:
@@ -442,6 +444,22 @@ app.registry.read([&](entt::registry& r)
     });
 ```
 
+### PixelScale
+Mainly for use with 3D models (i.e. the `NodeGraph` component), `PixelScale` will automatically scale an object such that it takes up a certain size (in pixels) on screen. You should always pair a `PixelScale` component with a `Transform` component. This example scales your object to stay between 32 and 256 pixels in size (approximately!)
+```c++
+app.registry.write([&](entt::registry& r)
+    {
+        auto& model = r.emplace<NodeGraph>(entity);
+        model.node = myModelNode;
+
+        auto& xform = r.emplace<Transform>(entity);
+        xform.position = GeoPoint(SRS::WGS84, -76, 34, 0);
+
+        auto& pixelScale = r.emplace<PixelScale>(entity);
+        pixelScale.minPixels = 32.0f;
+        pixelScale.maxPixels = 256.0f;
+    });
+```
 
 Other control components include:
 * `ActiveState` (for the overall active state of an entity)
@@ -560,7 +578,14 @@ That's it. **Don't forget** to call `ImGui::SetCurrentContext` at the top of you
 # Rocky and VulkanSceneGraph
 Rocky provides several helpers and techniques for working with the VulkanSceneGraph renderer.
 
-## Helper Objects
+## Objects
+
+### MapNode
+A `MapNode` renders the contents of a `Map`. In classic *Model-View-Controller* parlance, `MapNode` is the *View* and `Map` is the *Model*.
+
+Each `MapNode` contains a single `Map` that it will render. You can have multiple `MapNode` objects in your scene graph. They can share `Map` objects if you like.
+
+Besides the `Map` itself, the most important property of a `MapNode` is its `Profile`. This `Profile` determines how the map will appear, that is, what spatial projection will be used to render it. Please refer to the section on [Rendering Profiles](#rendering-profiles) for more.
 
 ### NodeLayer
 Use Rocky's `NodeLayer` to wrap a `vsg::Node` in a Rocky Map layer. No magic here, but it makes it easy to toggle a group of nodes on and off and include that group in your Map model:
@@ -672,22 +697,26 @@ auto ecs = rocky::ECSNode::create(registry, true);
 myScene->addChild(ecs);
 ```
 
-## Terrain Rendering Profiles
-
-Rocky supports two map-tiling profiles for rendering the terrain.
+## Rendering Profiles
+The *Profile* determines how Map data will appear in the actual scene.
 
 You can configure the rendering profile in your `MapNode`:
 ```c++
 mapNode->profile = Profile("global-qsc");
 ```
 
-**global-geodetic** : Loads fast, but sacrifices some quality in the polar regions. This is the default since it closely matches many online data sources.<br/>
+The *Views* panel in `rocky_demo` has a drop-down to select the profile so you can see the difference. Toggle on *Show triangles* in the *Rendering* panel for a better look.
+
+### global-geodetic
+*global-geodetic* is the default profile. It loads quickly, but sacrifices some quality in the polar regions. This is the default since it closely matches many online data sources.<br/>
 <img width="480" height="320" alt="global-geodetic" src="https://github.com/user-attachments/assets/2a07e68c-6881-4d4b-b743-4b5365b324f4" />
 
-**global-qsc** : Accurate worldwide including the polar regions. The trade-off can be slower loading speeds depending on your data. If you work in the polar regions or use polar stereographic data, this will be the better option.<br/>
+### global-qsc
+*global-qsc* is a global 3D profile that is accurate worldwide including the polar regions. The trade-off can be slower loading speeds depending on your data. If you work in the polar regions or use polar stereographic data, this will be the better option.<br/>
 <img width="480" height="320" alt="global-qsc" src="https://github.com/user-attachments/assets/adb12b63-9013-4fb0-b875-1a7b24b79d53" />
 
-The *Rendering* panel in `rocky_demo` has a drop-down to select the profile so you can see the difference. Toggle on *Show triangles* for a better look.
+### spherical-mercator
+*spherical-mercator* is an almost-global 2D profile for flat maps. This is the most common format for online "slippy" web maps like OpenStreetMap or Google Maps.<br/>
 
 ## VSG and Math Functions
 Rocky uses the [glm](https://github.com/g-truc/glm) library for math operations, whereas VulkanSceneGraph has its own math objects. Luckily they are practically identical
