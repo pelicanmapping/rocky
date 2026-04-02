@@ -13,7 +13,8 @@ layout(set = 0, binding = 13) uniform TileData {
     mat4 model_matrix;
     float min_height;
     float max_height;
-    float padding[2];
+    float span;
+    float padding[1];
 } tile;
 
 // input vertex attributes
@@ -24,6 +25,7 @@ layout(location = 2) in vec3 in_uvw;
 // inter-stage interface block
 layout(location = 0) out Varyings {
     vec2 uv;
+    vec3 normalView;
     vec3 upView;
     vec3 vertexView;
     vec2 elevation_uv;
@@ -41,7 +43,7 @@ out gl_PerVertex {
 };
 
 // sample the elevation data at a UV tile coordinate
-float terrain_get_elevation(in vec2 uv)
+vec3 terrain_get_elevation(in vec2 uv)
 {
     float size = float(textureSize(elevation_tex, 0).x);
     vec2 coeff = vec2((size - 1.0) / size, 0.5 / size);
@@ -53,6 +55,8 @@ float terrain_get_elevation(in vec2 uv)
         + coeff.x * tile.elevation_matrix[3].st // bias
         + coeff.y;
 
+    elevc = clamp(elevc, vec2(0.0), vec2(1.0)); // avoid sampling outside the texture
+
     float h = texture(elevation_tex, elevc).r;
 
     if (tile.max_height >= tile.min_height)
@@ -62,26 +66,42 @@ float terrain_get_elevation(in vec2 uv)
         else
             h = h * (tile.max_height - tile.min_height) + tile.min_height; // R16_UNORM
     }
-    return h;
+
+    return vec3(uv.s * tile.span, uv.t * tile.span, h);
+}
+
+vec3 compute_normal()
+{
+    vec2 texelSize = 1.0 / (textureSize(elevation_tex, 0) - vec2(1.0));
+
+    vec3 p_east  = terrain_get_elevation(in_uvw.st + vec2( texelSize.x, 0.0));
+    vec3 p_west  = terrain_get_elevation(in_uvw.st + vec2(-texelSize.x, 0.0));
+    vec3 p_north = terrain_get_elevation(in_uvw.st + vec2(0.0,  texelSize.y));
+    vec3 p_south = terrain_get_elevation(in_uvw.st + vec2(0.0, -texelSize.y));
+
+    vec3 we = p_east - p_west;
+    vec3 ns = p_north - p_south;
+    return normalize(cross(we, ns));
 }
 
 void main()
 {
-    float elevation = terrain_get_elevation(in_uvw.st);
-    vec3 position = in_vertex + in_normal*elevation;
+    vec3 p_elevation = terrain_get_elevation(in_uvw.st);
+    vec3 position = in_vertex + in_normal * p_elevation.z;
     vec4 position_view = pc.modelview * vec4(position, 1.0);
 
 #if defined(ROCKY_ATMOSPHERE)
     atmos_vertex_main(position_view.xyz);
 #endif
-
-    mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));
-    vary.upView = normalize(normalMatrix * in_normal);
     
     vary.uv = (tile.color_matrix * vec4(in_uvw.st, 0, 1)).st;
     vary.vertexView = position_view.xyz / position_view.w;
 
     vary.elevation_uv = (tile.elevation_matrix * vec4(in_uvw.st, 0, 1)).st;
+
+    mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));
+    vary.upView = normalize(normalMatrix * compute_normal());
+    vary.normalView = normalize(normalMatrix * compute_normal());
     
     gl_Position = pc.projection * position_view;
 }

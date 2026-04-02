@@ -8,6 +8,7 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/Color.h>
 #include <rocky/Image.h>
+#include <rocky/TileKey.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -39,7 +40,8 @@ namespace ROCKY_NAMESPACE
             glm::fmat4 model_matrix;
             float min_height = 1.0f;
             float max_height = 0.0f;
-            float padding[2];
+            float span = 0.0f;
+            float padding[1];
         };
         vsg::ref_ptr<vsg::DescriptorImage> color;
         vsg::ref_ptr<vsg::DescriptorImage> elevation;
@@ -100,6 +102,7 @@ namespace ROCKY_NAMESPACE
         //! After calling this, you will need to install the find bind command
         //! in your stategroup.
         TerrainTileRenderModel updateRenderModel(
+            const TileKey& key,
             const TerrainTileRenderModel& oldRenderModel,
             const TerrainTileModel& newDataModel,
             VSGContext context) const;

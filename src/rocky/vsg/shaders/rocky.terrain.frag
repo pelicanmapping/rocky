@@ -12,6 +12,7 @@ layout(push_constant) uniform PushConstants {
 // inter-stage interface block
 layout(location = 0) in Varyings {
     vec2 uv;
+    vec3 normalView;
     vec3 upView;
     vec3 vertexView;
     vec2 elevation_uv;
@@ -24,7 +25,8 @@ layout(set = 0, binding = 13) uniform TileData {
     mat4 model_matrix;
     float min_height;
     float max_height;
-    float padding[2];
+    float span;
+    float padding[1];
 } tile;
 
 // uniforms (TerrainState.h)
@@ -43,61 +45,13 @@ layout(set = 0, binding = 11) uniform sampler2D color_tex;
 // outputs
 layout(location = 0) out vec4 out_color;
 
-// sample the elevation data at a UV tile coordinate
-float terrain_get_elevation(in vec2 uv)
-{
-    float h = texture(elevation_tex, uv).r;
-    if (tile.max_height >= tile.min_height)
-        h = (h == 1.0) ? 0.0 : (h * (tile.max_height - tile.min_height) + tile.min_height);
-    return h;
-}
-
-vec3 get_normal()
-{
-    vec2 texelSize = 1.0 / textureSize(elevation_tex, 0);
-
-    float h_east  = terrain_get_elevation(vary.elevation_uv + vec2( texelSize.x, 0.0));
-    float h_west  = terrain_get_elevation(vary.elevation_uv + vec2(-texelSize.x, 0.0));
-    float h_north = terrain_get_elevation(vary.elevation_uv + vec2(0.0,  texelSize.y));
-    float h_south = terrain_get_elevation(vary.elevation_uv + vec2(0.0, -texelSize.y));
-
-    // Elevation gradients in meters per elevation-UV unit
-    float dh_du = (h_east  - h_west)  * 0.5 / texelSize.x;
-    float dh_dv = (h_north - h_south) * 0.5 / texelSize.y;
-
-    // Invert the Jacobian of the screen-to-UV mapping to get view-space
-    // tangent vectors (in meters) per UV unit.
-    vec3 dp_dx  = dFdx(vary.vertexView);
-    vec3 dp_dy  = dFdy(vary.vertexView);
-    vec2 duv_dx = dFdx(vary.elevation_uv);
-    vec2 duv_dy = dFdy(vary.elevation_uv);
-
-    float det   = duv_dx.x * duv_dy.y - duv_dx.y * duv_dy.x;
-
-    // On skirt faces the elevation UVs are constant across the vertical
-    // extent, which makes the Jacobian singular. Fall back to the
-    // interpolated vertex normal in that case.
-    if (abs(det) == 0)
-        return normalize(vary.upView);
-
-    vec3 dpos_du = (dp_dx * duv_dy.y - dp_dy * duv_dx.y) / det;
-    vec3 dpos_dv = (dp_dy * duv_dx.x - dp_dx * duv_dy.x) / det;
-
-    // Add the elevation-gradient contribution along the surface-up direction.
-    vec3 tangent_u = dpos_du + dh_du * vary.upView;
-    vec3 tangent_v = dpos_dv + dh_dv * vary.upView;
-
-    // Result is already in view space.
-    return normalize(cross(tangent_u, tangent_v));
-}
-
 void main()
 {
     vec4 texel = texture(color_tex, vary.uv);
 
     out_color = mix(settings.backgroundColor, clamp(texel, 0, 1), texel.a);
 
-    vec3 normal = get_normal();
+    vec3 normal = normalize(vary.normalView);
 
     // lighting:
     vec4 lit_color = apply_lighting(out_color, vary.vertexView, normal);

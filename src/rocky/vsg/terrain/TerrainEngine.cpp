@@ -80,7 +80,7 @@ TerrainEngine::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> pare
     tile->bound = tile->surface->recomputeBound();
 
     // Generate its state objects:
-    tile->renderModel = stateFactory.updateRenderModel(tile->renderModel, {}, context);
+    tile->renderModel = stateFactory.updateRenderModel(tile->key, tile->renderModel, {}, context);
 
     // install the bind command.
     tile->stategroup->add(tile->renderModel.descriptors.bind);

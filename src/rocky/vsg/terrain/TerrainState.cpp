@@ -301,7 +301,7 @@ TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext con
 }
 
 TerrainTileRenderModel
-TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, const TerrainTileModel& dataModel, VSGContext vsgcontext) const
+TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel& oldRenderModel, const TerrainTileModel& dataModel, VSGContext vsgcontext) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), oldRenderModel);
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), oldRenderModel);
@@ -394,6 +394,7 @@ TerrainState::updateRenderModel(const TerrainTileRenderModel& oldRenderModel, co
     uniforms.model_matrix = renderModel.modelMatrix;
     uniforms.min_height = renderModel.minHeight;
     uniforms.max_height = renderModel.maxHeight;
+    uniforms.span = key.extent().height(Units::METERS);
     descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, TILE_UBO_BINDING);
 
     // make the descriptor set, and include the terrain settings UBO
