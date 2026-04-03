@@ -12,10 +12,8 @@ layout(push_constant) uniform PushConstants {
 // inter-stage interface block
 layout(location = 0) in Varyings {
     vec2 uv;
-    vec3 normalView;
-    vec3 upView;
-    vec3 vertexView;
-    vec2 elevation_uv;
+    vec3 normal_VS;
+    vec3 vertex_VS;
 } vary;
 
 // see rocky::TerrainTileDescriptors
@@ -51,17 +49,14 @@ void main()
 
     out_color = mix(settings.backgroundColor, clamp(texel, 0, 1), texel.a);
 
-    vec3 normal = normalize(vary.normalView);
+    vec3 normal = normalize(vary.normal_VS);
 
     // lighting:
-    vec4 lit_color = apply_lighting(out_color, vary.vertexView, normal);
+    vec4 lit_color = apply_lighting(out_color, vary.vertex_VS, normal);
     out_color = mix(out_color, lit_color, settings.lighting);
 
     // debug normals:
-    const float exag = 1.0;
-    //normal = normalize(vec3(normal.x*exag, normal.y*exag, normal.z));
-    normal = (normal + 1.0) * 0.5;
-    out_color.rgb = mix(out_color.rgb, normal, settings.debugNormals);
+    out_color.rgb = mix(out_color.rgb, (normal + 1.0) * 0.5, settings.debugNormals);
 
 #if defined(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION) && defined(GL_EXT_fragment_shader_barycentric)
     // wireframe overlay:
