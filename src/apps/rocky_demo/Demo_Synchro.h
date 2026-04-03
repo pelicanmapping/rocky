@@ -47,7 +47,7 @@ auto Demo_Synchro = [](Application& app)
 
                         auto& xform = reg.get<Transform>(e);
                         xform.position.x = longitude[sizeIndex];
-                        xform.dirty();
+                        xform.dirty(reg);
                     });
 
                 context->requestFrame();

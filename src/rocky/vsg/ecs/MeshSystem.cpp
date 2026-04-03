@@ -396,84 +396,75 @@ MeshSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const MeshGeome
     SRS srs(view.srsDef);
     ROCKY_SOFT_ASSERT_AND_RETURN(srs, void());
 
-    bool reallocate = view.dirty;
     view.dirty = false;
 
-    if (!geomView.root)
-    {
-        reallocate = true;
-    }
+    if (geomView.geomNode)
+        dispose(geomView.geomNode);
 
-    if (reallocate)
-    {
-        if (geomView.geomNode)
-            dispose(geomView.geomNode);
+    geomView.geomNode = MeshGeometryNode::create();
 
-        geomView.geomNode = MeshGeometryNode::create();
+    vsg::ref_ptr<vsg::Node> root;
+    vsg::dmat4 localizer_matrix;
 
-        vsg::ref_ptr<vsg::Node> root;
-        vsg::dmat4 localizer_matrix;
-
-        auto copyArrays = [&](auto& verts)
-            {
-                auto& gn = geomView.geomNode;
-
-                gn->_verts.resize(verts.size());
-                std::transform(verts.begin(), verts.end(), gn->_verts.begin(),
-                    [](const glm::dvec3& v) { return to_vsg(v); });
-
-                gn->_colors.resize(std::max(geom.colors.size(), verts.size()));
-                std::transform(geom.colors.begin(), geom.colors.end(), gn->_colors.begin(),
-                    [](const glm::fvec4& c) { return to_vsg(c); });
-
-                gn->_normals.resize(std::max(geom.normals.size(), verts.size()));
-                std::transform(geom.normals.begin(), geom.normals.end(), gn->_normals.begin(),
-                    [](const glm::fvec3& n) { return to_vsg(n); });
-
-                gn->_uvs.resize(std::max(geom.uvs.size(), verts.size()));
-                std::transform(geom.uvs.begin(), geom.uvs.end(), gn->_uvs.begin(),
-                    [](const glm::fvec2& uv) { return to_vsg(uv); });
-
-                gn->_indices = geom.indices;
-            };
-
-        if (geom.srs.valid())
+    auto copyArrays = [&](auto& verts)
         {
-            if (geom.vertices.size() > 0)
-            {
-                glm::dvec3 precisionOffset(0, 0, 0);
-                auto xform = geom.srs.to(srs);
+            auto& gn = geomView.geomNode;
 
-                // transform and localize:
-                std::vector<glm::dvec3> copy(geom.vertices); // copy
-                xform.clampArray(copy.data(), copy.size());
-                xform.transformArray(copy.data(), copy.size());
+            gn->_verts.resize(verts.size());
+            std::transform(verts.begin(), verts.end(), gn->_verts.begin(),
+                [](const glm::dvec3& v) { return to_vsg(v); });
 
-                precisionOffset = (copy.front() + copy.back()) * 0.5;
-                for (auto& point : copy)
-                    point -= precisionOffset;
+            gn->_colors.resize(std::max(geom.colors.size(), verts.size()));
+            std::transform(geom.colors.begin(), geom.colors.end(), gn->_colors.begin(),
+                [](const glm::fvec4& c) { return to_vsg(c); });
 
-                copyArrays(copy);
+            gn->_normals.resize(std::max(geom.normals.size(), verts.size()));
+            std::transform(geom.normals.begin(), geom.normals.end(), gn->_normals.begin(),
+                [](const glm::fvec3& n) { return to_vsg(n); });
 
-                auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(precisionOffset)));
-                localizer->addChild(geomView.geomNode);
-                root = localizer;
-            }
+            gn->_uvs.resize(std::max(geom.uvs.size(), verts.size()));
+            std::transform(geom.uvs.begin(), geom.uvs.end(), gn->_uvs.begin(),
+                [](const glm::fvec2& uv) { return to_vsg(uv); });
+
+            gn->_indices = geom.indices;
+        };
+
+    if (geom.srs.valid())
+    {
+        if (geom.vertices.size() > 0)
+        {
+            glm::dvec3 precisionOffset(0, 0, 0);
+            auto xform = geom.srs.to(srs);
+
+            // transform and localize:
+            std::vector<glm::dvec3> copy(geom.vertices); // copy
+            xform.clampArray(copy.data(), copy.size());
+            xform.transformArray(copy.data(), copy.size());
+
+            precisionOffset = (copy.front() + copy.back()) * 0.5;
+            for (auto& point : copy)
+                point -= precisionOffset;
+
+            copyArrays(copy);
+
+            auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(precisionOffset)));
+            localizer->addChild(geomView.geomNode);
+            root = localizer;
         }
-        else
+    }
+    else
+    {
+        if (geom.vertices.size() > 0)
         {
-            if (geom.vertices.size() > 0)
-            {
-                copyArrays(geom.vertices);
-            }
-
-            root = geomView.geomNode;
+            copyArrays(geom.vertices);
         }
 
-        geomView.root = root;
-
-        requestCompile(geomView.geomNode);
+        root = geomView.geomNode;
     }
+
+    geomView.root = root;
+
+    requestCompile(geomView.geomNode);
 }
 
 void
