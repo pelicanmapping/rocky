@@ -17,6 +17,8 @@ using namespace ROCKY_NAMESPACE::detail;
 #define LINE_SET 0
 #define LINE_BINDING_UNIFORM  1 // layout(set=0, binding=1) in the shader
 
+#define USE_DYNAMIC_STATE
+
 namespace
 {
     vsg::ref_ptr<vsg::ShaderSet> createLineShaderSet(VSGContext vsgcontext)
@@ -117,7 +119,10 @@ namespace
     }
     void on_destroy_LineStyleDetail(entt::registry& r, entt::entity e)
     {
-        dispose(r.get<LineStyleDetail>(e).bind);
+        auto& d = r.get<LineStyleDetail>(e);
+        dispose(d.bind);
+        for (auto& pass : d.passes)
+            dispose(pass);
     }
     void on_destroy_LineGeometry(entt::registry& r, entt::entity e)
     {
@@ -429,6 +434,16 @@ LineSystemNode::createOrUpdateStyle(const LineStyle& style, LineStyleDetail& sty
         needsCompile = true;
     }
 
+    for (auto& pass : styleDetail.passes)
+        dispose(pass);
+
+#ifdef USE_DYNAMIC_STATE
+    styleDetail.passes.clear();
+    styleDetail.passes.emplace_back(vsg::Commands::create());
+    styleDetail.passes[0]->addChild(styleDetail.bind);
+    // NOP - Empty pass for now.
+#endif
+
     // update the uniform for this style:
     auto& uniforms = *static_cast<LineStyleUniform*>(styleDetail.styleData->dataPointer());
     uniforms.style.populate(style);
@@ -453,8 +468,8 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
         { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
     };
 
-    std::vector<LineStyleDetail*> styleDetails;
-    styleDetails.emplace_back(&_defaultStyleDetail);
+    _styleDetailBins.clear();
+    _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
@@ -475,9 +490,10 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
-            reg.view<LineStyleDetail>().each([&](auto& styleDetail)
+            reg.view<LineStyle, LineStyleDetail>().each([&](auto& style, auto& styleDetail)
                 {
-                    styleDetails.emplace_back(&styleDetail);
+                    _styleDetailBins.emplace_back(&styleDetail);
+                    styleDetail.useTransparencyBin = style.transparencyBin;
                 });
 
             int count = 0;
@@ -503,51 +519,33 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
                         {
                             if (transformDetail->views[rs.viewID].passingCull)
                             {
-                                styleDetail->drawList.emplace_back(LineDrawable{ geomView.root, transformDetail });
+                                styleDetail->drawList.emplace_back(geomView.root, transformDetail);
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(LineDrawable{ geomView.root, nullptr });
+                            styleDetail->drawList.emplace_back(geomView.root, nullptr);
                             ++count;
                         }
                     }
                 });
 
             // Render collected data.
-            // TODO: swap vectors into unprotected space to free up the readlock?
             if (count > 0)
             {
-                // Start by binding the pipeline:
-                _pipelines[0].commands->accept(record);
-
-                // For each style:
-                for (auto& styleDetail : styleDetails)
-                {                    
+                for (auto& styleDetail : _styleDetailBins)
+                {
                     if (!styleDetail->drawList.empty())
                     {
-                        // Bind the style's UBOs and other state:
-                        styleDetail->bind->accept(record);
-
-                        // And record each node pertaining to this style:
-                        for (auto& drawable : styleDetail->drawList)
+                        if (!styleDetail->renderer)
                         {
-                            if (drawable.xformDetail)
-                            {
-                                drawable.xformDetail->push(record);
-                            }
-
-                            drawable.node->accept(record);
-
-                            if (drawable.xformDetail)
-                            {
-                                drawable.xformDetail->pop(record);
-                            }
+                            styleDetail->renderer = StyleRenderer<LineStyleDetail>::create();
+                            styleDetail->renderer->styleDetail = styleDetail;
+                            styleDetail->renderer->pipeline = _pipelines[0].commands;
                         }
 
-                        // We are done with the drawlist so clear it out.
-                        styleDetail->drawList.clear();
+                        styleDetail->renderer->accept(record);
                     }
                 }
             }

@@ -42,8 +42,8 @@ namespace ROCKY_NAMESPACE
         //! If true, use the per-vertex colors defined in the associated MeshGeometry
         bool useGeometryColors = false;
 
-        // vertex adjustment (in meters) to apply to the mesh verts
-        // as a simple method or avoiding depth fighting
+        //! Vertex adjustment (in meters) to apply to the mesh vertices
+        //! to help mitigate depth fighting artifacts
         float depthOffset = 0.0f;
 
         //! Entity hosting the (optional) MeshTexture to use
@@ -64,8 +64,16 @@ namespace ROCKY_NAMESPACE
 
         //! Whether to use a two-pass rendering technique that will help
         //! blend semi-transparent objects propertly. "writeDepth" must
-        //! also be TRUE for this to take effect.
+        //! also be TRUE for this to take effect. Two-pass alpha first
+        //! renders all geometry colors with depth writes disabled, and then
+        //! renders the depth writes in a second pass.
         bool twoPassAlpha = false;
+
+        //! Whether to render the mesh in a late render pass that will sort its
+        //! drawables far-to-near based on distance from the camera. You can use
+        //! this to aid in blending different semi-transparent meshes across the
+        //! entire scene.
+        bool transparencyBin = false;
     };
 
     //! Mesh comonent

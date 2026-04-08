@@ -37,9 +37,10 @@ layout(location = 1) out Varyings {
     float applyLighting;
 } vary;
 
-// GL built-ins
+// GLSL built-ins
 out gl_PerVertex {
     vec4 gl_Position;
+    float gl_ClipDistance[1];
 };
 
 // Moves the vertex closer to the camera by the specified bias,
@@ -71,8 +72,8 @@ void main()
 
     vary.uv = in_uv;
 
-    mat3 normal_matrix = mat3(transpose(inverse(pc.modelview)));
-    vary.normal = normal_matrix * in_normal;
+    mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));
+    vary.normal = normalMatrix * in_normal;
 
     // TODO: lighting
     

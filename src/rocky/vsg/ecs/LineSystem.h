@@ -84,25 +84,13 @@ namespace ROCKY_NAMESPACE
         };
         static_assert(sizeof(LineStyleUniform) % 16 == 0, "LineStyleUniform must be 16-byte aligned");
 
-
-        // render leaf for collecting and drawing meshes
-        struct LineDrawable
+        struct LineStyleDetail : public StyleDetail<LineStyleDetail>
         {
-            vsg::Node* node = nullptr;
-            TransformDetail* xformDetail = nullptr;
-        };
-
-        using LineDrawList = std::vector<LineDrawable>;
-
-        struct LineStyleDetail
-        {
-            LineDrawList drawList;
             vsg::ref_ptr<vsg::BindDescriptorSet> bind;
             vsg::ref_ptr<vsg::Data> styleData;
             vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
 
             inline void recycle() {
-                drawList.clear();
                 bind = nullptr;
                 styleData = nullptr;
                 styleUBO = nullptr;
@@ -113,7 +101,6 @@ namespace ROCKY_NAMESPACE
         {
             struct View
             {
-                //std::optional<std::uint32_t> shareOtherViewID;
                 vsg::ref_ptr<vsg::Node> root;
                 vsg::ref_ptr<LineGeometryNode> geomNode;
             };
@@ -141,22 +128,20 @@ namespace ROCKY_NAMESPACE
             NUM_PIPELINES = 1
         };
 
-        //! One-time initialization of the system    
+    public: // SimpleSystemNodeBase
         void initialize(VSGContext) override;
-
-        //! Periodic update to check for style changes
         void update(VSGContext) override;
 
-        //! Record/render traversal
+    public: // vsg::Object
         void traverse(vsg::RecordTraversal&) const override;
-
         void traverse(vsg::ConstVisitor&) const override;
         void traverse(vsg::Visitor&) override;
 
-        // vsg::Compilable
+    public: // vsg::Compilable
         void compile(vsg::Context& cc) override;
 
     private:
+        mutable std::vector<detail::LineStyleDetail*> _styleDetailBins;
         mutable detail::LineStyleDetail _defaultStyleDetail;
         mutable float _devicePixelRatio = 1.0f;
 

@@ -8,7 +8,6 @@
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/ecs/ECSTypes.h>
-#include <rocky/vsg/ecs/TransformDetail.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -59,6 +58,7 @@ namespace ROCKY_NAMESPACE
         };
         static_assert(sizeof(MeshStyleRecord) % 16 == 0, "MeshStyleRecord must be 16-byte aligned");
 
+
         // "mesh" in the shader
         struct MeshStyleUniform
         {
@@ -66,17 +66,9 @@ namespace ROCKY_NAMESPACE
         };
         static_assert(sizeof(MeshStyleUniform) % 16 == 0, "MeshStyleUniform must be 16-byte aligned");
 
-        // render leaf for collecting and drawing meshes
-        struct MeshDrawable
-        {
-            vsg::Node* node = nullptr;
-            TransformDetail* xformDetail = nullptr;
-        };
 
-        using MeshDrawList = std::vector<MeshDrawable>;
-
-        // internal data paired with MeshStyle
-        struct MeshStyleDetail
+        // ECS component: internal data paired with MeshStyle
+        struct MeshStyleDetail : public StyleDetail<MeshStyleDetail>
         {
             entt::entity texture = entt::null; // last know texture entt, for change tracking
 
@@ -84,13 +76,10 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Data> styleUBOData;
             vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
             vsg::ref_ptr<vsg::DescriptorImage> styleTexture;
-
-            using Pass = vsg::ref_ptr<vsg::Commands>;
-            std::vector<Pass> passes; // multipass rendering for a style
-            MeshDrawList drawList;
         };
 
-        // internal data paired with MeshGeometry
+
+        // ECS component: internal data paired with MeshGeometry
         struct MeshGeometryDetail
         {
             struct View
@@ -102,7 +91,8 @@ namespace ROCKY_NAMESPACE
             ViewLocal<View> views;
         };
 
-        // internal data paired with MeshTexture
+
+        // ECS component: internal data paired with MeshTexture
         struct MeshTextureDetail
         {
             // nop
@@ -119,27 +109,25 @@ namespace ROCKY_NAMESPACE
         //! Construct the mesh renderer
         MeshSystemNode(Registry& registry);
 
-        //! One-time initialization of the system        
+    public: // SimpleSystemNodeBase
         void initialize(VSGContext) override;
-
         void update(VSGContext) override;
 
+    public: // vsg::Object
         void traverse(vsg::RecordTraversal&) const override;
-
         void traverse(vsg::ConstVisitor& v) const override;
         void traverse(vsg::Visitor& v) override;
 
-        // vsg::Compilable
+    public: // vsg::Compilable
         void compile(vsg::Context& cc) override;
 
     private:
-
         inline vsg::PipelineLayout* getPipelineLayout(const Mesh& line) {
             return _pipelines[0].config->layout;
         }
 
         // Default mesh style to use if a Mesh doesn't have one
-        mutable detail::MeshStyleDetail _defaultMeshStyleDetail;
+        mutable detail::MeshStyleDetail _defaultStyleDetail;
         mutable std::vector<detail::MeshStyleDetail*> _styleDetailBins;
 
         // Called when a line geometry component is found in the dirty list

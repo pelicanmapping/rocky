@@ -82,6 +82,7 @@ namespace
         auto& uniforms = *static_cast<PointStyleUniform*>(styleDetail.styleData->dataPointer());
         uniforms.style = PointStyleRecord(); // default style
     }
+
     // disposal vector processed by the system
     static std::mutex s_cleanupMutex;
     static vsg::ref_ptr<vsg::Objects> s_toDispose = vsg::Objects::create();
@@ -115,7 +116,10 @@ namespace
     }
     void on_destroy_PointStyleDetail(entt::registry& r, entt::entity e)
     {
-        dispose(r.get<PointStyleDetail>(e).bind);
+        auto& d = r.get<PointStyleDetail>(e);
+        dispose(d.bind);
+        for (auto& pass : d.passes)
+            dispose(pass);
     }
     void on_destroy_PointGeometry(entt::registry& r, entt::entity e)
     {
@@ -147,10 +151,6 @@ namespace
 PointSystemNode::PointSystemNode(Registry& registry) :
     Inherit(registry)
 {
-    // temporary transform used by the visitor traversal(s)
-    _tempMT = vsg::MatrixTransform::create();
-    _tempMT->children.resize(1);
-
     _registry.write([&](entt::registry& r)
         {
             // install the ecs callbacks for Points
@@ -189,9 +189,9 @@ PointSystemNode::initialize(VSGContext vsgcontext)
         return;
     }
 
-    _pipelines.resize(NUM_PIPELINES);
+    _pipelines.resize(1);
 
-    for (int feature_mask = 0; feature_mask < NUM_PIPELINES; ++feature_mask)
+    for (int feature_mask = 0; feature_mask < 1; ++feature_mask)
     {
         auto& c = _pipelines[feature_mask];
 
@@ -228,9 +228,9 @@ PointSystemNode::initialize(VSGContext vsgcontext)
                 //state.rasterizerDiscardEnable = VK_TRUE;
             }
             void apply(vsg::DepthStencilState& state) override {
-                if ((feature_mask & WRITE_DEPTH) == 0) {
-                    state.depthWriteEnable = (feature_mask & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
-                }
+                //if ((feature_mask & WRITE_DEPTH) == 0) {
+                //    state.depthWriteEnable = (feature_mask & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
+                //}
             }
             void apply(vsg::ColorBlendState& state) override {
                 state.attachments = vsg::ColorBlendState::ColorBlendAttachments {
@@ -427,6 +427,13 @@ PointSystemNode::createOrUpdateStyle(const PointStyle& style, PointStyleDetail& 
         needsCompile = true;
     }
 
+    for (auto& pass : styleDetail.passes)
+        dispose(pass);
+
+    styleDetail.passes.clear();
+    styleDetail.passes.emplace_back(vsg::Commands::create());
+    styleDetail.passes[0]->addChild(styleDetail.bind);
+
     // update the uniform for this style:
     auto& uniforms = *static_cast<PointStyleUniform*>(styleDetail.styleData->dataPointer());
     uniforms.style.populate(style);
@@ -451,8 +458,8 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
         { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
     };
 
-    std::vector<PointStyleDetail*> styleDetails;
-    styleDetails.emplace_back(&_defaultStyleDetail);
+    _styleDetailBins.clear();
+    _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
@@ -473,9 +480,10 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
-            reg.view<PointStyleDetail>().each([&](auto& styleDetail)
+            reg.view<PointStyle, PointStyleDetail>().each([&](auto& style, auto& styleDetail)
                 {
-                    styleDetails.emplace_back(&styleDetail);
+                    _styleDetailBins.emplace_back(&styleDetail);
+                    styleDetail.useTransparencyBin = style.transparencyBin;
                 });
 
             int count = 0;
@@ -503,13 +511,13 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
                         {
                             if (transformDetail->views[rs.viewID].passingCull)
                             {
-                                styleDetail->drawList.emplace_back(PointDrawable{ geomView.root, transformDetail });
+                                styleDetail->drawList.emplace_back(geomView.root, transformDetail);
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(PointDrawable{ geomView.root, nullptr });
+                            styleDetail->drawList.emplace_back(geomView.root, nullptr);
                             ++count;
                         }
                     }
@@ -519,30 +527,18 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
             // TODO: swap vectors into unprotected space to free up the readlock?
             if (count > 0)
             {
-                _pipelines[0].commands->accept(record);
-
-                for (auto& styleDetail : styleDetails)
+                for (auto& styleDetail : _styleDetailBins)
                 {
                     if (!styleDetail->drawList.empty())
                     {
-                        styleDetail->bind->accept(record);
-
-                        for (auto& drawable : styleDetail->drawList)
+                        if (!styleDetail->renderer)
                         {
-                            if (drawable.xformDetail)
-                            {
-                                drawable.xformDetail->push(record);
-                            }
-
-                            drawable.node->accept(record);
-
-                            if (drawable.xformDetail)
-                            {
-                                drawable.xformDetail->pop(record);
-                            }
+                            styleDetail->renderer = StyleRenderer<PointStyleDetail>::create();
+                            styleDetail->renderer->styleDetail = styleDetail;
+                            styleDetail->renderer->pipeline = _pipelines[0].commands;
                         }
 
-                        styleDetail->drawList.clear();
+                        styleDetail->renderer->accept(record);
                     }
                 }
             }

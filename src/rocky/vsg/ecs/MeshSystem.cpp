@@ -189,10 +189,6 @@ namespace
 MeshSystemNode::MeshSystemNode(Registry& registry) :
     Inherit(registry)
 {
-    // temporary transform used by the visitor traversal(s)
-    _tempMT = vsg::MatrixTransform::create();
-    _tempMT->children.resize(1);
-
     registry.write([&](entt::registry& r)
         {
             // install the ENTT callbacks for managing internal data:
@@ -341,8 +337,8 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
     }
 
     // Set up our default style detail, which is used when a MeshStyle is missing.
-    initializeStyleDetail(getPipelineLayout(Mesh()), _defaultMeshStyleDetail);
-    requestCompile(_defaultMeshStyleDetail.bind);
+    initializeStyleDetail(getPipelineLayout(Mesh()), _defaultStyleDetail);
+    requestCompile(_defaultStyleDetail.bind);
 }
 
 void
@@ -600,8 +596,7 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
     };
 
     _styleDetailBins.clear();
-    _styleDetailBins.emplace_back(&_defaultMeshStyleDetail);
-
+    _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
@@ -622,9 +617,10 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
-            reg.view<MeshStyleDetail>().each([&](auto& styleDetail)
+            reg.view<MeshStyle, MeshStyleDetail>().each([&](auto& style, auto& styleDetail)
                 {
                     _styleDetailBins.emplace_back(&styleDetail);
+                    styleDetail.useTransparencyBin = style.transparencyBin;
                 });
 
             int count = 0;
@@ -640,7 +636,7 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 
                     if (geomView.root && visible(visibility, rs))
                     {
-                        auto* styleDetail = &_defaultMeshStyleDetail;
+                        auto* styleDetail = &_defaultStyleDetail;
                         auto* style = reg.try_get<MeshStyle>(comp.style);
                         if (style)
                         {
@@ -652,49 +648,33 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                         {
                             if (transformDetail->views[rs.viewID].passingCull)
                             {
-                                styleDetail->drawList.emplace_back(MeshDrawable{ geomView.root, transformDetail });
+                                styleDetail->drawList.emplace_back(geomView.root, transformDetail);
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(MeshDrawable{ geomView.root, nullptr });
+                            styleDetail->drawList.emplace_back(geomView.root, nullptr);
                             ++count;
                         }
                     }
                 });
 
             // Render collected data.
-            // TODO: swap vectors into unprotected space to free up the readlock?
             if (count > 0)
             {
-                _pipelines[0].commands->accept(record);
-
                 for(auto& styleDetail : _styleDetailBins)
                 {
                     if (!styleDetail->drawList.empty())
                     {
-                        for (auto& pass : styleDetail->passes)
+                        if (!styleDetail->renderer)
                         {
-                            pass->accept(record);
-
-                            for (auto& drawable : styleDetail->drawList)
-                            {
-                                if (drawable.xformDetail)
-                                {
-                                    drawable.xformDetail->push(record);
-                                }
-
-                                drawable.node->accept(record);
-
-                                if (drawable.xformDetail)
-                                {
-                                    drawable.xformDetail->pop(record);
-                                }
-                            }
+                            styleDetail->renderer = StyleRenderer<MeshStyleDetail>::create();
+                            styleDetail->renderer->styleDetail = styleDetail;
+                            styleDetail->renderer->pipeline = _pipelines[0].commands;
                         }
 
-                        styleDetail->drawList.clear();
+                        styleDetail->renderer->accept(record);
                     }
                 }
             }
@@ -718,7 +698,8 @@ MeshSystemNode::traverse(vsg::Visitor& v)
 void
 MeshSystemNode::update(VSGContext vsgcontext)
 {
-    if (status.failed()) return;
+    if (status.failed())
+        return;
 
     // start by disposing of any old static objects
     if (!s_toDispose->children.empty())

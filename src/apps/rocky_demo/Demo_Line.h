@@ -71,6 +71,8 @@ auto Demo_Line_Absolute = [](Application& app)
         if (ImGuiLTable::SliderInt("Factor", &style.stippleFactor, 1, 4))
             style.dirty(r);
 
+        if (ImGuiLTable::Checkbox("Transparency bin", &style.transparencyBin))
+            style.dirty(r);
 
         ImGuiLTable::End();
     }

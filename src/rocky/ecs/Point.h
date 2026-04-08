@@ -19,6 +19,7 @@ namespace ROCKY_NAMESPACE
         float depthOffset = 0.0f; // meters
         bool useGeometryColors = false;
         bool useGeometryWidths = false;
+        bool transparencyBin = false;
     };
 
 

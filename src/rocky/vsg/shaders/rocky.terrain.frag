@@ -16,17 +16,6 @@ layout(location = 0) in Varyings {
     vec3 vertex_VS;
 } vary;
 
-// see rocky::TerrainTileDescriptors
-layout(set = 0, binding = 13) uniform TileData {
-    mat4 elevation_matrix;
-    mat4 color_matrix;
-    mat4 model_matrix;
-    float min_height;
-    float max_height;
-    float span;
-    float padding[1];
-} tile;
-
 // uniforms (TerrainState.h)
 layout(set = 0, binding = 9) uniform TerrainData {
     vec4 backgroundColor;
@@ -45,21 +34,23 @@ layout(location = 0) out vec4 out_color;
 
 void main()
 {
+    // sample the imagery color
     vec4 texel = texture(color_tex, vary.uv);
 
+    // mix in the background color
     out_color = mix(settings.backgroundColor, clamp(texel, 0, 1), texel.a);
 
-    vec3 normal = normalize(vary.normal_VS);
+    vec3 normal_VS = normalize(vary.normal_VS);
 
-    // lighting:
-    vec4 lit_color = apply_lighting(out_color, vary.vertex_VS, normal);
+    // debug normals
+    out_color.rgb = mix(out_color.rgb, (normal_VS + 1.0) * 0.5, settings.debugNormals);
+
+    // lighting
+    vec4 lit_color = apply_lighting(out_color, vary.vertex_VS, normal_VS);
     out_color = mix(out_color, lit_color, settings.lighting);
 
-    // debug normals:
-    out_color.rgb = mix(out_color.rgb, (normal + 1.0) * 0.5, settings.debugNormals);
-
 #if defined(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION) && defined(GL_EXT_fragment_shader_barycentric)
-    // wireframe overlay:
+    // wireframe overlay
     vec3 b = fwidth(gl_BaryCoordEXT.xyz);
     vec3 edge = smoothstep(vec3(0.0), b, gl_BaryCoordEXT.xyz);
     float wire = 1.0 - min(min(edge.x, edge.y), edge.z);

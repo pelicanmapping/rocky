@@ -129,6 +129,7 @@ namespace ROCKY_NAMESPACE
             std::vector<Pipeline> _pipelines;
             bool _pipelinesCompiled = false;
             mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
+            mutable vsg::ref_ptr<vsg::DepthSorted> _depthSortedStub;
 
             // Information specific to one view. Indexed by viewID.
             struct ViewInfo
@@ -169,6 +170,8 @@ namespace ROCKY_NAMESPACE
         {
             if (status.failed()) return;
 
+            _depthSortedStub->accept(visitor);
+
             // Supports the CompileTraversal, for one, which needs to compile the node
             // for any new View that appears
             _registry.read([&](entt::registry& reg)
@@ -189,6 +192,8 @@ namespace ROCKY_NAMESPACE
         void SimpleSystemNodeBase::handleConstVisitor(vsg::ConstVisitor& visitor) const
         {
             if (status.failed()) return;
+
+            _depthSortedStub->accept(visitor);
 
             // it might be an ECS visitor, in which case we'll communicate the entity being visited
             auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&visitor);
@@ -225,5 +230,110 @@ namespace ROCKY_NAMESPACE
 
             _tempMT->children[0] = nullptr;
         }
+
+        using StylePass = vsg::ref_ptr<vsg::Commands>;
+        using StylePasses = std::vector<StylePass>;
+
+        struct StyleDrawable
+        {
+            StyleDrawable(vsg::Node* a, TransformDetail* b) : node(a), xformDetail(b) {}
+            vsg::Node* node = nullptr;
+            TransformDetail* xformDetail = nullptr;
+        };
+
+        using StyleDrawList = std::vector<StyleDrawable>;
+
+        template<class T>
+        class StyleRenderer : public vsg::Inherit<vsg::Node, StyleRenderer<T>>
+        {
+        public:
+            T* styleDetail = nullptr;
+            vsg::ref_ptr<vsg::Commands> pipeline;
+            vsg::ref_ptr<vsg::DepthSorted> depthSorted;
+            vsg::ref_ptr<vsg::Group> depthSortedGroup;
+
+            StyleRenderer()
+            {
+                depthSortedGroup = vsg::Group::create();
+
+                depthSorted = vsg::DepthSorted::create();
+                depthSorted->binNumber = 1; // Positive number means descending sort order (farthest first)
+                depthSorted->child = depthSortedGroup;
+            }
+
+            void traverse(vsg::RecordTraversal& record) const
+            {
+                // When using the transparency bin, we assemble a DepthSorted node that
+                // contains each Drawable (in turn) and submit it to the RecordTraversal
+                // for insertion into the bin.
+                // VSG will process that bin *after* recording the rest of the View.
+                if (styleDetail->useTransparencyBin)
+                {
+                    for (auto& drawable : styleDetail->drawList)
+                    {
+                        if (drawable.xformDetail)
+                            drawable.xformDetail->push(record);
+
+                        // depthsorted node with state and drawable:
+                        depthSortedGroup->children.clear();
+                        depthSortedGroup->children.emplace_back(pipeline);
+                        
+                        for (auto& pass : styleDetail->passes)
+                        {
+                            depthSortedGroup->children.emplace_back(pass);
+                            depthSortedGroup->children.emplace_back(drawable.node);
+                        }
+
+                        depthSorted->accept(record);
+
+                        if (drawable.xformDetail)
+                            drawable.xformDetail->pop(record);
+                    }
+                }
+
+                else
+                {
+                    if (pipeline)
+                    {
+                        pipeline->accept(record);
+                    }
+
+                    for (auto& pass : styleDetail->passes)
+                    {
+                        pass->accept(record);
+
+                        for (auto& drawable : styleDetail->drawList)
+                        {
+                            if (drawable.xformDetail)
+                                drawable.xformDetail->push(record);
+
+                            drawable.node->accept(record);
+
+                            if (drawable.xformDetail)
+                                drawable.xformDetail->pop(record);
+                        }
+                    }
+                }
+
+                styleDetail->drawList.clear();
+            }
+        };
+
+        template<class T>
+        struct StyleDetail
+        {
+            //! State command for multi-pass rendering (e.g., 2-pass alpha)
+            StylePasses passes;
+
+            //! Re-usable draw list per frame
+            StyleDrawList drawList;
+
+            //! Style rendering implementation
+            vsg::ref_ptr<StyleRenderer<T>> renderer;
+
+            //! Whether drawables for this style should render in the deferred
+            //! DepthSorted transparency bin
+            bool useTransparencyBin = false;
+        };
     }
 }

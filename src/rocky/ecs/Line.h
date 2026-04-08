@@ -22,6 +22,7 @@ namespace ROCKY_NAMESPACE
         float resolution = 100000.0f; // meters
         float depthOffset = 0.0f; // meters
         bool useGeometryColors = false;
+        bool transparencyBin = false;
     };
 
 

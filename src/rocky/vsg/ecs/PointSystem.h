@@ -9,8 +9,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    struct TransformDetail;
-
     /**
     * Renders a point(s) geometry.
     */
@@ -69,24 +67,13 @@ namespace ROCKY_NAMESPACE
         static_assert(sizeof(PointStyleUniform) % 16 == 0, "PointStyleUniform must be 16-byte aligned");
 
 
-        // render leaf for collecting and drawing meshes
-        struct PointDrawable
+        struct PointStyleDetail : public StyleDetail<PointStyleDetail>
         {
-            vsg::Node* node = nullptr;
-            TransformDetail* xformDetail = nullptr;
-        };
-
-        using DrawList = std::vector<PointDrawable>;
-
-        struct PointStyleDetail
-        {
-            DrawList drawList;
             vsg::ref_ptr<vsg::BindDescriptorSet> bind;
             vsg::ref_ptr<vsg::Data> styleData;
             vsg::ref_ptr<vsg::DescriptorBuffer> styleUBO;
 
             inline void recycle() {
-                drawList.clear();
                 bind = nullptr;
                 styleData = nullptr;
                 styleUBO = nullptr;
@@ -122,34 +109,21 @@ namespace ROCKY_NAMESPACE
         //! Construct the system
         PointSystemNode(Registry& registry);
 
-        // (not hooked up for multiple pipelines - reevaluate and see
-        // if we can just use dynamic state instead)
-        enum Features
-        {
-            DEFAULT = 0x0,
-            WRITE_DEPTH = 1 << 0,
-            NUM_PIPELINES = 1
-        };
-        //! Returns a mask of supported features for the given mesh
-        //int featureMask(const Line&) const override;
-
-        //! One-time initialization of the system    
+    public: // SimpleSystemNodeBase
         void initialize(VSGContext) override;
-
-        //! Periodic update to check for style changes
         void update(VSGContext) override;
 
-        //! Record/render traversal
+    public: // vsg::Object
         void traverse(vsg::RecordTraversal&) const override;
-
-        void traverse(vsg::ConstVisitor&) const override;
+        void traverse(vsg::ConstVisitor& v) const override;
         void traverse(vsg::Visitor& v) override;
 
-        // vsg::Compilable
+    public: // vsg::Compilable
         void compile(vsg::Context& cc) override;
 
     private:
         mutable detail::PointStyleDetail _defaultStyleDetail;
+        mutable std::vector<detail::PointStyleDetail*> _styleDetailBins;
         mutable float _devicePixelRatio = -1.0;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Point&) {
@@ -202,16 +176,8 @@ namespace ROCKY_NAMESPACE
         }
 
         std::copy(verts.begin(), verts.end(), _verts->begin());
-
         std::copy(colors.begin(), colors.end(), _colors->begin());
-        //if (colors.size() < allocatedCapacity)
-        //    for (auto i = colors.size(); i < allocatedCapacity; ++i)
-        //        _colors->at(i) = useStyleColor;
-
-        std::copy(widths.begin(), widths.end(), _widths->begin());        
-        //if (widths.size() < allocatedCapacity)
-        //    for (auto i = widths.size(); i < allocatedCapacity; ++i)
-        //        _widths->at(i) = useStyleWidth;
+        std::copy(widths.begin(), widths.end(), _widths->begin());
 
         vertexCount = (std::uint32_t)verts.size();
         instanceCount = 1;

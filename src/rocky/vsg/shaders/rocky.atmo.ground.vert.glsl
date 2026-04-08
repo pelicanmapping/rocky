@@ -133,7 +133,7 @@ void atmos_GroundFromAtmosphere(in vec3 vertex_view)
 void atmos_vertex_main(inout vec3 vertex_view)
 {
     // Get camera position and height (from tile space)
-    earth_center = (pc.modelview * inverse(tile.model_matrix) * vec4(0, 0, 0, 1)).xyz;
+    earth_center = (pc.modelview * inverse(tile.modelMatrix) * vec4(0, 0, 0, 1)).xyz;
     atmos_fCameraHeight = length(earth_center);
     atmos_fCameraHeight2 = atmos_fCameraHeight * atmos_fCameraHeight;
 
