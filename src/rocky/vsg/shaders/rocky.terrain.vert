@@ -70,7 +70,12 @@ vec3 compute_point_TS(in vec2 uv)
 
 vec3 compute_normal_TS(in vec2 uv)
 {
-    vec2 texelSize = 1.0 / (textureSize(elevationTex, 0) - vec2(1.0));
+    ivec2 size = textureSize(elevationTex, 0);
+
+    // cannot calc a valid normal with a 1x1 texture
+    if (size.x <= 1 || size.y <= 1) return in_upVector_TS;
+
+    vec2 texelSize = 1.0 / (vec2(size) - vec2(1.0));
 
     vec3 p_east  = compute_point_TS(uv + vec2( texelSize.x, 0.0));
     vec3 p_west  = compute_point_TS(uv + vec2(-texelSize.x, 0.0));

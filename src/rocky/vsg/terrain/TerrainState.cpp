@@ -125,7 +125,7 @@ TerrainState::createDefaultDescriptors(VSGContext context)
         0, // array element (TODO: increment when we change to an array)
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
 
-    auto hf = Heightfield::create(1, 1);
+    auto hf = Heightfield::create(1, 1); 
     hf.fill(0.0f);
     texturedefs.elevation.defaultData = moveImageToVSG(hf.image);
     ROCKY_HARD_ASSERT(texturedefs.elevation.defaultData);

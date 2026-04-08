@@ -144,9 +144,11 @@ TerrainNode::stats() const
     Stats result;
     for (auto& child : children)
     {
-        auto* profileNode = static_cast<TerrainProfileNode*>(child.get());
-        result.numResidentTiles += profileNode->tiles().size();
-        result.geometryPoolSize += profileNode->engine().geometryPool.size();
+        if (auto profileNode = child.cast<TerrainProfileNode>())
+        {
+            result.numResidentTiles += profileNode->tiles().size();
+            result.geometryPoolSize += profileNode->engine().geometryPool.size();
+        }
     }
     return result;
 }
