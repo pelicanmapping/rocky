@@ -92,12 +92,12 @@ namespace ROCKY_NAMESPACE
         //! Runs ongoing background tasks
         detail::BackgroundServices background;
 
-        //! Scene graph elements
+        //! Global viewer instance
         vsg::ref_ptr<vsg::Viewer> viewer;
-        vsg::ref_ptr<vsg::Group> root;
-        vsg::ref_ptr<vsg::Group> mainScene;
+
+        //! Scene graph elements (in the default View)
+        vsg::ref_ptr<vsg::Group> scene;
         vsg::ref_ptr<rocky::MapNode> mapNode;
-        vsg::ref_ptr<rocky::SkyNode> skyNode;
         vsg::ref_ptr<rocky::ECSNode> systemsNode;
 
         //! Continuous render mode.

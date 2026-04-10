@@ -107,7 +107,7 @@ int custom_window(int argc, char** argv)
         vsg::ViewportState::create(window->extent2D()));
 
     // create our view
-    auto view = vsg::View::create(camera, app.mainScene);
+    auto view = vsg::View::create(camera, app.scene);
 
     // add the window and its view to our application's display manager.
     app.display.addWindow(window, view);

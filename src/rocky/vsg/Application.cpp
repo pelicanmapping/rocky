@@ -200,17 +200,15 @@ Application::ctor(int& argc, char** argv)
         exit(0);
     }
 
-    root = vsg::Group::create();
-    mainScene = vsg::Group::create();
-    root->addChild(mainScene);
+    scene = vsg::Group::create();
 
     mapNode = rocky::MapNode::create(vsgcontext);
 
     // the sun
     if (commandLine.read("--sky"))
     {
-        skyNode = rocky::SkyNode::create(vsgcontext);
-        mainScene->addChild(skyNode);
+        auto skyNode = rocky::SkyNode::create(vsgcontext);
+        scene->addChild(skyNode);
 
         // if the user didn't disable terrain lighting...enable it.
         if (!mapNode->terrainSettings().lighting.has_value())
@@ -228,7 +226,7 @@ Application::ctor(int& argc, char** argv)
     }
 
     // a node to render the map/terrain
-    mainScene->addChild(mapNode);
+    scene->addChild(mapNode);
 
     // No idea what this actually does :)
     if (commandLine.read("--mt"))
@@ -279,7 +277,7 @@ Application::ctor(int& argc, char** argv)
         _subscriptions += xformSystem->onChanges([&]() { vsgcontext->requestFrame(); });
     }
 
-    mainScene->addChild(systemsNode);
+    scene->addChild(systemsNode);
 }
 
 Application::~Application()
@@ -621,7 +619,7 @@ Application::onAddWindow(Window& window)
     // wait until the device is idle to avoid changing state while it's being used
     vsgcontext->viewer()->deviceWaitIdle();
 
-    if (window && window.views().empty() && mapNode && root)
+    if (window && window.views().empty() && mapNode && scene)
     {
         // Window with no view? Make a default view covering the entire window
         auto extent = window.vsgWindow->extent2D();
@@ -634,7 +632,7 @@ Application::onAddWindow(Window& window)
             vsg::LookAt::create(vsg::dvec3(R * 5.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, 1.0)),
             vsg::ViewportState::create(0, 0, extent.width, extent.height));
 
-        View& newView = window.addView(camera, root);
+        View& newView = window.addView(camera, scene);
         if (newView)
             newView.vsgView->setValue("rocky_auto_created", true);
     }

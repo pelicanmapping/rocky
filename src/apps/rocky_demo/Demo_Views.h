@@ -209,7 +209,7 @@ auto Demo_Views = [](Application& app)
                         vsg::ViewportState::create(x, y, width, height));
 
                     // create the new view:
-                    vsgView = vsg::View::create(camera, app.root);
+                    vsgView = vsg::View::create(camera, app.scene);
                 }
 
                 if (vsgView)

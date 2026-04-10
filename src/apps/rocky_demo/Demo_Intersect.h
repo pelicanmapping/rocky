@@ -32,7 +32,7 @@ namespace
                 if (auto& view = window.viewAtCoords((float)e.x, (float)e.y))
                 {
                     auto i = ECSPolytopeIntersector::create(view.vsgView, e.x - buffer, e.y - buffer, e.x + buffer, e.y + buffer);
-                    app.mainScene->accept(*i);
+                    app.scene->accept(*i);
                     onIntersect.fire(i->collectedEntities);
                 }
             }

@@ -84,7 +84,7 @@ auto Demo_NodePager = [](Application& app)
         // Always initialize a NodePager before using it:
         pager->initialize(app.vsgcontext);
 
-        app.mainScene->addChild(pager);
+        app.scene->addChild(pager);
 
         app.vsgcontext->requestFrame();
     }
@@ -107,7 +107,7 @@ auto Demo_NodePager = [](Application& app)
                     profile = Profile(pn[i]);                    
                     app.vsgcontext->onNextUpdate([&](...)
                         {
-                            remove(pager, app.mainScene->children);
+                            remove(pager, app.scene->children);
                             pager = nullptr;
                         });
 
