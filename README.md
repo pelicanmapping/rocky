@@ -563,11 +563,11 @@ Application app;
 ...
 
 auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
-auto main_window = app.displayManager->addWindow(traits);
+auto& window = app.display.addWindow(traits);
 
-auto imgui_renderer = RenderImGuiContext::create(main_window);
-imgui_renderer->add(MyGUI::create());
-app.install(imgui_renderer);
+auto imguiRenderer = ImGuiRenderer::create(window);
+imguiRenderer->add(MyGUI::create());
+app.install(imguiRenderer, window.view(0).vsgView);
 ```
 That's it. **Don't forget** to call `ImGui::SetCurrentContext` at the top of your `render` function!
 
