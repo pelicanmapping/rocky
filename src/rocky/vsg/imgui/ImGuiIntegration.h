@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
             //nop
         }
 
-        Callback<void(const vsg::UIEvent&)> onEvent;
+        Callback<const vsg::UIEvent&> onEvent;
 
         template<typename E>
         inline void propagate(E& e)
@@ -104,7 +104,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::View> view;
 
         //! Fired when user adds a node
-        Callback<void(vsg::ref_ptr<ImGuiContextNode>)> onNodeAdded;
+        Callback<vsg::ref_ptr<ImGuiContextNode>> onNodeAdded;
 
         //! whether to enable docking, if supported by ImGui
         bool enableDocking = false;

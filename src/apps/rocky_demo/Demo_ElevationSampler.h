@@ -15,7 +15,7 @@ namespace
     {
     public:
         ElevationSamplerMouseHandler(Application& in_app) : app(in_app) {}
-        Callback<void(const GeoPoint&)> onMouseMove;
+        Callback<const GeoPoint&> onMouseMove;
 
     protected:
         Application& app;

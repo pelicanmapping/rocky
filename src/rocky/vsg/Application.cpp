@@ -815,38 +815,3 @@ ROCKY_NAMESPACE::geoPointAtWindowCoords(Window& window, int x, int y)
 
     return std::make_tuple(Failure{}, View());
 }
-
-
-std::tuple<Result<GeoPoint>, Window, View>
-ROCKY_NAMESPACE::geoPointAtWindowCoords(DisplayManager& display, int x, int y)
-{
-    // iterate backwards so we search top to bottom
-    for (auto window_iter = display.windows().rbegin(); window_iter != display.windows().rend(); ++window_iter)
-    {
-        if (auto& window = *window_iter)
-        {
-            for (auto& view : window.views())
-            {
-                if (view.vsgView->camera)
-                {
-                    const auto vp = view.vsgView->camera->getViewport();
-
-                    if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
-                    {
-                        if (auto point = geoPointAtWindowCoords(view, x, y))
-                        {
-                            return std::make_tuple(point.value(), window, view);
-                        }
-                        else
-                        {
-                            // point is in viewport, but did not intersect anything
-                            return std::make_tuple(Failure{}, window, view);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return std::make_tuple(Failure{}, Window{}, View{});
-}

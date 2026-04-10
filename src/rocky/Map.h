@@ -72,7 +72,7 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! Callback fired when the layers vector changes
-        Callback<void(const Map*)> onLayersChanged;
+        Callback<const Map*> onLayersChanged;
 
     private:
         mutable std::shared_mutex _mutex;

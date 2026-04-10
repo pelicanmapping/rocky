@@ -65,10 +65,10 @@ namespace ROCKY_NAMESPACE
         virtual DateTimeExtent dateTimeExtent() const;
 
         //! Register a callback for layer open
-        Callback<void(const Layer*)> onLayerOpened;
+        Callback<const Layer*> onLayerOpened;
 
         //! Register a callback for layer close
-        Callback<void(const Layer*)> onLayerClosed;
+        Callback<const Layer*> onLayerClosed;
 
     public:
 

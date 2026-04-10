@@ -4,9 +4,7 @@
  * MIT License
  */
 #include "DisplayManager.h"
-#include "Application.h"
 #include "MapManipulator.h"
-#include "terrain/TerrainEngine.h"
 
 #include <vsg/vk/Instance.h>
 

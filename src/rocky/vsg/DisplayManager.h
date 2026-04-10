@@ -221,10 +221,10 @@ namespace ROCKY_NAMESPACE
         void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph>, vsg::ref_ptr<vsg::Window>);
 
         //! Callback fires when the user called addWindow
-        Callback<void(Window&)> onAddWindow;
-        Callback<void(const Window&)> onRemoveWindow;
-        Callback<void(Window&, View&)> onAddView;
-        Callback<void(const Window&, const View&)> onRemoveView;
+        Callback<Window&> onAddWindow;
+        Callback<const Window&> onRemoveWindow;
+        Callback<Window&, View&> onAddView;
+        Callback<const Window&, const View&> onRemoveView;
 
     public:
 

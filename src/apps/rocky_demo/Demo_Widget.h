@@ -15,7 +15,7 @@ namespace
         DemoWidgetMouseHandler(Application& in_app) : app(in_app) {}
         std::optional<vsg::ButtonPressEvent> _press;
 
-        Callback<void(const GeoPoint&)> onClick;
+        Callback<const GeoPoint&> onClick;
 
         void apply(vsg::ButtonPressEvent& e) override
         {

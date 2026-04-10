@@ -68,7 +68,7 @@ namespace ROCKY_NAMESPACE
         BoundCalculator calculateBound;
        
         //! Fired when expired data is about to be removed from the scene graph
-        Callback<void(vsg::ref_ptr<vsg::Object>)> onExpire;
+        Callback<vsg::ref_ptr<vsg::Object>> onExpire;
 
         //! Min level at which to create payloads
         unsigned minLevel = 0;

@@ -17,9 +17,9 @@ namespace
     public:
         MapEventHandler(Application& in_app) : app(in_app) {}
 
-        Callback<void(const GeoPoint&)> onLeftClick;
-        Callback<void(const GeoPoint&)> onRightClick;
-        Callback<void(const GeoPoint&)> onMouseMove;
+        Callback<const GeoPoint&> onLeftClick;
+        Callback<const GeoPoint&> onRightClick;
+        Callback<const GeoPoint&> onMouseMove;
 
     protected:
         Application& app;

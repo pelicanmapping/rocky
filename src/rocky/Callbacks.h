@@ -29,12 +29,15 @@ namespace ROCKY_NAMESPACE
     using CallbackSub = CallbackSubscription;
     using CallbackSubs = CallbackSubscriptions;
 
-    template<typename F = void()>
+    template<typename... Args>
     class Callback
     {
+    public:
+        using FuncType = typename std::function<void(Args...)>;
+
     private:
         using SubRef = std::weak_ptr<bool>;
-        using Entry = typename std::pair<SubRef, std::function<F>>;
+        using Entry = typename std::pair<SubRef, FuncType>;
         mutable std::vector<Entry> entries;
         mutable std::mutex mutex;
         mutable std::atomic_bool firing = { false };
@@ -43,7 +46,7 @@ namespace ROCKY_NAMESPACE
         //! Adds a callback function, and returns a subscription object.
         //! When the subscription object is destroyed the callback is deactivated.
         [[nodiscard]]
-        CallbackSubscription operator()(std::function<F>&& func) const {
+        CallbackSubscription operator()(FuncType&& func) const {
             std::lock_guard<std::mutex> lock(mutex);
             auto sub = CallbackSubscription(new bool(true));
             entries.emplace_back(SubRef(sub), func);

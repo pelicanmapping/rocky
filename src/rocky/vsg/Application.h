@@ -210,13 +210,5 @@ namespace ROCKY_NAMESPACE
     //! @return GeoPoint at the given window coordinates
     extern ROCKY_EXPORT std::tuple<Result<GeoPoint>, View>
         geoPointAtWindowCoords(Window& window, int x, int y);
-
-    //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
-    //! @param viewer Viewer to search for windows and views
-    //! @param x X coordinate in window space
-    //! @param y Y coordinate in window space
-    //! @return GeoPoint at the given window coordinates
-    extern ROCKY_EXPORT std::tuple<Result<GeoPoint>, Window, View>
-        geoPointAtWindowCoords(DisplayManager& display, int x, int y);
 }
 

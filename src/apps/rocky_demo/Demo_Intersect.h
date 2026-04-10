@@ -20,7 +20,7 @@ namespace
         DemoIntersectMouseHandler(Application& in_app) : app(in_app) {}
 
         int buffer = 3;
-        Callback<void(std::unordered_set<entt::entity>)> onIntersect;
+        Callback<std::unordered_set<entt::entity>> onIntersect;
 
     protected:
         Application& app;

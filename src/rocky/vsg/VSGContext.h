@@ -68,7 +68,7 @@ namespace ROCKY_NAMESPACE
         std::vector<std::uint32_t> activeViewIDs = { 0 };
 
         //! Callback fired during each update pass.
-        Callback<void(VSGContext)> onUpdate;
+        Callback<VSGContext> onUpdate;
 
         //! Callbacks to render GUI elements
         detail::GuiRecorders guiRecorders;
