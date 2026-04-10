@@ -66,8 +66,8 @@ namespace ROCKY_NAMESPACE
         }
 
         //! Executes all callback functions with the provided args
-        template<typename... Args>
-        void fire(Args&&... args) const {
+        template<typename... Args2>
+        void fire(Args2&&... args) const {
             if (firing.exchange(true) == false) {
                 std::lock_guard<std::mutex> lock(mutex);
                 for (auto& e : entries) {

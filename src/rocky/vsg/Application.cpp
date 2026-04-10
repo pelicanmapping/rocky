@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2025 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "Application.h"
