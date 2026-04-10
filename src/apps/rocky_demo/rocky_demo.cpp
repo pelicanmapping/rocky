@@ -238,10 +238,10 @@ int main(int argc, char** argv)
 
     // Create the main window:
     auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
-    auto main_window = app.display.addWindow(traits);
+    auto& mainWindow = app.display.addWindow(traits);
 
     // Add our GUI:
-    auto imguiRenderer = RenderImGuiContext::create(main_window);
+    auto imguiRenderer = RenderImGuiContext::create(mainWindow.vsgWindow, mainWindow.view(0).vsgView);
     imguiRenderer->add(MainGUI::create(app));
     app.install(imguiRenderer);
 

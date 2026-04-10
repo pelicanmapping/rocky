@@ -111,7 +111,7 @@ namespace ROCKY_NAMESPACE
         SRS renderingSRS;
 
         //! Creates Vulkan state for rendering terrain tiles.
-        TerrainState terrainState;
+        std::shared_ptr<TerrainState> terrainState;
 
         //! Reflects any startup errors that occur
         Status status;

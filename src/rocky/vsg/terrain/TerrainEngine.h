@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
             std::shared_ptr<const Map> map,
             const Profile& profile,
             const SRS& renderingSRS,
-            TerrainState& stateFactory,
+            std::shared_ptr<TerrainState> stateFactory,
             VSGContext context,
             const TerrainSettings& settings,
             TerrainTileHost* host);
@@ -49,7 +49,7 @@ namespace ROCKY_NAMESPACE
         GeometryPool geometryPool;
 
         //! Creates the state group objects for terrain rendering
-        TerrainState& stateFactory;
+        std::shared_ptr<TerrainState> stateFactory;
 
         TerrainTileHost* host = nullptr;
 

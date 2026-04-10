@@ -27,12 +27,14 @@ namespace
 
         void apply(vsg::MoveEvent& e) override
         {
-            auto view = app.display.viewAtWindowCoords(e.window, e.x, e.y);
-            if (view)
+            if (auto& window = app.display.find(e.window.ref_ptr()))
             {
-                auto i = ECSPolytopeIntersector::create(view, e.x - buffer, e.y - buffer, e.x + buffer, e.y + buffer);
-                app.mainScene->accept(*i);
-                onIntersect.fire(i->collectedEntities);
+                if (auto& view = window.viewAtCoords((float)e.x, (float)e.y))
+                {
+                    auto i = ECSPolytopeIntersector::create(view.vsgView, e.x - buffer, e.y - buffer, e.x + buffer, e.y + buffer);
+                    app.mainScene->accept(*i);
+                    onIntersect.fire(i->collectedEntities);
+                }
             }
         }
     };

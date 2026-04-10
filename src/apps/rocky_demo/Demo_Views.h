@@ -42,38 +42,40 @@ auto Demo_Views = [](Application& app)
 
     // iterate over all managed windows:
     int window_id = 0;
-    for (auto window : app.viewer->windows())
+
+    for(auto& window : app.display.windows())
     {
-        auto views = app.display.views(window);
+        auto traits = window.vsgWindow->traits();
 
         ImGui::PushID(window_id++);
-        if (ImGui::TreeNodeEx(window->traits()->windowTitle.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+        if (ImGui::TreeNodeEx(traits->windowTitle.c_str(), ImGuiTreeNodeFlags_DefaultOpen))
         {
             // for each window, iterate over all managed views in that window:
-            int num = 0;
-            for (auto& view : views)
+            for(auto iter = window.views().rbegin(); iter != window.views().rend(); ++iter)
             {
-                ImGui::PushID(view->viewID*100);
-                if (ImGui::TreeNodeEx("view", ImGuiTreeNodeFlags_DefaultOpen, "View %d", num++))
+                auto& view = *iter;
+                if (!view) continue;
+
+                auto camera = view.vsgView->camera;
+
+                ImGui::PushID(view.viewID * 100);
+                if (ImGui::TreeNodeEx("view", ImGuiTreeNodeFlags_DefaultOpen, "View %d", view.viewID))
                 {
                     ImGuiLTable::Begin("view");
-                    
-                    auto rg = app.display.renderGraph(view);
 
                     // the clear color, which resides in a renderpass attachment:
-                    if (rg && rg->clearValues.size() > 0)
+                    if (view.renderGraph->clearValues.size() > 0)
                     {
-                        ImGuiLTable::ColorEdit3("Clear color", rg->clearValues[0].color.float32);
+                        ImGuiLTable::ColorEdit3("Clear color", view.renderGraph->clearValues[0].color.float32);
                     }
 
                     app.registry.read([&](entt::registry& reg)
                         {
                             auto& visibility = reg.get<Visibility>(borderEntity);
-                            ImGuiLTable::Checkbox("Border", &visibility.visible[view->viewID]);
+                            ImGuiLTable::Checkbox("Border", &visibility.visible[view.viewID]);
                         });
 
-                    auto mapNode = detail::find<MapNode>(view);
-                    if (mapNode)
+                    if (auto mapNode = view.find<MapNode>())
                     {
                         // Rendering profile:
                         static std::vector<std::string> options = { "global-geodetic", "global-qsc", "spherical-mercator", "plate-carree" };
@@ -90,16 +92,17 @@ auto Demo_Views = [](Application& app)
                                         mapNode->profile = Profile(options[i]);
 
                                         // Set the appropriate camera projection type:
+
                                         if (mapNode->profile.srs().isProjected()) {
-                                            view->camera->projectionMatrix = vsg::Orthographic::create(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+                                            camera->projectionMatrix = vsg::Orthographic::create(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
                                         }
                                         else {
-                                            double ar = (double)view->camera->getViewport().width / (double)view->camera->getViewport().height;
-                                            view->camera->projectionMatrix = vsg::Perspective::create(45.0, ar, 1.0, 1000.0);
+                                            double ar = (double)camera->getViewport().width / (double)camera->getViewport().height;
+                                            camera->projectionMatrix = vsg::Perspective::create(45.0, ar, 1.0, 1000.0);
                                         }
 
                                         // Reset the view's manipulator if it has one:
-                                        if (auto manip = MapManipulator::get(view))
+                                        if (auto manip = MapManipulator::get(view.vsgView))
                                             manip->home();
 
                                         // Request a rendering update:
@@ -108,44 +111,43 @@ auto Demo_Views = [](Application& app)
                                 }
                                 ImGuiLTable::EndCombo();
                             }
-                            ImGuiLTable::Text("Camera:", "%s", (is_perspective_projection_matrix(view->camera->projectionMatrix->transform())) ? "Perspective" : "Orthographic");
+                            ImGuiLTable::Text("Camera:", "%s", (is_perspective_projection_matrix(camera->projectionMatrix->transform())) ? "Perspective" : "Orthographic");
                         }
                     }
 
-                    if (num > 1)  // don't allow position/size editing the first view
+                    if (view.viewID > 0)  // don't allow position/size editing the main view
                     {
                         // the viewport - changing this requires a bunch of updates and a call to  app.refreshView
                         bool vp_dirty = false;
-                        auto old_vp = view->camera->getViewport();
-                        auto vp = view->camera->getViewport();
+                        auto old_vp = camera->getViewport();
+                        auto vp = camera->getViewport();
                         
-                        if (ImGuiLTable::SliderFloat("X", &vp.x, 0, (float)window->traits()->width))
+                        if (ImGuiLTable::SliderFloat("X", &vp.x, 0, (float)traits->width))
                             vp_dirty = true;
 
-                        if (ImGuiLTable::SliderFloat("Y", &vp.y, 0, (float)window->traits()->height))
+                        if (ImGuiLTable::SliderFloat("Y", &vp.y, 0, (float)traits->height))
                             vp_dirty = true;
 
-                        if (ImGuiLTable::SliderFloat("Width", &vp.width, 0, (float)window->traits()->width))
+                        if (ImGuiLTable::SliderFloat("Width", &vp.width, 0, (float)traits->width))
                             vp_dirty = true;
 
-                        if (ImGuiLTable::SliderFloat("Height", &vp.height, 0, (float)window->traits()->height))
+                        if (ImGuiLTable::SliderFloat("Height", &vp.height, 0, (float)traits->height))
                             vp_dirty = true;
 
                         if (vp_dirty)
                         {
-                            if (vp.x + vp.width >= (float)window->traits()->width) vp.x = (float)window->traits()->width - (float)vp.width - 1;
-                            if (vp.y + vp.height >= (float)window->traits()->height) vp.y = (float)window->traits()->height - (float)vp.height - 1;
-                            view->camera->projectionMatrix->changeExtent(VkExtent2D{ (unsigned)old_vp.width, (unsigned)old_vp.height }, VkExtent2D{ (unsigned)vp.width, (unsigned)vp.height });
-                            view->camera->viewportState->set(
-                                (std::uint32_t)vp.x, (std::uint32_t)vp.y,
-                                (std::uint32_t)vp.width, (std::uint32_t)vp.height);
+                            if (vp.x + vp.width >= (float)traits->width) vp.x = (float)traits->width - (float)vp.width - 1;
+                            if (vp.y + vp.height >= (float)traits->height) vp.y = (float)traits->height - (float)vp.height - 1;
+                            camera->projectionMatrix->changeExtent(VkExtent2D{ (unsigned)old_vp.width, (unsigned)old_vp.height }, VkExtent2D{ (unsigned)vp.width, (unsigned)vp.height });
+                            camera->viewportState->set((std::uint32_t)vp.x, (std::uint32_t)vp.y, (std::uint32_t)vp.width, (std::uint32_t)vp.height);
 
-                            app.display.refreshView(view);
+                            view.dirty();
                         }
 
                         if (ImGui::Button("Remove view"))
                         {
-                            app.onNextUpdate([&app, view](...) { app.display.removeView(view); });
+                            app.onNextUpdate([&app, &window, &view](...) {
+                                window.removeView(view); });
                         }
                     }
 
@@ -159,17 +161,15 @@ auto Demo_Views = [](Application& app)
 
             ImGui::Indent();
             {
-                vsg::ref_ptr<vsg::View> newView;
+                vsg::ref_ptr<vsg::View> vsgView;
                 static std::mt19937 rng;
                 std::uniform_int_distribution next_int;
 
                 if (ImGui::Button("Add a mini-map inset"))
                 {
-                    // First make a camera for the new view, placed at a random location.
+                    // First make a camera for the new view
                     const int width = 480, height = 480;
-                    int win_width = window->extent2D().width, win_height = window->extent2D().height;
-                    int x = win_width - width - 10;
-                    int y = 10;
+                    int x = window.vsgWindow->extent2D().width - width - 10, y = 10;
 
                     auto camera = vsg::Camera::create(
                         vsg::Orthographic::create(-1, 1, -1, 1, -1e10, 1e10),
@@ -185,7 +185,7 @@ auto Demo_Views = [](Application& app)
                     group->addChild(app.systemsNode);
 
                     // create the new view:
-                    newView = vsg::View::create(camera, group);
+                    vsgView = vsg::View::create(camera, group);
                 }
 
                 if (ImGui::Button("Add an shared inset"))
@@ -198,12 +198,10 @@ auto Demo_Views = [](Application& app)
                     const double vfov = 30.0;
                     const int width = 320, height = 200;
                     double R = app.mapNode->srs().ellipsoid().semiMajorAxis();
-                    int win_width = window->extent2D().width, win_height = window->extent2D().height;
+                    int win_width = window.vsgWindow->extent2D().width, win_height = window.vsgWindow->extent2D().height;
                     int x = std::max(0, (next_int(rng) % win_width) - width);
                     int y = std::max(0, (next_int(rng) % win_height) - height);
                     double ar = (double)width / (double)height;
-
-                    auto mainView = app.display.views(app.display.mainWindow()).front();
 
                     auto camera = vsg::Camera::create(
                         vsg::Perspective::create(vfov, ar, R * nearFarRatio, R * 20.0),
@@ -211,21 +209,21 @@ auto Demo_Views = [](Application& app)
                         vsg::ViewportState::create(x, y, width, height));
 
                     // create the new view:
-                    newView = vsg::View::create(camera, app.root);
+                    vsgView = vsg::View::create(camera, app.root);
                 }
 
-                if (newView)
+                if (vsgView)
                 {
-                    auto add = [&app, newView, window]()
+                    auto add = [&app, vsgView, &window]()
                         {
                             std::uniform_int_distribution next_int;
-                            app.display.addViewToWindow(newView, window, true);
-                            auto rg = app.display.renderGraph(newView);
+                            View& view = window.addView(vsgView);
+                            auto rg = view.renderGraph;
                             auto& color = rg->clearValues[0].color.float32;
                             color[0] = float(next_int(rng) % 64) / 255.0f;
                             color[1] = float(next_int(rng) % 64) / 255.0f;
                             color[2] = float(next_int(rng) % 64) / 255.0f;
-                            app.display.refreshView(newView);
+                            view.dirty();
                         };
 
                     app.onNextUpdate(add);

@@ -12,7 +12,7 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    Layer::Ptr createAxesLayer(Application& app, const Ellipsoid& ell, VSGContext vsg)
+    Layer::Ptr createAxesLayer(Application& app, const Ellipsoid& ell)
     {
         const float len = 2.0 * (ell.semiMajorAxis() + 1e6);
         const float width = 25'000;
@@ -63,7 +63,7 @@ namespace
         layer->name = "Axes";
         layer->node = group;
 
-        vsg->compile(group);
+        app.vsgcontext->compile(group);
 
         return layer;
     }
@@ -81,10 +81,11 @@ auto Demo_Terrain = [](Application& app)
         setWireframeTopology->topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
     }
 
-    auto view = viewAtWindowCoords(app.viewer, ImGui::GetMousePos().x, ImGui::GetMousePos().y);
-    if (!view) return;
+    auto&& [window, view] = app.display.windowAndViewAtCoords(ImGui::GetMousePos().x, ImGui::GetMousePos().y);
 
-    auto mapNode = detail::find<MapNode>(view);
+    if (!window || !view) return;
+
+    auto mapNode = view.find<MapNode>();
     if (!mapNode) return;
 
     if (ImGuiLTable::Begin("terrain"))
@@ -127,7 +128,7 @@ auto Demo_Terrain = [](Application& app)
             if (showAxes)
             {
                 if (!axesLayer)
-                    mapNode->map->add(axesLayer = createAxesLayer(app, mapNode->srs().ellipsoid(), app.vsgcontext));
+                    mapNode->map->add(axesLayer = createAxesLayer(app, mapNode->srs().ellipsoid()));
 
                 auto r = axesLayer->open(app.io());
                 if (r.failed())

@@ -56,7 +56,7 @@ Result<>
 TerrainProfileNode::createRootTiles(VSGContext vsgcontext)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(_engine != nullptr, Failure_AssertionFailure);
-    ROCKY_SOFT_ASSERT_AND_RETURN(_engine->stateFactory.status.ok(), _engine->stateFactory.status.error());
+    ROCKY_SOFT_ASSERT_AND_RETURN(_engine->stateFactory->status.ok(), _engine->stateFactory->status.error());
     ROCKY_HARD_ASSERT(children.empty(), "TerrainNode::createRootTiles() called with children already present");
 
     // once the pipeline exists, we can start creating tiles.
@@ -119,11 +119,12 @@ TerrainProfileNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, v
 
 
 
-TerrainNode::TerrainNode(VSGContext vsgcontext) :
-    terrainState(vsgcontext)
+TerrainNode::TerrainNode(VSGContext vsgcontext)
 {
     // create the graphics pipeline to render this map
-    if (!terrainState.setupTerrainStateGroup(*this, vsgcontext))
+    terrainState = std::make_shared<TerrainState>(vsgcontext);
+
+    if (!terrainState->setupTerrainStateGroup(*this, vsgcontext))
     {
         status = Failure("Failed to set up terrain state group. Shaders not found?");
     }
@@ -269,7 +270,7 @@ TerrainNode::update(VSGContext context)
     }
 
     // check for settings change
-    terrainState.updateSettings(*this);
+    terrainState->updateSettings(*this);
 
     return changes;
 }

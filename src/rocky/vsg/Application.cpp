@@ -4,14 +4,8 @@
  * MIT License
  */
 #include "Application.h"
-
-#include "ecs/MeshSystem.h"
-#include "ecs/LineSystem.h"
-#include "ecs/PointSystem.h"
-#include "ecs/LabelSystem.h"
-#include "ecs/WidgetSystem.h"
+#include "MapManipulator.h"
 #include "ecs/TransformSystem.h"
-#include "ecs/NodeGraphSystem.h"
 
 #include <rocky/contrib/EarthFileImporter.h>
 
@@ -56,6 +50,57 @@ namespace
 
         return ResultVoidOK;
     }
+
+
+    struct CloseWindowEventHandler : public vsg::Inherit<vsg::Visitor, CloseWindowEventHandler>
+    {
+        CloseWindowEventHandler(rocky::Application* app) : _app(app) {}
+
+        void apply(vsg::CloseWindowEvent& e) override
+        {
+            auto window = e.window.ref_ptr();
+            if (window)
+            {
+                _app->onNextUpdate([window, this](...)
+                    {
+                        Log()->debug("Removing window...");
+
+                        for (auto& win : _app->display.windows())
+                        {
+                            if (win.vsgWindow == window)
+                            {
+                                _app->display.removeWindow(win);
+                                break;
+                            }
+                        }
+
+                        if (_app->viewer->windows().empty())
+                        {
+                            Log()->debug("All windows closed... shutting down.");
+                            _app->viewer->close();
+                        }
+                    });
+
+                e.handled = true;
+            }
+        }
+
+        rocky::Application* _app;
+    };
+
+
+    // utility visitor to find all views.
+    struct FindViews : public vsg::Visitor {
+
+        void apply(vsg::Object& g) override {
+            g.traverse(*this);
+        }
+        void apply(vsg::View& view) override {
+            views.push_back(vsg::ref_ptr<vsg::View>(&view));
+        };
+
+        std::vector<vsg::ref_ptr<vsg::View>> views;
+    };
 }
 
 Application::Application()
@@ -102,17 +147,24 @@ Application::ctor(int& argc, char** argv)
         return;
     }
 
-    // new display manager
-    display.initialize(*this);
-
     // parse the command line
     vsg::CommandLine commandLine(&argc, argv);
     commandLine.read(vsgcontext->readerWriterOptions);
-    _debuglayerUnique = commandLine.read("--debug-once");
-    _debuglayer = _debuglayerUnique || commandLine.read("--debug");
-    _apilayer = commandLine.read("--api");
-    _vsync = !commandLine.read({ "--novsync", "--no-vsync" });
 
+    // new display manager
+    display.initialize(vsgcontext, commandLine);
+
+    // intercept the window-close event so we can remove the window from our tracking tables.
+    auto& handlers = vsgcontext->viewer()->getEventHandlers();
+    handlers.insert(handlers.begin(), CloseWindowEventHandler::create(this));
+
+    // subscribe to display manager events:
+    _subscriptions += display.onAddWindow([this](Window& window) { onAddWindow(window); });
+    _subscriptions += display.onAddView([this](Window& window, View& view) { onAddView(window, view); });
+    _subscriptions += display.onRemoveWindow([this](const Window& window) { onRemoveWindow(window); });
+    _subscriptions += display.onRemoveView([this](const Window& window, const View& view) { onRemoveView(window, view); });
+
+    // parse the command line
     if (commandLine.read("--pause")) ::getchar();
 
     if (commandLine.read("--version"))
@@ -247,86 +299,89 @@ Application::onNextUpdate(std::function<void()> func)
 }
 
 void
-Application::setupViewer(vsg::ref_ptr<vsg::Viewer> viewer)
-{
-    // share the same queue family as the graphics command graph for now.
-    auto computeCommandGraph = vsgcontext->getOrCreateComputeCommandGraph(
-        display.sharedDevice(),
-        display._commandGraphByWindow.begin()->second->queueFamily);
-
-    // Initialize the ECS subsystem:
-    if (systemsNode)
-    {
-        systemsNode->initialize(vsgcontext);
-    }
-
-    // respond to the X or to hitting ESC
-    // TODO: refactor this so it responds to individual windows and not the whole app?
-    //viewer->addEventHandler(vsg::CloseHandler::create(viewer));
-
-    // This sets up the internal tasks that will, for each command graph, record
-    // a scene graph and submit the results to the renderer each frame. Also sets
-    // up whatever's necessary to present the resulting swapchain to the device.
-    vsg::CommandGraphs commandGraphs{ computeCommandGraph };
-
-    for (auto iter : display._commandGraphByWindow)
-    {
-        commandGraphs.push_back(iter.second);
-    }
-
-    viewer->assignRecordAndSubmitTaskAndPresentation(commandGraphs);
-
-#if 1
-    // Configure a descriptor pool size that's appropriate for terrain
-    // https://groups.google.com/g/vsg-users/c/JJQZ-RN7jC0/m/tyX8nT39BAAJ
-    // https://www.reddit.com/r/vulkan/comments/8u9zqr/having_trouble_understanding_descriptor_pool/    
-    // Since VSG dynamic allocates descriptor pools as it needs them,
-    // this is not strictly necessary. But if you know something about the
-    // types of descriptor sets you are going to use it will increase 
-    // performance (?) to pre-allocate some pools like this.
-    // There is a big trade-off since pre-allocating these pools takes up
-    // a significant amount of memory.
-
-    auto resourceHints = vsg::ResourceHints::create();
-
-    // max number of descriptor sets per pool, regardless of type:
-    //resourceHints->numDescriptorSets = 1;
-
-    //#if VSG_API_VERSION_GREATER_EQUAL(1,1,8)
-    //    resourceHints->numDatabasePagerReadThreads = 8;
-    //#endif
-
-    // max number of descriptor sets of a specific type per pool:
-    //resourceHints->descriptorPoolSizes.push_back(
-    //    VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 });
-
-    viewer->compile(resourceHints);
-
-    // Force VSG to install a DatabasePager.
-    //vsg::CompileResult result;
-    //result.containsPagedLOD = true;
-    //vsg::updateTasks(viewer->recordAndSubmitTasks, viewer->compileManager, result);
-
-#else
-    viewer->compile();
-#endif
-}
-
-void
 Application::realize()
 {
     if (!_viewerRealized)
     {
         // Make a window if the user didn't.
-        if (viewer->windows().empty() && autoCreateWindow)
+        if (display.windows().empty() && autoCreateWindow)
         {
             auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
             traits->queueFlags |= VK_QUEUE_COMPUTE_BIT;
             traits->synchronizationLayer = true;
+
             display.addWindow(traits);
         }
 
-        setupViewer(viewer);
+        // Set up a compute CG the application can use.
+        // Share the same queue family as the graphics command graph for now.
+        Window& mainWindow = display.window(0);
+        ROCKY_SOFT_ASSERT_AND_RETURN(mainWindow, void());
+
+        auto computeCommandGraph = vsgcontext->getOrCreateComputeCommandGraph(
+            display.sharedDevice(),
+            mainWindow.commandGraph->queueFamily);
+
+        // Initialize the ECS subsystem:
+        if (systemsNode)
+        {
+            systemsNode->initialize(vsgcontext);
+        }
+
+        // respond to the X or to hitting ESC
+        // TODO: refactor this so it responds to individual windows and not the whole app?
+        //viewer->addEventHandler(vsg::CloseHandler::create(viewer));
+
+        // This sets up the internal tasks that will, for each command graph, record
+        // a scene graph and submit the results to the renderer each frame. Also sets
+        // up whatever's necessary to present the resulting swapchain to the device.
+        vsg::CommandGraphs commandGraphs{ computeCommandGraph };
+
+        for (auto& window : display.windows())
+        {
+            if (window.commandGraph)
+            {
+                commandGraphs.emplace_back(window.commandGraph);
+            }
+        }
+
+        viewer->assignRecordAndSubmitTaskAndPresentation(commandGraphs);
+
+#if 1
+        // Configure a descriptor pool size that's appropriate for terrain
+        // https://groups.google.com/g/vsg-users/c/JJQZ-RN7jC0/m/tyX8nT39BAAJ
+        // https://www.reddit.com/r/vulkan/comments/8u9zqr/having_trouble_understanding_descriptor_pool/    
+        // Since VSG dynamic allocates descriptor pools as it needs them,
+        // this is not strictly necessary. But if you know something about the
+        // types of descriptor sets you are going to use it will increase 
+        // performance (?) to pre-allocate some pools like this.
+        // There is a big trade-off since pre-allocating these pools takes up
+        // a significant amount of memory.
+
+        auto resourceHints = vsg::ResourceHints::create();
+
+        // max number of descriptor sets per pool, regardless of type:
+        //resourceHints->numDescriptorSets = 1;
+
+        //#if VSG_API_VERSION_GREATER_EQUAL(1,1,8)
+        //    resourceHints->numDatabasePagerReadThreads = 8;
+        //#endif
+
+        // max number of descriptor sets of a specific type per pool:
+        //resourceHints->descriptorPoolSizes.push_back(
+        //    VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 });
+
+        viewer->compile(resourceHints);
+
+        // Force VSG to install a DatabasePager.
+        //vsg::CompileResult result;
+        //result.containsPagedLOD = true;
+        //vsg::updateTasks(viewer->recordAndSubmitTasks, viewer->compileManager, result);
+
+#else
+        viewer->compile();
+#endif
+
 
         // Callback that will update the ECS systems each frame
         _subscriptions += vsgcontext->onUpdate([&](VSGContext vsgcontext)
@@ -512,26 +567,25 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group)
 }
 
 void
-Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomaticIdleFunctions)
+Application::install(vsg::ref_ptr<RenderImGuiContext> renderer, bool installAutomaticIdleFunctions)
 {
 #ifdef ROCKY_HAS_IMGUI
-    ROCKY_SOFT_ASSERT_AND_RETURN(group, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(group->window, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(group->imguiContext(), void());
 
-    auto view = group->view ? group->view : display.windowsAndViews[group->window].front();
-    ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(renderer, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(renderer->view, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(renderer->imguiContext(), void());
 
     // keep track so we can remove it later if necessary:
-    auto& viewData = display._viewData[view];
-    viewData.guiContextGroup = group;
+    auto& view = display.find(renderer->view);
+    view._guiRenderer = renderer;
 
     // add the renderer to the view's render graph:
-    viewData.parentRenderGraph->addChild(group);
+    view.renderGraph->addChild(renderer);
 
     // add the event handler that will pass events from VSG to ImGui:
-    auto send = SendEventsToImGuiContext::create(group->window, group->imguiContext());
-    viewData.guiEventVisitor = send;
+    auto send = SendEventsToImGuiContext::create(renderer->window, renderer->imguiContext());
+    view._guiEventVisitor = send;
+
     auto& handlers = vsgcontext->viewer()->getEventHandlers();
     handlers.insert(handlers.begin(), send);
 
@@ -545,7 +599,7 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
     if (installAutomaticIdleFunctions)
     {
         // when the user adds a new GUI node, we need to add it to the idle functions
-        _subscriptions += group->onNodeAdded([&, ic(group->imguiContext())](vsg::ref_ptr<ImGuiContextNode> node)
+        _subscriptions += renderer->onNodeAdded([&, ic(renderer->imguiContext())](vsg::ref_ptr<ImGuiContextNode> node)
             {
                 // add the node to the idle functions so it can render
                 vsg::observer_ptr<ImGuiContextNode> node_weak(node);
@@ -566,3 +620,233 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> group, bool installAutomat
 #endif
 }
 
+
+void
+Application::onAddWindow(Window& window)
+{
+    // wait until the device is idle to avoid changing state while it's being used
+    vsgcontext->viewer()->deviceWaitIdle();
+
+    if (window && window.views().empty() && mapNode && root)
+    {
+        // Window with no view? Make a default view covering the entire window
+        auto extent = window.vsgWindow->extent2D();
+        double nearFarRatio = 0.0000001;
+        double R = mapNode->srs().ellipsoid().semiMajorAxis();
+        double ar = (double)extent.width / (double)extent.height;
+
+        auto camera = vsg::Camera::create(
+            vsg::Perspective::create(30.0, ar, R * nearFarRatio, R * 20.0),
+            vsg::LookAt::create(vsg::dvec3(R * 5.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, 1.0)),
+            vsg::ViewportState::create(0, 0, extent.width, extent.height));
+
+        View& newView = window.addView(camera, root);
+        if (newView)
+            newView.vsgView->setValue("rocky_auto_created", true);
+    }
+
+    // add the new window to the VSG viewer
+    vsgcontext->viewer()->addWindow(window.vsgWindow);
+    vsgcontext->viewer()->addRecordAndSubmitTaskAndPresentation({ window.commandGraph });
+
+    // Tell Rocky it needs to mutex-protect the terrain engine if we have more than one window.
+    if (vsgcontext->viewer()->windows().size() > 1)
+    {
+        mapNode->terrainSettings().supportMultiThreadedRecord = true;
+    }
+}
+
+void
+Application::onAddView(Window& window, View& view)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(window && view, void());
+
+    // wait until the device is idle to avoid changing state while it's being used
+    vsgcontext->viewer()->deviceWaitIdle();
+
+    // install a manipulator
+    auto manip = MapManipulator::create(view.find<MapNode>(), window.vsgWindow, view.vsgView->camera, vsgcontext);
+    display.setManipulatorForView(manip, view.vsgView);
+
+#ifdef ROCKY_HAS_IMGUI
+
+    // ImGui renderer for drawing Widgets (et al) on this view:
+    auto imguiRenderer = RenderImGuiContext::create(window.vsgWindow, view.vsgView);
+    auto imguicontext = imguiRenderer->imguiContext();
+
+    // disable the .ini file for ImGui since we don't want to save stuff for internal widgetry
+    ImGui::SetCurrentContext(imguicontext);
+    ImGui::GetIO().IniFilename = nullptr;
+
+    // Next, add a node that will dispatch the actual gui rendering callbacks
+    // (like the one installed by the WidgetSystem):
+    imguiRenderer->addChild(detail::ImGuiDispatcher::create(imguicontext, vsgcontext));
+
+
+
+
+
+    this->install(imguiRenderer, false);
+
+
+
+
+
+    // We still need to process ImGui events even if we're not rendering the frame,
+    // so install this "idle" function:
+    auto idleFrame = [view(view), vsgcontext(vsgcontext), imguicontext]()
+        {
+            auto vp = view.vsgView->camera->getViewport();
+
+            RenderingState rs{
+                view.viewID,
+                vsgcontext->viewer()->getFrameStamp()->frameCount,
+                { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
+            };
+
+            ImGui::SetCurrentContext(imguicontext);
+            ImGui::GetIO().DeltaTime = ImGui::GetIO().DeltaTime <= 0.0f ? 0.016f : ImGui::GetIO().DeltaTime;
+            ImGui::NewFrame();
+
+            for (auto& record : vsgcontext->guiRecorders)
+            {
+                record(rs, imguicontext);
+            }
+
+            ImGui::EndFrame();
+        };
+
+    view._guiIdleEventProcessor = std::make_shared<std::function<void()>>(idleFrame);
+
+    this->idleFunctions.emplace_front(view._guiIdleEventProcessor);
+
+#endif
+}
+
+void
+Application::onRemoveWindow(const Window& window)
+{
+    // wait until the device is idle to avoid changing state while it's being used
+    vsgcontext->viewer()->deviceWaitIdle();
+
+    // remove it from the VSG viewer:
+    vsgcontext->viewer()->removeWindow(window.vsgWindow);
+}
+
+void
+Application::onRemoveView(const Window& window, const View& view)
+{
+    // wait until the device is idle to avoid changing state while it's being used
+    vsgcontext->viewer()->deviceWaitIdle();
+
+#ifdef ROCKY_HAS_IMGUI
+
+    if (view._guiIdleEventProcessor)
+    {
+        auto& c = idleFunctions;
+        c.erase(std::remove(c.begin(), c.end(), view._guiIdleEventProcessor), c.end());
+    }
+
+    if (view._guiEventVisitor)
+    {
+        auto& c = vsgcontext->viewer()->getEventHandlers();
+        c.erase(std::remove(c.begin(), c.end(), view._guiEventVisitor), c.end());
+    }
+
+    if (view._guiRenderer)
+    {
+        auto& c = view.renderGraph->children;
+        c.erase(std::remove(c.begin(), c.end(), view._guiRenderer), c.end());
+    }
+
+#endif
+}
+
+
+
+
+
+
+
+
+Result<GeoPoint>
+ROCKY_NAMESPACE::geoPointAtWindowCoords(View& view, int x, int y)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(view, Failure_AssertionFailure);
+    ROCKY_SOFT_ASSERT_AND_RETURN(view.vsgView->camera, Failure_AssertionFailure);
+
+    auto terrain = detail::find<TerrainNode>(view.vsgView);
+    if (!terrain)
+        return Failure_AssertionFailure;
+
+    vsg::LineSegmentIntersector lsi(*view.vsgView->camera, x, y);
+    terrain->accept(lsi);
+    if (lsi.intersections.empty())
+        return Failure{};
+
+    auto closest = std::min_element(
+        lsi.intersections.begin(), lsi.intersections.end(),
+        [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
+
+    return GeoPoint(terrain->renderingSRS, closest->get()->worldIntersection);
+}
+
+
+std::tuple<Result<GeoPoint>, View>
+ROCKY_NAMESPACE::geoPointAtWindowCoords(Window& window, int x, int y)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(window, std::make_tuple(Failure_AssertionFailure, View()));
+
+    for (auto& view : window.views())
+    {
+        if (view.vsgView->camera)
+        {
+            const auto vp = view.vsgView->camera->getViewport();
+
+            if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
+            {
+                if (auto p = geoPointAtWindowCoords(view, x, y))
+                {
+                    return std::make_tuple(p, view);
+                }
+            }
+        }
+    }
+
+    return std::make_tuple(Failure{}, View());
+}
+
+
+std::tuple<Result<GeoPoint>, Window, View>
+ROCKY_NAMESPACE::geoPointAtWindowCoords(DisplayManager& display, int x, int y)
+{
+    // iterate backwards so we search top to bottom
+    for (auto window_iter = display.windows().rbegin(); window_iter != display.windows().rend(); ++window_iter)
+    {
+        if (auto& window = *window_iter)
+        {
+            for (auto& view : window.views())
+            {
+                if (view.vsgView->camera)
+                {
+                    const auto vp = view.vsgView->camera->getViewport();
+
+                    if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
+                    {
+                        if (auto point = geoPointAtWindowCoords(view, x, y))
+                        {
+                            return std::make_tuple(point.value(), window, view);
+                        }
+                        else
+                        {
+                            // point is in viewport, but did not intersect anything
+                            return std::make_tuple(Failure{}, window, view);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    return std::make_tuple(Failure{}, Window{}, View{});
+}

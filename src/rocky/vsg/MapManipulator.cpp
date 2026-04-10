@@ -105,14 +105,14 @@ namespace
 }
 
 void
-MapManipulator::put(vsg::ref_ptr<vsg::Object> object)
+MapManipulator::put(vsg::Object* object)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(object, void());
     object->setObject("rocky.mapmanipulator", vsg::ref_ptr<MapManipulator>(this));
 }
 
 vsg::ref_ptr<MapManipulator>
-MapManipulator::get(vsg::ref_ptr<vsg::Object> object)
+MapManipulator::get(vsg::Object* object)
 {   
     if (object)
         return object->getRefObject<MapManipulator>("rocky.mapmanipulator");
@@ -2026,8 +2026,6 @@ MapManipulator::getQuaternion(double azim, double pitch) const
     vsg::dquat azim_q(azim, vsg::dvec3(0, 0, 1));
     vsg::dquat pitch_q(-pitch - (0.5 * M_PI), vsg::dvec3(1, 0, 0));
     return vsg::inverse(azim_q * pitch_q);
-    //vsg::dmat4 newRot = vsg::inverse(azim_q * pitch_q);
-    //return vsg::rotate(vsg::inverse(newRot)); .getRotate();
 }
 
 /// code adopted from VSG

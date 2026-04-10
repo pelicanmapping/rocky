@@ -15,6 +15,7 @@ void RenderImGuiContext::add(vsg::ref_ptr<ImGuiContextNode> node)
     onNodeAdded.fire(node);
 }
 
+
 void RenderImGuiContext::traverse(vsg::RecordTraversal& record) const
 {
     // active the context associated with this Node, and save it in the traversal

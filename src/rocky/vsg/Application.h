@@ -59,11 +59,6 @@ namespace ROCKY_NAMESPACE
         //! About the application. Lists all the dependencies and their versions.
         std::string about() const;
 
-        //! True if the debug validation layer is active, which will affect performance
-        bool debugLayerOn() const {
-            return _debuglayer;
-        }
-
         //! Creates the default window. This is called automatically by run() if you
         //! don't call it yourself. You may need to call this yourself if you plan to
         //! access windows, views, or manipulators before starting the frame loop.
@@ -155,10 +150,6 @@ namespace ROCKY_NAMESPACE
 
     private:
         VSGContextSingleton _vsgcontextSingleton;
-        bool _apilayer = false;
-        bool _debuglayer = false;
-        bool _debuglayerUnique = false;
-        bool _vsync = true;
         bool _multithreaded = true;
         bool _viewerRealized = false;
         int _framesSinceLastRender = 0; // for non-continuous rendering
@@ -168,10 +159,15 @@ namespace ROCKY_NAMESPACE
 
         void ctor(int& argc, char** argv);
 
-        void setupViewer(vsg::ref_ptr<vsg::Viewer> viewer);
+        //void setupViewer(vsg::ref_ptr<vsg::Viewer> viewer);
         void install(vsg::ref_ptr<RenderImGuiContext>, bool installIdleFunction);
 
         friend class DisplayManager;
+
+        void onAddWindow(Window& window);
+        void onAddView(Window& window, View& view);
+        void onRemoveWindow(const Window& window);
+        void onRemoveView(const Window& window, const View& view);
     };
 
 
@@ -196,5 +192,31 @@ namespace ROCKY_NAMESPACE
         }
         return nullptr;
     }
+
+    //........
+
+    //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
+    //! @param window View in which to search
+    //! @param x X coordinate in window space
+    //! @param y Y coordinate in window space
+    //! @return GeoPoint at the given window coordinates
+    extern ROCKY_EXPORT Result<GeoPoint>
+        geoPointAtWindowCoords(View& view, int x, int y);
+
+    //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
+    //! @param window View in which to search
+    //! @param x X coordinate in window space
+    //! @param y Y coordinate in window space
+    //! @return GeoPoint at the given window coordinates
+    extern ROCKY_EXPORT std::tuple<Result<GeoPoint>, View>
+        geoPointAtWindowCoords(Window& window, int x, int y);
+
+    //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
+    //! @param viewer Viewer to search for windows and views
+    //! @param x X coordinate in window space
+    //! @param y Y coordinate in window space
+    //! @return GeoPoint at the given window coordinates
+    extern ROCKY_EXPORT std::tuple<Result<GeoPoint>, Window, View>
+        geoPointAtWindowCoords(DisplayManager& display, int x, int y);
 }
 

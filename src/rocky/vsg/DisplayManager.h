@@ -5,45 +5,158 @@
  */
 #pragma once
 #include <rocky/vsg/VSGContext.h>
-#include <rocky/vsg/MapManipulator.h>
-#include <rocky/Utils.h>
 #include <rocky/Callbacks.h>
 #include <vector>
+#include <deque>
 
 namespace ROCKY_NAMESPACE
 {
-    class Application;
+    class DisplayManager;
+    class MapManipulator;
+    class Window;
 
-    //! Return value for pointAtWindowCoords(viewer) method
-    struct DisplayGeoPoint
+
+    class ROCKY_EXPORT View
     {
-        vsg::ref_ptr<vsg::Window> window;
-        vsg::ref_ptr<vsg::View> view;
-        GeoPoint point;
+    public:
+        //! Construct an empty, invalid view
+        View() = default;
+
+        //! Locates the first occurance of a node of type T in the view's scene graph
+        //! Example: auto mapNode = view.find<MapNode>();
+        template<class T> T* find() {
+            return detail::find<T>(vsgView);
+        }
+
+        //! Call this when you resize or change the properties of the underlying VSG view.
+        void dirty();
+
+        //! Validity operator
+        operator bool() const {
+            return vsgView != nullptr;
+        }
+
+        //! Equality operator
+        bool operator == (const View& rhs) const {
+            return vsgView == rhs.vsgView;
+        }
+
+        ViewIDType viewID = 0;
+        vsg::ref_ptr<vsg::View> vsgView = nullptr;
+        vsg::ref_ptr<vsg::RenderGraph> renderGraph = nullptr;
+
+    protected:
+
+        View(vsg::ref_ptr<vsg::View>, vsg::ref_ptr<vsg::RenderGraph>, DisplayManager*);
+
+        vsg::ref_ptr<vsg::Group> _guiRenderer;
+        vsg::ref_ptr<vsg::Visitor> _guiEventVisitor;
+        std::shared_ptr<std::function<void()>> _guiIdleEventProcessor;
+        const DisplayManager* _display = nullptr;
+
+        friend class Window;
+        friend class DisplayManager;
+        friend class Application;
     };
 
-    //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
-    //! @param window View in which to search
-    //! @param x X coordinate in window space
-    //! @param y Y coordinate in window space
-    //! @return GeoPoint at the given window coordinates
-    extern ROCKY_EXPORT Result<GeoPoint> pointAtWindowCoords(vsg::ref_ptr<vsg::View> view, int x, int y);
 
-    //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
-    //! @param viewer Viewer to search for windows and views
-    //! @param x X coordinate in window space
-    //! @param y Y coordinate in window space
-    //! @return GeoPoint at the given window coordinates
-    extern ROCKY_EXPORT Result<DisplayGeoPoint> pointAtWindowCoords(vsg::ref_ptr<vsg::Viewer> viewer, int x, int y);
+    class ViewsFrontToBack
+    {
+    public:
+        using container = std::deque<View>;
+        using iterator = container::iterator;
+        using const_iterator = container::const_iterator;
+        using reverse_iterator = container::reverse_iterator;
+        using const_reverse_iterator = container::const_reverse_iterator;
 
-    //! Accept a visitor on the specifed object (or the view) using the view's viewID.
-    //! Since Rocky's ECS system is multi-view-aware, we need to embed the viewID in the visitor for the
-    //! ECS systems to choose the proper transform.
-    //! e.g.: Use this when running intersections on the scene to include ECS components!
-    extern ROCKY_EXPORT void visit(vsg::ConstVisitor* visitor, vsg::View* view, vsg::Object* object = nullptr);
+    public:
+        ViewsFrontToBack() = default;
 
-    //! Return the View containing the window coordinate (mouse position)
-    extern ROCKY_EXPORT vsg::View* viewAtWindowCoords(vsg::Viewer* viewer, int x, int y);
+        std::size_t size() const {
+            return _container.size();
+        }
+
+        View& operator [] (std::size_t index) {
+            return _container[index];
+        }
+
+        const View& operator [] (std::size_t index) const {
+            return _container[index];
+        }
+
+    public:
+        iterator begin() { return _container.begin(); }
+        iterator end() { return _container.end(); }
+        reverse_iterator rbegin() { return _container.rbegin(); }
+        reverse_iterator rend() { return _container.rend(); }
+        const_iterator begin() const { return _container.begin(); }
+        const_iterator end() const { return _container.end(); }
+        const_reverse_iterator rbegin() const { return _container.rbegin(); }
+        const_reverse_iterator rend() const { return _container.rend(); }
+        View& front() { return _container.front(); }
+        const View& front() const { return _container.front(); }
+        View& back() { return _container.back(); }
+        const View& back() const { return _container.back(); }
+        bool empty() const { return _container.empty(); }
+
+    private:
+        container _container;
+
+        iterator find(const View& view) {
+            return std::find_if(_container.begin(), _container.end(), [&](const View& v) { return v == view; });
+        }
+
+        friend class Window;
+        friend class DisplayManager;
+    };
+
+
+    class ROCKY_EXPORT Window
+    {
+    public:
+        Window() = default;
+
+        Window(const Window& rhs) = default;
+
+        View& addView(vsg::ref_ptr<vsg::Camera>, vsg::ref_ptr<vsg::Node>);
+
+        View& addView(vsg::ref_ptr<vsg::View>);
+
+        void removeView(View&);
+
+        ViewsFrontToBack& views() { return *_views; }
+        const ViewsFrontToBack& views() const { return *_views; }
+        
+        View& view(std::size_t index = 0) {
+            return _views->operator[](_views->size() - 1 - index);
+        }
+        const View& view(std::size_t index = 0) const {
+            return _views->operator[](_views->size() - 1 - index);
+        }
+
+        View& viewAtCoords(float x, float y);
+
+        //! valid window?
+        operator bool() const {
+            return vsgWindow && commandGraph && _display;
+        }
+
+        vsg::ref_ptr<vsg::Window> vsgWindow;
+        vsg::ref_ptr<vsg::CommandGraph> commandGraph;
+
+        bool operator == (const Window& rhs) const {
+            return vsgWindow == rhs.vsgWindow;
+        }
+
+    private:
+        Window(vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::CommandGraph>, DisplayManager*);
+
+        std::shared_ptr<ViewsFrontToBack> _views = std::make_shared<ViewsFrontToBack>();
+        DisplayManager* _display = nullptr;
+
+        friend class DisplayManager;
+    };
+
 
     /**
     * DisplayManager is a helper class that manages the creation and destruction of
@@ -60,80 +173,58 @@ namespace ROCKY_NAMESPACE
         // Destructor
         ~DisplayManager();
 
-        //! Construct a display manager connected to an Application object.
-        void initialize(Application& app);
-
         //! Construct a display manager connected to a VSG context (and associated viewer).
         //! Use this if your app doesn't use the rocky Application object.
-        void initialize(VSGContext context);
+        void initialize(VSGContext);
+        void initialize(VSGContext, vsg::CommandLine& commandLine);
 
-        //! Creates a new window and adds it to the display.
+        Window& window(std::size_t index = 0);
+        const Window& window(std::size_t index = 0) const;
+        std::vector<Window>& windows();
+        const std::vector<Window>& windows() const;
+
+        //! Creates a new window and adds it to the display, and also creates a
+        //! full-window View for the new window.
         //! @param traits Window traits used to create the new window
-        vsg::ref_ptr<vsg::Window> addWindow(vsg::ref_ptr<vsg::WindowTraits> traits);
+        Window& addWindow(vsg::ref_ptr<vsg::WindowTraits>);
 
-        //! Adds a pre-existing window to the display.
-        //! @param window Window to add
-        //! @param view View to use for the window (optional - if not provided, a default view will be created)
-        void addWindow(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view = {});
+        //! Creates a new window and adds it to the display, with an existing view
+        Window& addWindow(vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::View>);
 
         //! Removes a window from the display.
         //! #param window Window to remove
-        void removeWindow(vsg::ref_ptr<vsg::Window> window);
+        void removeWindow(const Window& window);
 
-        //! Adds a view to an existing window.
-        //! @param view New view to add
-        //! @param window Window to which to add the new view
-        //! @param manipulator Whether to add a MapManipulator to the view (default: true)
-        void addViewToWindow(vsg::ref_ptr<vsg::View> view, vsg::ref_ptr<vsg::Window> window, bool addManipulator);
+        //! Given a VSG window pointer, find the corresponding DisplayManager Window.
+        Window& find(vsg::Window*);
 
-        //! Removes a view from its host window.
-        //! @param view View to remove from its window
-        void removeView(vsg::ref_ptr<vsg::View> view);
-
-        //! Refreshes a view after changing its parameters like viewport, clear color, etc.
-        //! @param View view to refresh
-        void refreshView(vsg::ref_ptr<vsg::View> view);
+        //! Given a VSG View pointer, find the corresponding DisplayManager View.
+        View& find(vsg::View*);
 
         //! Adds a manipulator to a view.
         //! @param manip Manipulator to set
         //! @view View on which to set the manipulator
-        void setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::ref_ptr<vsg::View> view) const;
-
-        //! Gets all the views associated with a window.
-        std::vector<vsg::ref_ptr<vsg::View>> views(vsg::ref_ptr<vsg::Window> window) const;
+        void setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::View* view);
 
         //! Gets the view containing the window coordinates (e.g., mouse position relative to the window)
         //! @param window Window to query
         //! @param x X coordinate in window space
         //! @param y Y coordinate in window space
         //! @return View containing the coordinates, or nullptr.
-        vsg::ref_ptr<vsg::View> viewAtWindowCoords(vsg::ref_ptr<vsg::Window> window, double x, double y) const;
-
-        //! Gets the VSG command graph associated with a window.
-        vsg::ref_ptr<vsg::CommandGraph> commandGraph(vsg::ref_ptr<vsg::Window> window) const;
-
-        //! Gets the VSG render graph associated with a view.
-        vsg::ref_ptr<vsg::RenderGraph> renderGraph(vsg::ref_ptr<vsg::View> view) const;
-
-        //! Gets the window hosting the provided view.
-        vsg::ref_ptr<vsg::Window> windowContainingView(vsg::ref_ptr<vsg::View> view) const;
+        std::tuple<Window, View> windowAndViewAtCoords(float x, float y);
 
         //! Gets the vulkan device shared by all windows
         vsg::ref_ptr<vsg::Device> sharedDevice() const;
 
-        //! Returns the first window (which we'll assume is the main window) (convenience function)
-        vsg::ref_ptr<vsg::Window> mainWindow() const;
-
-        //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
-        //! @param window Window in which to search for the top-most view containing the coordinates
-        //! @param x X coordinate in window space
-        //! @param y Y coordinate in window space
-        //! @return GeoPoint at the given window coordinates
-        Result<GeoPoint> pointAtWindowCoords(vsg::ref_ptr<vsg::Window> window, int x, int y) const;
-
         //! Compile and hook up a render graph that you have manually installed
         //! on a command graph.
-        void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window) const;
+        void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph>, vsg::ref_ptr<vsg::Window>);
+
+        //! Callback fires when the user called addWindow
+        Callback<void(Window&)> onAddWindow;
+        Callback<void(const Window&)> onRemoveWindow;
+        Callback<void(Window&, View&)> onAddView;
+        Callback<void(const Window&, const View&)> onRemoveView;
 
     public:
 
@@ -141,24 +232,14 @@ namespace ROCKY_NAMESPACE
 
     protected:
 
-        using WindowsAndViews = std::map<vsg::ref_ptr<vsg::Window>, std::vector<vsg::ref_ptr<vsg::View>>>;
+        std::vector<Window> _windows;
 
-        WindowsAndViews windowsAndViews;
-
-        struct ViewData
-        {
-            vsg::ref_ptr<vsg::RenderGraph> parentRenderGraph;
-            vsg::ref_ptr<vsg::Group> guiContextGroup;
-            vsg::ref_ptr<vsg::Visitor> guiEventVisitor;
-            std::shared_ptr<std::function<void()>> guiIdleEventProcessor;
-        };
-        detail::vector_map<vsg::ref_ptr<vsg::View>, ViewData> _viewData;
-
-        Application* _app = nullptr;
+        bool _apilayer = false;
+        bool _debuglayer = false;
+        bool _vsync = true;
+        bool _debuglayerUnique = false;
         bool _debugCallbackInstalled = false;
-        std::map<vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::CommandGraph>> _commandGraphByWindow;
 
-        friend class Application;
-        friend struct ImGuiIntegration;
+        void configureTraits(vsg::WindowTraits* traits);
     };
 }

@@ -124,8 +124,8 @@ auto Demo_Map = [](Application& app)
                         layer->attribution->href.full().empty() ? nullptr : layer->attribution->href.full().c_str());
                 }
 
-                auto view = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0);
-                auto manip = MapManipulator::get(view);
+                auto view = app.display.window(0).view(0);
+                auto manip = MapManipulator::get(view.vsgView);
                 if (manip && ImGuiLTable::Button("Zoom"))
                 {
                     if (layer->extent().valid())
@@ -133,7 +133,7 @@ auto Demo_Map = [](Application& app)
                         std::vector<GeoPoint> points;
                         points.push_back(GeoPoint(layer->extent().srs(), extent.west(), extent.south()));
                         points.push_back(GeoPoint(layer->extent().srs(), extent.east(), extent.north()));
-                        auto vp = app.mapNode->createViewpoint(points, view->camera);
+                        auto vp = app.mapNode->createViewpoint(points, view.vsgView->camera);
                         if (vp.valid())
                         {
                             manip->setViewpoint(vp, 1s);

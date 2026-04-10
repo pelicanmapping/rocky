@@ -115,9 +115,8 @@ auto Demo_Geocoder = [](Application& app)
                                 if (extent.area() == 0.0)
                                     extent.expand(Distance(10, Units::KILOMETERS), Distance(10, Units::KILOMETERS));
 
-                                auto view = app.display.views(app.display.mainWindow()).front();
-                                auto manip = MapManipulator::get(view);
-                                if (manip)
+                                auto& view = app.display.window(0).view(0);
+                                if (auto manip = MapManipulator::get(view.vsgView))
                                 {
                                     Viewpoint vp = manip->viewpoint();
                                     vp.point = extent.centroid();

@@ -32,9 +32,11 @@ namespace
                 auto dx = std::abs(e.x - _press->x), dy = std::abs(e.y - _press->y);
                 if (dx < 5 && dy < 5) // click threshold
                 {
-                    if (auto p = app.display.pointAtWindowCoords(_press->window, _press->x, _press->y))
+                    auto& window = app.display.find(_press->window.ref_ptr());
+                    auto&& [point, view] = geoPointAtWindowCoords(window, _press->x, _press->y);
+                    if (point)
                     {
-                        onClick.fire(p.value());
+                        onClick.fire(point.value());
                         e.handled = true;
                     }
                     

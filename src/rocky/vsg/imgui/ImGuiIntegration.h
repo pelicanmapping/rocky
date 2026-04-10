@@ -18,9 +18,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    class Application;
-    class DisplayManager;
-
     //! wrapper for vsgImGui::SendEventsToImGui that restricts ImGui events to a single window & imgui context,
     //! of which there needs to be one per view.
     class ROCKY_EXPORT SendEventsToImGuiContext : public vsg::Inherit<SendEventsToImGui, SendEventsToImGuiContext>
@@ -113,11 +110,10 @@ namespace ROCKY_NAMESPACE
         bool enableDocking = false;
 
         //! Construct a new ImGui renderer
-        RenderImGuiContext(vsg::ref_ptr<vsg::Window> in_window, vsg::ref_ptr<vsg::View> in_view = {}) :
-            Inherit(in_window), window(in_window), view(in_view)
-        {
-            //nop
+        RenderImGuiContext(vsg::ref_ptr<vsg::Window> w, vsg::ref_ptr<vsg::View> v) :
+            Inherit(w), window(w), view(v) {
         }
+        
 
         //! Add a Gui Node to this renderer
         void add(vsg::ref_ptr<ImGuiContextNode> node);

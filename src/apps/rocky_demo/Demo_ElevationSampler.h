@@ -22,8 +22,10 @@ namespace
 
         Result<GeoPoint> mapPoint(vsg::PointerEvent& e) const
         {
-            if (auto p = app.display.pointAtWindowCoords(e.window, e.x, e.y))
-                return p;
+            auto& window = app.display.find(e.window.ref_ptr());
+            auto&& [point, view] = geoPointAtWindowCoords(window, e.x, e.y);
+            if (point)
+                return point;
             else
                 return Failure{};
         }
@@ -122,7 +124,8 @@ auto Demo_ElevationSampler = [](Application& app)
 
         // Various coordinate spaces:
         auto world = i.transform(app.mapNode->srs());
-        auto camera = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0)->camera;
+        auto camera = app.display.window().view().vsgView->camera;
+        //auto camera = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0)->camera;
         auto viewMatrix = camera->viewMatrix->transform();
         auto projMatrix = camera->projectionMatrix->transform();
         auto viewPos = viewMatrix * vsg::dvec4(world.x, world.y, world.z, 1.0);

@@ -64,8 +64,8 @@ auto Demo_RTT = [](Application& app)
     if (entity == entt::null)
     {
         // Find the main window and view:
-        auto main_window = app.display.mainWindow();
-        auto main_view = app.display.views(main_window).front();
+        auto& window = app.display.window(0);
+        auto& view = window.view(0);
 
         // Create a simple VSG model using the Builder.
         vsg::Builder builder;
@@ -86,7 +86,7 @@ auto Demo_RTT = [](Application& app)
         auto rtt_view = vsg::View::create(rtt_cam, rtt_node);
 
         // This is the render graph that will execute the RTT.
-        auto context = vsg::Context::create(main_window->getOrCreateDevice());
+        auto context = vsg::Context::create(window.vsgWindow->getOrCreateDevice());
         auto texture = vsg::ImageInfo::create();
         auto depth = vsg::ImageInfo::create();
         auto rtt_graph = RTT::createOffScreenRenderGraph(*context, size, texture, depth);
@@ -95,16 +95,12 @@ auto Demo_RTT = [](Application& app)
         // Add the RTT graph to our application's main window.
         // TODO: possibly replace this with the functionality described here:
         // https://github.com/vsg-dev/VulkanSceneGraph/discussions/928
-        auto install = [&app, rtt_graph, main_window](...)
+        auto install = [&app, rtt_graph, window](...)
             {
-                auto commandGraph = app.display.commandGraph(main_window);
-                if (commandGraph)
-                {
-                    // Insert the pre-render graph into the command graph and compile it.
-                    // This seems a bit awkward but it works.
-                    commandGraph->children.insert(commandGraph->children.begin(), rtt_graph);
-                    app.display.compileRenderGraph(rtt_graph, main_window);
-                }
+                // Insert the pre-render graph into the command graph and compile it.
+                // This seems a bit awkward but it works.
+                window.commandGraph->children.insert(window.commandGraph->children.begin(), rtt_graph);
+                app.display.compileRenderGraph(rtt_graph, window.vsgWindow);
             };
         app.onNextUpdate(install);
 

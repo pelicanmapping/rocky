@@ -266,9 +266,9 @@ auto Demo_Simulation = [](Application& app)
         {
             if (tethering)
             {
-                auto view = app.display.views(app.display.mainWindow()).front();
-                auto manip = MapManipulator::get(view);
-                manip->home();
+                auto& view = app.display.window(0).view(0);
+                if (auto manip = MapManipulator::get(view.vsgView))
+                    manip->home();
             }
 
             app.registry.write([&](entt::registry& r)
@@ -285,27 +285,28 @@ auto Demo_Simulation = [](Application& app)
 
         if (ImGuiLTable::Checkbox("Tethering", &tethering))
         {
-            auto view = app.display.views(app.display.mainWindow()).front();
-            auto manip = MapManipulator::get(view);
-            
-            if (tethering)
+            auto& view = app.display.window(0).view(0);
+            if (auto manip = MapManipulator::get(view.vsgView))
             {
-                // To tether, create a Viewpoint object with a "pointFunction" that
-                // returns the current location of the tracked object.
-                Viewpoint vp;
-                vp.range = 1e6;
-                vp.pitch = -45;
-                vp.heading = 45;
-                vp.pointFunction = [&]()
-                    {
-                        return app.registry.read()->get<Transform>(*entityNode->entities.begin()).position;
-                    };
+                if (tethering)
+                {
+                    // To tether, create a Viewpoint object with a "pointFunction" that
+                    // returns the current location of the tracked object.
+                    Viewpoint vp;
+                    vp.range = 1e6;
+                    vp.pitch = -45;
+                    vp.heading = 45;
+                    vp.pointFunction = [&]()
+                        {
+                            return app.registry.read()->get<Transform>(*entityNode->entities.begin()).position;
+                        };
 
-                manip->setViewpoint(vp, 2.0s);
-            }
-            else
-            {
-                manip->home();
+                    manip->setViewpoint(vp, 2.0s);
+                }
+                else
+                {
+                    manip->home();
+                }
             }
         }
 

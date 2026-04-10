@@ -16,8 +16,9 @@
 using namespace ROCKY_NAMESPACE;
 
 
-TerrainEngine::TerrainEngine(std::shared_ptr<const Map> new_map, const Profile& new_profile, const SRS& new_renderingSRS,
-    TerrainState& new_stateFactory, VSGContext vsgcontext, const TerrainSettings& new_settings, TerrainTileHost* new_host) :
+TerrainEngine::TerrainEngine(std::shared_ptr<const Map> new_map, const Profile& new_profile,
+    const SRS& new_renderingSRS, std::shared_ptr<TerrainState> new_stateFactory,
+    VSGContext vsgcontext, const TerrainSettings& new_settings, TerrainTileHost* new_host) :
 
     map(new_map),
     profile(new_profile),
@@ -63,7 +64,7 @@ TerrainEngine::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> pare
     // Make the new terrain tile
     auto tile = TerrainTileNode::create();
     tile->key = key;
-    tile->renderModel.descriptors = stateFactory.defaultTileDescriptors;
+    tile->renderModel.descriptors = stateFactory->defaultTileDescriptors;
     tile->doNotExpire = (parent == nullptr);
     tile->stategroup = vsg::StateGroup::create();
     tile->stategroup->addChild(geometry);
@@ -80,7 +81,7 @@ TerrainEngine::createTile(const TileKey& key, vsg::ref_ptr<TerrainTileNode> pare
     tile->bound = tile->surface->recomputeBound();
 
     // Generate its state objects:
-    tile->renderModel = stateFactory.updateRenderModel(tile->key, tile->renderModel, {}, context);
+    tile->renderModel = stateFactory->updateRenderModel(tile->key, tile->renderModel, {}, context);
 
     // install the bind command.
     tile->stategroup->add(tile->renderModel.descriptors.bind);

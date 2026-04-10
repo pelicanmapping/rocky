@@ -17,10 +17,10 @@ auto Demo_MapManipulator = [](Application& app)
     static bool spin = false;
     static float spinSpeed = 1.0f;
 
-    auto first_view = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0);
+    auto first_view = app.display.window(0).view(0);
     if (first_view)
     {
-        auto manip = MapManipulator::get(first_view);
+        auto manip = MapManipulator::get(first_view.vsgView);
         if (manip)
         {
             Viewpoint vp = manip->viewpoint();

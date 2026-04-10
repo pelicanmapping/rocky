@@ -167,10 +167,8 @@ auto Demo_MVTFeatures = [](Application& app)
         ImGuiLTable::End();
 }
 
-    auto view = app.display.views(app.display.mainWindow()).front();
-    auto manip = MapManipulator::get(view);
-
-    if (manip)
+    auto& view = app.display.window(0).view(0);
+    if (auto manip = MapManipulator::get(view.vsgView))
     {
         if (ImGui::Button("Helsinki"))
         {

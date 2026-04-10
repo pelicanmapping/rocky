@@ -270,11 +270,11 @@ auto Demo_Screenshot = [](Application& app)
     if (!offscreenRenderGraph)
     {
         isIniting = true;
-        auto main_window = app.display.mainWindow();
-        auto main_view = app.display.views(main_window).front();
-        auto vp = main_view->camera->getViewport();
+		auto window = app.display.window(0);
+		auto view = window.view(0);
+        auto vp = view.vsgView->camera->getViewport();
 
-        auto device = main_window->getDevice();
+        auto device = window.vsgWindow->getDevice();
 		VkExtent2D extent{ (std::uint32_t)vp.width, (std::uint32_t)vp.height };
 
         offscreenRenderGraph = vsg::RenderGraph::create();
@@ -284,17 +284,13 @@ auto Demo_Screenshot = [](Application& app)
 			VkClearColorValue{ {0.0f, 0.0f, 0.0f, 1.0f} },
 			VkClearDepthStencilValue{ 0.0f, 0 });
 
-		auto viewRG = app.display.renderGraph(main_view);
+		auto viewRG = view.renderGraph;
 		offscreenRenderGraph->children = viewRG->children;
 
-        auto install = [&app, main_window](...)
+        auto install = [&app, window, view](...)
             {
-                auto commandGraph = app.display.commandGraph(main_window);
-                if (commandGraph)
-                {
-                    commandGraph->children.insert(commandGraph->children.begin(), offscreenRenderGraph);
-                    app.display.compileRenderGraph(offscreenRenderGraph, main_window);
-                }
+				window.commandGraph->children.insert(window.commandGraph->children.begin(), offscreenRenderGraph);
+				app.display.compileRenderGraph(offscreenRenderGraph, window.vsgWindow);
             };
 
         app.onNextUpdate(install);

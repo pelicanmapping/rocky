@@ -27,10 +27,15 @@ namespace
 
         Result<GeoPoint> mapPoint(vsg::PointerEvent& e) const
         {
-            if (auto p = app.display.pointAtWindowCoords(e.window, e.x, e.y))
-                return p;
-            else
-                return Failure{};
+            if (auto& window = app.display.find(e.window.ref_ptr()))
+            {
+                if (auto& view = window.viewAtCoords(e.x, e.y))
+                {
+                    return geoPointAtWindowCoords(view, e.x, e.y);
+                }
+            }
+
+            return Failure{};
         }
 
         void apply(vsg::ButtonPressEvent& e) override

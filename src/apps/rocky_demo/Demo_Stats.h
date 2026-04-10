@@ -60,10 +60,10 @@ auto Demo_Stats = [](Application& app)
 
     ImGui::SeparatorText("Timings");
 
-    if (app.debugLayerOn())
-    {
-        ImGui::TextColored(ImVec4(1, .3f, .3f, 1), "%s", "Warning: debug validation is ON");
-    }
+    //if (app.debugLayerOn())
+    //{
+    //    ImGui::TextColored(ImVec4(1, .3f, .3f, 1), "%s", "Warning: debug validation is ON");
+    //}
 
     if (ImGuiLTable::Begin("Timings"))
     {
