@@ -403,19 +403,19 @@
 <h2 id="functions">Functions</h2>
 <h3 id="operator">operator()</h3>
 <p><em>public int operator()(int &amp;&amp; func)</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#46</em></p>
+<p><em>Defined at src/rocky/Callbacks.h#49</em></p>
 <p>Adds a callback function, and returns a subscription object. When the subscription object is destroyed the callback is deactivated.</p>
 <h3 id="remove">remove</h3>
 <p><em>public void remove(int sub)</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#55</em></p>
+<p><em>Defined at src/rocky/Callbacks.h#58</em></p>
 <p>Remove a callback function associated with a subscription  returned from operator().</p>
 <h3 id="fire">fire</h3>
-<p><em>public void fire(Args &amp;&amp;... args)</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#67</em></p>
+<p><em>public void fire(Args2 &amp;&amp;... args)</em></p>
+<p><em>Defined at src/rocky/Callbacks.h#70</em></p>
 <p>Executes all callback functions with the provided args</p>
 <h3 id="operator-bool">operator bool</h3>
 <p><em>public _Bool operator bool()</em></p>
-<p><em>Defined at src/rocky/Callbacks.h#79</em></p>
+<p><em>Defined at src/rocky/Callbacks.h#82</em></p>
 <p>True if there is at least one registered callback to fire</p>
 
 
