@@ -16,6 +16,12 @@ namespace ROCKY_NAMESPACE
     class Window;
 
 
+    /**
+    * Encaputes a "View" in the Rocky DisplayManager.
+    * A view is a combination of a VSG view and its parent render graph.
+    * This object contains immutable members, which means you can copy it be reference
+    * and still refer to the same logical View.
+    */
     class ROCKY_EXPORT View
     {
     public:
@@ -25,6 +31,9 @@ namespace ROCKY_NAMESPACE
         //! Locates the first occurance of a node of type T in the view's scene graph
         //! Example: auto mapNode = view.find<MapNode>();
         template<class T> T* find() {
+            return detail::find<T>(vsgView);
+        }
+        template<class T> const T* find() const {
             return detail::find<T>(vsgView);
         }
 
@@ -49,9 +58,6 @@ namespace ROCKY_NAMESPACE
 
         View(vsg::ref_ptr<vsg::View>, vsg::ref_ptr<vsg::RenderGraph>, DisplayManager*);
 
-        vsg::ref_ptr<vsg::Group> _guiRenderer;
-        vsg::ref_ptr<vsg::Visitor> _guiEventVisitor;
-        std::shared_ptr<std::function<void()>> _guiIdleEventProcessor;
         const DisplayManager* _display = nullptr;
 
         friend class Window;
@@ -60,6 +66,17 @@ namespace ROCKY_NAMESPACE
     };
 
 
+    /**
+    * Collection of views in a Window, as managed by the DisplayManager.
+    * As the name implies they are ordered from front to back, meaning the first view
+    * in the container is the front-most view in the window (or at least, the most
+    * recently created one).
+    *
+    * The reverse ordering makes range-based iteration easier since you usually want
+    * to prioritize the "topmost" view.
+    *
+    * This container also prevents writing the container itself.
+    */
     class ViewsFrontToBack
     {
     public:
@@ -72,14 +89,17 @@ namespace ROCKY_NAMESPACE
     public:
         ViewsFrontToBack() = default;
 
+        //! number of views in the container
         std::size_t size() const {
             return _container.size();
         }
 
+        //! access the n'th view in the container
         View& operator [] (std::size_t index) {
             return _container[index];
         }
 
+        //! access the n'th view in the container
         const View& operator [] (std::size_t index) const {
             return _container[index];
         }
@@ -111,42 +131,62 @@ namespace ROCKY_NAMESPACE
     };
 
 
+    /**
+    * Represents a top-level Window in the Rocky DisplayManager.
+    * This wraps a VSG Window, its associated CommandGraph, and any Views that live within it.
+    * This object contains ONLY immutable members, which means you can copy it by reference and it
+    * will always still refer to the same logical window.
+    */
     class ROCKY_EXPORT Window
     {
     public:
+        //! Create an invalid window.
         Window() = default;
 
+        //! Copy a window (which will refer to the same logical Window)
         Window(const Window& rhs) = default;
 
+        //! Adds a new View to the window with the given camera and scene graph.
         View& addView(vsg::ref_ptr<vsg::Camera>, vsg::ref_ptr<vsg::Node>);
 
+        //! Adds a new View using an pre-populated VSG view
         View& addView(vsg::ref_ptr<vsg::View>);
 
+        //! Removes a view from ths Window
         void removeView(View&);
 
+        //! Views managed by this Window
         ViewsFrontToBack& views() { return *_views; }
         const ViewsFrontToBack& views() const { return *_views; }
         
+        //! The n'th View in the window (from back to front- view 0 is usually the main view)
         View& view(std::size_t index = 0) {
             return _views->operator[](_views->size() - 1 - index);
         }
+
+        //! The n'th View in the window (from back to front - view 0 is usually the main view)
         const View& view(std::size_t index = 0) const {
             return _views->operator[](_views->size() - 1 - index);
         }
 
+        //! Locate the View containing the given window coordinates (e.g., mouse position)
         View& viewAtCoords(float x, float y);
 
-        //! valid window?
+        //! Validity operator
         operator bool() const {
             return vsgWindow && commandGraph && _display;
         }
 
-        vsg::ref_ptr<vsg::Window> vsgWindow;
-        vsg::ref_ptr<vsg::CommandGraph> commandGraph;
-
+        //! Equality operator
         bool operator == (const Window& rhs) const {
             return vsgWindow == rhs.vsgWindow;
         }
+
+        //! Underlying VSG Window instance
+        vsg::ref_ptr<vsg::Window> vsgWindow;
+
+        //! Underlying CommandGraph for this VSG window
+        vsg::ref_ptr<vsg::CommandGraph> commandGraph;
 
     private:
         Window(vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::CommandGraph>, DisplayManager*);
@@ -178,8 +218,11 @@ namespace ROCKY_NAMESPACE
         void initialize(VSGContext);
         void initialize(VSGContext, vsg::CommandLine& commandLine);
 
+        //! The n'th window
         Window& window(std::size_t index = 0);
         const Window& window(std::size_t index = 0) const;
+
+        //! All the windows
         std::vector<Window>& windows();
         const std::vector<Window>& windows() const;
 
@@ -193,7 +236,7 @@ namespace ROCKY_NAMESPACE
 
         //! Removes a window from the display.
         //! #param window Window to remove
-        void removeWindow(const Window& window);
+        void removeWindow(Window& window);
 
         //! Given a VSG window pointer, find the corresponding DisplayManager Window.
         Window& find(vsg::Window*);
@@ -216,11 +259,7 @@ namespace ROCKY_NAMESPACE
         //! Gets the vulkan device shared by all windows
         vsg::ref_ptr<vsg::Device> sharedDevice() const;
 
-        //! Compile and hook up a render graph that you have manually installed
-        //! on a command graph.
-        void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph>, vsg::ref_ptr<vsg::Window>);
-
-        //! Callback fires when the user called addWindow
+        //! Callbacks for window operations
         Callback<Window&> onAddWindow;
         Callback<const Window&> onRemoveWindow;
         Callback<Window&, View&> onAddView;

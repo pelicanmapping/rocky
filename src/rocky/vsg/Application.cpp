@@ -6,6 +6,7 @@
 #include "Application.h"
 #include "MapManipulator.h"
 #include "ecs/TransformSystem.h"
+#include "imgui/ImGuiIntegration.h"
 
 #include <rocky/contrib/EarthFileImporter.h>
 
@@ -519,11 +520,8 @@ Application::frame()
             return false;
         }
 
-        // Call the user-supplied "idle" functions
-        for (auto& idle : idleFunctions)
-        {
-            if (idle) (*idle)();
-        }
+        // Invoke any "idle" callbacks
+        onIdleFrame.fire();
 
         _framesSinceLastRender++;
 
@@ -561,39 +559,35 @@ using RenderImGuiContext = vsg::Node;
 #endif
 
 void
-Application::install(vsg::ref_ptr<RenderImGuiContext> group)
+Application::install(vsg::ref_ptr<ImGuiRenderer> group, vsg::ref_ptr<vsg::View> view)
 {
-    install(group, true);
+    install(group, view, true);
 }
 
 void
-Application::install(vsg::ref_ptr<RenderImGuiContext> renderer, bool installAutomaticIdleFunctions)
+Application::install(vsg::ref_ptr<ImGuiRenderer> renderer, vsg::ref_ptr<vsg::View> vsgView, bool installAutomaticIdleFunctions)
 {
 #ifdef ROCKY_HAS_IMGUI
 
     ROCKY_SOFT_ASSERT_AND_RETURN(renderer, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(renderer->view, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(vsgView, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(renderer->imguiContext(), void());
 
-    // keep track so we can remove it later if necessary:
-    auto& view = display.find(renderer->view);
-    view._guiRenderer = renderer;
+    auto& view = display.find(vsgView);
+    ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
 
     // add the renderer to the view's render graph:
     view.renderGraph->addChild(renderer);
 
-    // add the event handler that will pass events from VSG to ImGui:
-    auto send = SendEventsToImGuiContext::create(renderer->window, renderer->imguiContext());
-    view._guiEventVisitor = send;
-
+    // install the event handler that will pass events from VSG to ImGui:
     auto& handlers = vsgcontext->viewer()->getEventHandlers();
-    handlers.insert(handlers.begin(), send);
+    handlers.insert(handlers.begin(), renderer->eventTranslator);
 
-    // request a frame when the sender handles an ImGui event:
-    _subscriptions += send->onEvent([&](const vsg::UIEvent& e)
+    // request a frame when the translator handles an ImGui event:
+    _subscriptions += renderer->eventTranslator->onEvent([&](const vsg::UIEvent& e)
         {
-            if (e.cast<vsg::FrameEvent>()) return;
-            vsgcontext->requestFrame();
+            if (!e.cast<vsg::FrameEvent>())
+                vsgcontext->requestFrame();
         });
 
     if (installAutomaticIdleFunctions)
@@ -614,7 +608,7 @@ Application::install(vsg::ref_ptr<RenderImGuiContext> renderer, bool installAuto
                         ImGui::EndFrame();
                     };
 
-                idleFunctions.emplace_back(std::make_shared<std::function<void()>>(idle_function));
+                _subscriptions += onIdleFrame(idle_function);
             });
     }
 #endif
@@ -670,36 +664,25 @@ Application::onAddView(Window& window, View& view)
 
 #ifdef ROCKY_HAS_IMGUI
 
-    // ImGui renderer for drawing Widgets (et al) on this view:
-    auto imguiRenderer = RenderImGuiContext::create(window.vsgWindow, view.vsgView);
+    // ImGui renderer for drawing Widgets (et al) on this view. (false = no .ini file support)
+    auto imguiRenderer = ImGuiRenderer::create(window.vsgWindow, false);
     auto imguicontext = imguiRenderer->imguiContext();
-
-    // disable the .ini file for ImGui since we don't want to save stuff for internal widgetry
-    ImGui::SetCurrentContext(imguicontext);
-    ImGui::GetIO().IniFilename = nullptr;
 
     // Next, add a node that will dispatch the actual gui rendering callbacks
     // (like the one installed by the WidgetSystem):
     imguiRenderer->addChild(detail::ImGuiDispatcher::create(imguicontext, vsgcontext));
 
-
-
-
-
-    this->install(imguiRenderer, false);
-
-
-
-
+    // and install the renderer and its event processor(s) on the main viewer.
+    this->install(imguiRenderer, view.vsgView, false);
 
     // We still need to process ImGui events even if we're not rendering the frame,
     // so install this "idle" function:
-    auto idleFrame = [view(view), vsgcontext(vsgcontext), imguicontext]()
+    auto idle = [vsgView(view.vsgView), vsgcontext(vsgcontext), imguicontext]() -> void
         {
-            auto vp = view.vsgView->camera->getViewport();
+            auto vp = vsgView->camera->getViewport();
 
             RenderingState rs{
-                view.viewID,
+                vsgView->viewID,
                 vsgcontext->viewer()->getFrameStamp()->frameCount,
                 { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
             };
@@ -716,9 +699,7 @@ Application::onAddView(Window& window, View& view)
             ImGui::EndFrame();
         };
 
-    view._guiIdleEventProcessor = std::make_shared<std::function<void()>>(idleFrame);
-
-    this->idleFunctions.emplace_front(view._guiIdleEventProcessor);
+    imguiRenderer->subscriptions += onIdleFrame(idle);
 
 #endif
 }
@@ -741,22 +722,19 @@ Application::onRemoveView(const Window& window, const View& view)
 
 #ifdef ROCKY_HAS_IMGUI
 
-    if (view._guiIdleEventProcessor)
+    // If we installed an ImGui renderer on this view, remove it.
+    if (auto* renderer = view.find<ImGuiRenderer>())
     {
-        auto& c = idleFunctions;
-        c.erase(std::remove(c.begin(), c.end(), view._guiIdleEventProcessor), c.end());
-    }
+        // remove the event translator that came along with the renderer:
+        if (renderer->eventTranslator)
+        {
+            auto& handlers = vsgcontext->viewer()->getEventHandlers();
+            handlers.erase(std::remove(handlers.begin(), handlers.end(), renderer->eventTranslator), handlers.end());
+        }
 
-    if (view._guiEventVisitor)
-    {
-        auto& c = vsgcontext->viewer()->getEventHandlers();
-        c.erase(std::remove(c.begin(), c.end(), view._guiEventVisitor), c.end());
-    }
-
-    if (view._guiRenderer)
-    {
+        // and remove the renderer itself (is this necessary? probably not, if we're destroying the view..)
         auto& c = view.renderGraph->children;
-        c.erase(std::remove(c.begin(), c.end(), view._guiRenderer), c.end());
+        c.erase(std::remove(c.begin(), c.end(), renderer), c.end());
     }
 
 #endif

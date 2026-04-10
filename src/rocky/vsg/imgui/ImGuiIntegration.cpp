@@ -9,14 +9,28 @@ using namespace ROCKY_NAMESPACE;
 
 ROCKY_ABOUT(imgui, IMGUI_VERSION)
 
-void RenderImGuiContext::add(vsg::ref_ptr<ImGuiContextNode> node)
+
+ImGuiRenderer::ImGuiRenderer(vsg::ref_ptr<vsg::Window> w, bool useIniFile) :
+    Inherit(w), window(w)
+{
+    if (!useIniFile)
+    {
+        ImGui::SetCurrentContext(imguiContext());
+        ImGui::GetIO().IniFilename = nullptr;
+    }
+
+    eventTranslator = SendEventsToImGuiContext::create(window, imguiContext());
+}
+
+
+void ImGuiRenderer::add(vsg::ref_ptr<ImGuiContextNode> node)
 {
     addChild(node);
     onNodeAdded.fire(node);
 }
 
 
-void RenderImGuiContext::traverse(vsg::RecordTraversal& record) const
+void ImGuiRenderer::traverse(vsg::RecordTraversal& record) const
 {
     // active the context associated with this Node, and save it in the traversal
     ImGui::SetCurrentContext(_imguiContext);

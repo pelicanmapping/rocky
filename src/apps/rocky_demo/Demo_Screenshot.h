@@ -290,7 +290,7 @@ auto Demo_Screenshot = [](Application& app)
         auto install = [&app, window, view](...)
             {
 				window.commandGraph->children.insert(window.commandGraph->children.begin(), offscreenRenderGraph);
-				app.display.compileRenderGraph(offscreenRenderGraph, window.vsgWindow);
+				app.vsgcontext->compileRenderGraph(offscreenRenderGraph, window.vsgWindow);
             };
 
         app.onNextUpdate(install);

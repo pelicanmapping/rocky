@@ -13,13 +13,12 @@
 #include <rocky/Callbacks.h>
 
 #include <chrono>
-#include <deque>
 #include <functional>
 #include <cstdint>
 
 namespace ROCKY_NAMESPACE
 {
-    class RenderImGuiContext;
+    class ImGuiRenderer;
 
     class ROCKY_EXPORT Application
     {
@@ -70,8 +69,8 @@ namespace ROCKY_NAMESPACE
         //! Whether this application is still active
         inline bool active() const;
 
-        //! Installs a RenderImGuiContext that will render ImGui elements
-        void install(vsg::ref_ptr<RenderImGuiContext>);
+        //! Installs a RenderImGuiContext that will render ImGui elements to the specified view
+        void install(vsg::ref_ptr<ImGuiRenderer>, vsg::ref_ptr<vsg::View>);
 
         //! Frame number
         std::uint64_t frameCount() const;
@@ -116,10 +115,9 @@ namespace ROCKY_NAMESPACE
         //! passed into the constructor.
         Status commandLineStatus;
 
-        //! When VSGContext::renderContinuously is false, these are functions that will
-        //! be invoked when NOT rendering a frame.
-        using IdleFunction = std::shared_ptr<std::function<void()>>;
-        std::deque<IdleFunction> idleFunctions;
+        //! When VSGContext::renderContinuously is false, this callback is invoked when
+        //! processing an iteration with NO rendering (e.g., update/events only)
+        Callback<> onIdleFrame;
 
         //! Runtime timing statistics
         struct Stats
@@ -159,8 +157,7 @@ namespace ROCKY_NAMESPACE
 
         void ctor(int& argc, char** argv);
 
-        //void setupViewer(vsg::ref_ptr<vsg::Viewer> viewer);
-        void install(vsg::ref_ptr<RenderImGuiContext>, bool installIdleFunction);
+        void install(vsg::ref_ptr<ImGuiRenderer>, vsg::ref_ptr<vsg::View>, bool installIdleFunction);
 
         friend class DisplayManager;
 

@@ -715,3 +715,35 @@ VSGContextImpl::update()
         requestFrame();
     }
 }
+
+
+// Call this when adding a new rendergraph to the scene.
+void
+VSGContextImpl::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(renderGraph, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer()->compileManager, void());
+
+    auto view = detail::find<vsg::View>(renderGraph);
+
+    ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
+
+    // add this rendergraph's view to the viewer's compile manager.
+    viewer()->compileManager->add(*window, vsg::ref_ptr<vsg::View>(view));
+
+    // Compile the new render pass for this view.
+    // The lambda idiom is taken from vsgexamples/dynamicviews
+    auto result = viewer()->compileManager->compile(renderGraph, 
+        [view](vsg::Context& compileContext) -> bool
+        {
+            return compileContext.view == view;
+        });
+
+    // if something was compiled, we need to update the viewer:
+    if (result.requiresViewerUpdate())
+    {
+        vsg::updateViewer(*viewer(), result);
+    }
+}

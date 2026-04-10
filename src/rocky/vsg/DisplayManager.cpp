@@ -21,51 +21,13 @@ namespace
     View s_nullView;
 }
 
-#if 0
-vsg::View*
-ROCKY_NAMESPACE::viewAtWindowCoords(vsg::Viewer* viewer, int x, int y)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(viewer, nullptr);
-
-    for (auto& task : viewer->recordAndSubmitTasks)
-    {
-        for (auto cg_iter = task->commandGraphs.rbegin(); cg_iter != task->commandGraphs.rend(); ++cg_iter)
-        {
-            auto& cg = *cg_iter;
-            auto finder = vsg::visit<FindViews>(cg);
-
-            for (auto i = finder.views.rbegin(); i != finder.views.rend(); ++i)
-            {
-                auto& view = *i;
-
-                if (view->camera)
-                {
-                    const auto vp = view->camera->getViewport();
-
-                    if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
-                    {
-                        return view;
-                    }
-                }
-            }
-        }
-    }
-
-    return nullptr;
-}
-#endif
-
 namespace
 {
-    //bool s_debugCallbackMessagesUnique = false;
-    //std::set<std::string> s_uniqueMessages;
-
     //! True is the viewer has been "realized" (compiled at least once)
     inline bool isCompiled(vsg::Viewer* viewer)
     {
         return viewer && viewer->compileManager.valid();
     }
-
 
     bool s_debugCallbackMessagesUnique = false;
     std::set<std::string> s_uniqueDebugMessages;
@@ -108,26 +70,6 @@ View::View(vsg::ref_ptr<vsg::View> v, vsg::ref_ptr<vsg::RenderGraph> rg, Display
     // todo
 }
 
-#if 0
-Result<GeoPoint>
-View::pointAtCoords(vsg::Node* node, int x, int y) const
-{
-    auto terrain = find<TerrainNode>(view);
-    if (!terrain)
-        return Failure_AssertionFailure;
-
-    vsg::LineSegmentIntersector lsi(*view->camera, x, y);
-    terrain->accept(lsi);
-    if (lsi.intersections.empty())
-        return Failure{};
-
-    auto closest = std::min_element(
-        lsi.intersections.begin(), lsi.intersections.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
-
-    return GeoPoint(terrain->renderingSRS, closest->get()->worldIntersection);
-}
-#endif
 
 void
 View::dirty()
@@ -181,7 +123,7 @@ Window::addView(vsg::ref_ptr<vsg::View> vsgView)
     // compile it if necessary:
     if (isCompiled(vsgcontext->viewer()))
     {
-        _display->compileRenderGraph(renderGraph, vsgWindow);
+        _display->vsgcontext->compileRenderGraph(renderGraph, vsgWindow);
     }
 
     // add this to the list of active IDs:
@@ -257,51 +199,6 @@ Window::viewAtCoords(float x, float y)
 
     return s_nullView;
 }
-
-#if 0
-void
-DisplayManager::removeImGuiWidgetSupport(View& view) const
-{
-#ifdef ROCKY_HAS_IMGUI
-
-    if (view._guiIdleEventProcessor && _app)
-    {
-        auto& c = _app->idleFunctions;
-        c.erase(std::remove(c.begin(), c.end(), view._guiIdleEventProcessor), c.end());
-    }
-
-    if (view._guiEventVisitor)
-    {
-        auto& c = vsgcontext->viewer()->getEventHandlers();
-        c.erase(std::remove(c.begin(), c.end(), view._guiEventVisitor), c.end());
-    }
-
-    if (view._guiContextGroup)
-    {
-        auto& c = view.renderGraph->children;
-        c.erase(std::remove(c.begin(), c.end(), view._guiContextGroup), c.end());
-    }
-
-#endif
-}
-#endif
-
-#if 0
-void
-DisplayManager::initialize(Application& app)
-{
-    _app = &app;
-
-    initialize(app.vsgcontext);
-
-    if (app.vsgcontext && app.vsgcontext->viewer())
-    {
-        // intercept the window-close event so we can remove the window from our tracking tables.
-        auto& handlers = vsgcontext->viewer()->getEventHandlers();
-        handlers.insert(handlers.begin(), CloseWindowEventHandler::create(_app));
-    }
-}
-#endif
 
 
 void
@@ -571,7 +468,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> vsgWindow, vsg::ref_ptr<vsg:
         // compile it if necessary:
         if (isCompiled(vsgcontext->viewer()))
         {
-            compileRenderGraph(renderGraph, vsgWindow);
+            vsgcontext->compileRenderGraph(renderGraph, vsgWindow);
         }
 
         // add this to the list of active IDs:
@@ -806,10 +703,16 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 #endif
 
 void
-DisplayManager::removeWindow(const Window& window)
+DisplayManager::removeWindow(Window& window)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), void());
+
+    // remove all the views first:
+    while (!window.views().empty())
+    {
+        window.removeView(window.views().front());
+    }
 
     // and remove it from our tracker:
     auto iter = std::find(_windows.begin(), _windows.end(), window);
@@ -824,302 +727,6 @@ DisplayManager::removeWindow(const Window& window)
 }
 
 
-#if 0
-void
-DisplayManager::removeWindow(vsg::ref_ptr<vsg::Window> window)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
-
-    // wait until the device is idle to avoid changing state while it's being used.
-    vsgcontext->viewer()->deviceWaitIdle();
-
-    // remove the window from the viewer
-    vsgcontext->viewer()->removeWindow(window);
-
-    // remove the window from our tracking tables
-    auto& views = windowsAndViews[window];
-    for (auto& view : views)
-        _viewData.erase(view);
-    _commandGraphByWindow.erase(window);
-    windowsAndViews.erase(window);
-}
-#endif
-
-#if 0
-void
-DisplayManager::addViewToWindow(View& view, Window& window, bool add_manipulator)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(view.vsgView()->camera != nullptr, void());
-
-    // if things are already running, we need to wait on the device:
-    if (compiled(vsgcontext->viewer()))
-    {
-        vsgcontext->viewer()->deviceWaitIdle();
-    }
-
-    // find the CG associated with this window:
-    auto vsgView = view.vsgView();
-
-    if (vsgView->children.empty() && _app)
-    {
-        vsgView->addChild(_app->root);
-    }
-
-    view._renderGraph = vsg::RenderGraph::create(window, view);
-    view._renderGraph->setClearValues({ {0.0f, 0.0f, 0.0f, 1.0f} });
-    window.commandGraph()->addChild(rendergraph);
-
-    if (compiled(vsgcontext->viewer()))
-    {
-        compileRenderGraph(view._renderGraph, window.vsgWindow());
-    }
-
-    window._views->emplace_back(view);
-
-    if (std::find(vsgcontext->activeViewIDs.begin(), vsgcontext->activeViewIDs.end(), view.viewID()) == vsgcontext->activeViewIDs.end())
-    {
-        vsgcontext->activeViewIDs.emplace_back(view.viewID());
-    }
-
-    bool rocky_auto_view = false;
-    vsgView->getValue("rocky_auto_created", rocky_auto_view);
-
-    if (_app && (rocky_auto_view || add_manipulator))
-    {
-        if (auto mapNode = view.get<MapNode>())
-        {
-            auto manip = MapManipulator::create(mapNode, window, vsgView->camera, vsgcontext);
-            setManipulatorForView(manip, vsgView);
-        }
-    }
-
-#ifdef ROCKY_HAS_IMGUI
-
-    // ImGui renderer for drawing Widgets (et al) on this view:
-    auto imguiRenderer = RenderImGuiContext::create(window, view);
-    auto imguicontext = imguiRenderer->imguiContext();
-
-    // disable the .ini file for ImGui since we don't want to save stuff for internal widgetry
-    ImGui::SetCurrentContext(imguicontext);
-    ImGui::GetIO().IniFilename = nullptr;
-
-    // Next, add a node that will dispatch the actual gui rendering callbacks
-    // (like the one installed by the WidgetSystem):
-    imguiRenderer->addChild(detail::ImGuiDispatcher::create(imguicontext, vsgcontext));
-
-        if (_app)
-        {
-            _app->install(imguiRenderer, false);
-
-            // We still need to process ImGui events even if we're not rendering the frame,
-            // so install this "idle" function:
-            auto func = [view, vsgcontext(vsgcontext), viewID(view->viewID), imguicontext]()
-                {
-                    auto vp = view->camera->getViewport();
-                     RenderingState rs{
-                         view->viewID,
-                         vsgcontext->viewer()->getFrameStamp()->frameCount,
-                         { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
-                     };
-
-                    ImGui::SetCurrentContext(imguicontext);
-                    ImGui::GetIO().DeltaTime = ImGui::GetIO().DeltaTime <= 0.0f ? 0.016f : ImGui::GetIO().DeltaTime;
-                    ImGui::NewFrame();
-                    for (auto& record : vsgcontext->guiRecorders)
-                    {
-                        record(rs, imguicontext);
-                    }
-                    ImGui::EndFrame();
-                };
-
-            viewdata.guiIdleEventProcessor = std::make_shared<std::function<void()>>(func);
-            _app->idleFunctions.emplace_front(viewdata.guiIdleEventProcessor);
-        }
-#endif
-    }
-}
-#endif
-
-#if 0
-void
-DisplayManager::addImGuiWidgetSupport(Window& window, View& view) const
-{
-#ifdef ROCKY_HAS_IMGUI
-
-    // ImGui renderer for drawing Widgets (et al) on this view:
-    auto imguiRenderer = RenderImGuiContext::create(window.vsgWindow, view.vsgView);
-    auto imguicontext = imguiRenderer->imguiContext();
-
-    // disable the .ini file for ImGui since we don't want to save stuff for internal widgetry
-    ImGui::SetCurrentContext(imguicontext);
-    ImGui::GetIO().IniFilename = nullptr;
-
-    // Next, add a node that will dispatch the actual gui rendering callbacks
-    // (like the one installed by the WidgetSystem):
-    imguiRenderer->addChild(detail::ImGuiDispatcher::create(imguicontext, vsgcontext));
-
-    if (_app)
-    {
-        _app->install(imguiRenderer, false);
-
-        // We still need to process ImGui events even if we're not rendering the frame,
-        // so install this "idle" function:
-        auto idleFrame = [view(view), vsgcontext(vsgcontext), imguicontext]()
-            {
-                auto vp = view.vsgView->camera->getViewport();
-
-                RenderingState rs{
-                    view.viewID,
-                    vsgcontext->viewer()->getFrameStamp()->frameCount,
-                    { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
-                };
-
-                ImGui::SetCurrentContext(imguicontext);
-                ImGui::GetIO().DeltaTime = ImGui::GetIO().DeltaTime <= 0.0f ? 0.016f : ImGui::GetIO().DeltaTime;
-                ImGui::NewFrame();
-
-                for (auto& record : vsgcontext->guiRecorders)
-                {
-                    record(rs, imguicontext);
-                }
-
-                ImGui::EndFrame();
-            };
-
-        view._guiIdleEventProcessor = std::make_shared<std::function<void()>>(idleFrame);
-        _app->idleFunctions.emplace_front(view._guiIdleEventProcessor);
-    }
-#endif
-}
-#endif
-
-#if 0
-void
-DisplayManager::removeView(vsg::ref_ptr<vsg::View> view)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
-
-    // wait until the device is idle to avoid changing state while it's being used.
-    vsgcontext->viewer()->deviceWaitIdle();
-
-    auto window = windowContainingView(view);
-    ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
-
-    auto commandgraph = commandGraph(window);
-    ROCKY_SOFT_ASSERT_AND_RETURN(commandgraph, void());
-
-    // find the rendergraph hosting the view:
-    auto vd = _viewData.find(view);
-    ROCKY_SOFT_ASSERT_AND_RETURN(vd != _viewData.end(), void());
-    auto& viewData = vd->second;
-    auto& rendergraph = viewData.parentRenderGraph;
-
-#ifdef ROCKY_HAS_IMGUI
-    // uninstall any gui renderer elements
-    if (viewData.guiIdleEventProcessor && _app)
-    {
-        auto& c = _app->idleFunctions;
-        c.erase(std::remove(c.begin(), c.end(), viewData.guiIdleEventProcessor), c.end());
-    }
-
-    if (viewData.guiEventVisitor)
-    {
-        auto& c = vsgcontext->viewer()->getEventHandlers();
-        c.erase(std::remove(c.begin(), c.end(), viewData.guiEventVisitor), c.end());
-    }
-
-    if (viewData.guiContextGroup)
-    {
-        auto& c = rendergraph->children;
-        c.erase(std::remove(c.begin(), c.end(), viewData.guiContextGroup), c.end());
-    }
-#endif
-
-    // remove the rendergraph from the command graph.
-    auto& rps = commandgraph->children;
-    rps.erase(std::remove(rps.begin(), rps.end(), rendergraph), rps.end());
-
-    // remove it from our tracking tables.
-    _viewData.erase(view);
-    auto& views = windowsAndViews[vsg::observer_ptr<vsg::Window>(window)];
-    views.erase(std::remove(views.begin(), views.end(), view), views.end());
-
-    // remove it from the active-view-ID list
-    auto& ids = vsgcontext->activeViewIDs;
-    ids.erase(std::remove(ids.begin(), ids.end(), view->viewID), ids.end());
-}
-#endif
-
-#if 0
-void
-DisplayManager::refreshView(vsg::ref_ptr<vsg::View> view)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
-
-    auto& viewdata = _viewData[view];
-    ROCKY_SOFT_ASSERT_AND_RETURN(viewdata.parentRenderGraph, void());
-
-    // wait until the device is idle to avoid changing state while it's being used.
-    vsgcontext->viewer()->deviceWaitIdle();
-
-    auto vp = view->camera->getViewport();
-    viewdata.parentRenderGraph->renderArea.offset.x = (std::uint32_t)vp.x;
-    viewdata.parentRenderGraph->renderArea.offset.y = (std::uint32_t)vp.y;
-    viewdata.parentRenderGraph->renderArea.extent.width = (std::uint32_t)vp.width;
-    viewdata.parentRenderGraph->renderArea.extent.height = (std::uint32_t)vp.height;
-
-    // rebuild the graphics pipelines to reflect new camera/view params.
-    vsg::UpdateGraphicsPipelines u;
-    u.context = vsg::Context::create(viewdata.parentRenderGraph->getRenderPass()->device);
-    u.context->renderPass = viewdata.parentRenderGraph->getRenderPass();
-    viewdata.parentRenderGraph->accept(u);
-}
-#endif
-
-#if 0
-vsg::ref_ptr<vsg::CommandGraph>
-DisplayManager::commandGraph(vsg::ref_ptr<vsg::Window> window) const
-{
-    auto iter = _commandGraphByWindow.find(window);
-    if (iter != _commandGraphByWindow.end())
-        return iter->second;
-    else
-        return {};
-}
-
-vsg::ref_ptr<vsg::RenderGraph>
-DisplayManager::renderGraph(vsg::ref_ptr<vsg::View> view) const
-{
-    auto i = _viewData.find(view);
-    if (i != _viewData.end())
-        return i->second.parentRenderGraph;
-    else
-        return { };
-}
-
-vsg::ref_ptr<vsg::Window>
-DisplayManager::windowContainingView(vsg::ref_ptr<vsg::View> view) const
-{
-    for (auto iter : windowsAndViews)
-    {
-        for (auto& a_view : iter.second)
-        {
-            if (a_view == view)
-            {
-                return iter.first;
-                break;
-            }
-        }
-    }
-    return {};
-}
-#endif
 
 void
 DisplayManager::setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::View* view)
@@ -1156,19 +763,6 @@ DisplayManager::setManipulatorForView(vsg::ref_ptr<MapManipulator> manip, vsg::V
         }
     }
 }
-
-#if 0
-std::vector<vsg::ref_ptr<vsg::View>>
-DisplayManager::views(vsg::ref_ptr<vsg::Window> window) const
-{
-    auto i = windowsAndViews.find(window);
-    if (i != windowsAndViews.end())
-    {
-        return i->second;
-    }
-    return {};
-}
-#endif
 
 
 Window&
@@ -1256,95 +850,3 @@ DisplayManager::windowAndViewAtCoords(float x, float y)
 
     return {};
 }
-
-#if 0
-vsg::ref_ptr<vsg::View>
-DisplayManager::viewAtWindowCoords(vsg::ref_ptr<vsg::Window> window, double x, double y) const
-{
-    auto i = windowsAndViews.find(window);
-    if (i != windowsAndViews.end())
-    {
-        auto& views = i->second;
-        for(auto j = views.rbegin(); j != views.rend(); ++j)
-        {
-            auto& view = *j;
-            auto vp = view->camera->getViewport();
-            if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
-            {
-                return view;
-            }
-        }
-    }
-    return {};
-}
-#endif
-
-
-// Call this when adding a new rendergraph to the scene.
-void
-DisplayManager::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(renderGraph, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
-
-    vsg::ref_ptr<vsg::View> view;
-
-    if (!renderGraph->children.empty())
-    {
-        view = renderGraph->children[0].cast<vsg::View>();
-    }
-
-    if (view)
-    {
-        // add this rendergraph's view to the viewer's compile manager.
-        vsgcontext->viewer()->compileManager->add(*window, view);
-
-        // Compile the new render pass for this view.
-        // The lambda idiom is taken from vsgexamples/dynamicviews
-        auto result = vsgcontext->viewer()->compileManager->compile(renderGraph, [view](vsg::Context& compileContext)
-            {
-                return compileContext.view == view.get();
-            });
-
-        // if something was compiled, we need to update the viewer:
-        if (result.requiresViewerUpdate())
-        {
-            vsg::updateViewer(*vsgcontext->viewer(), result);
-        }
-    }
-}
-
-//
-//vsg::ref_ptr<vsg::Window>
-//DisplayManager::mainWindow() const
-//{
-//    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), {});
-//    return !vsgcontext->viewer()->windows().empty() ? vsgcontext->viewer()->windows().front() : vsg::ref_ptr<vsg::Window>{ };
-//}
-
-#if 0
-Result<GeoPoint>
-DisplayManager::pointAtWindowCoords(vsg::ref_ptr<vsg::Window> window, int x, int y) const
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(window, Failure_AssertionFailure);
-
-    for (auto view : views(window))
-    {
-        if (view->camera)
-        {
-            const auto vp = view->camera->getViewport();
-            if (x >= vp.x && x < vp.x + vp.width && y >= vp.y && y < vp.y + vp.height)
-            {
-                auto point = ROCKY_NAMESPACE::pointAtWindowCoords(view, x, y);
-                if (point.ok())
-                {
-                    return point;
-                }
-            }
-        }
-    }
-
-    return Failure{ };
-}
-#endif

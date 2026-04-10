@@ -94,35 +94,37 @@ namespace ROCKY_NAMESPACE
     /**
     * Renders ImGuiContextNode instances in a single VSG window.
     */
-    class ROCKY_EXPORT RenderImGuiContext : public vsg::Inherit<RenderImGui, RenderImGuiContext>
+    class ROCKY_EXPORT ImGuiRenderer : public vsg::Inherit<RenderImGui, ImGuiRenderer>
     {
+    public:
+        //! Construct a new ImGui renderer
+        ImGuiRenderer(vsg::ref_ptr<vsg::Window>, bool useIniFile = true);
+
     public:
         //! Window ImGui will render to
         vsg::ref_ptr<vsg::Window> window;
-        
-        //! View ImGui will render to, or null for the first view
-        vsg::ref_ptr<vsg::View> view;
 
         //! Fired when user adds a node
         Callback<vsg::ref_ptr<ImGuiContextNode>> onNodeAdded;
 
         //! whether to enable docking, if supported by ImGui
-        bool enableDocking = false;
-
-        //! Construct a new ImGui renderer
-        RenderImGuiContext(vsg::ref_ptr<vsg::Window> w, vsg::ref_ptr<vsg::View> v) :
-            Inherit(w), window(w), view(v) {
-        }
-        
+        bool enableDocking = false;        
 
         //! Add a Gui Node to this renderer
         void add(vsg::ref_ptr<ImGuiContextNode> node);
+
+        //! The event handler for this renderer
+        vsg::ref_ptr<SendEventsToImGuiContext> eventTranslator;
+
+        //! Callback subs
+        CallbackSubscriptions subscriptions;
 
     public:
 
         void traverse(vsg::RecordTraversal& record) const override;
 
     protected:
+
         mutable bool _firstFrame = true;
     };
 

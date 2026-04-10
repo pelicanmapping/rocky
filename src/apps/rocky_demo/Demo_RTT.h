@@ -100,7 +100,7 @@ auto Demo_RTT = [](Application& app)
                 // Insert the pre-render graph into the command graph and compile it.
                 // This seems a bit awkward but it works.
                 window.commandGraph->children.insert(window.commandGraph->children.begin(), rtt_graph);
-                app.display.compileRenderGraph(rtt_graph, window.vsgWindow);
+                app.vsgcontext->compileRenderGraph(rtt_graph, window.vsgWindow);
             };
         app.onNextUpdate(install);
 

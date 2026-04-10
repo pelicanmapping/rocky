@@ -76,6 +76,8 @@ namespace ROCKY_NAMESPACE
         //! Polyfill Vulkan Extension functions (not supplied by VSG yet)
         VulkanExtensions* ext();
 
+        //! User-provided function that will return a device pixel ratio
+        //! (this is usually platform-specific)
         std::function<float()> devicePixelRatio = []() { return 1.0f; };
 
     public:
@@ -123,6 +125,9 @@ namespace ROCKY_NAMESPACE
         //! Only one queued operation will run per frame, the highest priority one
         //! running first.
         void scheduleMeteredUpdate(vsg::Operation* operation, std::function<float()> getPriority = {});
+
+        //! Utility to compile a new rendergraph before adding it to a scene.
+        void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window);
 
         //! Destructor
         virtual ~VSGContextImpl();

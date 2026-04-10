@@ -238,12 +238,12 @@ int main(int argc, char** argv)
 
     // Create the main window:
     auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
-    auto& mainWindow = app.display.addWindow(traits);
+    auto& window = app.display.addWindow(traits);
 
-    // Add our GUI:
-    auto imguiRenderer = RenderImGuiContext::create(mainWindow.vsgWindow, mainWindow.view(0).vsgView);
+    // Attach our GUI in the main view:
+    auto imguiRenderer = ImGuiRenderer::create(window.vsgWindow);
+    app.install(imguiRenderer, window.view(0).vsgView);
     imguiRenderer->add(MainGUI::create(app));
-    app.install(imguiRenderer);
 
     // Add a light if we need one
     if (!app.skyNode)
