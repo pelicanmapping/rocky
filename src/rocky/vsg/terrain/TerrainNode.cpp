@@ -239,6 +239,9 @@ TerrainNode::reset(VSGContext context)
         _terrainLayers = map->layers([](auto layer) {
             return TileLayer::cast(layer) != nullptr; });
     }
+
+    // update the state data with the (possibly new) profile:
+    terrainState->updateProfile(profile);
 }
 
 Result<>

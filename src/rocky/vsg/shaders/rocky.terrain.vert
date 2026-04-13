@@ -27,18 +27,20 @@ layout(location = 0) out Varyings {
     vec2 uv;
     vec3 normal_VS;
     vec3 vertex_VS;
+    vec3 vertex_ECEF;
+    vec3 camera_ECEF;
+    vec3 sunPos_ECEF;
 } vary;
 
 layout(set = 0, binding = 10) uniform sampler2D elevationTex;
-
-#if defined(ROCKY_ATMOSPHERE)
-#include "rocky.atmo.ground.vert.glsl"
-#endif
 
 // GL built-ins
 out gl_PerVertex {
     vec4 gl_Position;
 };
+
+#include "rocky.lighting.frag.glsl"
+
 
 // sample the elevation data at a UV tile coordinate and make a tangent-space position
 vec3 compute_point_TS(in vec2 uv)
@@ -100,15 +102,28 @@ void main()
     vec3 position_TS = in_vertex + in_upVector_TS * point.z;
     vec4 position_VS = pc.modelview * vec4(position_TS, 1.0);
 
-#if defined(ROCKY_ATMOSPHERE)
-    atmos_vertex_main(position_VS.xyz);
-#endif
-    
     mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));
 
     vary.uv = (tile.colorMatrix * vec4(in_uvw.st, 0, 1)).st;
     vary.vertex_VS = position_VS.xyz / position_VS.w;
     vary.normal_VS = normalize(normalMatrix * compute_tbn_TS(in_upVector_TS) * compute_normal_TS(in_uvw.st));
-    
+
+    // ECEF positions for aerial perspective computation in fragment shader.
+    // position_TS is tile-local; tile.modelMatrix transforms to ECEF.
+    vary.vertex_ECEF = (tile.modelMatrix * vec4(position_TS, 1.0)).xyz;
+
+    // Camera position in tile-local space, then transformed to ECEF.
+    // (push constants are vertex-stage only, so we must do this here)
+    mat3 rot = transpose(mat3(pc.modelview));
+    vec3 t_mv = pc.modelview[3].xyz;
+    vec3 camera_local = -rot * t_mv;
+    vary.camera_ECEF = (tile.modelMatrix * vec4(camera_local, 1.0)).xyz;
+
+#if defined(ROCKY_ATMOSPHERE)
+    // Sun direction in ECEF. vsg_lights stores positions in view space.
+    // Transform: view-space -> tile-local -> ECEF (direction only, mat3).
+    vary.sunPos_ECEF = rot * get_sun_position();
+#endif
+
     gl_Position = pc.projection * position_VS;
 }

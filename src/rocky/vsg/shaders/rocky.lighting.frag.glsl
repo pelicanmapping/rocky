@@ -5,10 +5,6 @@ layout(set = 1, binding = 0) uniform VSG_Lights {
     vec4 pack[64];
 } vsg_lights;
 
-//#ifdef ROCKY_ATMOSPHERE
-//layout(location = 15) in vec3 atmos_color;
-//#endif
-
 // TODO - this will eventually come from a material map
 struct PBR {
     float roughness;
@@ -18,7 +14,10 @@ struct PBR {
 
 // https://learnopengl.com/PBR/Lighting
 
+#ifndef ROCKY_PI
+#define ROCKY_PI
 const float PI = 3.14159265359;
+#endif
 
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
@@ -55,11 +54,33 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(max(1.0 - cosTheta, 0.0), 5.0);
 }
 
+// ACES filmic tone mapping (shared with atmosphere shaders)
+vec3 ACES_tonemap(vec3 x)
+{
+    float a = 2.51;
+    float b = 0.03;
+    float c = 2.43;
+    float d = 0.59;
+    float e = 0.14;
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
+}
+
+vec3 get_sun_position()
+{
+    vec4 light_counts = vsg_lights.pack[0];
+    int ambient_count = int(light_counts[0]); // 1 component each (color)
+    int directional_count = int(light_counts[1]); // 2 components each (color, position)
+
+    // first point light:
+    int sun = 1 + (ambient_count * 1) + (directional_count * 2);
+    return vsg_lights.pack[sun+1].xyz; // color, position
+}
+
 vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
 {
     // temp:
     pbr.ao = 1.0;
-    pbr.roughness = 0.75;
+    pbr.roughness = 1.0;
     pbr.metal = 0.0;
 
     vec3 albedo = color.rgb;
@@ -73,7 +94,7 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
     F0 = mix(F0, albedo, vec3(pbr.metal));
 
     vec3 Lo = vec3(0.0);
-    vec3 ambient = vec3(0.0); // vec3(0.013);
+    vec3 ambient = vec3(0.0);
 
     vec4 light_counts = vsg_lights.pack[0];
     int ambient_count = int(light_counts[0]);
@@ -91,8 +112,6 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
 
     for (int i = 0; i < directional_count; ++i)
     {
-        // For now this is a copy of the point-light code.
-
         vec3 light_color = vsg_lights.pack[index++].rgb;
         vec3 position = vsg_lights.pack[index++].xyz;
 
@@ -106,10 +125,13 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
         float G = GeometrySmith(N, V, L, pbr.roughness);
         vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
 
-        float NdotL = max(dot(N, L), 0.0);
+        float NdotL = dot(N, L);
+
+        // Soften the terminator: atmosphere scatters light past the geometric edge
+        NdotL = smoothstep(-0.05, 0.15, NdotL);
 
         vec3 numerator = D * G * F;
-        float denominator = 4.0 * NdotV * NdotL + 0.001; // avoid division by zero
+        float denominator = 4.0 * NdotV * max(NdotL, 0.001) + 0.001;
         vec3 specular = numerator / denominator;
 
         vec3 kS = F;
@@ -136,10 +158,14 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
         float G = GeometrySmith(N, V, L, pbr.roughness);
         vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
 
-        float NdotL = max(dot(N, L), 0.0);
+        float NdotL = dot(N, L);
+
+        // Soften the terminator
+        //NdotL = max(NdotL, 0.0);
+        NdotL = smoothstep(-0.05, 1.0, NdotL);
 
         vec3 numerator = D * G * F;
-        float denominator = 4.0 * NdotV * NdotL + 0.001; // avoid division by zero
+        float denominator = 4.0 * NdotV * max(NdotL, 0.001) + 0.001;
         vec3 specular = numerator / denominator;
 
         vec3 kS = F;
@@ -160,27 +186,9 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
     }
 #endif
 
-
     vec3 new_color = Lo + (clamp(ambient, vec3(0.0), vec3(1.0)) * albedo * pbr.ao);
 
-//#if defined(ROCKY_ATMOSPHERE)
-//        new_color += atmos_color; // add in the atmospheric haze
-//        //new_color *= (atmos_color + vec3(1.0));
-//#endif
-
-    // option 1 - exposure mapping
-    const float exposure = 3.3;
-    new_color = 1.0 - exp(-exposure * new_color);
-
-    // option 2 - reinhard tone mapping
-    //new_color = new_color / (new_color + vec3(1.0)); // tone map
-
-    // NOTE: no gamma correction needed, since VSG uses SRGB as the
-    // default swapchain format. Ref:
-    // https://github.com/vsg-dev/VulkanSceneGraph/discussions/1379
-
     float apply = min(1.0, float(total_light_count));
-
     color.rgb = mix(color.rgb, new_color, apply);
 
     return color;

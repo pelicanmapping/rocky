@@ -44,5 +44,7 @@ namespace ROCKY_NAMESPACE
     protected:
         vsg::ref_ptr<vsg::Node> _atmosphere;
         VSGContext _context;
+        vsg::ref_ptr<vsg::Data> _skyData;
+        vsg::ref_ptr<vsg::DescriptorBuffer> _skyUBO;
     };
 };

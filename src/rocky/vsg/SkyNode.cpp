@@ -13,18 +13,28 @@ using namespace ROCKY_NAMESPACE;
 
 #define LC "[SkyNode] "
 
+#define ATMO_UBO_BINDING 0
+
 namespace
 {
+    struct SkyUniforms
+    {
+        glm::fvec2 ellipsoidAxes = { 0.0f, 0.0f };
+        float padding[2];
+    };
+    static_assert(sizeof(SkyUniforms) % 16 == 0, "SkyUniforms must be a multiple of 16 bytes in size");
+
+
     vsg::ref_ptr<vsg::Command> makeEllipsoid(
         const SRS& worldSRS,
         float thickness,
         bool with_tex_coords,
         bool with_normals)
     {
-        auto geodeticSRS = worldSRS.geodeticSRS(); // get a long/lat SRS
-        SRSOperation geodeticToGeocentric = geodeticSRS.to(worldSRS); // and a xform
+        auto geodeticSRS = worldSRS.geodeticSRS();
+        SRSOperation geodeticToGeocentric = geodeticSRS.to(worldSRS);
 
-        int latSegments = 100;
+        int latSegments = 40;
         int lonSegments = 2 * latSegments;
         int num_verts = (latSegments + 1) * (lonSegments);
         int num_indices = (latSegments * lonSegments * 6);
@@ -48,8 +58,7 @@ namespace
 
         auto indices = vsg::ushortArray::create(num_indices);
 
-
-        double segmentSize = 180.0 / (double)latSegments; // degrees
+        double segmentSize = 180.0 / (double)latSegments;
 
         int iptr = 0;
         for (int y = 0; y <= latSegments; ++y)
@@ -109,7 +118,6 @@ namespace
         auto file = vsg::findFile(ATMOSPHERE_VERT_SHADER, context->searchPaths);
         Log()->info("Loading atmosphere vertex shader from: {}", file.string());
 
-        // load shaders
         auto vertexShader = vsg::ShaderStage::read(
             VK_SHADER_STAGE_VERTEX_BIT,
             "main",
@@ -131,17 +139,24 @@ namespace
 
         shaderSet->addAttributeBinding("in_vertex", "", 0, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
 
-        // need VSG view-dependent data (lights)
-        PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_VERTEX_BIT);
+        // Atmosphere UBO at set 0, binding 0
+        shaderSet->addDescriptorBinding("atmo", "", 0, ATMO_UBO_BINDING,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+            VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-        // vsg modelview and projection matrix
-        shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
+        // View-dependent data (lights) - needed in fragment shader for sun direction
+        PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
+
+        // Push constants available in both vertex and fragment stages
+        shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 128);
 
         return shaderSet;
     }
 
 
-    vsg::ref_ptr<vsg::StateGroup> makeAtmoStateGroup(VSGContext vsgcontext)
+    vsg::ref_ptr<vsg::StateGroup> makeAtmoStateGroup(
+        VSGContext vsgcontext,
+        vsg::ref_ptr<vsg::DescriptorBuffer> skyUBO)
     {
         auto shaderSet = makeAtmoShaderSet(vsgcontext);
         if (!shaderSet)
@@ -150,16 +165,14 @@ namespace
             return { };
         }
 
-        // Make the pipeline configurator:
         auto pipelineConfig = vsg::GraphicsPipelineConfig::create(shaderSet);
         auto& defines = pipelineConfig->shaderHints->defines;
 
-        // enable the arrays we think we need
         pipelineConfig->enableArray("in_vertex", VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
-        // activate the packed lights uniform
+        // Enable atmosphere UBO and view-dependent data
+        pipelineConfig->enableDescriptor("atmo");
         PipelineUtils::enableViewDependentData(pipelineConfig);
-
 
         struct SetPipelineStates : public vsg::Visitor
         {
@@ -174,6 +187,10 @@ namespace
                 state.depthWriteEnable = VK_FALSE;
             }
             void apply(vsg::ColorBlendState& state) override {
+                // Additive blending: sky color is added on top of existing scene.
+                // This works because the sky dome renders with depthCompare=ALWAYS
+                // and depth write disabled, so it composites over everything.
+                // Rays that hit the planet output (0,0,0) which adds nothing.
                 state.attachments = vsg::ColorBlendState::ColorBlendAttachments{
                     { true,
                       VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE, VK_BLEND_OP_ADD,
@@ -189,26 +206,39 @@ namespace
         else
             pipelineConfig->init();
 
-        // --- end pipelineconfig setup ---
+        // Create descriptor set with the atmosphere UBO
+        auto descriptorSet = vsg::DescriptorSet::create(
+            pipelineConfig->layout->setLayouts[0],
+            vsg::Descriptors{ skyUBO }
+        );
 
+        auto bindDescriptorSet = vsg::BindDescriptorSet::create(
+            VK_PIPELINE_BIND_POINT_GRAPHICS,
+            pipelineConfig->layout,
+            0,
+            descriptorSet
+        );
 
-        // set up the state group that will select the new pipeline:
         auto stategroup = vsg::StateGroup::create();
         stategroup->add(pipelineConfig->bindGraphicsPipeline);
-        //stategroup->add(PipelineUtils::createViewDependentBindCommand(pipelineConfig, VK_PIPELINE_BIND_POINT_GRAPHICS));
-        stategroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
+        stategroup->add(bindDescriptorSet);
+        stategroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, 
+            pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
 
         return stategroup;
     }
 
 
-    vsg::ref_ptr<vsg::Node> makeAtmosphere(const SRS& srs, float thickness, VSGContext vsgcontext)
+    vsg::ref_ptr<vsg::Node> makeAtmosphere(
+        const SRS& srs,
+        float thickness,
+        VSGContext vsgcontext,
+        vsg::ref_ptr<vsg::DescriptorBuffer> atmosDescriptor)
     {
-        // attach the actual atmospheric geometry
         const bool with_texcoords = false;
         const bool with_normals = false;
 
-        auto stategroup = makeAtmoStateGroup(vsgcontext);
+        auto stategroup = makeAtmoStateGroup(vsgcontext, atmosDescriptor);
         if (!stategroup)
         {
             Log()->warn(LC "Failed to make state group!");
@@ -251,13 +281,24 @@ SkyNode::setWorldSRS(const SRS& srs)
         sun->intensity = 1.0;
         addChild(sun);
 
-        // Tell the shaders that lighting is a go
-        //_context->shaderCompileSettings->defines.insert("ROCKY_LIGHTING");
-        // TODO: dirty shaders
+        if (!_skyData)
+        {
+            // Create the atmosphere uniform buffer
+            _skyData = vsg::ubyteArray::create(sizeof(SkyUniforms));
+            _skyData->properties.dataVariance = vsg::DYNAMIC_DATA;
+            auto& uniforms = *static_cast<SkyUniforms*>(_skyData->dataPointer());
+            uniforms = SkyUniforms();
 
-        // the atmopshere:
-        const float earth_atmos_thickness = 50000.0; // 96560.0;
-        _atmosphere = makeAtmosphere(srs, earth_atmos_thickness, _context);
+            auto& ellipsoid = srs.geodeticSRS().ellipsoid();
+            uniforms.ellipsoidAxes = { (float)ellipsoid.semiMajorAxis(), (float)ellipsoid.semiMinorAxis() };
+
+            // Create descriptor for sky dome pipeline (binding 0)
+            _skyUBO = vsg::DescriptorBuffer::create(_skyData, ATMO_UBO_BINDING);
+        }
+        
+        // the atmosphere:
+        const float earth_atmos_thickness = 100000.0; // 100km (match ATMO_THICKNESS in shader)
+        _atmosphere = makeAtmosphere(srs, earth_atmos_thickness, _context, _skyUBO);
         setShowAtmosphere(true);
     }
 }

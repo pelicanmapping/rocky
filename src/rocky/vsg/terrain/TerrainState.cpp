@@ -13,6 +13,7 @@
 #include <rocky/Color.h>
 #include <rocky/Heightfield.h>
 #include <rocky/Image.h>
+#include <rocky/vsg/SkyNode.h>
 #include <rocky/TerrainTileModel.h>
 
 #include <vsg/state/BindDescriptorSet.h>
@@ -209,9 +210,9 @@ TerrainState::createShaderSet(VSGContext context) const
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
     shaderSet->addDescriptorBinding(SETTINGS_UBO_NAME, "", 0, SETTINGS_UBO_BINDING,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, 
+        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
-    
+
     PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
 
     // Note: 128 is the maximum size required by the Vulkan spec, 
@@ -246,6 +247,7 @@ TerrainState::createPipelineConfig(VSGContext context) const
 
     config->enableDescriptor(TILE_UBO_NAME);
     config->enableDescriptor(SETTINGS_UBO_NAME);
+//    config->enableDescriptor(ATMO_UBO_NAME);
 
     PipelineUtils::enableViewDependentData(config);
 
@@ -397,10 +399,15 @@ TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel
     uniforms.span = key.extent().height(Units::METERS);
     descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, TILE_UBO_BINDING);
 
-    // make the descriptor set, and include the terrain settings UBO
+    // make the descriptor set, including terrain settings UBO and atmosphere UBO
+    vsg::Descriptors allDescriptors{ descriptors.elevation, descriptors.color, descriptors.uniforms, _terrainDescriptors.ubo };
+    //if (_atmosDescriptor)
+    //{
+    //    allDescriptors.push_back(_atmosDescriptor);
+    //}
     auto descriptorSet = vsg::DescriptorSet::create(
         pipelineConfig->layout->setLayouts[0],
-        vsg::Descriptors{ descriptors.elevation, descriptors.color, descriptors.uniforms, _terrainDescriptors.ubo }
+        allDescriptors
     );
 
     // binds the descriptor set to the pipeline
@@ -415,6 +422,18 @@ TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel
     vsgcontext->compile(descriptors.bind);
 
     return renderModel;
+}
+
+void
+TerrainState::updateProfile(const Profile& profile)
+{
+    auto& ellipsoid = profile.srs().geodeticSRS().ellipsoid();
+
+    auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(_terrainDescriptors.data->dataPointer());
+
+    uniforms.ellipsoidAxes.x = ellipsoid.semiMajorAxis();
+    uniforms.ellipsoidAxes.y = ellipsoid.semiMinorAxis();
+    _terrainDescriptors.data->dirty();
 }
 
 void

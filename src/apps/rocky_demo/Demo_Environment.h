@@ -19,7 +19,7 @@ auto Demo_Environment = [](Application& app)
     {
         ImGui::TextColored(ImVec4(1, 0, 0, 1), "%s", "Sky is not installed; use --sky");
 
-#if 1
+#if 0
         if (ImGui::Button("Install sky"))
         {
             app.vsgcontext->onNextUpdate([&app, mainView](VSGContext vsgcontext)
@@ -28,7 +28,6 @@ auto Demo_Environment = [](Application& app)
                         app.scene->children.erase(std::remove(app.scene->children.begin(), app.scene->children.end(), light), app.scene->children.end());
                     auto skyNode = SkyNode::create(vsgcontext);
                     mainView.vsgView->children.insert(mainView.vsgView->children.begin(), skyNode);
-                    //vsgcontext->compile(skyNode);
                     vsgcontext->viewer()->compile();
                 });
         }

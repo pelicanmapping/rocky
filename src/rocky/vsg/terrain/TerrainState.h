@@ -20,11 +20,15 @@ namespace ROCKY_NAMESPACE
     {
         struct Uniforms
         {
-            glm::vec4 backgroundColor = Color("#08AEE0");
+            glm::fvec4 backgroundColor = Color("#08AEE0");
+            glm::fvec2 ellipsoidAxes = { 0.0f, 0.0f };
+            float applyAtmosphere = 1.0f;
             float applyWireOverlay = 0.0f;
             float applyLighting = 0.0f;
             float debugNormals = 0.0f;
+            float padding[2];
         };
+        static_assert(sizeof(Uniforms) % 16 == 0, "TerrainDescriptors::Uniforms must be a multiple of 16 bytes in size");
 
         vsg::ref_ptr<vsg::Data> data;
         vsg::ref_ptr<vsg::Descriptor> ubo;
@@ -107,6 +111,10 @@ namespace ROCKY_NAMESPACE
             const TerrainTileModel& newDataModel,
             VSGContext context) const;
 
+        //! Synchronize the terrain state with the rendering profile
+        void updateProfile(const Profile&);
+
+        //! Synchronize the terrain state with the current settings
         void updateSettings(const TerrainSettings&);
 
         //! Status of the factory.
