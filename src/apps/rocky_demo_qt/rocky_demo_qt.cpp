@@ -77,35 +77,35 @@ void newWindow(rocky::Application& app)
             auto i = app.viewer->windows().size();
 
             // the window:
-            auto window = new QWidget();
+            auto qtWindow = new QWidget();
             std::string name = "RockyQt - Window #" + std::to_string(i + 1);
-            window->setWindowTitle(name.c_str());
-            window->setGeometry(50, 50, 800, 600);
+            qtWindow->setWindowTitle(name.c_str());
+            qtWindow->setGeometry(50, 50, 800, 600);
 
             // share the vk device with the main window:
             auto traits = vsg::WindowTraits::create();
             traits->device = app.display.sharedDevice();
-            auto rocky_window = new vsgQt::Window(traits);
+            auto vsgQtWindow = new vsgQt::Window(traits);
 
             // wrap the rocky view in a widget:
-            auto rocky_widget = QWidget::createWindowContainer(rocky_window);
-            auto layout = new QVBoxLayout(window);
+            auto rockyQtWidget = QWidget::createWindowContainer(vsgQtWindow);
+            auto layout = new QVBoxLayout(qtWindow);
             layout->setContentsMargins(1, 0, 1, 1);
-            layout->addWidget(rocky_widget);
+            layout->addWidget(rockyQtWidget);
 
             // fire it up:
-            rocky_window->initializeWindow();
+            vsgQtWindow->initializeWindow();
 
             // register with our display manager:
-            app.display.addWindow(rocky_window->windowAdapter);
+            Window window = app.display.addWindow(vsgQtWindow->windowAdapter, {});
 
             // intercept the close event to remove the window from the display manager:
-            window->installEventFilter(new CloseQtWindowEventFilter(
-                [&app, window(rocky_window->windowAdapter)]() {
+            qtWindow->installEventFilter(new CloseQtWindowEventFilter(
+                [&app, window]() mutable {
                     app.display.removeWindow(window);
                 }));
 
-            window->show();
+            qtWindow->show();
         });
 }
 
@@ -145,19 +145,20 @@ int main(int argc, char** argv)
     filemenu->addAction("E&xit", &qt_app, &QApplication::quit);
 
     // Create a Qt container for our Rocky widget, and add it to the layout.
-    auto rocky_window = new vsgQt::Window();
-    auto rocky_widget = QWidget::createWindowContainer(rocky_window);
-    layout->addWidget(rocky_widget);
+    auto rockyQtWindow = new vsgQt::Window();
+    auto rockyQtWidget = QWidget::createWindowContainer(rockyQtWindow);
+    layout->addWidget(rockyQtWidget);
 
     // Initialize the Vulkan widget.
     // NB: You must call this AFTER calling QWidget::createWindowContainer
     // otherwise the Qt layout will not work properly.
-    rocky_window->initializeWindow();
+    rockyQtWindow->initializeWindow();
 
     // Finally add it to the Rocky display manager.
-    app.display.addWindow(rocky_window->windowAdapter);
+    app.display.addWindow(rockyQtWindow->windowAdapter, {});
 
-    app.vsgcontext->devicePixelRatio = [&]() { return rocky_window->devicePixelRatio(); };
+    // Hook into qt's device pixel ratio:
+    app.vsgcontext->devicePixelRatio = [&]() { return rockyQtWindow->devicePixelRatio(); };
 
     // Add some data to the map if necessary.
     if (app.mapNode->map->layers().empty())
