@@ -15,18 +15,19 @@ vec3 apply_atmo_color_to_ground(
     vec3 color,
     vec3 vertex_VS,
     vec3 vertex_ECEF,
-    vec3 cameraECEF,
-    vec3 sunDirECEF,
+    vec3 camera_ECEF,
+    vec3 sunDir_ECEF,
     vec2 ellipsoidAxes)
 {
-    float rPlanet = min(ellipsoidAxes.x, ellipsoidAxes.y);
+    float lat = abs(dot(normalize(vertex_ECEF), vec3(0, 0, 1)));
+    float rPlanet = mix(ellipsoidAxes.x, ellipsoidAxes.y, lat);
     float rAtmos = rPlanet + ATMO_THICKNESS;
 
     float dist = length(vertex_VS); // camera-to-vertex distance
-    vec3 viewDir = normalize(vertex_ECEF - cameraECEF);
+    vec3 viewDir = normalize(vertex_ECEF - camera_ECEF);
 
     // Altitudes
-    float h_camera = length(cameraECEF) - rPlanet;
+    float h_camera = length(camera_ECEF) - rPlanet;
     float h_surface = length(vertex_ECEF) - rPlanet;
     float h_avg = max(0.5 * (h_camera + h_surface), 0.0);
 
@@ -42,11 +43,11 @@ vec3 apply_atmo_color_to_ground(
     vec3 viewTransmittance = exp(-avgExt * dist);
 
     // Inscattering approximation at the midpoint
-    vec3 midpoint = cameraECEF + viewDir * dist * 0.5;
-    float sunPathLen = distToAtmo(midpoint, sunDirECEF, rAtmos);
-    vec3 sunTransmitMid = transmittance(midpoint, sunDirECEF, sunPathLen, rPlanet, 4);
+    vec3 midpoint = camera_ECEF + viewDir * dist * 0.5;
+    float sunPathLen = distToAtmo(midpoint, sunDir_ECEF, rAtmos);
+    vec3 sunTransmitMid = transmittance(midpoint, sunDir_ECEF, sunPathLen, rPlanet, 4);
 
-    float cosTheta = dot(viewDir, sunDirECEF);
+    float cosTheta = dot(viewDir, sunDir_ECEF);
     float phaseR = rayleighPhase(cosTheta);
     float phaseM = miePhase(cosTheta, MIE_G);
 

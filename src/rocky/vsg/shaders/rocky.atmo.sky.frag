@@ -30,12 +30,14 @@ layout(location = 0) out vec4 out_color;
 
 void main()
 {
+    float lat = abs(dot(normalize(v_worldPos), vec3(0, 0, 1)));
+    float rPlanet = mix(atmo.ellipsoidAxes.x, atmo.ellipsoidAxes.y, lat);
+    float rAtmos = rPlanet + ATMO_THICKNESS;
+
     vec3 cameraPos = v_cameraECEF;
     vec3 rayDir = normalize(v_worldPos - cameraPos);
 
     float cameraHeight = length(cameraPos);
-    float rPlanet = min(atmo.ellipsoidAxes.x, atmo.ellipsoidAxes.y);
-    float rAtmos = rPlanet + ATMO_THICKNESS;
     float exposure = ATMO_EXPOSURE;
     vec3 sunDir = normalize(v_sunPosECEF);
 

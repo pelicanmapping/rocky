@@ -61,11 +61,11 @@ void main()
     out_color.rgb = mix(out_color.rgb, ground_color, settings.lighting * settings.atmosphere);
 #endif
 
-    // PBR lighting (returns linear HDR color, no tone mapping)
+    // PBR lighting (no tone mapping)
     vec4 lit_color = apply_lighting(out_color, vary.vertex_VS, normal_VS);
     out_color = mix(out_color, lit_color, settings.lighting);
 
-    // Tone mapping (applied after aerial perspective for correct compositing)
+    // Tone mapping (applied after ground atmosphere for correct compositing)
     out_color.rgb = mix(out_color.rgb, ACES_tonemap(out_color.rgb * 3.3), settings.lighting);
 
 #if defined(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION) && defined(GL_EXT_fragment_shader_barycentric)
