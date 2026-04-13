@@ -88,6 +88,8 @@ jobs:
 
     - name: Setup NuGet binary cache
       shell: 'bash'
+      env:
+        VCPKG_NUGET_REPOSITORY_PUSH_TIMEOUT: '1200'
       run: |
         ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/vcpkg fetch nuget
         mono $(${{ matrix.VCPKG_WORKSPACE }}/vcpkg/vcpkg fetch nuget | tail -n 1) sources add \
