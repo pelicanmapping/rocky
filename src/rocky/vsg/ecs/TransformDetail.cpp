@@ -102,7 +102,7 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
         {
             // Entity center in view space
             auto eye_pos = mvm * view.model[3];
-            double dist = -eye_pos.z / eye_pos.w;
+            auto dist = std::max((-eye_pos.z / eye_pos.w ) - scaled_radius, 1.0);
             if (dist > 0.0)
                 ppu = std::abs(view.proj[1][1]) * view.viewport[3] * 0.5 / dist;
         }
