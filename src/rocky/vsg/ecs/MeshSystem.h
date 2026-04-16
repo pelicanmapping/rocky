@@ -43,13 +43,15 @@ namespace ROCKY_NAMESPACE
         {
             Color color;
             float depthOffset;
+            std::uint32_t stipplePattern = 0xFFFFFFFF; // Note, only uses lower 16 bits
             // 1 = texture; 2 = lighting; 4 = per-vertex colors
             std::uint32_t featureMask = 0;
-            std::uint32_t padding[2]; // pad to 16 bytes
+            std::uint32_t padding[1]; // pad to 16 bytes
 
             inline void populate(const MeshStyle& in) {
                 color = in.color;
                 depthOffset = in.depthOffset;
+                stipplePattern = in.stipplePattern;
                 featureMask =
                     (in.texture != entt::null ? 0x01 : 0) |
                     (in.lighting ? 0x02 : 0) |

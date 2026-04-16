@@ -73,6 +73,9 @@ auto Demo_Mesh_Absolute = [](Application& app)
 
                 if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
                     style.dirty(reg);
+
+                if (ImGuiLTable::SliderInt("Stipple pattern", (int*)&style.stipplePattern, 0x0, 0xFFFF, "%04X", 0))
+                    style.dirty(reg);
             });
 
         if (ImGuiLTable::Button("Recreate"))

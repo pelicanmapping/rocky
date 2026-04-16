@@ -17,8 +17,9 @@ layout(location = 3) in vec2 in_uv;
 struct MeshStyle {
     vec4 color;
     float depthOffset;
+    uint stipplePattern;
     uint featureMask; // see defines below
-    int padding[2];
+    uint padding[1];
 };
 #define MASK_HAS_TEXTURE 1
 #define MASK_HAS_LIGHTING 2
@@ -35,6 +36,7 @@ layout(location = 1) out Varyings {
     vec3 vertexView;
     float applyTexture;
     float applyLighting;
+    flat uint stipplePattern;
 } vary;
 
 // GLSL built-ins
@@ -64,6 +66,7 @@ void main()
     vary.color = hasPerVertexColors ? in_color : mesh.style.color;
     vary.applyTexture = hasTexture ? 1.0 : 0.0;
     vary.applyLighting = hasLighting ? 1.0 : 0.0;
+    vary.stipplePattern = mesh.style.stipplePattern;
 
     vec4 vv = pc.modelview * vec4(in_vertex, 1.0);
     vary.vertexView = vv.xyz / vv.w;

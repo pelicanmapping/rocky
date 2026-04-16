@@ -7,6 +7,7 @@ layout(location = 1) in Varyings {
     vec3 vertexView;
     float applyTexture;
     float applyLighting;
+    flat uint stipplePattern;
 } vary;
 
 // outputs
@@ -28,6 +29,13 @@ vec3 get_normal()
     return n;
 }
 
+bool stipple(ivec2 p)
+{
+    // 4x4 stipple pattern
+    int bit = (p.y % 4) * 4 + (p.x % 4);
+    return (vary.stipplePattern & (1 << bit)) != 0;
+}
+
 void main()
 {
     outColor = vary.color;
@@ -39,4 +47,7 @@ void main()
 
     // Tone mapping (apply_lighting returns linear HDR)
     outColor.rgb = mix(outColor.rgb, ACES_tonemap(outColor.rgb * 3.3), vary.applyLighting);
+
+    if (!stipple(ivec2(gl_FragCoord.xy)))
+        discard;
 }

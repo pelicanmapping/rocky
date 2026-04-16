@@ -55,6 +55,9 @@ namespace ROCKY_NAMESPACE
         //! Whether to apply normal-based lighting to the mesh
         bool lighting = false;
 
+        //! 4x4 stippling pattern (lower 16 bits only)
+        std::uint32_t stipplePattern = 0xFFFF;
+
         //! Whether the mesh should write to the depth buffer
         bool writeDepth = true;
 
