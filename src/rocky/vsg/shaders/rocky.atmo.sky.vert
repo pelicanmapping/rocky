@@ -28,8 +28,7 @@ void main()
     // Extract camera ECEF position from the modelview matrix.
     // For an orthonormal rotation, inverse(mat3(MV)) == transpose(mat3(MV))
     mat3 rot = transpose(mat3(pc.modelview));
-    vec3 t = pc.modelview[3].xyz;
-    v_cameraECEF = -rot * t;
+    v_cameraECEF = rot * (-pc.modelview[3].xyz);
     v_sunPosECEF = rot * get_sun_position();
 
     gl_Position = pc.projection * pc.modelview * vec4(in_vertex, 1.0);

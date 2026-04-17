@@ -115,9 +115,8 @@ void main()
     // Camera position in tile-local space, then transformed to ECEF.
     // (push constants are vertex-stage only, so we must do this here)
     mat3 rot = transpose(mat3(pc.modelview));
-    vec3 t_mv = pc.modelview[3].xyz;
-    vec3 camera_local = -rot * t_mv;
-    vary.camera_ECEF = (tile.modelMatrix * vec4(camera_local, 1.0)).xyz;
+    vec3 camera_TS = rot * (-pc.modelview[3].xyz);
+    vary.camera_ECEF = (tile.modelMatrix * vec4(camera_TS, 1.0)).xyz;
 
 #if defined(ROCKY_ATMOSPHERE)
     // Sun direction in ECEF. vsg_lights stores positions in view space.
