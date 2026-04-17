@@ -741,10 +741,6 @@ Application::onRemoveView(const Window& window, const View& view)
 
 
 
-
-
-
-
 Result<GeoPoint>
 ROCKY_NAMESPACE::geoPointAtWindowCoords(View& view, int x, int y)
 {

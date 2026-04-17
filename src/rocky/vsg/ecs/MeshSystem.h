@@ -39,13 +39,12 @@ namespace ROCKY_NAMESPACE
     namespace detail
     {
         // "mesh.style" in the shader
-        struct MeshStyleRecord
+        struct MeshStyleUniform
         {
             Color color;
-            float depthOffset;
-            std::uint32_t stipplePattern = 0xFFFFFFFF; // Note, only uses lower 16 bits
-            // 1 = texture; 2 = lighting; 4 = per-vertex colors
-            std::uint32_t featureMask = 0;
+            float depthOffset; // meters
+            std::uint32_t stipplePattern = 0xFFFFFFFF; // Note, only uses lower 16 bits            
+            std::uint32_t featureMask = 0; // 1 = texture; 2 = lighting; 4 = per-vertex colors
             std::uint32_t padding[1]; // pad to 16 bytes
 
             inline void populate(const MeshStyle& in) {
@@ -58,15 +57,15 @@ namespace ROCKY_NAMESPACE
                     (in.useGeometryColors ? 0x04 : 0);
             }
         };
-        static_assert(sizeof(MeshStyleRecord) % 16 == 0, "MeshStyleRecord must be 16-byte aligned");
+        static_assert(sizeof(MeshStyleUniform) % 16 == 0, "MeshStyleUniform must be 16-byte aligned");
 
 
         // "mesh" in the shader
-        struct MeshStyleUniform
+        struct MeshUniform
         {
-            MeshStyleRecord style;
+            MeshStyleUniform style;
         };
-        static_assert(sizeof(MeshStyleUniform) % 16 == 0, "MeshStyleUniform must be 16-byte aligned");
+        static_assert(sizeof(MeshUniform) % 16 == 0, "MeshUniform must be 16-byte aligned");
 
 
         // ECS component: internal data paired with MeshStyle

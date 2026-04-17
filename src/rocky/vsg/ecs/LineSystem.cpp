@@ -345,7 +345,7 @@ LineSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const LineGeome
                 xform.clampArray(copy.data(), copy.size());
                 xform.transformArray(copy.data(), copy.size());
 
-                precisionOffset = (copy.front() + copy.back()) * 0.5;
+                precisionOffset = copy.front(); // (copy.front() + copy.back()) * 0.5;
                 for (auto& point : copy)
                     point -= precisionOffset;
 
@@ -388,7 +388,7 @@ LineSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const LineGeome
             xform.clampArray(copy.data(), copy.size());
             xform.transformArray(copy.data(), copy.size());
 
-            precisionOffset = (copy.front() + copy.back()) * 0.5;
+            precisionOffset = copy.front(); // (copy.front() + copy.back()) * 0.5;
             for (auto& point : copy)
                 point -= precisionOffset;
 

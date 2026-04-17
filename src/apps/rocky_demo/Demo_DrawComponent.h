@@ -81,6 +81,8 @@ auto Demo_Draw = [](Application& app)
     static bool on = false;
     static bool drawing = false;
     static std::uint64_t frame = 0;
+    static Feature feature;
+    static ElevationSession clamper;
     static auto active = [](Application& app) {
             return (app.viewer->getFrameStamp()->frameCount - frame < 2);
         };
@@ -89,6 +91,8 @@ auto Demo_Draw = [](Application& app)
 
     if (entity == entt::null)
     {
+        feature.geometry.type = Geometry::Type::LineString;
+
         app.registry.write([&](entt::registry& r)
             {
                 entity = r.create();
@@ -96,12 +100,12 @@ auto Demo_Draw = [](Application& app)
                 auto& geom = r.emplace<LineGeometry>(entity);
                 geom.topology = LineTopology::Strip;
                 geom.srs = SRS::ECEF;
-                geom.points.reserve(4);
 
                 auto& style = r.emplace<LineStyle>(entity);
                 style.color = StockColor::Yellow;
                 style.width = 3;
                 style.depthOffset = 20000;
+                style.resolution = 10000; // m
 
                 r.emplace<Line>(entity, geom, style);
             });
@@ -112,76 +116,83 @@ auto Demo_Draw = [](Application& app)
         // left click: start or continue a line:
         subs += handler->onLeftClick([&](const GeoPoint& p)
             {
-                if (!active(app)) return;
-                if (!on) return;
+                if (!active(app) || !on) return;
 
-                app.registry.read([&](entt::registry& r)
+                app.registry.write([&](entt::registry& r)
                     {
-                        auto& geom = r.get<LineGeometry>(entity);
+                        auto&& [geom, style] = r.get<LineGeometry, LineStyle>(entity);
+
                         if (!drawing)
-                            geom.points = { p };
-                        geom.points.emplace_back(p);
+                        {
+                            feature.srs = p.srs;
+                            feature.geometry.points.clear();
+                        }
+
+                        feature.geometry.points.emplace_back(p);
+
+                        geom.points.clear();
+                        FeatureView::generateLine(feature, style, {}, clamper, geom.srs, geom);
                         geom.dirty(r);
                     });
-                drawing = true;
+
+                drawing = !drawing;
+
                 app.vsgcontext->requestFrame();
             });
 
         // move: continue a line:
         subs += handler->onMouseMove([&](const GeoPoint& p)
             {
-                if (!active(app)) return;
+                if (!active(app) || !on) return;
 
                 if (drawing)
                 {
-                    app.registry.read([&](entt::registry& r)
+                    app.registry.write([&](entt::registry& r)
                         {
-                            auto& geom = r.get<LineGeometry>(entity);
-                            geom.points.back() = p;
-                            geom.dirty(r);
+                            auto&& [geom, style] = r.get<LineGeometry, LineStyle>(entity);
+
+                            GeoPoint lastPoint(feature.srs, feature.geometry.points.back());
+                            auto d = p.geodesicDistanceTo(lastPoint).as(Units::METERS);
+                            if (d >= style.resolution)
+                            {
+                                feature.geometry.points.emplace_back(p);
+                                geom.points.clear();
+                                FeatureView::generateLine(feature, style, {}, clamper, geom.srs, geom);
+                                geom.dirty(r);
+                            }
                         });
                 }
-                app.vsgcontext->requestFrame();
-            });
-
-        // right click: finish a line:
-        subs += handler->onRightClick([&](const GeoPoint& p)
-            {
-                if (!active(app)) return;
-
-                if (drawing)
-                {
-                    app.registry.read([&](entt::registry& r)
-                        {
-                            auto& geom = r.get<LineGeometry>(entity);
-                            geom.points.emplace_back(p);
-                            geom.dirty(r);
-                        });
-                }
-                drawing = false;
-                on = false;
                 app.vsgcontext->requestFrame();
             });
 
         app.vsgcontext->requestFrame();
     }
 
-    ImGui::TextUnformatted("Left click: start a line or add a new point");
-    ImGui::TextUnformatted("Right click: finish a line");
 
-    ImGui::Checkbox("Draw", &on);
-    ImGui::SameLine();
+    app.registry.read([&](entt::registry& r)
+        {
+            auto&& [geom, style] = r.get<LineGeometry, LineStyle>(entity);
 
-    if (ImGui::Button("Clear"))
-    {
-        app.registry.read([&](entt::registry& r)
+            if (ImGuiLTable::Begin("DrawTable"))
             {
-                auto& geom = r.get<LineGeometry>(entity);
-                geom.points.clear();
-                geom.dirty(r);
-            });
+                ImGuiLTable::Checkbox("Draw", &on);
 
-        drawing = false;
-        app.vsgcontext->requestFrame();
-    }
+                if (on)
+                    ImGuiLTable::TextUnformatted("", "Left-click to start or finish drawing");
+
+                if (ImGuiLTable::SliderFloat("Resolution (m)", &style.resolution, 5000, 100000))
+                    style.dirty(r);
+
+                if (ImGui::Button("Clear"))
+                {
+                    feature.geometry.points.clear();
+                    geom.points.clear();
+                    geom.dirty(r);
+                    drawing = false;
+                    app.vsgcontext->requestFrame();
+                };
+
+                ImGuiLTable::End();
+            }
+        });
 };

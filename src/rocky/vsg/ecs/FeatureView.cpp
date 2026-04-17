@@ -149,10 +149,10 @@ namespace
         return m;
     }
 
-    void compile_feature_to_lines(const Feature& feature, const StyleSheet& styles, const GeoPoint& origin,
+    void compile_feature_to_lines(const Feature& feature, const LineStyle& style, const GeoPoint& origin,
         ElevationSession& clamper, const SRS& output_srs, LineGeometry& lineGeom)
     {
-        float max_span = styles.lineStyle.resolution;
+        float max_span = style.resolution;
 
         float final_max_span = max_span;
 
@@ -213,7 +213,7 @@ namespace
         max_span = final_max_span;
     }
 
-    void compile_polygon_feature_with_weemesh(const Feature& feature, const StyleSheet& styles, 
+    void compile_polygon_feature_with_weemesh(const Feature& feature, const MeshStyle& style,
         const GeoPoint& origin, ElevationSession& clamper, const SRS& output_srs, MeshGeometry& meshGeom)
     {
         // scales our local gnomonic coordinates so they are the same order of magnitude as
@@ -357,9 +357,9 @@ namespace
             }
         }
 
-        auto color =
-            styles.meshColorFunction ? styles.meshColorFunction(feature) :
-            styles.meshStyle.color;
+        auto color = style.color;
+            //styles.meshColorFunction ? styles.meshColorFunction(feature) :
+            //styles.meshStyle.color;
 
         for (auto& tri : m.triangles)
         {
@@ -386,16 +386,15 @@ namespace
     }
 }
 
-
 entt::entity
 FeatureView::generate(const SRS& output_srs, Registry& registry)
 {
-    //ROCKY_SOFT_ASSERT_AND_RETURN(!output_srs.isGeocentric(), entt::null);
-
     Workspace ws;
     ws.lineGeom.topology = LineTopology::Segments;
     ws.lineGeom.srs = output_srs;
     ws.meshGeom.srs = output_srs;
+
+    MeshStyle tempMeshStyle = styles.meshStyle;
 
     for (auto& feature : features)
     {
@@ -411,13 +410,21 @@ FeatureView::generate(const SRS& output_srs, Registry& registry)
         if (feature.geometry.type == Geometry::Type::LineString ||
             feature.geometry.type == Geometry::Type::MultiLineString)
         {
-            compile_feature_to_lines(feature, styles, origin, clamper, output_srs, ws.lineGeom);
+            compile_feature_to_lines(feature, styles.lineStyle, origin, clamper, output_srs, ws.lineGeom);
         }
 
         else if (feature.geometry.type == Geometry::Type::Polygon ||
             feature.geometry.type == Geometry::Type::MultiPolygon)
         {
-            compile_polygon_feature_with_weemesh(feature, styles, origin, clamper, output_srs, ws.meshGeom);
+            if (styles.meshColorFunction)
+            {                
+                tempMeshStyle.color = styles.meshColorFunction(feature);
+                compile_polygon_feature_with_weemesh(feature, tempMeshStyle, origin, clamper, output_srs, ws.meshGeom);
+            }
+            else
+            {
+                compile_polygon_feature_with_weemesh(feature, styles.meshStyle, origin, clamper, output_srs, ws.meshGeom);
+            }
         }
 
         else
@@ -454,4 +461,19 @@ FeatureView::generate(const SRS& output_srs, Registry& registry)
     }
 
     return e;
+}
+
+
+void
+FeatureView::generateLine(const Feature& feature, const LineStyle& style, const GeoPoint& origin,
+    ElevationSession& clamper, const SRS& output_srs, LineGeometry& lineGeom)
+{
+    compile_feature_to_lines(feature, style, origin, clamper, output_srs, lineGeom);
+}
+
+void
+FeatureView::generateMesh(const Feature& feature, const MeshStyle& style,
+    const GeoPoint& origin, ElevationSession& clamper, const SRS& output_srs, MeshGeometry& meshGeom)
+{
+    compile_polygon_feature_with_weemesh(feature, style, origin, clamper, output_srs, meshGeom);
 }

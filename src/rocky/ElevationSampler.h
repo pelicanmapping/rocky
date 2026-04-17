@@ -98,10 +98,10 @@ namespace ROCKY_NAMESPACE
         //! SRS of the incoming points
         SRS srs;
 
-        //! Elevation level of detail to clamp to (use this OR resolution)
+        //! Elevation level of detail to clamp to (use this OR "resolution")
         unsigned level = UINT_MAX;
 
-        //! Resolution of elevation data to clamp to (use this OR lod)
+        //! Resolution of elevation data to clamp to (use this OR "level")
         Distance resolution = Distance(10.0, Units::METERS);
 
         //! Reference latitude for resolution calculations (optional).

@@ -80,7 +80,7 @@ namespace
     void initializeStyleDetail(vsg::PipelineLayout* layout, MeshStyleDetail& styleDetail)
     {
         // uniform: "mesh.styles" in the shader
-        styleDetail.styleUBOData = vsg::ubyteArray::create(sizeof(MeshStyleUniform));
+        styleDetail.styleUBOData = vsg::ubyteArray::create(sizeof(MeshUniform));
         styleDetail.styleUBO = vsg::DescriptorBuffer::create(styleDetail.styleUBOData, MESH_BINDING_UNIFORM, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
 
         // uniform: "meshTexture" in the fragment shader
@@ -95,8 +95,8 @@ namespace
             styleDetail.bind->layout->setLayouts.front(),
             vsg::Descriptors{ styleDetail.styleUBO, styleDetail.styleTexture });
 
-        MeshStyleUniform& uniforms = *static_cast<MeshStyleUniform*>(styleDetail.styleUBOData->dataPointer());
-        uniforms.style = MeshStyleRecord(); // default style
+        MeshUniform& uniform = *static_cast<MeshUniform*>(styleDetail.styleUBOData->dataPointer());
+        uniform.style = MeshStyleUniform(); // default style
     }
 }
 
@@ -535,8 +535,8 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     bool texChanged = style.texture != styleDetail.texture;
 
     // update the uniform for this style:
-    MeshStyleUniform& uniforms = *static_cast<MeshStyleUniform*>(styleDetail.styleUBOData->dataPointer());
-    uniforms.style.populate(style);
+    MeshUniform& uniform = *static_cast<MeshUniform*>(styleDetail.styleUBOData->dataPointer());
+    uniform.style.populate(style);
     needsUpload = !needsCompile;
 
     if (texChanged)

@@ -80,8 +80,13 @@ namespace ROCKY_NAMESPACE
         //! @return Collection of primtives representing the feature geometry
         entt::entity generate(const SRS& output_srs, Registry& r);
         
+        //! Utility: generate line geometry for a single feature with a given style, and append it to the provided LineGeometry.
+        static void generateLine(const Feature& feature, const LineStyle& style, const GeoPoint& origin,
+            ElevationSession& clamper, const SRS& outputSRS, LineGeometry& lineGeom);
 
-    protected:
-        //void generate(PrimitivesRef& working, const SRS& output_srs);
+        //! Utility generate mesh geometry from a single feature with a given style,
+        //! appending it to the provided MeshGeometry.
+        static void generateMesh(const Feature& feature, const MeshStyle& style,
+            const GeoPoint& origin, ElevationSession& clamper, const SRS& output_srs, MeshGeometry& meshGeom);
     };
 }

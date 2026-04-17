@@ -321,10 +321,12 @@ Ellipsoid::geocentricInterpolate(const glm::dvec3& geoc1, const glm::dvec3& geoc
         return geoc1;
     }
 
-    double c1 = sin((1.0 - t) * angle) / s;
+    //double c1 = sin((1.0 - t) * angle) / s;
     double c2 = sin(t * angle) / s;
 
-    glm::dvec3 n = w1 * c1 + w2 * c2;
+    //glm::dvec3 n = w1 * c1 + w2 * c2;
+
+    auto n = glm::mix(w1, w2, c2);
 
     return n * _unitSphereToEllipsoid;
 }
