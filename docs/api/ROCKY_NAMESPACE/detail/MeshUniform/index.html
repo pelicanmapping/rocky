@@ -19,7 +19,7 @@
     
     
       
-        <title>struct MeshStyleRecord - Rocky</title>
+        <title>struct MeshUniform - Rocky</title>
       
     
     
@@ -60,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#struct-meshstylerecord" class="md-skip">
+        <a href="#struct-meshuniform" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              struct MeshStyleRecord
+              struct MeshUniform
             
           </span>
         </div>
@@ -331,34 +331,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#functions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Functions
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Functions">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#populate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        populate
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -376,19 +348,11 @@
 
 
 
-<h1 id="struct-meshstylerecord">struct MeshStyleRecord</h1>
-<p><em>Defined at src/rocky/vsg/ecs/MeshSystem.h#42</em></p>
-<p>"mesh.style" in the shader</p>
+<h1 id="struct-meshuniform">struct MeshUniform</h1>
+<p><em>Defined at src/rocky/vsg/ecs/MeshSystem.h#64</em></p>
+<p>"mesh" in the shader</p>
 <h2 id="members">Members</h2>
-<p>public int color</p>
-<p>public float depthOffset</p>
-<p>public int stipplePattern</p>
-<p>public int featureMask</p>
-<p>public int[1] padding</p>
-<h2 id="functions">Functions</h2>
-<h3 id="populate">populate</h3>
-<p><em>public void populate(const int &amp; in)</em></p>
-<p><em>Defined at src/rocky/vsg/ecs/MeshSystem.h#51</em></p>
+<p>public MeshStyleUniform style</p>
 
 
 
