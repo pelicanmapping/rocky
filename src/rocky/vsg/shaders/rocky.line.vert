@@ -54,16 +54,11 @@ out gl_PerVertex {
 // clamping it beyond the near clip plane if necessary.
 vec3 apply_depth_offset(in vec3 vertex, float offset, float n)
 {
-    if (n > 0.0) {
-        float t_n = (-n + 1.0) / -vertex.z; // [0..1] -> [n+1 .. vertex]
-        if (t_n <= 0.0) return vertex; // already behind near plane
-        float len = length(vertex);
-        float t_offset = 1.0 - (offset/len);
-        return vertex * max(t_n, t_offset);
-    }
-    else {
-        return vertex + vec3(0, 0, offset);
-    }
+    float t_n = (-n + 1.0) / -vertex.z; // [0..1] -> [n+1 .. vertex]
+    if (t_n <= 0.0) return vertex; // already behind near plane
+    float len = length(vertex);
+    float t_offset = 1.0 - (offset/len);
+    return vertex * max(t_n, t_offset);
 }
 
 void main()
