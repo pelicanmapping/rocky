@@ -125,7 +125,6 @@ auto Demo_ElevationSampler = [](Application& app)
         // Various coordinate spaces:
         auto world = i.transform(app.mapNode->srs());
         auto camera = app.display.window().view().vsgView->camera;
-        //auto camera = app.display.viewAtWindowCoords(app.viewer->windows().front(), 0, 0)->camera;
         auto viewMatrix = camera->viewMatrix->transform();
         auto projMatrix = camera->projectionMatrix->transform();
         auto viewPos = viewMatrix * vsg::dvec4(world.x, world.y, world.z, 1.0);

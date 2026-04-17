@@ -81,8 +81,6 @@ auto Demo_Draw = [](Application& app)
     static bool on = false;
     static bool drawing = false;
     static std::uint64_t frame = 0;
-    static Feature feature;
-    static ElevationSession clamper;
     static auto active = [](Application& app) {
             return (app.viewer->getFrameStamp()->frameCount - frame < 2);
         };
@@ -91,8 +89,6 @@ auto Demo_Draw = [](Application& app)
 
     if (entity == entt::null)
     {
-        feature.geometry.type = Geometry::Type::LineString;
-
         app.registry.write([&](entt::registry& r)
             {
                 entity = r.create();
@@ -104,8 +100,8 @@ auto Demo_Draw = [](Application& app)
                 auto& style = r.emplace<LineStyle>(entity);
                 style.color = StockColor::Yellow;
                 style.width = 3;
-                style.depthOffset = 20000;
-                style.resolution = 10000; // m
+                style.depthOffset = 1000;
+                style.resolution = 1000; // m
 
                 r.emplace<Line>(entity, geom, style);
             });
@@ -123,15 +119,8 @@ auto Demo_Draw = [](Application& app)
                         auto&& [geom, style] = r.get<LineGeometry, LineStyle>(entity);
 
                         if (!drawing)
-                        {
-                            feature.srs = p.srs;
-                            feature.geometry.points.clear();
-                        }
-
-                        feature.geometry.points.emplace_back(p);
-
-                        geom.points.clear();
-                        FeatureView::generateLine(feature, style, {}, clamper, geom.srs, geom);
+                            geom.points.clear();
+                        geom.points.emplace_back(p);
                         geom.dirty(r);
                     });
 
@@ -151,13 +140,11 @@ auto Demo_Draw = [](Application& app)
                         {
                             auto&& [geom, style] = r.get<LineGeometry, LineStyle>(entity);
 
-                            GeoPoint lastPoint(feature.srs, feature.geometry.points.back());
+                            GeoPoint lastPoint(geom.srs, geom.points.back());
                             auto d = p.geodesicDistanceTo(lastPoint).as(Units::METERS);
                             if (d >= style.resolution)
                             {
-                                feature.geometry.points.emplace_back(p);
-                                geom.points.clear();
-                                FeatureView::generateLine(feature, style, {}, clamper, geom.srs, geom);
+                                geom.points.emplace_back(p);
                                 geom.dirty(r);
                             }
                         });
@@ -180,12 +167,14 @@ auto Demo_Draw = [](Application& app)
                 if (on)
                     ImGuiLTable::TextUnformatted("", "Left-click to start or finish drawing");
 
-                if (ImGuiLTable::SliderFloat("Resolution (m)", &style.resolution, 5000, 100000))
+                if (ImGuiLTable::SliderFloat("Resolution (m)", &style.resolution, 1000, 100000))
+                    style.dirty(r);
+
+                if (ImGuiLTable::SliderFloat("Depth offset (m)", &style.depthOffset, 0.f, 5000.0f))
                     style.dirty(r);
 
                 if (ImGui::Button("Clear"))
                 {
-                    feature.geometry.points.clear();
                     geom.points.clear();
                     geom.dirty(r);
                     drawing = false;

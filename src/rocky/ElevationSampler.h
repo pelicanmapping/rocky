@@ -117,7 +117,7 @@ namespace ROCKY_NAMESPACE
         }
 
         inline bool ok() const {
-            return _sampler != nullptr;
+            return _sampler != nullptr && _sampler->layer != nullptr;
         }
         inline operator bool() const {
             return ok();
@@ -238,6 +238,7 @@ namespace ROCKY_NAMESPACE
         if (_xform.from() != srs)
         {
             _xform = srs.to(_sampler->layer->profile.srs());
+            Log()->info("ElevationSession: createdxform {}", _xform.string());
         }
 
         _xform.transformRange(begin, end);
