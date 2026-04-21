@@ -50,9 +50,17 @@ namespace ROCKY_NAMESPACE
             return vsgView == rhs.vsgView;
         }
 
+        //! Shorcut to the view ID
         ViewIDType viewID = 0;
+
+        //! VSG View containing the scene graph
         vsg::ref_ptr<vsg::View> vsgView = nullptr;
+
+        //! RenderGraph parenting the VSG View
         vsg::ref_ptr<vsg::RenderGraph> renderGraph = nullptr;
+
+        //! User data pointer for app-specific use
+        std::shared_ptr<void> userData = nullptr;
 
     protected:
 
@@ -187,6 +195,9 @@ namespace ROCKY_NAMESPACE
 
         //! Underlying CommandGraph for this VSG window
         vsg::ref_ptr<vsg::CommandGraph> commandGraph;
+
+        //! User data pointer for app-specific use
+        std::shared_ptr<void> userData = nullptr;
 
     private:
         Window(vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::CommandGraph>, DisplayManager*);

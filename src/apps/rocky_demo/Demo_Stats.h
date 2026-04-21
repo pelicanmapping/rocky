@@ -185,7 +185,7 @@ auto Demo_Stats = [](Application& app)
         if (ImGuiLTable::Begin("Terrain-Settings"))
         {
             ImGuiLTable::SliderInt("Load threads", (int*)&app.mapNode->terrainNode->concurrency.mutable_value(), 1, 16);
-            ImGuiLTable::Checkbox("Continuous rendering", &app.renderContinuously);
+            ImGuiLTable::Checkbox("Full send!", &app.renderContinuously);
             ImGuiLTable::End();
         }
     }

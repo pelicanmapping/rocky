@@ -13,11 +13,11 @@ layout(push_constant) uniform PushConstants {
 // inter-stage interface block
 layout(location = 0) in Varyings {
     vec2 uv;
-    vec3 normal_VS;
-    vec3 vertex_VS;
-    vec3 vertex_ECEF;
-    vec3 camera_ECEF;
-    vec3 sunPos_ECEF;
+    vec3 normal_vs;
+    vec3 vertex_vs;
+    vec3 vertex_ws;
+    vec3 camera_ws;
+    vec3 sun_ws;
 } vary;
 
 // uniforms (TerrainState.h)
@@ -49,24 +49,21 @@ void main()
     // mix in the background color
     out_color = mix(settings.backgroundColor, clamp(texel, 0, 1), texel.a);
 
-    vec3 normal_VS = normalize(vary.normal_VS);
+    vec3 normal_vs = normalize(vary.normal_vs);
 
     // debug normals
-    out_color.rgb = mix(out_color.rgb, (normal_VS + 1.0) * 0.5, settings.debugNormals);
+    out_color.rgb = mix(out_color.rgb, (normal_vs + 1.0) * 0.5, settings.debugNormals);
 
 #if defined(ROCKY_ATMOSPHERE)
-    vec3 ground_color = apply_atmo_color_to_ground(out_color.rgb, vary.vertex_VS, vary.vertex_ECEF,
-        vary.camera_ECEF, normalize(vary.sunPos_ECEF), settings.ellipsoidAxes);
+    vec3 ground_color = apply_atmo_color_to_ground(out_color.rgb, vary.vertex_vs, vary.vertex_ws,
+        vary.camera_ws, normalize(vary.sun_ws), settings.ellipsoidAxes);
 
     out_color.rgb = mix(out_color.rgb, ground_color, settings.lighting * settings.atmosphere);
 #endif
 
-    // PBR lighting (no tone mapping)
-    vec4 lit_color = apply_lighting(out_color, vary.vertex_VS, normal_VS);
+    // PBR lighting
+    vec4 lit_color = apply_lighting(out_color, vary.vertex_vs, normal_vs);
     out_color = mix(out_color, lit_color, settings.lighting);
-
-    // Tone mapping (applied after ground atmosphere for correct compositing)
-    out_color.rgb = mix(out_color.rgb, ACES_tonemap(out_color.rgb * 3.3), settings.lighting);
 
 #if defined(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION) && defined(GL_EXT_fragment_shader_barycentric)
     // wireframe overlay

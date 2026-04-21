@@ -45,9 +45,6 @@ void main()
     vec4 litColor = apply_lighting(outColor, vary.vertexView, vary.normal);
     outColor = mix(outColor, litColor, vary.applyLighting);
 
-    // Tone mapping (apply_lighting returns linear HDR)
-    outColor.rgb = mix(outColor.rgb, ACES_tonemap(outColor.rgb * 3.3), vary.applyLighting);
-
     if (!stipple(ivec2(gl_FragCoord.xy)))
         discard;
 }

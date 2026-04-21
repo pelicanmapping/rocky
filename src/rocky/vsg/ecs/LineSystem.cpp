@@ -509,10 +509,9 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
 
                     if (geomView.root && visible(visibility, rs))
                     {
-                        auto* styleDetail = &_defaultStyleDetail;
-                        auto* style = reg.try_get<LineStyle>(line.style);
-                        if (style)
-                            styleDetail = &reg.get<LineStyleDetail>(line.style);
+                        auto* styleDetail = reg.try_get<LineStyleDetail>(line.style);
+                        if (!styleDetail)
+                            styleDetail = &_defaultStyleDetail;
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
                         if (transformDetail)

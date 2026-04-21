@@ -6,29 +6,29 @@
 
 // Apply aerial perspective to a lit terrain color.
 // color: the lit terrain color (linear HDR)
-// vertex_VS: vertex position in view space
-// vertex_ECEF: vertex position in ECEF world space
-// cameraECEF: camera position in ECEF world space (from vertex shader varying)
-// sunDirECEF: normalized sun direction in ECEF
+// vertex_vs: vertex position in view space
+// vertex_ecef: vertex position in ECEF world space
+// camera_ecef: camera position in ECEF world space (from vertex shader varying)
+// sunDir_ecef: normalized sun direction in ECEF
 // Returns the color with aerial perspective applied.
 vec3 apply_atmo_color_to_ground(
     vec3 color,
-    vec3 vertex_VS,
-    vec3 vertex_ECEF,
-    vec3 camera_ECEF,
-    vec3 sunDir_ECEF,
+    vec3 vertex_vs,
+    vec3 vertex_ecef,
+    vec3 camera_ecef,
+    vec3 sunDir_ecef,
     vec2 ellipsoidAxes)
 {
-    float lat = abs(dot(normalize(vertex_ECEF), vec3(0, 0, 1)));
+    float lat = abs(dot(normalize(vertex_ecef), vec3(0, 0, 1)));
     float rPlanet = mix(ellipsoidAxes.x, ellipsoidAxes.y, lat);
     float rAtmos = rPlanet + ATMO_THICKNESS;
 
-    float dist = length(vertex_VS); // camera-to-vertex distance
-    vec3 viewDir = normalize(vertex_ECEF - camera_ECEF);
+    float dist = length(vertex_vs); // camera-to-vertex distance
+    vec3 viewDir = normalize(vertex_ecef - camera_ecef);
 
     // Altitudes
-    float h_camera = length(camera_ECEF) - rPlanet;
-    float h_surface = length(vertex_ECEF) - rPlanet;
+    float h_camera = length(camera_ecef) - rPlanet;
+    float h_surface = length(vertex_ecef) - rPlanet;
     float h_avg = max(0.5 * (h_camera + h_surface), 0.0);
 
     // Density at average altitude
@@ -43,11 +43,11 @@ vec3 apply_atmo_color_to_ground(
     vec3 viewTransmittance = exp(-avgExt * dist);
 
     // Inscattering approximation at the midpoint
-    vec3 midpoint = camera_ECEF + viewDir * dist * 0.5;
-    float sunPathLen = distToAtmo(midpoint, sunDir_ECEF, rAtmos);
-    vec3 sunTransmitMid = transmittance(midpoint, sunDir_ECEF, sunPathLen, rPlanet, 4);
+    vec3 midpoint = camera_ecef + viewDir * dist * 0.5;
+    float sunPathLen = distToAtmo(midpoint, sunDir_ecef, rAtmos);
+    vec3 sunTransmitMid = transmittance(midpoint, sunDir_ecef, sunPathLen, rPlanet, 4);
 
-    float cosTheta = dot(viewDir, sunDir_ECEF);
+    float cosTheta = dot(viewDir, sunDir_ecef);
     float phaseR = rayleighPhase(cosTheta);
     float phaseM = miePhase(cosTheta, MIE_G);
 

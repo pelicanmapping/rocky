@@ -18,19 +18,17 @@ TransformDetail::reset(std::uint32_t viewID)
 bool
 TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelScale)
 {
-    auto viewID = record.getCommandBuffer()->viewID;
-    auto& view = views[viewID];
-
     if (!sync.position.valid())
         return false;
 
-    auto* state = record.getState();
+    auto viewID = record.getCommandBuffer()->viewID;
+    auto& view = views[viewID];
 
     // only if something has changed since last time:
-    bool transform_changed = (view.revision != sync.revision);
-
     auto& cache = view.cache;
+    auto* state = record.getState();
 
+    bool transform_changed = (view.revision != sync.revision);
     if (transform_changed)
     {
         view.revision = sync.revision;

@@ -636,12 +636,9 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 
                     if (geomView.root && visible(visibility, rs))
                     {
-                        auto* styleDetail = &_defaultStyleDetail;
-                        auto* style = reg.try_get<MeshStyle>(comp.style);
-                        if (style)
-                        {
-                            styleDetail = &reg.get<MeshStyleDetail>(comp.style);
-                        }
+                        auto* styleDetail = reg.try_get<MeshStyleDetail>(comp.style);
+                        if (!styleDetail)
+                            styleDetail = &_defaultStyleDetail;
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
                         if (transformDetail)

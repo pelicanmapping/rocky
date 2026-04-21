@@ -213,7 +213,8 @@ TerrainState::createShaderSet(VSGContext context) const
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    PipelineUtils::addViewDependentData(shaderSet, VK_SHADER_STAGE_FRAGMENT_BIT);
+    PipelineUtils::addViewDependentData(shaderSet,
+        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT);
 
     // Note: 128 is the maximum size required by the Vulkan spec, 
     // so don't increase it :)
@@ -247,7 +248,6 @@ TerrainState::createPipelineConfig(VSGContext context) const
 
     config->enableDescriptor(TILE_UBO_NAME);
     config->enableDescriptor(SETTINGS_UBO_NAME);
-//    config->enableDescriptor(ATMO_UBO_NAME);
 
     PipelineUtils::enableViewDependentData(config);
 

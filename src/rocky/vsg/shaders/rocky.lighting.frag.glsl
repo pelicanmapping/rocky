@@ -76,17 +76,17 @@ vec3 get_sun_position()
     return vsg_lights.pack[sun+1].xyz; // color, position
 }
 
-vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
+vec4 apply_lighting(in vec4 color, in vec3 vertex_vs, in vec3 normal_vs)
 {
     // temp:
     pbr.ao = 1.0;
-    pbr.roughness = 1.0;
+    pbr.roughness = 0.95;
     pbr.metal = 0.0;
 
     vec3 albedo = color.rgb;
 
-    vec3 N = normalize(normal);
-    vec3 V = normalize(-vertex_view);
+    vec3 N = normalize(normal_vs);
+    vec3 V = normalize(-vertex_vs);
 
     float NdotV = max(dot(N, V), 0.0);
 
@@ -116,7 +116,7 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
         vec3 position = vsg_lights.pack[index++].xyz;
 
         // per-light radiance:
-        vec3 L = normalize(position - vertex_view);
+        vec3 L = normalize(position - vertex_vs);
         vec3 H = normalize(V + L);
         vec3 radiance = light_color;
 
@@ -125,10 +125,7 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
         float G = GeometrySmith(N, V, L, pbr.roughness);
         vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
 
-        float NdotL = dot(N, L);
-
-        // Soften the terminator: atmosphere scatters light past the geometric edge
-        NdotL = smoothstep(-0.05, 0.15, NdotL);
+        float NdotL = max(0.0, dot(N, L));
 
         vec3 numerator = D * G * F;
         float denominator = 4.0 * NdotV * max(NdotL, 0.001) + 0.001;
@@ -146,10 +143,10 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
     for (int i = 0; i < point_count; ++i)
     {
         vec3 light_color = vsg_lights.pack[index++].rgb;
-        vec3 position = vsg_lights.pack[index++].xyz;
+        vec3 position_vs = vsg_lights.pack[index++].xyz;
 
         // per-light radiance:
-        vec3 L = normalize(position - vertex_view);
+        vec3 L = normalize(position_vs - vertex_vs);
         vec3 H = normalize(V + L);
         vec3 radiance = light_color;
 
@@ -187,6 +184,9 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_view, in vec3 normal)
 #endif
 
     vec3 new_color = Lo + (clamp(ambient, vec3(0.0), vec3(1.0)) * albedo * pbr.ao);
+
+    // Tone mapping
+    new_color = ACES_tonemap(new_color * 3.3);
 
     float apply = min(1.0, float(total_light_count));
     color.rgb = mix(color.rgb, new_color, apply);
