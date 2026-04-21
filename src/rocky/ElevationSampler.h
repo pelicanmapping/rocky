@@ -238,7 +238,6 @@ namespace ROCKY_NAMESPACE
         if (_xform.from() != srs)
         {
             _xform = srs.to(_sampler->layer->profile.srs());
-            Log()->info("ElevationSession: createdxform {}", _xform.string());
         }
 
         _xform.transformRange(begin, end);
