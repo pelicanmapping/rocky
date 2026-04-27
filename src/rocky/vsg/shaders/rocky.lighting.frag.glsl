@@ -113,10 +113,10 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_vs, in vec3 normal_vs)
     for (int i = 0; i < directional_count; ++i)
     {
         vec3 light_color = vsg_lights.pack[index++].rgb;
-        vec3 position = vsg_lights.pack[index++].xyz;
+        vec3 direction = vsg_lights.pack[index++].xyz;
 
         // per-light radiance:
-        vec3 L = normalize(position - vertex_vs);
+        vec3 L = normalize(-direction);
         vec3 H = normalize(V + L);
         vec3 radiance = light_color;
 
@@ -155,11 +155,7 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_vs, in vec3 normal_vs)
         float G = GeometrySmith(N, V, L, pbr.roughness);
         vec3 F = FresnelSchlick(max(dot(H, V), 0.0), F0);
 
-        float NdotL = dot(N, L);
-
-        // Soften the terminator
-        NdotL = max(NdotL, 0.0);
-        //NdotL = smoothstep(-0.05, 1.0, NdotL);
+        float NdotL = max(0.0, dot(N, L));
 
         vec3 numerator = D * G * F;
         float denominator = 4.0 * NdotV * max(NdotL, 0.001) + 0.001;

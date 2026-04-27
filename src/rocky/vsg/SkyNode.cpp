@@ -269,7 +269,8 @@ SkyNode::setWorldSRS(const SRS& srs)
         // some ambient light:
         ambient = vsg::AmbientLight::create();
         ambient->name = "Sky Ambient";
-        ambient->color = { 0.03f, 0.03f, 0.03f };
+        ambient->color = { 1.0f, 1.0f, 1.0f };
+        ambient->intensity = 0.03f;
         addChild(ambient);
 
         // the sun:
@@ -277,8 +278,8 @@ SkyNode::setWorldSRS(const SRS& srs)
         sun = vsg::PointLight::create();
         sun->name = "Sol";
         sun->position = { sun_data.geocentric.x, sun_data.geocentric.y, sun_data.geocentric.z };
-        sun->color = { 1, 1, 1 };
-        sun->intensity = 1.0;
+        sun->color = { 1.0f, 1.0f, 1.0f };
+        sun->intensity = 1.0f;
         addChild(sun);
 
         if (!_skyData)
