@@ -52,7 +52,11 @@ jobs:
           libxxf86vm-dev \
           libxcb1-dev \
           libx11-xcb-dev \
-          mono-complete
+          mono-complete \
+          autoconf \
+          autoconf-archive \
+          automake \
+          libtool
 
     - name: Cache vcpkg repository
       uses: actions/cache@v4
