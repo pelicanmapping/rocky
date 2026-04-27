@@ -158,8 +158,8 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_vs, in vec3 normal_vs)
         float NdotL = dot(N, L);
 
         // Soften the terminator
-        //NdotL = max(NdotL, 0.0);
-        NdotL = smoothstep(-0.05, 1.0, NdotL);
+        NdotL = max(NdotL, 0.0);
+        //NdotL = smoothstep(-0.05, 1.0, NdotL);
 
         vec3 numerator = D * G * F;
         float denominator = 4.0 * NdotV * max(NdotL, 0.001) + 0.001;
