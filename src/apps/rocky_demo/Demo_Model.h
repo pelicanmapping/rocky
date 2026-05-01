@@ -18,11 +18,17 @@ auto Demo_Model = [](Application& app)
     {
         auto [_, reg] = app.registry.write();
 
+#if 1
         // Create a simple VSG model using the Builder.
         vsg::Builder builder;
         vsg::GeometryInfo gi;
         gi.color = to_vsg(StockColor::Cyan);
         auto node = builder.createBox(gi, vsg::StateInfo{});
+#else
+        // Or, load it from disk.
+        auto node = vsg::read_cast<vsg::Node>("D:/data/models/nasa/C130_WFF_AIR_0824.glb", app.vsgcontext->readerWriterOptions);
+        scale = 100.0;
+#endif
 
         app.vsgcontext->compile(node);
 
@@ -68,7 +74,7 @@ auto Demo_Model = [](Application& app)
         if (ImGuiLTable::SliderDouble("Longitude", &transform.position.x, -180.0, 180.0, "%.1lf"))
             transform.dirty(reg);
 
-        if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf"))
+        if (ImGuiLTable::SliderDouble("Altitude", &transform.position.z, 0.0, 2500000.0, "%.1lf", ImGuiSliderFlags_Logarithmic))
             transform.dirty(reg);
 
         auto rot = quaternion_from_matrix<glm::dquat>(transform.localMatrix);
@@ -115,6 +121,37 @@ auto Demo_Model = [](Application& app)
         {
             ImGuiLTable::SliderFloat("  Min pixels", &ps.minPixels, 0.0f, 256.0f);
             ImGuiLTable::SliderFloat("  Max pixels", &ps.maxPixels, 0.0f, 4096.0f);
+        }
+
+        static bool tethering = false;
+        if (ImGuiLTable::Checkbox("Tethering", &tethering))
+        {
+            auto& view = app.display.window(0).view(0);
+            if (auto manip = MapManipulator::get(view.vsgView))
+            {
+                if (tethering)
+                {
+                    auto& xform = reg.get<Transform>(entity);
+                    auto scale = xform.localMatrix[0][0]; // assume uniform scale
+
+                    // To tether, create a Viewpoint object with a "pointFunction" that
+                    // returns the current location of the tracked object.
+                    Viewpoint vp = manip->viewpoint();
+                    vp.range = xform.radius * scale * 3.0;
+                    vp.pointFunction = [&]()
+                        {
+                            return app.registry.read()->get<Transform>(entity).position;
+                        };
+
+                    manip->setViewpoint(vp, 2.0s);
+                }
+                else
+                {
+                    auto vp = manip->viewpoint();
+                    vp.pointFunction = {};
+                    manip->setViewpoint(vp);
+                }
+            }
         }
 
         ImGuiLTable::End();

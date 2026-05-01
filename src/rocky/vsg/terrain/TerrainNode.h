@@ -73,7 +73,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Root node of the terrain geometry
      */
-    class ROCKY_EXPORT TerrainNode : public vsg::Inherit<vsg::StateGroup, TerrainNode>,
+    class ROCKY_EXPORT TerrainNode : public vsg::Inherit<vsg::Switch, TerrainNode>,
         public TerrainSettings
     {
     public:
@@ -131,8 +131,10 @@ namespace ROCKY_NAMESPACE
 
     private:
 
+        vsg::ref_ptr<vsg::StateGroup> _profileNodes;
         Result<> createProfiles(VSGContext);
         CallbackSubs _callbacks;
         std::vector<Layer::Ptr> _terrainLayers;
+        friend class TerrainState;
     };
 }

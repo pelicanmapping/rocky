@@ -25,8 +25,12 @@ TerrainSettings::from_json(std::string_view JSON)
     get_to(j, "skirtRatio", skirtRatio);
     get_to(j, "backgroundColor", backgroundColor);
     get_to(j, "concurrency", concurrency);
-    get_to(j, "wireOverlay", wireOverlay);
+    get_to(j, "debugTriangles", debugTriangles);
     get_to(j, "lighting", lighting);
+    get_to(j, "debugNormals", debugNormals);
+    get_to(j, "tileCacheSize", tileCacheSize);
+    get_to(j, "castShadows", castShadows);
+    get_to(j, "wireframe", wireframe);
 
     return ResultVoidOK;
 }
@@ -44,7 +48,11 @@ TerrainSettings::to_json() const
     set(j, "skirtRatio", skirtRatio);
     set(j, "backgroundColor", backgroundColor);
     set(j, "concurrency", concurrency);
-    set(j, "wireOverlay", wireOverlay);
+    set(j, "debugTriangles", debugTriangles);
     set(j, "lighting", lighting);
+    set(j, "debugNormals", debugNormals);
+    set(j, "tileCacheSize", tileCacheSize);
+    set(j, "castShadows", castShadows);
+    set(j, "wireframe", wireframe);
     return j.dump();
 }

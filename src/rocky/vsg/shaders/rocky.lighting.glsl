@@ -1,18 +1,29 @@
 #pragma import_defines(ROCKY_ATMOSPHERE)
 
-// from VSG's view-dependent state
-layout(set = 1, binding = 0) uniform VSG_Lights {
-    vec4 pack[64];
-} vsg_lights;
+#pragma import_defines(VSG_SHADOWS_HARD)
+#if defined(VSG_SHADOWS_HARD) || defined(VSG_SHADOWS_SOFT) || defined(VSG_SHADOWS_PCSS)
+#define ROCKY_SHADOWS
+#endif
 
-// TODO - this will eventually come from a material map
+#ifndef VIEW_DESCRIPTOR_SET
+#define VIEW_DESCRIPTOR_SET 1
+#endif
+
+// from VSG's view-dependent state
+layout(set = VIEW_DESCRIPTOR_SET, binding = 0) uniform VSGLightData {
+    vec4 values[64];
+} lightData;
+
+// shadows.glsl is copied, unmodified, from vsgExamples
+vec3 eyePos; // expected by shadows.glsl
+#pragma include "shadows.glsl"
+
+// placeholder
 struct PBR {
     float roughness;
     float metal;
     float ao;
 } pbr;
-
-// https://learnopengl.com/PBR/Lighting
 
 #ifndef ROCKY_PI
 #define ROCKY_PI
@@ -65,19 +76,19 @@ vec3 ACES_tonemap(vec3 x)
     return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
 }
 
-vec3 get_sun_position()
+vec3 get_sunlight_direction()
 {
-    vec4 light_counts = vsg_lights.pack[0];
+    int index = 0;
+    vec4 light_counts = lightData.values[0];
     int ambient_count = int(light_counts[0]); // 1 component each (color)
-    int directional_count = int(light_counts[1]); // 2 components each (color, position)
-
-    // first point light:
-    int sun = 1 + (ambient_count * 1) + (directional_count * 2);
-    return vsg_lights.pack[sun+1].xyz; // color, position
+    int sun = 1 + (ambient_count * 1);
+    return lightData.values[sun + 1].xyz; // first directional light direction
 }
 
 vec4 apply_lighting(in vec4 color, in vec3 vertex_vs, in vec3 normal_vs)
 {
+    eyePos = vertex_vs;
+
     // temp:
     pbr.ao = 1.0;
     pbr.roughness = 0.95;
@@ -96,7 +107,7 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_vs, in vec3 normal_vs)
     vec3 Lo = vec3(0.0);
     vec3 ambient = vec3(0.0);
 
-    vec4 light_counts = vsg_lights.pack[0];
+    vec4 light_counts = lightData.values[0];
     int ambient_count = int(light_counts[0]);
     int directional_count = int(light_counts[1]);
     int point_count = int(light_counts[2]);
@@ -106,19 +117,36 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_vs, in vec3 normal_vs)
 
     for (int i = 0; i < ambient_count; ++i)
     {
-        vec4 light_color = vsg_lights.pack[index++];
+        vec4 light_color = lightData.values[index++];
         ambient += light_color.rgb * light_color.a;
     }
 
+    int shadowmapIndex = 0;
+
     for (int i = 0; i < directional_count; ++i)
     {
-        vec3 light_color = vsg_lights.pack[index++].rgb;
-        vec3 direction = vsg_lights.pack[index++].xyz;
+        vec3 light_color = lightData.values[index].rgb;
+        float intensity = lightData.values[index++].a;
+        vec3 direction = lightData.values[index++].xyz;
+
+        int shadowmapCount = int(lightData.values[index].r);
+        if (shadowmapCount > 0)
+        {
+#ifdef ROCKY_SHADOWS
+            intensity *= (1.0 - calculateShadowCoverageForDirectionalLight(index, shadowmapIndex, vec3(0), vec3(0), Lo));
+#endif
+            index += 1 + 8 * shadowmapCount;
+            shadowmapIndex += shadowmapCount;
+        }
+        else
+        {
+            index++;
+        }
 
         // per-light radiance:
         vec3 L = normalize(-direction);
         vec3 H = normalize(V + L);
-        vec3 radiance = light_color;
+        vec3 radiance = light_color * intensity;
 
         // cook-torrance BRDF:
         float D = DistributionGGX(N, H, pbr.roughness);
@@ -142,8 +170,8 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_vs, in vec3 normal_vs)
 
     for (int i = 0; i < point_count; ++i)
     {
-        vec3 light_color = vsg_lights.pack[index++].rgb;
-        vec3 position_vs = vsg_lights.pack[index++].xyz;
+        vec3 light_color = lightData.values[index++].rgb;
+        vec3 position_vs = lightData.values[index++].xyz;
 
         // per-light radiance:
         vec3 L = normalize(position_vs - vertex_vs);
@@ -173,9 +201,19 @@ vec4 apply_lighting(in vec4 color, in vec3 vertex_vs, in vec3 normal_vs)
 #if 0
     for (int i = 0; i < spot_count; ++i)
     {
-        vec4 light_color = vsg_lights.pack[index++];
-        vec4 position_cosInnerAngle = vsg_lights.pack[index++];
-        vec4 lightDirection_cosOuterAngle = vsg_lights.pack[index++];
+        vec4 light_color = lightData.values[index++];
+        vec4 position_cosInnerAngle = lightData.values[index++];
+        vec4 lightDirection_cosOuterAngle = lightData.values[index++];
+        int shadowmap_count = lightData.values[index].r;
+        if (shadowmap_count > 0)
+        {
+            // todo: process shadowmaps
+            index += 1 + 8 * shadowmap_count;
+        }
+        else
+        {
+            index++;
+        }
     }
 #endif
 

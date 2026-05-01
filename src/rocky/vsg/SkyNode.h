@@ -39,7 +39,7 @@ namespace ROCKY_NAMESPACE
 
     public:
         vsg::ref_ptr<vsg::AmbientLight> ambient;
-        vsg::ref_ptr<vsg::PointLight> sun;
+        vsg::ref_ptr<vsg::DirectionalLight> sun;
 
     protected:
         vsg::ref_ptr<vsg::Node> _atmosphere;

@@ -115,6 +115,8 @@ auto Demo_Views = [](Application& app)
                         }
                     }
 
+                    ImGuiLTable::SliderDouble("Shadow distance", &view.vsgView->viewDependentState->maxShadowDistance, 0.0, 1000000.0, "%.0lf", ImGuiSliderFlags_Logarithmic);
+
                     if (view.viewID > 0)  // don't allow position/size editing the main view
                     {
                         // the viewport - changing this requires a bunch of updates and a call to  app.refreshView

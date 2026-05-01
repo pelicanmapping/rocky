@@ -8,10 +8,9 @@ endif()
 # version variables found in the CMake configuration.
 set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
 
-# collect all the headers in the source directory
-file(GLOB HEADERS_CORE *.h)
+rocky_glob(HEADERS_CORE *.h)
 list(APPEND HEADERS_CORE ${version_h})
-file(GLOB SOURCES_CORE *.cpp tinyxml/*.cpp)
+rocky_glob(SOURCES_CORE *.cpp tinyxml/*.cpp)
 
 macro(remove_items from_list)
     foreach(item ${ARGN})
@@ -20,13 +19,13 @@ macro(remove_items from_list)
 endmacro()
 
 # headers that should not be installed b/c they are internal only
-file(GLOB HEADERS_NO_INSTALL tinyxml/*.h)
+rocky_glob(HEADERS_NO_INSTALL tinyxml/*.h)
 
-file(GLOB HEADERS_CONTRIB contrib/*.h)
-file(GLOB SOURCES_CONTRIB contrib/*.cpp)
+rocky_glob(HEADERS_CONTRIB contrib/*.h)
+rocky_glob(SOURCES_CONTRIB contrib/*.cpp)
 
-file(GLOB HEADERS_ECS ecs/*.h)
-file(GLOB SOURCES_ECS ecs/*.cpp)
+rocky_glob(HEADERS_ECS ecs/*.h)
+rocky_glob(SOURCES_ECS ecs/*.cpp)
 
 # data files to install
 list(APPEND DATA_FILES "${PROJECT_SOURCE_DIR}/data/fonts/times.vsgb")
@@ -190,21 +189,21 @@ if(ROCKY_RENDERER_VSG)
     # Validate minimum required Vulkan SDK header version
     find_package(Vulkan 1.3.261 REQUIRED)
 
-    file(GLOB HEADERS_VSG vsg/*.h)
-    file(GLOB SOURCES_VSG vsg/*.cpp)
+    rocky_glob(HEADERS_VSG vsg/*.h)
+    rocky_glob(SOURCES_VSG vsg/*.cpp)
     
-    file(GLOB HEADERS_VSG_TERRAIN vsg/terrain/*.h)
-    file(GLOB SOURCES_VSG_TERRAIN vsg/terrain/*.cpp)
+    rocky_glob(HEADERS_VSG_TERRAIN vsg/terrain/*.h)
+    rocky_glob(SOURCES_VSG_TERRAIN vsg/terrain/*.cpp)
     
-    file(GLOB HEADERS_VSG_ECS vsg/ecs/*.h)
-    file(GLOB SOURCES_VSG_ECS vsg/ecs/*.cpp)
+    rocky_glob(HEADERS_VSG_ECS vsg/ecs/*.h)
+    rocky_glob(SOURCES_VSG_ECS vsg/ecs/*.cpp)
 
     if(ImGui_FOUND)
-        file(GLOB HEADERS_VSG_IMGUI vsg/imgui/*.h)
-        file(GLOB SOURCES_VSG_IMGUI vsg/imgui/*.cpp)
+        rocky_glob(HEADERS_VSG_IMGUI vsg/imgui/*.h)
+        rocky_glob(SOURCES_VSG_IMGUI vsg/imgui/*.cpp)
     endif()
     
-    file(GLOB SHADERS_VSG vsg/shaders/*)
+    rocky_glob(SHADERS_VSG vsg/shaders/*)
 
     find_package(vsg CONFIG REQUIRED)
     find_package(EnTT CONFIG REQUIRED)

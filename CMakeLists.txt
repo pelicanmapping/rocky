@@ -17,7 +17,7 @@ project(
 )
 
 # please update this with each ABI change!!
-set(PROJECT_VERSION_ABI 48)
+set(PROJECT_VERSION_ABI 49)
 
 # require C++17
 set(CMAKE_CXX_STANDARD 17)
@@ -107,6 +107,13 @@ endif()
 if(ROCKY_SUPPORTS_IMGUI)
     set(BUILD_WITH_IMGUI ON)
 endif()
+
+# file(GLOB) what excludes anything starting with a '.'
+function(rocky_glob out_var)
+    file(GLOB _items ${ARGN})
+    list(FILTER _items EXCLUDE REGEX "(^|/)\\.[^/]*$")
+    set(${out_var} ${_items} PARENT_SCOPE)
+endfunction()
 
 # source code
 add_subdirectory(src)

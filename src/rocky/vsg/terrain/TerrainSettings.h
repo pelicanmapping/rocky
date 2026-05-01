@@ -57,8 +57,8 @@ namespace ROCKY_NAMESPACE
         //! Number of threads dedicated to loading terrain data
         option<unsigned> concurrency = 6;
 
-        //! Whether to render a wireframe overlay on the terrain
-        option<bool> wireOverlay = false;
+        //! Whether to outline each triangle when rendering the terrain
+        option<bool> debugTriangles = false;
 
         //! Whether to apply lighting to the terrain surface
         option<bool> lighting = false;
@@ -68,6 +68,12 @@ namespace ROCKY_NAMESPACE
 
         //! Number of expired terrain tiles to cache in memory
         option<unsigned> tileCacheSize = 0u;
+
+        //! Whether the terrain should cast shadows on itself
+        option<bool> castShadows = false;
+
+        //! Whther to render the terrain as wireframe only
+        option<bool> wireframe = false;
 
     public: // internal runtime settings, not serialized.
 

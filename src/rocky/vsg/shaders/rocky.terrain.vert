@@ -6,7 +6,9 @@ layout(push_constant) uniform PushConstants {
     mat4 modelview;
 } pc;
 
-// see rocky::TerrainTileDescriptors
+layout(set = 0, binding = 10) uniform sampler2D elevationTex;
+
+// rocky::TerrainTileDescriptors
 layout(set = 0, binding = 13) uniform TileData {
     mat4 elevationMatrix;
     mat4 colorMatrix;
@@ -27,25 +29,35 @@ layout(location = 0) out Varyings {
     vec2 uv;
     vec3 normal_vs;
     vec3 vertex_vs;
-    vec3 vertex_ws;
-    vec3 camera_ws;
-    vec3 sun_ws;
+    vec3 viewdir_ecef;
+    vec3 camera_ecef;
+    vec3 sundir_ecef;
+    float discardVert;
 } vary;
-
-layout(set = 0, binding = 10) uniform sampler2D elevationTex;
 
 // GL built-ins
 out gl_PerVertex {
     vec4 gl_Position;
 };
 
-#include "rocky.lighting.frag.glsl"
+// in_uvw.w marker bits:
+#define VERTEX_VISIBLE       1 // draw it
+#define VERTEX_BOUNDARY      2 // vertex lies on a skirt boundary
+#define VERTEX_HAS_ELEVATION 4 // not subject to elevation texture
+#define VERTEX_SKIRT         8 // it's a skirt vertex (bitmask)
+#define VERTEX_CONSTRAINT   16 // part of a non-morphable constraint
+
+// for: get_sunlight_direction()
+#include "rocky.lighting.glsl"
 
 
 // sample the elevation data at a UV tile coordinate and make a tangent-space position
 vec3 compute_point_ts(in vec2 uv)
 {
     float size = float(textureSize(elevationTex, 0).x);
+    if (size <= 1.0)
+        return vec3(uv.s * tile.span, uv.t * tile.span, 0.0); // no elevation data, return flat plane
+
     vec2 coeff = vec2((size - 1.0) / size, 0.5 / size);
 
     // Texel-level scale and bias allow us to sample the elevation texture
@@ -76,7 +88,7 @@ vec3 compute_normal_ts(in vec2 uv)
 
     // cannot calc a valid normal with a 1x1 texture
     if (size.x <= 1 || size.y <= 1)
-        return in_up_ts;
+        return vec3(0,0,1);
 
     vec2 texelSize = 1.0 / (vec2(size) - vec2(1.0));
 
@@ -108,21 +120,22 @@ void main()
     vary.uv = (tile.colorMatrix * vec4(in_uvw.st, 0, 1)).st;
     vary.vertex_vs = position_vs.xyz / position_vs.w;
     vary.normal_vs = normalize(normalMatrix * compute_tbn_ts(in_up_ts) * compute_normal_ts(in_uvw.st));
+    // Rotation from view space to ECEF
+    mat3 view_to_ecef = mat3(tile.modelMatrix) * transpose(mat3(pc.modelview));
 
-    // ECEF positions for aerial perspective computation in fragment shader.
-    // position_ts is tile-local; tile.modelMatrix transforms to world/ECEF.
-    vary.vertex_ws = (tile.modelMatrix * vec4(position_ts, 1.0)).xyz;
+    // View direction in ECEF, computed from view space to avoid catastrophic cancellation
+    vary.viewdir_ecef = view_to_ecef * normalize(vary.vertex_vs);
 
-    // Camera position in tile-local space, then transformed to ECEF.
-    // (push constants are vertex-stage only, so we must do this here)
-    mat3 rot = transpose(mat3(pc.modelview));
-    vec3 camera_ts = rot * (-pc.modelview[3].xyz);
-    vary.camera_ws = (tile.modelMatrix * vec4(camera_ts, 1.0)).xyz;
+    // Camera ECEF position
+    vec3 cam_ts = -transpose(mat3(pc.modelview)) * pc.modelview[3].xyz;
+    vary.camera_ecef = (tile.modelMatrix * vec4(cam_ts, 1.0)).xyz;
 
-    // Sun direction in ECEF. vsg_lights stores positions in view space.
-    // Transform: view-space -> tile-local -> world/ECEF (direction only, mat3).
-    vary.sun_ws = rot * get_sun_position();
+    // Sun direction in ECEF
+    vary.sundir_ecef = view_to_ecef * (-get_sunlight_direction());
 
+    // in an ortho projection, dicard SKIRT verts.
+    vary.discardVert =
+        pc.projection[3][3] > 0.0 && (int(in_uvw.z) & VERTEX_SKIRT) != 0 ? 1.0 : 0.0;
 
     gl_Position = pc.projection * position_vs;
 }

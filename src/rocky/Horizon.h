@@ -62,7 +62,9 @@ namespace ROCKY_NAMESPACE
         bool _valid = false;
         bool _orthographic = false; // assume orthographic projection
         glm::dvec3 _eye = {0.0, 0.0, 0.0};       // world eyepoint
-        glm::dvec3 _eyeUnit = { 0.0, 0.0, 0.0 };   // unit eye vector (scaled)
+        glm::dvec3 _eyeUnit = { 0.0, 0.0, 0.0 };   // unit eye vector (world)
+        glm::dvec3 _eyeScaled = { 0.0, 0.0, 0.0 }; // eye in scaled ellipsoid space
+        glm::dvec3 _eyeDirScaled = { 0.0, 0.0, 0.0 }; // unit eye vector in scaled ellipsoid space
         glm::dvec3 _VC = { 0.0, 0.0, 0.0 };        // eye->center vector (scaled)
         double _VCmag = 0.0;    // distance from eye to center (scaled)
         double _VCmag2 = 0.0;   // distance from eye to center squared (scaled)
@@ -71,6 +73,8 @@ namespace ROCKY_NAMESPACE
         double _coneTan = 0.0;  // tangent of half-cone
         glm::dvec3 _scale;     // transforms from world to unit space
         glm::dvec3 _scaleInv;  // transforms from unit to world space
+        double _minScaleInv = 0.0; // smallest ellipsoid radius
+        double _radiusScale = 0.0; // conservative radius scale from world to unit space
         double _minHAE = 0.0;;   // minumum height above ellipsoid to test
         double _minVCmag = 0.0; // derived from minHAE
     };

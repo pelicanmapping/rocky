@@ -16,8 +16,8 @@ layout(set = 0, binding = 0) uniform SkyUniforms {
 
 // Input varyings from vertex shader
 layout(location = 0) in vec3 v_worldPos;
-layout(location = 1) in vec3 v_cameraECEF;
-layout(location = 2) in vec3 v_sunPosECEF;
+layout(location = 1) in vec3 v_camera_ecef;
+layout(location = 2) in vec3 v_sundir_ecef;
 
 // Output
 layout(location = 0) out vec4 out_color;
@@ -34,12 +34,12 @@ void main()
     float rPlanet = mix(atmo.ellipsoidAxes.x, atmo.ellipsoidAxes.y, lat);
     float rAtmos = rPlanet + ATMO_THICKNESS;
 
-    vec3 cameraPos = v_cameraECEF;
+    vec3 cameraPos = v_camera_ecef;
     vec3 rayDir = normalize(v_worldPos - cameraPos);
 
     float cameraHeight = length(cameraPos);
     float exposure = ATMO_EXPOSURE;
-    vec3 sunDir = normalize(v_sunPosECEF);
+    vec3 sunDir = normalize(v_sundir_ecef);
 
     // Intersect ray with atmosphere
     vec2 atmosHit = raySphereIntersect2(cameraPos, rayDir, rAtmos);

@@ -275,9 +275,9 @@ SkyNode::setWorldSRS(const SRS& srs)
 
         // the sun:
         auto sun_data = rocky::Ephemeris().sunPosition(rocky::DateTime());
-        sun = vsg::PointLight::create();
+        sun = vsg::DirectionalLight::create();
         sun->name = "Sol";
-        sun->position = { sun_data.geocentric.x, sun_data.geocentric.y, sun_data.geocentric.z };
+        sun->direction = to_vsg(-glm::normalize(sun_data.geocentric));
         sun->color = { 1.0f, 1.0f, 1.0f };
         sun->intensity = 1.0f;
         addChild(sun);
@@ -334,5 +334,6 @@ void
 SkyNode::setDateTime(const DateTime& value)
 {
     auto sun_data = rocky::Ephemeris().sunPosition(value);
-    sun->position = { sun_data.geocentric.x, sun_data.geocentric.y, sun_data.geocentric.z };
+    //sun->position = { sun_data.geocentric.x, sun_data.geocentric.y, sun_data.geocentric.z };
+    sun->direction = to_vsg(-glm::normalize(sun_data.geocentric));
 }

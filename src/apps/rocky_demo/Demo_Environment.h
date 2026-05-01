@@ -48,11 +48,7 @@ auto Demo_Environment = [](Application& app)
             skyNode->setDateTime(dt);
         }
 
-        float ambient = skyNode->ambient->color.r;
-        if (ImGuiLTable::SliderFloat("Ambient level", &ambient, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic))
-        {
-            skyNode->ambient->color = { ambient, ambient, ambient };
-        }
+        ImGuiLTable::SliderFloat("Ambient intensity", &skyNode->ambient->intensity, 0.0f, 1.0f, "%.3f", ImGuiSliderFlags_Logarithmic);
 
         static bool atmo = true;
         if (ImGuiLTable::Checkbox("Show atmosphere", &atmo))

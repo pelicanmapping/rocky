@@ -170,8 +170,10 @@ SurfaceNode::recomputeBound()
         expandBy(worldBoundingSphere, vsg::dvec3(world.x, world.y, world.z));
     }
     auto& ellipsoid = _tilekey.profile.srs().ellipsoid();
-    _horizonCullingPoint = to_vsg(ellipsoid.calculateHorizonPoint(world_mesh));
-    _horizonCullingPoint_valid = _horizonCullingPoint != vsg::dvec3(0, 0, 0);
+    _horizonCullingPoint.reset();
+    auto hcp = to_vsg(ellipsoid.calculateHorizonPoint(world_mesh));
+    if (hcp != vsg::dvec3(0, 0, 0))
+        _horizonCullingPoint = hcp;
 
 
 #if 0

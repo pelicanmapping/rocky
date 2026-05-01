@@ -102,8 +102,7 @@ namespace ROCKY_NAMESPACE
             glm::dvec3& geocOut) const;
 
         //! Calculates a geocentric point that can be used for horizon-culling;
-        //! i.e. if the horizon point is visible over the horizon, that means that
-        //! at least one point in the input vector are visible as well.
+        //! i.e. If the horizon point is occluded by the horizon, then so if the entire input set.
         //! @param points Vector of geocentric points
         //! @return Geocentric point that can be used for horizon culling
         glm::dvec3 calculateHorizonPoint(const std::vector<glm::dvec3>& points) const;

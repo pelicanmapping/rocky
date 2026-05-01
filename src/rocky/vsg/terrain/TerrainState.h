@@ -13,7 +13,7 @@
 namespace ROCKY_NAMESPACE
 {
     struct TerrainTileModel;
-    class TerrainSettings;
+    class TerrainNode;
 
     //! Holds any terrain-wide textures and uniforms.
     struct TerrainDescriptors
@@ -23,8 +23,8 @@ namespace ROCKY_NAMESPACE
             glm::fvec4 backgroundColor = Color("#08AEE0");
             glm::fvec2 ellipsoidAxes = { 0.0f, 0.0f };
             float applyAtmosphere = 1.0f;
-            float applyWireOverlay = 0.0f;
             float applyLighting = 0.0f;
+            float debugTriangles = 0.0f;
             float debugNormals = 0.0f;
             float padding[2];
         };
@@ -99,7 +99,7 @@ namespace ROCKY_NAMESPACE
         ~TerrainState();
 
         //! Configures an existing stategroup for rendering terrain
-        bool setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext context);
+        vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup(VSGContext context);
 
         //! Integrates data from the new data model into an existing render model,
         //! and creates or updates all the necessary descriptors and commands.
@@ -115,7 +115,7 @@ namespace ROCKY_NAMESPACE
         void updateProfile(const Profile&);
 
         //! Synchronize the terrain state with the current settings
-        void updateSettings(const TerrainSettings&);
+        void updateSettings(TerrainNode&);
 
         //! Status of the factory.
         Status status;
@@ -177,5 +177,8 @@ namespace ROCKY_NAMESPACE
 
         // terrain-wide settings, etc.
         TerrainDescriptors _terrainDescriptors;
+
+        // for wireframe mode
+        vsg::ref_ptr<vsg::SetPrimitiveTopology> _wireframe;
     };
 }

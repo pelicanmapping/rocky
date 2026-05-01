@@ -213,6 +213,12 @@ Application::ctor(int& argc, char** argv)
         // if the user didn't disable terrain lighting...enable it.
         if (!mapNode->terrainSettings().lighting.has_value())
             mapNode->terrainSettings().lighting = true;
+
+        if (commandLine.read("--shadows"))
+        {
+            skyNode->sun->shadowSettings = vsg::HardShadows::create(2);
+            vsgcontext->shaderCompileSettings->defines.insert("VSG_SHADOWS_HARD");
+        }
     }
 
     // set on-demand rendering mode from the command line
@@ -358,6 +364,8 @@ Application::realize()
         // a significant amount of memory.
 
         auto resourceHints = vsg::ResourceHints::create();
+
+        resourceHints->shadowMapSize = { 2048, 2048 };
 
         // max number of descriptor sets per pool, regardless of type:
         //resourceHints->numDescriptorSets = 1;

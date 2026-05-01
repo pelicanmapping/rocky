@@ -1,11 +1,10 @@
 /**
  * rocky c++
- * Copyright 2025 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "TerrainState.h"
 #include "TerrainNode.h"
-#include "TerrainTileNode.h"
 #include "TerrainSettings.h"
 #include "../VSGUtils.h"
 #include "../PipelineState.h"
@@ -13,7 +12,6 @@
 #include <rocky/Color.h>
 #include <rocky/Heightfield.h>
 #include <rocky/Image.h>
-#include <rocky/vsg/SkyNode.h>
 #include <rocky/TerrainTileModel.h>
 
 #include <vsg/state/BindDescriptorSet.h>
@@ -59,6 +57,10 @@ TerrainState::TerrainState(VSGContext context)
             "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
         return;
     }
+
+    // for wireframe mode
+    _wireframe = vsg::SetPrimitiveTopology::create();
+    _wireframe->topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
 }
 
 TerrainState::~TerrainState()
@@ -259,21 +261,16 @@ TerrainState::createPipelineConfig(VSGContext context) const
         void apply(vsg::RasterizationState& state) override {
             state.cullMode = VK_CULL_MODE_BACK_BIT;
         }
-        void apply(vsg::DepthStencilState& state) override {
-        }
-        void apply(vsg::ColorBlendState& state) override {
-        }
-    };
-    SetPipelineStates visitor;
-    config->accept(visitor);
+    } sps;
 
+    config->accept(sps);
     config->init();
 
     return config;
 }
 
-bool
-TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext context)
+vsg::ref_ptr<vsg::StateGroup>
+TerrainState::createTerrainStateGroup(VSGContext context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), false);
 
@@ -296,10 +293,11 @@ TerrainState::setupTerrainStateGroup(vsg::StateGroup& stateGroup, VSGContext con
 
     // Just a StateGroup holding the graphics pipeline.
     // Descriptors are the global terrain uniform buffer and the VSG view-dependent buffer.
-    stateGroup.add(pipelineConfig->bindGraphicsPipeline);
-    stateGroup.add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
+    auto stateGroup = vsg::StateGroup::create();
+    stateGroup->add(pipelineConfig->bindGraphicsPipeline);
+    stateGroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
     
-    return true;
+    return stateGroup;
 }
 
 TerrainTileRenderModel
@@ -437,31 +435,42 @@ TerrainState::updateProfile(const Profile& profile)
 }
 
 void
-TerrainState::updateSettings(const TerrainSettings& settings)
+TerrainState::updateSettings(TerrainNode& terrain)
 {    
     auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(_terrainDescriptors.data->dataPointer());
 
-    if (uniforms.backgroundColor != settings.backgroundColor.value())
+    if (uniforms.backgroundColor != terrain.backgroundColor.value())
     {
-        uniforms.backgroundColor = settings.backgroundColor.value();
+        uniforms.backgroundColor = terrain.backgroundColor.value();
         _terrainDescriptors.data->dirty();
     }
 
-    if (uniforms.applyWireOverlay != (settings.wireOverlay.value() ? 1.0f : 0.0f))
+    if (uniforms.debugTriangles != (terrain.debugTriangles.value() ? 1.0f : 0.0f))
     {
-        uniforms.applyWireOverlay = settings.wireOverlay.value() ? 1.0f : 0.0f;
+        uniforms.debugTriangles = terrain.debugTriangles.value() ? 1.0f : 0.0f;
         _terrainDescriptors.data->dirty();
     }
 
-    if (uniforms.applyLighting != (settings.lighting.value() ? 1.0f : 0.0f))
+    if (uniforms.applyLighting != (terrain.lighting.value() ? 1.0f : 0.0f))
     {
-        uniforms.applyLighting = settings.lighting.value() ? 1.0f : 0.0f;
+        uniforms.applyLighting = terrain.lighting.value() ? 1.0f : 0.0f;
         _terrainDescriptors.data->dirty();
     }
 
-    if (uniforms.debugNormals != (settings.debugNormals.value() ? 1.0f : 0.0f))
+    if (uniforms.debugNormals != (terrain.debugNormals.value() ? 1.0f : 0.0f))
     {
-        uniforms.debugNormals = settings.debugNormals.value() ? 1.0f : 0.0f;
+        uniforms.debugNormals = terrain.debugNormals.value() ? 1.0f : 0.0f;
         _terrainDescriptors.data->dirty();
     }
+
+    if (terrain.wireframe && (_wireframe->referenceCount() == 1))
+    {
+        terrain._profileNodes->children.insert(terrain._profileNodes->children.begin(), _wireframe);
+    }
+    else if (!terrain.wireframe && (_wireframe->referenceCount() > 1))
+    {
+        terrain._profileNodes->children.erase(terrain._profileNodes->children.begin());
+    }
+
+    terrain.children[0].mask = terrain.castShadows.value() ? vsg::MASK_ALL : (vsg::MASK_ALL & ~0x01);    
 }

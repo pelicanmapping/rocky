@@ -72,14 +72,6 @@ namespace
 auto Demo_Terrain = [](Application& app)
 {
     static Layer::Ptr axesLayer;
-    // Better would be vkCmdSetPolygonMode extension, but it is not supported by VSG
-    // This will do in the meantime.
-    static vsg::ref_ptr<vsg::SetPrimitiveTopology> setWireframeTopology;        
-    if (!setWireframeTopology)
-    {
-        setWireframeTopology = vsg::SetPrimitiveTopology::create();
-        setWireframeTopology->topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
-    }
 
     auto&& [window, view] = app.display.windowAndViewAtCoords(ImGui::GetMousePos().x, ImGui::GetMousePos().y);
 
@@ -92,24 +84,23 @@ auto Demo_Terrain = [](Application& app)
     {
         ImGuiLTable::SliderFloat("Pixel error", &app.mapNode->terrainSettings().pixelError.mutable_value(), 0.0f, 512.0f, "%.0f");
 
-        auto& c = mapNode->terrainNode->children;
-        bool wireframe = c.front() == setWireframeTopology;
-
         if (app.vsgcontext->device()->getPhysicalDevice()->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
         {
-            ImGuiLTable::Checkbox("Triangles", &mapNode->terrainNode->wireOverlay.mutable_value());
-        }
-
-        if (ImGuiLTable::Checkbox("Wireframe", &wireframe))
-        {
-            if (wireframe)
-                c.insert(c.begin(), setWireframeTopology);
-            else
-                c.erase(c.begin());
+            ImGuiLTable::Checkbox("Triangles", &mapNode->terrainNode->debugTriangles.mutable_value());
         }
 
         ImGuiLTable::Checkbox("Lighting", &mapNode->terrainSettings().lighting.mutable_value());
+
+        if (auto sky = view.find<SkyNode>())
+        {
+            if (sky->sun->shadowSettings)
+            {
+                ImGuiLTable::Checkbox("Cast shadows", &mapNode->terrainSettings().castShadows.mutable_value());
+            }
+        }
+
         ImGuiLTable::Checkbox("Normals", &mapNode->terrainSettings().debugNormals.mutable_value());
+        ImGuiLTable::Checkbox("Wireframe", &mapNode->terrainNode->wireframe.mutable_value());
 
         bool skirts = mapNode->terrainSettings().skirtRatio.value() > 0.0f;
         if (ImGuiLTable::Checkbox("Tile skirts", &skirts))

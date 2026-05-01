@@ -136,6 +136,9 @@ Window::addView(vsg::ref_ptr<vsg::View> vsgView)
     // save in our views collection
     auto& view = _views->_container.emplace_front(View(vsgView, renderGraph, _display));
 
+    // reasonable shadowing defaults
+    vsgView->viewDependentState->maxShadowDistance = 1000.0;
+
     // fire the callback
     _display->onAddView.fire(*this, view);
 

@@ -16,10 +16,18 @@ auto Demo_MapManipulator = [](Application& app)
 {
     static bool spin = false;
     static float spinSpeed = 1.0f;
+    static vsg::RegionOfInterest* roi = nullptr;
 
     auto first_view = app.display.window(0).view(0);
     if (first_view)
     {
+        if (!roi)
+        {
+            auto region = vsg::RegionOfInterest::create();
+            roi = region;
+            app.scene->children.insert(app.scene->children.begin(), region);
+        }
+
         auto manip = MapManipulator::get(first_view.vsgView);
         if (manip)
         {
@@ -48,6 +56,20 @@ auto Demo_MapManipulator = [](Application& app)
 
                 ImGuiLTable::Checkbox("Lock azimuth", &manip->settings.lockAzimuthWhilePanning);
                 ImGuiLTable::Checkbox("Zoom to mouse", &manip->settings.zoomToMouse);
+
+                static bool useROI = false;
+                roi->points.clear();
+                ImGuiLTable::Checkbox("Attach ROI", &useROI);
+                if (useROI)
+                {
+                    double r = vp.range->value();
+                    roi->points.emplace_back(to_vsg(vp.position() + glm::dvec3(r, 0, 0)));
+                    roi->points.emplace_back(to_vsg(vp.position() + glm::dvec3(-r, 0, 0)));
+                    roi->points.emplace_back(to_vsg(vp.position() + glm::dvec3(0, r, 0)));
+                    roi->points.emplace_back(to_vsg(vp.position() + glm::dvec3(0, -r, 0)));
+                    roi->points.emplace_back(to_vsg(vp.position() + glm::dvec3(0, 0, r)));
+                    roi->points.emplace_back(to_vsg(vp.position() + glm::dvec3(0, 0, -r)));
+                }
 
                 ImGuiLTable::End();
             }

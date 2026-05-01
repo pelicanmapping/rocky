@@ -69,8 +69,7 @@ namespace ROCKY_NAMESPACE
         glm::fmat4 _elevationMatrix;
         std::vector<vsg::dvec3> _worldPoints;
         bool _boundsDirty = true;
-        vsg::dvec3 _horizonCullingPoint;
-        bool _horizonCullingPoint_valid = false;
+        std::optional<vsg::dvec3> _horizonCullingPoint;
         vsg::ref_ptr<vsg::Geometry> _proxyGeom;
         vsg::ref_ptr<vsg::vec3Array> _proxyVerts;
         mutable ViewLocal<Horizon>* _horizon = nullptr;
@@ -84,8 +83,8 @@ namespace ROCKY_NAMESPACE
         if (_worldPoints.size() < 8)
             return false;
 
-        // bounding box visibility check; this is much tighter than the bounding
-        // sphere. _frustumStack.top() contains the frustum in world coordinates.
+        // bounding box visibility check; this is much tighter than the bounding sphere.
+        // state->_frustumStack.top() contains the frustum in world coordinates.
         // https://github.com/vsg-dev/VulkanSceneGraph/blob/master/include/vsg/vk/State.h#L267
         // The first 8 points in _worldPoints are the 8 corners of the bounding box
         // in world coordinates.
@@ -112,9 +111,9 @@ namespace ROCKY_NAMESPACE
             auto viewID = rv.getCommandBuffer()->viewID;
             auto& horizon = (*_horizon)[viewID];
 
-            if (_horizonCullingPoint_valid)
+            if (_horizonCullingPoint.has_value())
             {
-                return horizon.isVisible(_horizonCullingPoint);
+                return horizon.isVisible(_horizonCullingPoint.value());
             }
             else
             {

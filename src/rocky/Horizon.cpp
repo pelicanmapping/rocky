@@ -31,11 +31,14 @@ Horizon::setEllipsoid(const Ellipsoid& em)
         1.0 / em.semiMajorAxis(),
         1.0 / em.semiMajorAxis(),
         1.0 / em.semiMinorAxis());
+    _minScaleInv = std::min(_scaleInv.x, std::min(_scaleInv.y, _scaleInv.z));
+    _radiusScale = std::max(_scale.x, std::max(_scale.y, _scale.z));
 
     _minHAE = 500.0;
     _minVCmag = 1.0 + glm::length(_scale * _minHAE);
 
-    // just so we don't have gargabe values
+    // just so we don't have garbage values
+    _eye = glm::dvec3(0.0, 0.0, 0.0);
     setEye(glm::dvec3(1e7, 0, 0));
 
     _valid = true;
@@ -44,19 +47,18 @@ Horizon::setEllipsoid(const Ellipsoid& em)
 bool
 Horizon::setEye(const glm::dvec3& eye, bool isOrtho)
 {
-    if (eye == _eye)
+    if (eye == _eye && isOrtho == _orthographic)
         return false;
 
     _eye = eye;
     _eyeUnit = glm::normalize(eye);
+    _eyeScaled = _eye * _scale;
+    _eyeDirScaled = glm::normalize(_eyeScaled);
     _orthographic = isOrtho;
 
     if (!_orthographic)
     {
-        _VC = glm::dvec3(
-            -_eye.x * _scale.x,
-            -_eye.y * _scale.y,
-            -_eye.z * _scale.z);  // viewer->center (scaled)
+        _VC = -_eyeScaled;  // viewer->center (scaled)
         _VCmag = std::max((double)glm::length(_VC), _minVCmag); // clamped to the min HAE
         _VCmag2 = _VCmag * _VCmag;
         _VHmag2 = _VCmag2 - 1.0;  // viewer->horizon line (scaled)
@@ -80,25 +82,35 @@ Horizon::getRadius() const
 bool
 Horizon::isVisible(double x, double y, double z, double radius) const
 {
-    if (_valid == false || radius >= _scaleInv.x || radius >= _scaleInv.y || radius >= _scaleInv.z)
+    double effectiveRadius = radius > 0.0 ? radius : 0.0;
+
+    if (_valid == false || effectiveRadius >= _minScaleInv)
         return true;
 
-    glm::dvec3 target(x, y, z);
+    glm::dvec3 targetScaled(x * _scale.x, y * _scale.y, z * _scale.z);
+
+    // A world-space sphere becomes an ellipsoid in scaled space. Use a sphere
+    // that contains it so the horizon test remains conservative.
+    double radiusScaled = effectiveRadius > 0.0 ? effectiveRadius * _radiusScale : 0.0;
 
     if (_orthographic)
     {
-        glm::dvec3 CT(target * _scale);
+        glm::dvec3 CT(targetScaled);
         auto CTmag = glm::length(CT);
+        if (CTmag <= radiusScaled)
+            return true;
+
         CT /= CTmag; // normalize
 
-        double cos_a = glm::dot(-_eyeUnit, CT);
+        double cos_a = glm::dot(-_eyeDirScaled, CT);
         if (cos_a <= 0.0)
             return true;
 
         double x = CTmag * cos_a;
         double d = CTmag * CTmag - x * x;
+        double minVisibleDistance = std::max(0.0, 1.0 - radiusScaled);
 
-        return d >= 1.0;
+        return d >= minVisibleDistance * minVisibleDistance;
     }
 
     // First check the object against the horizon plane, a plane that intersects the
@@ -106,9 +118,7 @@ Horizon::isVisible(double x, double y, double z, double radius) const
     // ellipsoid.
     // ref: https://cesiumjs.org/2013/04/25/Horizon-culling/
 
-    glm::dvec3 VT;
-    VT = (target + _eyeUnit * radius) - _eye;
-    VT = VT * _scale;
+    glm::dvec3 VT = (targetScaled + _eyeDirScaled * radiusScaled) - _eyeScaled;
 
     double VTdotVC = glm::dot(VT, _VC);
     if (VTdotVC <= 0.0)
@@ -120,13 +130,19 @@ Horizon::isVisible(double x, double y, double z, double radius) const
     if (VTdotVC <= _VHmag2)
         return true;
 
-    VT = target - _eye;
-    double a = glm::dot(VT, -_eyeUnit);
+    if (radiusScaled <= 0.0)
+    {
+        double VTmag2 = glm::dot(VT, VT);
+        return VTmag2 > 0.0 && (VTdotVC * VTdotVC / VTmag2) <= _VHmag2;
+    }
+
+    VT = targetScaled - _eyeScaled;
+    double a = glm::dot(VT, -_eyeDirScaled);
     double b = a * _coneTan;
-    double c = sqrt(glm::dot(VT, VT) - a * a);
+    double c = sqrt(std::max(0.0, glm::dot(VT, VT) - a * a));
     double d = c - b;
     double e = d * _coneCos;
-    if (e > -radius)
+    if (e > -radiusScaled)
         return true;
 
     return false;

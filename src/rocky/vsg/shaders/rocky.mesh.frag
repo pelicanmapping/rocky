@@ -17,7 +17,7 @@ layout(location = 0) out vec4 outColor;
 layout(set = 0, binding = 2) uniform sampler2D meshTexture;
 
 // lighting
-#include "rocky.lighting.frag.glsl"
+#include "rocky.lighting.glsl"
 
 
 vec3 get_normal()

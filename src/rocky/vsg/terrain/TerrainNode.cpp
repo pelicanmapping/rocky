@@ -119,14 +119,21 @@ TerrainProfileNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, v
 
 
 
-TerrainNode::TerrainNode(VSGContext vsgcontext)
+TerrainNode::TerrainNode(VSGContext vsgcontext) :
+    Inherit()
 {
     // create the graphics pipeline to render this map
     terrainState = std::make_shared<TerrainState>(vsgcontext);
 
-    if (!terrainState->setupTerrainStateGroup(*this, vsgcontext))
+    _profileNodes = terrainState->createTerrainStateGroup(vsgcontext);
+
+    if (!_profileNodes)
     {
         status = Failure("Failed to set up terrain state group. Shaders not found?");
+    }
+    else
+    {
+        addChild(vsg::MASK_ALL, _profileNodes);
     }
 }
 
@@ -143,7 +150,7 @@ TerrainNode::Stats
 TerrainNode::stats() const
 {
     Stats result;
-    for (auto& child : children)
+    for (auto& child : _profileNodes->children)
     {
         if (auto profileNode = child.cast<TerrainProfileNode>())
         {
@@ -179,12 +186,12 @@ TerrainNode::setMap(Map::Ptr in_map, const Profile& in_profile, const SRS& in_re
     }
 
     // dispose of all children
-    for (auto& c : children)
+    for (auto& c : _profileNodes->children)
     {
         context->dispose(c);
     }
 
-    children.clear();
+    _profileNodes->children.clear();
 
     map = in_map;
     profile = in_profile;
@@ -225,7 +232,7 @@ void
 TerrainNode::reset(VSGContext context)
 {
     // reset all profile nodes:
-    for (auto& child : this->children)
+    for (auto& child : _profileNodes->children)
     {
         if (auto c = child.cast<TerrainProfileNode>())
             c->reset(context);
@@ -251,12 +258,12 @@ TerrainNode::createProfiles(VSGContext context)
     {
         for (auto& subprofile : profile.subprofiles())
         {
-            this->addChild(TerrainProfileNode::create(subprofile, *this));
+            _profileNodes->addChild(TerrainProfileNode::create(subprofile, *this));
         }
     }
     else
     {
-        this->addChild(TerrainProfileNode::create(profile, *this));
+        _profileNodes->addChild(TerrainProfileNode::create(profile, *this));
     }
 
     return ResultVoidOK;
@@ -266,13 +273,15 @@ bool
 TerrainNode::update(VSGContext context)
 {
     bool changes = false;
-    for (auto& child : children)
+    for (auto& child : _profileNodes->children)
     {
         if (auto c = child.cast<TerrainProfileNode>())
             changes = c->update(context) || changes;
     }
 
-    // check for settings change
+    // check for settings changes
+    this->children[0].mask = castShadows ? vsg::MASK_ALL : (vsg::MASK_ALL & ~0x01);    
+
     terrainState->updateSettings(*this);
 
     return changes;

@@ -1394,6 +1394,9 @@ MapManipulator::recalculateCenterFromLookVector()
 bool
 MapManipulator::recalculateCenterAndDistanceFromLookVector()
 {
+    if (isTethering())
+        return false;
+
     auto camera = _camera_weakptr.ref_ptr();
     if (!camera)
         return false;
@@ -1454,10 +1457,6 @@ MapManipulator::recalculateCenterAndDistanceFromLookVector()
 void
 MapManipulator::pan(double dx, double dy)
 {
-    // to pan, we need a focus point on the terrain:
-    //if ( !recalculateCenterFromLookVector() )
-    //    return;
-
     auto camera = _camera_weakptr.ref_ptr();
     if (!camera)
         return;
@@ -1479,11 +1478,11 @@ MapManipulator::pan(double dx, double dy)
     //vsg::dmat4 oldCenterLocalToWorld = _centerReferenceFrame; // _centerLocalToWorld;
 
     // move the center point
-    double old_len = vsg::length(_state.center);
     vsg::dvec3 new_center = _state.center + dv;
 
     if (mapNode->srs().isGeocentric())
     {
+        double old_len = vsg::length(_state.center);
         // in geocentric, ensure that it doesn't change length.
         new_center = vsg::normalize(new_center);
         new_center *= old_len;
@@ -1589,7 +1588,6 @@ namespace
         {
             omega = acos(cosomega);  // 0 <= omega <= Pi (see man acos)
             sinomega = sin(omega);  // this sinomega should always be +ve so
-            // could try sinomega=sqrt(1-cosomega*cosomega) to avoid a sin()?
             scale_from = sin((1.0 - t) * omega) / sinomega;
             scale_to = sin(t * omega) / sinomega;
         }
@@ -1606,19 +1604,11 @@ namespace
 void
 MapManipulator::zoom(double dx, double dy)
 {
-    //if (isTethering())
-    //{
-    //    double scale = 1.0f + dy;
-    //    setDistance(_distance * scale);
-    //    collisionDetect();
-    //    return;
-    //}
-
     auto mapNode = getMapNode();
     if (!mapNode)
         return;
 
-    if (settings.zoomToMouse == true && dy < 0.0)
+    if (settings.zoomToMouse == true && dy < 0.0 && !isTethering())
     {
         vsg::dvec3 target;
 
