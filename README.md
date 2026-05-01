@@ -475,6 +475,8 @@ In the `rocky_demo` application you will find example code for each component, i
 
 <br/><br/>
 
+# Integrations
+
 # Rocky and Dear ImGui
 
 [Dear ImGui](https://github.com/ocornut/imgui) is a runtime UI SDK for C++. Rocky integrates with ImGui in two ways.
