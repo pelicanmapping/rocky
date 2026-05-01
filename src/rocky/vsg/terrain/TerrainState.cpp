@@ -272,12 +272,12 @@ TerrainState::createPipelineConfig(VSGContext context) const
 vsg::ref_ptr<vsg::StateGroup>
 TerrainState::createTerrainStateGroup(VSGContext context)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), false);
+    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), {});
 
     // create the configurator object:
     pipelineConfig = createPipelineConfig(context);
 
-    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, false);
+    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, {});
 
     if (!_terrainDescriptors.data)
     {
