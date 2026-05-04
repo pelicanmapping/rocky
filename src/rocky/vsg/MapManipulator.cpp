@@ -1235,7 +1235,7 @@ MapManipulator::updateProjection(vsg::Camera* camera)
             ortho->bottom = -h;
             ortho->top = h;
             ortho->nearDistance = 1.0;
-            ortho->farDistance = 1.1 * _state.distance;
+            ortho->farDistance = 2.0 * _state.distance;
 
             if (_isOrtho != wasOrtho)
             {
@@ -1534,8 +1534,9 @@ MapManipulator::pan(double dx, double dy)
 void
 MapManipulator::rotate(double dx, double dy)
 {
+    // do not allow pitch changes in orthographic mode:
     if (_isOrtho)
-        return;
+        dy = 0.0;
 
     // clamp the local pitch delta; never allow the pitch to hit -90.
     double minp = glm::radians(std::min(settings.minPitch, -89.9));
