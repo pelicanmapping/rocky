@@ -19,7 +19,7 @@
     
     
       
-        <title>class TerrainEngine - Rocky</title>
+        <title>class TerrainTileFactory - Rocky</title>
       
     
     
@@ -60,7 +60,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#class-terrainengine" class="md-skip">
+        <a href="#class-terraintilefactory" class="md-skip">
           Skip to content
         </a>
       
@@ -96,7 +96,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              class TerrainEngine
+              class TerrainTileFactory
             
           </span>
         </div>
@@ -344,10 +344,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#terrainengine" class="md-nav__link">
+  <a href="#terraintilefactory" class="md-nav__link">
     <span class="md-ellipsis">
       
-        TerrainEngine
+        TerrainTileFactory
       
     </span>
   </a>
@@ -355,10 +355,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#terrainengine_1" class="md-nav__link">
+  <a href="#terraintilefactory_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        ~TerrainEngine
+        ~TerrainTileFactory
       
     </span>
   </a>
@@ -409,8 +409,8 @@
 
 
 
-<h1 id="class-terrainengine">class TerrainEngine</h1>
-<p><em>Defined at src/rocky/vsg/terrain/TerrainEngine.h#22</em></p>
+<h1 id="class-terraintilefactory">class TerrainTileFactory</h1>
+<p><em>Defined at src/rocky/vsg/terrain/TerrainTileFactory.h#22</em></p>
 <p>Access to all terrain-specific logic, data, and settings associated with a Map.</p>
 <h2 id="members">Members</h2>
 <p>public const int &amp; settings</p>
@@ -418,14 +418,14 @@
 <p>public int profile</p>
 <p>public int renderingSRS</p>
 <p>public int geometryPool</p>
-<p>public int stateFactory</p>
+<p>public int state</p>
 <p>public int * host</p>
 <p>public int loadSchedulerName</p>
 <h2 id="functions">Functions</h2>
-<h3 id="terrainengine">TerrainEngine</h3>
-<p><em>public void TerrainEngine(int map, const int &amp; profile, const int &amp; renderingSRS, int stateFactory, int context, const int &amp; settings, int * host)</em></p>
-<h3 id="terrainengine_1">~TerrainEngine</h3>
-<p><em>public void ~TerrainEngine()</em></p>
+<h3 id="terraintilefactory">TerrainTileFactory</h3>
+<p><em>public void TerrainTileFactory(int map, const int &amp; profile, const int &amp; renderingSRS, int state, int context, const int &amp; settings, int * host)</em></p>
+<h3 id="terraintilefactory_1">~TerrainTileFactory</h3>
+<p><em>public void ~TerrainTileFactory()</em></p>
 <h3 id="createtile">createTile</h3>
 <p><em>public int createTile(const int &amp; key, int parent, int context)</em></p>
 <p>Create a single terrain tile.</p>
