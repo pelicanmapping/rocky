@@ -12,6 +12,7 @@
 #include "WidgetSystem.h"
 #include "TransformSystem.h"
 #include "NodeGraphSystem.h"
+#include "ScriptSystem.h"
 
 ROCKY_ABOUT(entt, ENTT_VERSION);
 
@@ -124,6 +125,10 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
         add(LabelSystem::create(registry));
 #ifdef ROCKY_HAS_IMGUI
         add(WidgetSystemNode::create(registry));
+#endif
+
+#ifdef ROCKY_HAS_LUA
+        add(ScriptSystem::create(registry));
 #endif
     }
 }

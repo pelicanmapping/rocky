@@ -16,6 +16,7 @@
 #include <rocky/ecs/Declutter.h>
 #include <rocky/ecs/PixelScale.h>
 #include <rocky/ecs/EntityCollectionLayer.h>
+#include <rocky/ecs/Script.h>
 
 namespace ROCKY_NAMESPACE
 {

@@ -182,6 +182,15 @@ if(UNIX)
     list(APPEND PUBLIC_LIBS Threads::Threads)
 endif()
 
+# this is heuristically generated, and may not be correct
+find_package(sol2 CONFIG REQUIRED)
+find_package(Lua REQUIRED)
+if (sol2_FOUND AND Lua_FOUND)
+    set(ROCKY_HAS_LUA TRUE)
+    list(APPEND PUBLIC_LIBS sol2::sol2)
+    #target_include_directories(rocky PRIVATE ${LUA_INCLUDE_DIR})
+    list(APPEND PUBLIC_LIBS ${LUA_LIBRARIES})
+endif()
 
 # VSG - rendering implementation
 if(ROCKY_RENDERER_VSG)
