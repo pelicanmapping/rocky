@@ -13,29 +13,73 @@ auto Demo_Label = [](Application& app)
     static Status status;
     static std::vector<std::string> fonts;
 
+    std::string scriptCode = R"(
+        function onStart()
+            print("Hello from Lua!")
+        end
+
+        num_updates = 0
+
+        function onUpdate()
+            num_updates = num_updates + 1
+            self:setText("Hello from Lua! Updates: " .. num_updates .. " id=" .. self.id)
+        end
+    )";
+
     if (entity == entt::null)
     {
         auto [lock, reg] = app.registry.write();
 
-        // Create a host entity
-        entity = reg.create();
+        {
+            // Create a host entity
+            entity = reg.create();
 
-        // Style for our label
-        auto& style = reg.emplace<LabelStyle>(entity);
-        style.textSize = 18.0f;
-        style.outlineSize = 1.0f;
-        style.backgroundColor = Color(0, 0, 0.5f, 0.75f);
-        style.borderSize = 1.0f;
-        style.borderColor = StockColor::Cyan;
-        style.padding = { 4.0f, 3.0f };
-        style.fontName = std::filesystem::path(ROCKY_DEMO_DEFAULT_FONT).lexically_normal().string();
+            // Style for our label
+            auto& style = reg.emplace<LabelStyle>(entity);
+            style.textSize = 18.0f;
+            style.outlineSize = 1.0f;
+            style.backgroundColor = Color(0, 0, 0.5f, 0.75f);
+            style.borderSize = 1.0f;
+            style.borderColor = StockColor::Cyan;
+            style.padding = { 4.0f, 3.0f };
+            style.fontName = std::filesystem::path(ROCKY_DEMO_DEFAULT_FONT).lexically_normal().string();
 
-        // Label data to render in the widget
-        auto& label = reg.emplace<Label>(entity, "Thank you for trying Rocky", style);
-        
-        // Attach a transform to place and move the label:
-        auto& transform = reg.emplace<Transform>(entity);
-        transform.position = GeoPoint(SRS::WGS84, -35.0, 20.0, 15000.0);
+            // Label data to render in the widget
+            auto& label = reg.emplace<Label>(entity, "Entity 1", style);
+
+            // Attach a transform to place and move the label:
+            auto& transform = reg.emplace<Transform>(entity);
+            transform.position = GeoPoint(SRS::WGS84, -35.0, 20.0, 15000.0);
+
+            // Add a script to the label.
+            reg.emplace<Script>(entity, scriptCode);
+        }
+
+
+        {
+            // Create a host entity
+            entity = reg.create();
+
+            // Style for our label
+            auto& style = reg.emplace<LabelStyle>(entity);
+            style.textSize = 18.0f;
+            style.outlineSize = 1.0f;
+            style.backgroundColor = Color(1, 0, 0.5f, 0.75f);
+            style.borderSize = 1.0f;
+            style.borderColor = StockColor::Cyan;
+            style.padding = { 4.0f, 3.0f };
+            style.fontName = std::filesystem::path(ROCKY_DEMO_DEFAULT_FONT).lexically_normal().string();
+
+            // Label data to render in the widget
+            auto& label = reg.emplace<Label>(entity, "Entity 2", style);
+
+            // Attach a transform to place and move the label:
+            auto& transform = reg.emplace<Transform>(entity);
+            transform.position = GeoPoint(SRS::WGS84, -50.0, 20.0, 15000.0);
+
+            // Add a script to the label.
+            reg.emplace<Script>(entity, scriptCode);
+        }
 
         app.vsgcontext->requestFrame();
 
