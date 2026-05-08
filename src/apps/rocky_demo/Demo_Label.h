@@ -15,14 +15,41 @@ auto Demo_Label = [](Application& app)
 
     std::string scriptCode = R"(
         function onStart()
-            print("Hello from Lua!")
+            print(string.format("onStart called for entity %d", self.id))
+        end
+
+        function onDestroy()
+            print(string.format("onDestroy called for entity %d", self.id))
         end
 
         num_updates = 0
 
         function onUpdate()
             num_updates = num_updates + 1
-            self:setText("Hello from Lua! Updates: " .. num_updates .. " id=" .. self.id)
+
+            local label = self:getComponent("Label")
+            local style = self:getComponent("LabelStyle")
+            local transform = self:getComponent("Transform")
+            if label == nil or style == nil or transform == nil then
+                return
+            end
+
+            if base_lon == nil then
+                base_lon = transform.longitude
+                base_lat = transform.latitude
+                base_alt = transform.altitude
+            end
+
+            local t = num_updates * 0.025
+            local lon = base_lon + math.sin(t) * 8.0
+            local lat = base_lat + math.cos(t * 0.7) * 3.0
+            local r = 0.5 + math.sin(t * 2.1) * 0.5
+            local g = 0.5 + math.sin(t * 1.7 + 2.1) * 0.5
+            local b = 0.5 + math.sin(t * 1.3 + 4.2) * 0.5
+
+            transform:setPosition(lon, lat, base_alt)
+            style:setTextColor(r, g, b, 1.0)
+            label:setText(string.format("id=%d pos=%.2f, %.2f, %.2f", tostring(self.id), lon, lat, base_alt))
         end
     )";
 

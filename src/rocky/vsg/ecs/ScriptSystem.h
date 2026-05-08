@@ -25,6 +25,18 @@ namespace ROCKY_NAMESPACE
 
         //! Per frame update
         void update(VSGContext) override;
+
+    private:
+        void on_construct_Script(entt::registry& registry, entt::entity entity);
+        void on_destroy_Script(entt::registry& registry, entt::entity entity);
+
+        void startScript(entt::registry& registry, entt::entity entity, Script& script);
+        void callScriptFunction(
+            entt::registry& registry,
+            entt::entity entity,
+            Script& script,
+            sol::protected_function& function,
+            const char* functionName);
     };
 }
 
