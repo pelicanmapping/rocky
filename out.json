@@ -1,0 +1,22 @@
+{
+    "map": {
+        "layers": [
+            {
+                "attribution": {
+                    "href": "https://readymap.org",
+                    "text": "ReadyMap(R) data courtesy of Pelican Mapping"
+                },
+                "name": "ReadyMap 15m Base Imagery",
+                "type": "TMSImage",
+                "uri": "https://readymap.org/readymap/tiles/1.0.0/7/"
+            },
+            {
+                "name": "ReadyMap 90m Elevation",
+                "type": "TMSElevation",
+                "uri": "https://readymap.org/readymap/tiles/1.0.0/116/"
+            }
+        ],
+        "name": ""
+    },
+    "terrain": {}
+}
