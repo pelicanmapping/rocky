@@ -553,7 +553,7 @@
 
 
 <h1 id="struct-mesh_t">struct mesh_t</h1>
-<p><em>Defined at src/rocky/weemesh.h#264</em></p>
+<p><em>Defined at src/rocky/weemesh.h#270</em></p>
 <p>connected mesh of triangles, verts, and associated markers</p>
 <h2 id="members">Members</h2>
 <p>public int uidgen</p>
@@ -571,66 +571,66 @@
 <h2 id="functions">Functions</h2>
 <h3 id="mesh_t">mesh_t</h3>
 <p><em>public void mesh_t()</em></p>
-<p><em>Defined at src/rocky/weemesh.h#280</em></p>
+<p><em>Defined at src/rocky/weemesh.h#286</em></p>
 <h3 id="set_boundary_marker">set_boundary_marker</h3>
 <p><em>public void set_boundary_marker(int value)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#285</em></p>
+<p><em>Defined at src/rocky/weemesh.h#291</em></p>
 <h3 id="set_constraint_marker">set_constraint_marker</h3>
 <p><em>public void set_constraint_marker(int value)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#290</em></p>
+<p><em>Defined at src/rocky/weemesh.h#296</em></p>
 <h3 id="set_has_elevation_marker">set_has_elevation_marker</h3>
 <p><em>public void set_has_elevation_marker(int value)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#295</em></p>
+<p><em>Defined at src/rocky/weemesh.h#301</em></p>
 <h3 id="remove_triangle">remove_triangle</h3>
 <p><em>public void remove_triangle(triangle_t &amp; tri)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#301</em></p>
+<p><em>Defined at src/rocky/weemesh.h#307</em></p>
 <p>delete triangle from the mesh</p>
 <h3 id="add_triangle">add_triangle</h3>
 <p><em>public int add_triangle(int i0, int i1, int i2)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#313</em></p>
+<p><em>Defined at src/rocky/weemesh.h#319</em></p>
 <p>add new triangle to the mesh from 3 indices</p>
 <h3 id="get_vertex">get_vertex</h3>
 <p><em>public const vert_t &amp; get_vertex(unsigned int i)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#352</em></p>
+<p><em>Defined at src/rocky/weemesh.h#364</em></p>
 <p>find a vertex by its index</p>
 <h3 id="get_vertex_1">get_vertex</h3>
 <p><em>public vert_t &amp; get_vertex(unsigned int i)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#358</em></p>
+<p><em>Defined at src/rocky/weemesh.h#370</em></p>
 <p>find a vertex by its index</p>
 <h3 id="get_marker">get_marker</h3>
 <p><em>public int &amp; get_marker(const vert_t &amp; vert)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#364</em></p>
+<p><em>Defined at src/rocky/weemesh.h#376</em></p>
 <p>find the marker for a vertex</p>
 <h3 id="get_marker_1">get_marker</h3>
 <p><em>public int get_marker(int i)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#370</em></p>
+<p><em>Defined at src/rocky/weemesh.h#382</em></p>
 <p>find the marker for a vertex index</p>
 <h3 id="get_or_create_vertex">get_or_create_vertex</h3>
 <p><em>public int get_or_create_vertex(const vert_t &amp; input, int marker)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#377</em></p>
+<p><em>Defined at src/rocky/weemesh.h#389</em></p>
 <p>Add a new vertex (or lookup a matching one) and return its index. If the vertex already exists, update its marker if necessary.</p>
 <h3 id="get_triangles">get_triangles</h3>
 <p><em>public unsigned int get_triangles(struct vert_t::value_type xmin, struct vert_t::value_type ymin, struct vert_t::value_type xmax, struct vert_t::value_type ymax, int &amp; output)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#402</em></p>
+<p><em>Defined at src/rocky/weemesh.h#414</em></p>
 <p>fetch a pointer to each triangle that intersects the bounding box</p>
 <h3 id="get_or_create_vertex_from_vec3">get_or_create_vertex_from_vec3</h3>
 <p><em>public int get_or_create_vertex_from_vec3(const T &amp; vec, int marker)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#414</em></p>
+<p><em>Defined at src/rocky/weemesh.h#429</em></p>
 <h3 id="insert">insert</h3>
 <p><em>public void insert(const vert_t &amp; vert, int marker)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#419</em></p>
+<p><em>Defined at src/rocky/weemesh.h#434</em></p>
 <p>insert a point into the mesh, cutting triangles as necessary</p>
 <h3 id="insert_1">insert</h3>
 <p><em>public void insert(const segment_t &amp; seg, int marker)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#453</em></p>
+<p><em>Defined at src/rocky/weemesh.h#472</em></p>
 <p>insert a segment into the mesh, cutting triangles as necessary</p>
 <h3 id="inside_split">inside_split</h3>
 <p><em>public _Bool inside_split(triangle_t &amp; tri, const vert_t &amp; p, int * uid_list, int new_marker)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#657</em></p>
+<p><em>Defined at src/rocky/weemesh.h#680</em></p>
 <p>inserts point "p" into the interior of triangle "tri", adds three new triangles, and removes the original triangle. return true if a split actual happened</p>
 <h3 id="point_on_edge_closest_to">point_on_edge_closest_to</h3>
 <p><em>public vert_t point_on_edge_closest_to(const edge_t &amp; edge, const vert_t &amp; p)</em></p>
-<p><em>Defined at src/rocky/weemesh.h#733</em></p>
+<p><em>Defined at src/rocky/weemesh.h#759</em></p>
 
 
 
