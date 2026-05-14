@@ -15,11 +15,11 @@ auto Demo_Label = [](Application& app)
 
     std::string scriptCode = R"(
         function onStart()
-            print(string.format("onStart called for entity %d", self.id))
+            print("onStart called for entity " .. tostring(self.id))
         end
 
         function onDestroy()
-            print(string.format("onDestroy called for entity %d", self.id))
+            print("onDestroy called for entity " .. tostring(self.id))
         end
 
         num_updates = 0
@@ -35,9 +35,9 @@ auto Demo_Label = [](Application& app)
             end
 
             if base_lon == nil then
-                base_lon = transform.longitude
-                base_lat = transform.latitude
-                base_alt = transform.altitude
+                base_lon = transform.position.x
+                base_lat = transform.position.y
+                base_alt = transform.position.z
             end
 
             local t = num_updates * 0.025
@@ -47,9 +47,19 @@ auto Demo_Label = [](Application& app)
             local g = 0.5 + math.sin(t * 1.7 + 2.1) * 0.5
             local b = 0.5 + math.sin(t * 1.3 + 4.2) * 0.5
 
-            transform:setPosition(lon, lat, base_alt)
-            style:setTextColor(r, g, b, 1.0)
-            label:setText(string.format("id=%d pos=%.2f, %.2f, %.2f", tostring(self.id), lon, lat, base_alt))
+            transform.position.x = lon
+            transform.position.y = lat
+            transform.position.z = base_alt
+            self:dirty("Transform")
+
+            style.textColor.r = r
+            style.textColor.g = g
+            style.textColor.b = b
+            style.textColor.a = 1.0
+            self:dirty("LabelStyle")
+
+            label.text = string.format("id=%s pos=%.2f, %.2f, %.2f", tostring(self.id), lon, lat, base_alt)
+            self:dirty("Label")
         end
     )";
 

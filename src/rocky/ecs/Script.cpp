@@ -106,172 +106,6 @@ void Script::setProgram(std::shared_ptr<ScriptProgram> program)
     }
 }
 
-LabelComponent::LabelComponent(entt::entity id, entt::registry& registry) :
-    id(id),
-    registry(registry)
-{
-}
-
-bool LabelComponent::valid() const
-{
-    return registry.all_of<Label>(id);
-}
-
-std::string LabelComponent::getText() const
-{
-    auto* label = registry.try_get<Label>(id);
-    return label ? label->text : std::string();
-}
-
-void LabelComponent::setText(const std::string& text)
-{
-    auto* label = registry.try_get<Label>(id);
-    if (label)
-    {
-        label->text = text;
-        Label::dirty(registry, id);
-    }
-}
-
-TransformComponent::TransformComponent(entt::entity id, entt::registry& registry) :
-    id(id),
-    registry(registry)
-{
-}
-
-bool TransformComponent::valid() const
-{
-    return registry.all_of<Transform>(id);
-}
-
-double TransformComponent::getLongitude() const
-{
-    auto* transform = registry.try_get<Transform>(id);
-    return transform ? transform->position.x : 0.0;
-}
-
-void TransformComponent::setLongitude(double value)
-{
-    auto* transform = registry.try_get<Transform>(id);
-    if (transform)
-    {
-        transform->position.x = value;
-        transform->dirty(registry);
-    }
-}
-
-double TransformComponent::getLatitude() const
-{
-    auto* transform = registry.try_get<Transform>(id);
-    return transform ? transform->position.y : 0.0;
-}
-
-void TransformComponent::setLatitude(double value)
-{
-    auto* transform = registry.try_get<Transform>(id);
-    if (transform)
-    {
-        transform->position.y = value;
-        transform->dirty(registry);
-    }
-}
-
-double TransformComponent::getAltitude() const
-{
-    auto* transform = registry.try_get<Transform>(id);
-    return transform ? transform->position.z : 0.0;
-}
-
-void TransformComponent::setAltitude(double value)
-{
-    auto* transform = registry.try_get<Transform>(id);
-    if (transform)
-    {
-        transform->position.z = value;
-        transform->dirty(registry);
-    }
-}
-
-void TransformComponent::setPosition(double longitude, double latitude, double altitude)
-{
-    auto* transform = registry.try_get<Transform>(id);
-    if (transform)
-    {
-        auto srs = transform->position.srs.valid() ? transform->position.srs : SRS::WGS84;
-        transform->position = GeoPoint(srs, longitude, latitude, altitude);
-        transform->dirty(registry);
-    }
-}
-
-void TransformComponent::translate(double longitude_delta, double latitude_delta, double altitude_delta)
-{
-    auto* transform = registry.try_get<Transform>(id);
-    if (transform)
-    {
-        transform->position.x += longitude_delta;
-        transform->position.y += latitude_delta;
-        transform->position.z += altitude_delta;
-        transform->dirty(registry);
-    }
-}
-
-LabelStyleComponent::LabelStyleComponent(entt::entity id, entt::registry& registry) :
-    id(id),
-    registry(registry)
-{
-}
-
-bool LabelStyleComponent::valid() const
-{
-    return registry.all_of<LabelStyle>(id);
-}
-
-float LabelStyleComponent::getTextSize() const
-{
-    auto* style = registry.try_get<LabelStyle>(id);
-    return style ? style->textSize : 0.0f;
-}
-
-void LabelStyleComponent::setTextSize(float value)
-{
-    auto* style = registry.try_get<LabelStyle>(id);
-    if (style)
-    {
-        style->textSize = value;
-        style->dirty(registry);
-    }
-}
-
-void LabelStyleComponent::setTextColor(float r, float g, float b, float a)
-{
-    auto* style = registry.try_get<LabelStyle>(id);
-    if (style)
-    {
-        style->textColor = Color(r, g, b, a);
-        style->dirty(registry);
-    }
-}
-
-void LabelStyleComponent::setBackgroundColor(float r, float g, float b, float a)
-{
-    auto* style = registry.try_get<LabelStyle>(id);
-    if (style)
-    {
-        style->backgroundColor = Color(r, g, b, a);
-        style->dirty(registry);
-    }
-}
-
-void LabelStyleComponent::setBorderColor(float r, float g, float b, float a)
-{
-    auto* style = registry.try_get<LabelStyle>(id);
-    if (style)
-    {
-        style->borderColor = Color(r, g, b, a);
-        style->dirty(registry);
-    }
-}
-
 EntityWrapper::EntityWrapper(entt::entity id, entt::registry& registry) :
     id(id),
     registry(registry)
@@ -281,6 +115,32 @@ EntityWrapper::EntityWrapper(entt::entity id, entt::registry& registry) :
 sol::object EntityWrapper::getComponent(const std::string& name)
 {
     return ScriptState::Instance().getComponent(name, id, registry);
+}
+
+void EntityWrapper::dirty(const std::string& name)
+{
+    if (name == "Label" && registry.all_of<Label>(id))
+    {
+        Label::dirty(registry, id);
+    }
+    else if (name == "LabelStyle")
+    {
+        if (registry.all_of<LabelStyle>(id))
+        {
+            LabelStyle::dirty(registry, id);
+        }
+        else if (auto* label = registry.try_get<Label>(id); label && label->style != entt::null && registry.all_of<LabelStyle>(label->style))
+        {
+            LabelStyle::dirty(registry, label->style);
+        }
+    }
+    else if (name == "Transform")
+    {
+        if (auto* transform = registry.try_get<Transform>(id))
+        {
+            transform->dirty(registry);
+        }
+    }
 }
 
 ScriptState& ScriptState::Instance()
@@ -310,75 +170,88 @@ void ScriptState::Initialize()
 
 void ScriptState::RegisterBindings()
 {
-    lua.new_usertype<LabelComponent>("LabelComponent",
-        "valid", &LabelComponent::valid,
-        "text", sol::property(&LabelComponent::getText, &LabelComponent::setText),
-        "getText", &LabelComponent::getText,
-        "setText", &LabelComponent::setText
+    lua.new_usertype<Color>("Color",
+        sol::constructors<Color(), Color(float, float, float, float)>(),
+        "r", sol::property(
+            [](const Color& color) { return color[0]; },
+            [](Color& color, float value) { color[0] = value; }),
+        "g", sol::property(
+            [](const Color& color) { return color[1]; },
+            [](Color& color, float value) { color[1] = value; }),
+        "b", sol::property(
+            [](const Color& color) { return color[2]; },
+            [](Color& color, float value) { color[2] = value; }),
+        "a", sol::property(
+            [](const Color& color) { return color[3]; },
+            [](Color& color, float value) { color[3] = value; })
     );
 
-    lua.new_usertype<TransformComponent>("TransformComponent",
-        "valid", &TransformComponent::valid,
-        "longitude", sol::property(&TransformComponent::getLongitude, &TransformComponent::setLongitude),
-        "latitude", sol::property(&TransformComponent::getLatitude, &TransformComponent::setLatitude),
-        "altitude", sol::property(&TransformComponent::getAltitude, &TransformComponent::setAltitude),
-        "setPosition", &TransformComponent::setPosition,
-        "translate", sol::overload(
-            [](TransformComponent& self, double longitude_delta, double latitude_delta)
-            {
-                self.translate(longitude_delta, latitude_delta);
-            },
-            &TransformComponent::translate)
+    lua.new_usertype<GeoPoint>("GeoPoint",
+        "x", sol::property(
+            [](const GeoPoint& point) { return point.x; },
+            [](GeoPoint& point, double value) { point.x = value; }),
+        "y", sol::property(
+            [](const GeoPoint& point) { return point.y; },
+            [](GeoPoint& point, double value) { point.y = value; }),
+        "z", sol::property(
+            [](const GeoPoint& point) { return point.z; },
+            [](GeoPoint& point, double value) { point.z = value; })
     );
 
-    lua.new_usertype<LabelStyleComponent>("LabelStyleComponent",
-        "valid", &LabelStyleComponent::valid,
-        "textSize", sol::property(&LabelStyleComponent::getTextSize, &LabelStyleComponent::setTextSize),
-        "setTextColor", sol::overload(
-            [](LabelStyleComponent& self, float r, float g, float b)
-            {
-                self.setTextColor(r, g, b);
-            },
-            &LabelStyleComponent::setTextColor),
-        "setBackgroundColor", sol::overload(
-            [](LabelStyleComponent& self, float r, float g, float b)
-            {
-                self.setBackgroundColor(r, g, b);
-            },
-            &LabelStyleComponent::setBackgroundColor),
-        "setBorderColor", sol::overload(
-            [](LabelStyleComponent& self, float r, float g, float b)
-            {
-                self.setBorderColor(r, g, b);
-            },
-            &LabelStyleComponent::setBorderColor)
+    lua.new_usertype<Label>("Label",
+        "text", &Label::text,
+        "style", &Label::style
+    );
+
+    lua.new_usertype<LabelStyle>("LabelStyle",
+        "fontName", &LabelStyle::fontName,
+        "textColor", &LabelStyle::textColor,
+        "textSize", &LabelStyle::textSize,
+        "outlineSize", &LabelStyle::outlineSize,
+        "outlineColor", &LabelStyle::outlineColor,
+        "borderSize", &LabelStyle::borderSize,
+        "borderColor", &LabelStyle::borderColor,
+        "backgroundColor", &LabelStyle::backgroundColor
+    );
+
+    lua.new_usertype<Transform>("Transform",
+        "position", &Transform::position,
+        "radius", &Transform::radius,
+        "topocentric", &Transform::topocentric,
+        "horizonCulled", &Transform::horizonCulled,
+        "frustumCulled", &Transform::frustumCulled,
+        "revision", &Transform::revision
     );
 
     lua.new_usertype<EntityWrapper>("EntityWrapper",
         "id", &EntityWrapper::id,
-        "getComponent", &EntityWrapper::getComponent
+        "getComponent", &EntityWrapper::getComponent,
+        "dirty", &EntityWrapper::dirty
     );
 
     registerComponentBinding("Label", [this](entt::entity entity, entt::registry& registry)
         {
-            if (registry.all_of<Label>(entity))
+            if (auto* label = registry.try_get<Label>(entity))
             {
-                return sol::make_object(lua, LabelComponent(entity, registry));
+                return sol::make_object(lua, label);
             }
             return sol::make_object(lua, sol::nil);
         });
 
     registerComponentBinding("LabelStyle", [this](entt::entity entity, entt::registry& registry)
         {
-            if (registry.all_of<LabelStyle>(entity))
+            if (auto* style = registry.try_get<LabelStyle>(entity))
             {
-                return sol::make_object(lua, LabelStyleComponent(entity, registry));
+                return sol::make_object(lua, style);
             }
 
             auto* label = registry.try_get<Label>(entity);
-            if (label && label->style != entt::null && registry.all_of<LabelStyle>(label->style))
+            if (label && label->style != entt::null)
             {
-                return sol::make_object(lua, LabelStyleComponent(label->style, registry));
+                if (auto* style = registry.try_get<LabelStyle>(label->style))
+                {
+                    return sol::make_object(lua, style);
+                }
             }
 
             return sol::make_object(lua, sol::nil);
@@ -386,9 +259,9 @@ void ScriptState::RegisterBindings()
 
     registerComponentBinding("Transform", [this](entt::entity entity, entt::registry& registry)
         {
-            if (registry.all_of<Transform>(entity))
+            if (auto* transform = registry.try_get<Transform>(entity))
             {
-                return sol::make_object(lua, TransformComponent(entity, registry));
+                return sol::make_object(lua, transform);
             }
             return sol::make_object(lua, sol::nil);
         });

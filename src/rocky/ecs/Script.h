@@ -61,60 +61,6 @@ namespace ROCKY_NAMESPACE
         bool started = false;
     };
 
-    class ROCKY_EXPORT LabelComponent
-    {
-    public:
-        LabelComponent(entt::entity id, entt::registry& registry);
-
-        bool valid() const;
-        std::string getText() const;
-        void setText(const std::string& text);
-
-        entt::entity id;
-        entt::registry& registry;
-    };
-
-    class ROCKY_EXPORT TransformComponent
-    {
-    public:
-        TransformComponent(entt::entity id, entt::registry& registry);
-
-        bool valid() const;
-
-        double getLongitude() const;
-        void setLongitude(double value);
-
-        double getLatitude() const;
-        void setLatitude(double value);
-
-        double getAltitude() const;
-        void setAltitude(double value);
-
-        void setPosition(double longitude, double latitude, double altitude);
-        void translate(double longitude_delta, double latitude_delta, double altitude_delta = 0.0);
-
-        entt::entity id;
-        entt::registry& registry;
-    };
-
-    class ROCKY_EXPORT LabelStyleComponent
-    {
-    public:
-        LabelStyleComponent(entt::entity id, entt::registry& registry);
-
-        bool valid() const;
-
-        float getTextSize() const;
-        void setTextSize(float value);
-
-        void setTextColor(float r, float g, float b, float a = 1.0f);
-        void setBackgroundColor(float r, float g, float b, float a = 1.0f);
-        void setBorderColor(float r, float g, float b, float a = 1.0f);
-
-        entt::entity id;
-        entt::registry& registry;
-    };
-
     class EntityWrapper
     {
     public:
@@ -122,6 +68,7 @@ namespace ROCKY_NAMESPACE
         EntityWrapper(entt::entity id, entt::registry& registry);
 
         sol::object getComponent(const std::string& name);
+        void dirty(const std::string& name);
 
         entt::entity id;
         entt::registry& registry;
