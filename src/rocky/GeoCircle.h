@@ -54,7 +54,8 @@ namespace ROCKY_NAMESPACE
 
      public:
 
-         static GeoCircle INVALID;
+         /** Represents an invalid, uninitialized circle */
+         static const GeoCircle& invalid();
 
      protected:
          GeoPoint _center;

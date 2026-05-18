@@ -85,7 +85,7 @@ namespace ROCKY_NAMESPACE
         inline std::pair<SRSOperation, glm::dvec3> parseAsReferencePoint() const;
 
     public:
-        static GeoPoint INVALID;
+        static const GeoPoint& invalid();
 
         // copy/move ops
         GeoPoint(const GeoPoint& rhs) = default;

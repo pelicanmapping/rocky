@@ -8,11 +8,9 @@ using namespace ROCKY_NAMESPACE;
 #undef EPSILON
 #define EPSILON 1e-6
 
-GeoCircle GeoCircle::INVALID = GeoCircle();
-
 
 GeoCircle::GeoCircle() :
-    _center(GeoPoint::INVALID),
+    _center(GeoPoint::invalid()),
     _radius(-1.0)
 {
     //nop
@@ -74,4 +72,11 @@ GeoCircle::intersects( const GeoCircle& rhs ) const
             return p0.geodesicDistanceTo(p1) <= Distance(radius() + rhs.radius());
         }
     }
+}
+
+const GeoCircle&
+GeoCircle::invalid()
+{
+    static GeoCircle instance(GeoPoint::invalid(), -1.0);
+    return instance;
 }

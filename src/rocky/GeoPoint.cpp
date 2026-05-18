@@ -8,8 +8,6 @@ using namespace ROCKY_NAMESPACE::detail;
 #undef  LC
 #define LC "[GeoPoint] "
 
-GeoPoint GeoPoint::INVALID;
-
 GeoPoint::GeoPoint()
 {
     //nop
@@ -104,6 +102,13 @@ std::string
 GeoPoint::string() const
 {
     return std::to_string(x) + ", " + std::to_string(y) + ", " + std::to_string(z) + " (" + srs.definition() + ")";
+}
+
+const GeoPoint&
+GeoPoint::invalid()
+{
+    static GeoPoint instance;
+    return instance;
 }
 
 #include "json.h"

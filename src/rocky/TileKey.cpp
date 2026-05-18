@@ -46,7 +46,7 @@ GeoExtent
 TileKey::extent() const
 {
     if (!valid())
-        return GeoExtent::INVALID;
+        return GeoExtent::invalid();
 
     auto[width, height] = profile.tileDimensions(level);
     double xmin = profile.extent().xmin() + (width * (double)x);

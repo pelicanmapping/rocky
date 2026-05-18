@@ -26,8 +26,6 @@ namespace {
     }
 }
 
-GeoExtent GeoExtent::INVALID = GeoExtent();
-
 
 GeoExtent::GeoExtent() :
     _west(0.0),
@@ -126,7 +124,7 @@ GeoExtent::centroid() const
             normalizeX(west() + 0.5 * width()),
             south() + 0.5 * height());
     }
-    else return GeoPoint::INVALID;
+    else return GeoPoint::invalid();
 }
 
 bool
@@ -232,7 +230,7 @@ GeoExtent::transform(const SRS& to_srs) const
 {
     // check for NULL
     if (!valid() || !to_srs.valid())
-        return GeoExtent::INVALID;
+        return GeoExtent::invalid();
 
     if (to_srs.isGeocentric())
         return transform(to_srs.geodeticSRS());
@@ -557,20 +555,20 @@ GeoExtent::intersectionSameSRS(const GeoExtent& rhs) const
 {
     if (!valid() || !rhs.valid())
     {
-        return GeoExtent::INVALID;
+        return GeoExtent::invalid();
     }
 
     // check for basic intersection. Note, we do NOT validate
     // that they are the same SRS!
     if (!intersects(rhs))
     {
-        return GeoExtent::INVALID;
+        return GeoExtent::invalid();
     }
 
     // first check Y.
     if (ymin() > rhs.ymax() || ymax() < rhs.ymin())
     {
-        return GeoExtent::INVALID; // they don't overlap in Y.
+        return GeoExtent::invalid(); // they don't overlap in Y.
     }
 
     GeoExtent result(*this);
@@ -883,6 +881,13 @@ GeoExtent::createScaleBias(const GeoExtent& rhs, glm::dmat4& output) const
     output[3][1] = biasy;  // [1][3]?
 
     return true;
+}
+
+const GeoExtent&
+GeoExtent::invalid()
+{
+    static GeoExtent instance;
+    return instance;
 }
 
 

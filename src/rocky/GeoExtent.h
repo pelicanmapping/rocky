@@ -177,7 +177,7 @@ namespace ROCKY_NAMESPACE
         inline void clamp(ITER begin, ITER end) const;
 
     public:
-        static GeoExtent INVALID;
+        static const GeoExtent& invalid();
 
     private:
         double _west, _width, _south, _height;

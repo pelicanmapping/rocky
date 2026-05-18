@@ -21,7 +21,7 @@ using namespace ROCKY_NAMESPACE;
 
 GeoImage::GeoImage() :
     _image(nullptr),
-    _extent(GeoExtent::INVALID)
+    _extent(GeoExtent::invalid())
 {
     //nop
 }
@@ -35,7 +35,7 @@ GeoImage::operator=(GeoImage&& rhs) noexcept
         _extent = std::move(rhs._extent);
     }
     rhs._image = nullptr;
-    rhs._extent = GeoExtent::INVALID;
+    rhs._extent = GeoExtent::invalid();
     return *this;
 }
 
