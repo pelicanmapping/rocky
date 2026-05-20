@@ -1,3 +1,7 @@
+# Overview
+A good overview of this project is in the [README.md](README.md)
+
+# Building
 This project uses CMake to build.
 
 Do not attempt to figure out how to build this project on your own.  Use these instructions explicitly.
@@ -22,3 +26,6 @@ To run unit tests run this command from the tests directory
 ```
 rocky_tests
 ```
+
+# Demos
+Rocky has a project at [src/apps/rocky_demo](src/apps/rocky_demo) that contains many ImGui based demos that highlight capabilities of Rocky and also serves as a visual testing tool.  Each demo is stored in it's own file prefixed with Demo_XXX.h.  If you are asked to create a new demo, follow the coding style and theme of the existing demos and do your work there.
