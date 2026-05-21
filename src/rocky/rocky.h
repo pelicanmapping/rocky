@@ -30,6 +30,7 @@
 #include <rocky/vsg/ecs/EntityNode.h>
 #include <rocky/vsg/ecs/ECSTypes.h>
 #include <rocky/vsg/ecs/ECSVisitors.h>
+#include <rocky/vsg/ecs/AudioSystem.h>
 #include <rocky/vsg/ecs/WidgetSystem.h>
 #endif
 

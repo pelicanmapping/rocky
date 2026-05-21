@@ -12,6 +12,7 @@
 #include "WidgetSystem.h"
 #include "TransformSystem.h"
 #include "NodeGraphSystem.h"
+#include "AudioSystem.h"
 
 ROCKY_ABOUT(entt, ENTT_VERSION);
 
@@ -125,6 +126,7 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
 #ifdef ROCKY_HAS_IMGUI
         add(WidgetSystemNode::create(registry));
 #endif
+        add(AudioSystem::create(registry));
     }
 }
 

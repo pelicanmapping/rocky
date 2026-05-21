@@ -10,6 +10,7 @@
 #include <rocky/ecs/Mesh.h>
 #include <rocky/ecs/Point.h>
 #include <rocky/ecs/Label.h>
+#include <rocky/ecs/AudioSource.h>
 #include <rocky/ecs/Widget.h>
 #include <rocky/ecs/Transform.h>
 #include <rocky/ecs/Visibility.h>

@@ -10,7 +10,7 @@ set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
 
 rocky_glob(HEADERS_CORE *.h)
 list(APPEND HEADERS_CORE ${version_h})
-rocky_glob(SOURCES_CORE *.cpp tinyxml/*.cpp)
+rocky_glob(SOURCES_CORE *.cpp tinyxml/*.cpp *.c)
 
 macro(remove_items from_list)
     foreach(item ${ARGN})
@@ -180,6 +180,7 @@ endif()
 
 if(UNIX)
     list(APPEND PUBLIC_LIBS Threads::Threads)
+    list(APPEND PRIVATE_LIBS ${CMAKE_DL_LIBS} m)
 endif()
 
 
