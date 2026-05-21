@@ -122,6 +122,16 @@ if (BUILD_WITH_IMGUI)
     endif()            
 endif()
 
+# Jolt Physics - optional rigid body physics backend
+if (BUILD_WITH_JOLT)
+    find_package(Jolt CONFIG QUIET)
+    if (Jolt_FOUND)
+        set(ROCKY_HAS_JOLT TRUE)
+    else()
+        message(STATUS "Jolt Physics not found; rigid body physics support disabled.")
+    endif()
+endif()
+
 # pthreads - for linux
 if (UNIX)
     find_package(Threads REQUIRED)
@@ -168,6 +178,10 @@ endif()
 
 if(ImGui_FOUND)
     list(APPEND PRIVATE_LIBS imgui::imgui)
+endif()
+
+if(Jolt_FOUND)
+    list(APPEND PRIVATE_LIBS Jolt::Jolt)
 endif()
 
 if (ROCKY_SUPPORTS_AZURE)

@@ -193,3 +193,45 @@ SurfaceNode::recomputeBound()
 
     return worldBoundingSphere;
 }
+
+bool
+SurfaceNode::copyColliderMesh(std::vector<glm::dvec3>& vertices, std::vector<std::uint32_t>& indices) const
+{
+    vertices.clear();
+    indices.clear();
+
+    if (children.empty() || !_proxyVerts)
+        return false;
+
+    auto geom = static_cast<vsg::Group*>(children.front().get())->children.front()->cast<SharedGeometry>();
+    if (!geom || !geom->indexArray || !geom->uvs)
+        return false;
+
+    vertices.reserve(_proxyVerts->size());
+    for (auto& v : *_proxyVerts)
+    {
+        vertices.emplace_back(v.x, v.y, v.z);
+    }
+
+    indices.reserve(geom->indexArray->size());
+    for (std::size_t i = 0; i + 2 < geom->indexArray->size(); i += 3)
+    {
+        const std::uint32_t i0 = geom->indexArray->at(i);
+        const std::uint32_t i1 = geom->indexArray->at(i + 1);
+        const std::uint32_t i2 = geom->indexArray->at(i + 2);
+
+        const bool skirt =
+            (((int)geom->uvs->at(i0).z & VERTEX_SKIRT) != 0) ||
+            (((int)geom->uvs->at(i1).z & VERTEX_SKIRT) != 0) ||
+            (((int)geom->uvs->at(i2).z & VERTEX_SKIRT) != 0);
+
+        if (!skirt)
+        {
+            indices.emplace_back(i0);
+            indices.emplace_back(i1);
+            indices.emplace_back(i2);
+        }
+    }
+
+    return !vertices.empty() && !indices.empty();
+}

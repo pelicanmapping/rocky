@@ -54,7 +54,10 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
     // first, update the tracker to keep this tile alive.
     auto& info = _tiles[tile->key];
     if (!info.tile)
+    {
         info.tile = tile;
+        _host->terrainTileBecameResident(tile);
+    }
 
     if (info.trackerToken)
         info.trackerToken = _tracker.update(info.trackerToken);
@@ -216,6 +219,7 @@ TerrainTilePager::update(std::shared_ptr<TerrainTileFactory> tileFactory, VSGCon
                         tile->needsSubtiles = false;
                     }
                 }
+                _host->terrainTileWillBeReleased(tile);
                 _tiles.erase(key);
                 return true;
             }
@@ -427,6 +431,8 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io,
             tile->surface->setElevation(
                 tile->renderModel.elevation.image,
                 tile->renderModel.elevation.matrix);
+
+            tileFactory->host->terrainTileBecameResident(tile);
 
             vsgcontext->requestFrame();
             return true;

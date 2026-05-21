@@ -62,6 +62,7 @@ option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial p
 option(ROCKY_SUPPORTS_AZURE "Support Azure Maps (subscription required)" ON)
 option(ROCKY_SUPPORTS_BING "Support Bing Maps (subscription required)" OFF)
 option(ROCKY_SUPPORTS_IMGUI "Support Dear ImGui and build ImGui-based demos" ON)
+option(ROCKY_SUPPORTS_JOLT "Support rigid body physics with Jolt Physics" ON)
 option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
 
 # whether to copy dependency DLLs (under windows, usually) to the installation destination
@@ -106,6 +107,10 @@ endif()
 
 if(ROCKY_SUPPORTS_IMGUI)
     set(BUILD_WITH_IMGUI ON)
+endif()
+
+if(ROCKY_SUPPORTS_JOLT)
+    set(BUILD_WITH_JOLT ON)
 endif()
 
 # file(GLOB) what excludes anything starting with a '.'

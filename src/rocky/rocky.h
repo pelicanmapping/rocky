@@ -32,6 +32,9 @@
 #include <rocky/vsg/ecs/ECSVisitors.h>
 #include <rocky/vsg/ecs/AudioSystem.h>
 #include <rocky/vsg/ecs/WidgetSystem.h>
+#ifdef ROCKY_HAS_JOLT
+#include <rocky/vsg/ecs/JoltPhysicsSystem.h>
+#endif
 #endif
 
 // NOTE: do NOT add any imgui-related includes here

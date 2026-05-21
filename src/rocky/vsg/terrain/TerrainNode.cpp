@@ -116,6 +116,18 @@ TerrainProfileNode::ping(TerrainTileNode* tile, const TerrainTileNode* parent, v
     _tiles.ping(tile, parent, nv);
 }
 
+void
+TerrainProfileNode::terrainTileBecameResident(TerrainTileNode* tile)
+{
+    terrain.onTileResident.fire(tile);
+}
+
+void
+TerrainProfileNode::terrainTileWillBeReleased(TerrainTileNode* tile)
+{
+    terrain.onTileReleased.fire(tile);
+}
+
 
 
 

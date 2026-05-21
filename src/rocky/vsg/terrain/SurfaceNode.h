@@ -43,6 +43,11 @@ namespace ROCKY_NAMESPACE
         //! Force a recompute of the bounding box and culling information
         const vsg::dsphere& recomputeBound();
 
+        //! Copy the terrain mesh used for collision, excluding skirt triangles.
+        bool copyColliderMesh(
+            std::vector<glm::dvec3>& vertices,
+            std::vector<std::uint32_t>& indices) const;
+
         vsg::dsphere worldBoundingSphere;
         vsg::dbox localbbox;
 

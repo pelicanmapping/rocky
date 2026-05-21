@@ -21,5 +21,14 @@
         { "name" : "vsgxchange", "features": [ "assimp", "freetype" ] },
         { "name" : "vsgqt" },
         { "name" : "zlib" }
-    ]
+    ],
+    "default-features": [ "jolt" ],
+    "features": {
+        "jolt": {
+            "description": "Rigid body physics with Jolt Physics",
+            "dependencies": [
+                { "name" : "joltphysics" }
+            ]
+        }
+    }
 }

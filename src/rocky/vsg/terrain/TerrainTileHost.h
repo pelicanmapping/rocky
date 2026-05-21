@@ -25,5 +25,11 @@ namespace ROCKY_NAMESPACE
         virtual const TerrainSettings& settings() const = 0;
 
         virtual TerrainTilePager& tiles() = 0;
+
+        //! Called when a tile enters residency, or its collision-relevant mesh changes.
+        virtual void terrainTileBecameResident(TerrainTileNode*) { }
+
+        //! Called before a tile leaves residency.
+        virtual void terrainTileWillBeReleased(TerrainTileNode*) { }
     };
 }

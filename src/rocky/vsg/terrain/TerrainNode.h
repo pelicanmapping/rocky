@@ -13,6 +13,7 @@
 #include <rocky/Result.h>
 #include <rocky/Profile.h>
 #include <rocky/Layer.h>
+#include <rocky/Callbacks.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -59,6 +60,10 @@ namespace ROCKY_NAMESPACE
         TerrainTilePager& tiles() override {
             return _tiles;
         }
+
+        void terrainTileBecameResident(TerrainTileNode*) override;
+
+        void terrainTileWillBeReleased(TerrainTileNode*) override;
 
     private:
 
@@ -128,6 +133,12 @@ namespace ROCKY_NAMESPACE
             size_t geometryPoolSize = 0;
         };
         Stats stats() const;
+
+        //! Fired when a terrain tile is resident or its collision mesh changes.
+        Callback<TerrainTileNode*> onTileResident;
+
+        //! Fired before a terrain tile leaves residency.
+        Callback<TerrainTileNode*> onTileReleased;
 
     private:
 

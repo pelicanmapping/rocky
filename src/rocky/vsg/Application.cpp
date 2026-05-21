@@ -6,6 +6,9 @@
 #include "Application.h"
 #include "MapManipulator.h"
 #include "ecs/TransformSystem.h"
+#ifdef ROCKY_HAS_JOLT
+#include "ecs/JoltPhysicsSystem.h"
+#endif
 #include "imgui/ImGuiIntegration.h"
 
 #include <rocky/contrib/EarthFileImporter.h>
@@ -275,6 +278,10 @@ Application::ctor(int& argc, char** argv)
 
     // Create the ECS system manager and all its default systems.
     systemsNode = ECSNode::create(registry, true);
+
+#ifdef ROCKY_HAS_JOLT
+    systemsNode->add(JoltPhysicsSystem::create(registry, mapNode->terrainNode));
+#endif
 
     auto xformSystem = systemsNode->get<TransformSystem>();
     if (xformSystem)
