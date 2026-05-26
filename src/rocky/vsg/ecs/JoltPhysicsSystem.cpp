@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
+#include <cstdint>
 #include <map>
 #include <mutex>
 #include <set>
@@ -473,9 +474,16 @@ struct JoltPhysicsSystem::Impl
 
     std::map<TileKey, TerrainBody> terrainBodies;
     std::map<TileKey, vsg::observer_ptr<TerrainTileNode>> terrainResidentTiles;
+    std::map<TileKey, std::uint32_t> terrainResidentDescendantCounts;
+    std::set<TileKey> terrainActiveKeys;
     std::mutex terrainQueueMutex;
     std::vector<vsg::observer_ptr<TerrainTileNode>> terrainUpserts;
     std::vector<TileKey> terrainRemoves;
+    bool appliedTerrainColliders = true;
+    bool appliedTerrainCollidersUseLeafTiles = true;
+    bool terrainBodySetDirty = true;
+    bool appliedDebugDrawColliders = false;
+    bool terrainDebugStateInitialized = false;
 
     bool rebuildAllBodies = false;
 
@@ -1085,6 +1093,7 @@ struct JoltPhysicsSystem::Impl
             for (auto& [key, terrainBody] : terrainBodies)
                 destroyBody(terrainBody.bodyID);
             terrainBodies.clear();
+            terrainBodySetDirty = true;
 
             rebuildAllBodies = false;
         }
@@ -1208,26 +1217,133 @@ struct JoltPhysicsSystem::Impl
         }
     }
 
-    bool terrainTileHasResidentDescendant(const TileKey& key)
+    bool terrainTileIsResident(const TileKey& key) const
     {
-        for (auto& [candidateKey, weakTile] : terrainResidentTiles)
-        {
-            if (candidateKey.level <= key.level)
-                continue;
-
-            if (!weakTile.ref_ptr())
-                continue;
-
-            if (candidateKey.createAncestorKey(key.level) == key)
-                return true;
-        }
-
-        return false;
+        auto iter = terrainResidentTiles.find(key);
+        return iter != terrainResidentTiles.end() && iter->second.ref_ptr();
     }
 
-    void syncTerrainBodies(entt::registry& reg, const std::set<TileKey>& updatedKeys)
+    std::uint32_t residentDescendantCount(const TileKey& key) const
     {
+        auto iter = terrainResidentDescendantCounts.find(key);
+        return iter != terrainResidentDescendantCounts.end() ? iter->second : 0u;
+    }
+
+    bool wantsTerrainBody(const TileKey& key) const
+    {
+        return
+            settings.terrainColliders &&
+            terrainTileIsResident(key) &&
+            (!settings.terrainCollidersUseLeafTiles || residentDescendantCount(key) == 0u);
+    }
+
+    void removeActiveTerrainKey(entt::registry& reg, const TileKey& key)
+    {
+        terrainActiveKeys.erase(key);
+        removeTerrainBody(reg, key);
+    }
+
+    void syncTerrainKey(entt::registry& reg, const TileKey& key, bool forceUpdate)
+    {
+        if (!wantsTerrainBody(key))
+        {
+            removeActiveTerrainKey(reg, key);
+            return;
+        }
+
+        terrainActiveKeys.insert(key);
+
+        if (!forceUpdate && terrainBodies.find(key) != terrainBodies.end())
+            return;
+
+        auto iter = terrainResidentTiles.find(key);
+        if (iter == terrainResidentTiles.end())
+            return;
+
+        if (auto tile = iter->second.ref_ptr())
+            upsertTerrainBody(reg, *tile);
+        else
+            removeActiveTerrainKey(reg, key);
+    }
+
+    void addOrUpdateResidentTile(entt::registry& reg, TerrainTileNode& tile)
+    {
+        const TileKey key = tile.key;
+        const auto existing = terrainResidentTiles.find(key);
+        if (existing != terrainResidentTiles.end() && !existing->second.ref_ptr())
+            removeResidentTile(reg, key);
+
+        const bool alreadyResident = terrainResidentTiles.find(key) != terrainResidentTiles.end();
+        terrainResidentTiles[key] = &tile;
+
+        if (!alreadyResident)
+        {
+            for (unsigned level = 0; level < key.level; ++level)
+            {
+                TileKey ancestor = key.createAncestorKey(level);
+                auto& count = terrainResidentDescendantCounts[ancestor];
+                const bool wasLeaf = count == 0u;
+                ++count;
+
+                if (wasLeaf && settings.terrainCollidersUseLeafTiles)
+                    removeActiveTerrainKey(reg, ancestor);
+            }
+        }
+
+        syncTerrainKey(reg, key, true);
+    }
+
+    void removeResidentTile(entt::registry& reg, const TileKey& key)
+    {
+        const bool wasResident = terrainResidentTiles.erase(key) > 0;
+        removeActiveTerrainKey(reg, key);
+
+        if (!wasResident)
+            return;
+
+        for (unsigned level = 0; level < key.level; ++level)
+        {
+            TileKey ancestor = key.createAncestorKey(level);
+            auto countIter = terrainResidentDescendantCounts.find(ancestor);
+            if (countIter == terrainResidentDescendantCounts.end())
+                continue;
+
+            if (countIter->second > 0u)
+                --countIter->second;
+
+            const bool isLeafAgain = countIter->second == 0u;
+            if (isLeafAgain)
+            {
+                if (!terrainTileIsResident(ancestor))
+                    terrainResidentDescendantCounts.erase(countIter);
+                else if (settings.terrainCollidersUseLeafTiles)
+                    syncTerrainKey(reg, ancestor, false);
+            }
+        }
+
+        auto countIter = terrainResidentDescendantCounts.find(key);
+        if (countIter != terrainResidentDescendantCounts.end() && countIter->second == 0u)
+            terrainResidentDescendantCounts.erase(countIter);
+    }
+
+    void rebuildTerrainBodySelection(entt::registry& reg)
+    {
+        if (!settings.terrainColliders)
+        {
+            for (auto iter = terrainBodies.begin(); iter != terrainBodies.end(); )
+            {
+                auto key = iter->first;
+                ++iter;
+                removeTerrainBody(reg, key);
+            }
+
+            terrainActiveKeys.clear();
+            return;
+        }
+
+        std::set<TileKey> desiredKeys;
         std::vector<TileKey> staleKeys;
+
         for (auto& [key, weakTile] : terrainResidentTiles)
         {
             if (!weakTile.ref_ptr())
@@ -1235,18 +1351,11 @@ struct JoltPhysicsSystem::Impl
         }
 
         for (auto& key : staleKeys)
-        {
-            terrainResidentTiles.erase(key);
-            removeTerrainBody(reg, key);
-        }
+            removeResidentTile(reg, key);
 
-        std::set<TileKey> desiredKeys;
         for (auto& [key, weakTile] : terrainResidentTiles)
         {
-            if (!weakTile.ref_ptr())
-                continue;
-
-            if (!settings.terrainCollidersUseLeafTiles || !terrainTileHasResidentDescendant(key))
+            if (!settings.terrainCollidersUseLeafTiles || residentDescendantCount(key) == 0u)
                 desiredKeys.insert(key);
         }
 
@@ -1259,20 +1368,25 @@ struct JoltPhysicsSystem::Impl
                 removeTerrainBody(reg, key);
         }
 
-        for (auto& key : desiredKeys)
+        terrainActiveKeys = desiredKeys;
+
+        for (auto& key : terrainActiveKeys)
+            syncTerrainKey(reg, key, terrainBodySetDirty);
+    }
+
+    void applyTerrainSelectionSettings(entt::registry& reg)
+    {
+        if (!terrainBodySetDirty &&
+            appliedTerrainColliders == settings.terrainColliders &&
+            appliedTerrainCollidersUseLeafTiles == settings.terrainCollidersUseLeafTiles)
         {
-            bool needsUpdate =
-                terrainBodies.find(key) == terrainBodies.end() ||
-                updatedKeys.count(key) != 0;
-
-            if (!needsUpdate)
-                continue;
-
-            auto iter = terrainResidentTiles.find(key);
-            if (iter != terrainResidentTiles.end())
-                if (auto tile = iter->second.ref_ptr())
-                    upsertTerrainBody(reg, *tile);
+            return;
         }
+
+        rebuildTerrainBodySelection(reg);
+        appliedTerrainColliders = settings.terrainColliders;
+        appliedTerrainCollidersUseLeafTiles = settings.terrainCollidersUseLeafTiles;
+        terrainBodySetDirty = false;
     }
 
     void processTerrainQueues(entt::registry& reg)
@@ -1285,49 +1399,48 @@ struct JoltPhysicsSystem::Impl
             removes.swap(terrainRemoves);
         }
 
-        std::set<TileKey> updatedKeys;
+        const bool changed = !upserts.empty() || !removes.empty();
 
         for (auto& key : removes)
-        {
-            terrainResidentTiles.erase(key);
-            removeTerrainBody(reg, key);
-        }
+            removeResidentTile(reg, key);
 
         for (auto& weakTile : upserts)
         {
             if (auto tile = weakTile.ref_ptr())
-            {
-                terrainResidentTiles[tile->key] = tile;
-                updatedKeys.insert(tile->key);
-            }
+                addOrUpdateResidentTile(reg, *tile);
         }
 
-        if (!settings.terrainColliders)
-        {
-            for (auto iter = terrainBodies.begin(); iter != terrainBodies.end(); )
-            {
-                auto key = iter->first;
-                ++iter;
-                removeTerrainBody(reg, key);
-            }
+        if (!changed &&
+            !terrainBodySetDirty &&
+            appliedTerrainColliders == settings.terrainColliders &&
+            appliedTerrainCollidersUseLeafTiles == settings.terrainCollidersUseLeafTiles)
             return;
-        }
 
-        syncTerrainBodies(reg, updatedKeys);
+        applyTerrainSelectionSettings(reg);
     }
 
-    void refreshTerrainDebug(entt::registry& reg)
+    void applyTerrainDebugSettings(entt::registry& reg)
     {
-        for (auto& [key, terrainBody] : terrainBodies)
+        if (terrainDebugStateInitialized &&
+            appliedDebugDrawColliders == settings.debugDrawColliders)
+            return;
+
+        terrainDebugStateInitialized = true;
+        appliedDebugDrawColliders = settings.debugDrawColliders;
+
+        if (!settings.debugDrawColliders)
         {
-            if (!settings.debugDrawColliders)
+            for (auto& [key, terrainBody] : terrainBodies)
             {
                 if (terrainBody.debugEntity != entt::null && reg.valid(terrainBody.debugEntity))
                     reg.destroy(terrainBody.debugEntity);
                 terrainBody.debugEntity = entt::null;
-                continue;
             }
+            return;
+        }
 
+        for (auto& [key, terrainBody] : terrainBodies)
+        {
             if (auto tile = terrainBody.tile.ref_ptr())
             {
                 MeshGeometry geom = createTerrainDebugGeometry(*tile);
@@ -1484,7 +1597,7 @@ JoltPhysicsSystem::update(VSGContext context)
 
     _impl->rebuildBodiesIfNeeded(reg);
     _impl->processTerrainQueues(reg);
-    _impl->refreshTerrainDebug(reg);
+    _impl->applyTerrainDebugSettings(reg);
     _impl->step(context, reg);
 }
 
