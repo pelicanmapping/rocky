@@ -585,6 +585,39 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#addviewdependentstatetoshaderset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        addViewDependentStateToShaderSet
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enableviewdependentstateuniforms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        enableViewDependentStateUniforms
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#viewdependentstate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        viewDependentState
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -639,6 +672,7 @@
 <li><a href="URIResponse/">URIResponse</a></li>
 <li><a href="Hyperlink/">Hyperlink</a></li>
 <li><a href="TileKey/">TileKey</a></li>
+<li><a href="Model/">Model</a></li>
 <li><a href="Motion/">Motion</a></li>
 <li><a href="MotionGreatCircle/">MotionGreatCircle</a></li>
 <li><a href="Declutter/">Declutter</a></li>
@@ -685,6 +719,7 @@
 <li><a href="Result/">Result</a></li>
 <li><a href="Status/">Status</a></li>
 <li><a href="ImGuiRenderer/">ImGuiRenderer</a></li>
+<li><a href="FutureNode/">FutureNode</a></li>
 <li><a href="MapNode/">MapNode</a></li>
 <li><a href="VSGContextImpl/">VSGContextImpl</a></li>
 <li><a href="VSGContextSingleton/">VSGContextSingleton</a></li>
@@ -699,7 +734,6 @@
 <li><a href="SetDepthWriteEnable/">SetDepthWriteEnable</a></li>
 <li><a href="SetCullMode/">SetCullMode</a></li>
 <li><a href="SetColorWriteMask/">SetColorWriteMask</a></li>
-<li><a href="PipelineUtils/">PipelineUtils</a></li>
 <li><a href="SendEventsToImGui/">SendEventsToImGui</a></li>
 <li><a href="TerrainTileNode/">TerrainTileNode</a></li>
 <li><a href="TerrainTilePager/">TerrainTilePager</a></li>
@@ -735,10 +769,10 @@
 <p>True if this model contains no data.</p>
 <h3 id="visible">visible</h3>
 <p><em>_Bool visible(const Visibility &amp; vis, const int &amp; rs)</em></p>
-<p><em>Defined at src/rocky/ecs/Visibility.h#45</em></p>
+<p><em>Defined at src/rocky/ecs/Visibility.h#40</em></p>
 <h3 id="setvisible">setVisible</h3>
 <p><em>void setVisible(int &amp; registry, int e, _Bool value, int view_index)</em></p>
-<p><em>Defined at src/rocky/ecs/Visibility.h#56</em></p>
+<p><em>Defined at src/rocky/ecs/Visibility.h#51</em></p>
 <p>Toggle the visibility of an entity in the given view</p>
 <p><strong>r</strong> Entity registry</p>
 <p><strong>e</strong> Entity id</p>
@@ -746,7 +780,7 @@
 <p><strong>view_index</strong> Index of view to set visibility</p>
 <h3 id="setvisible_1">setVisible</h3>
 <p><em>void setVisible(int &amp; registry, ITER begin, ITER end, _Bool value, int view_index)</em></p>
-<p><em>Defined at src/rocky/ecs/Visibility.h#69</em></p>
+<p><em>Defined at src/rocky/ecs/Visibility.h#64</em></p>
 <h3 id="operator">operator*</h3>
 <p><em>int operator</em>(const int &amp; a, const int &amp; b)*</p>
 <p><em>Defined at src/rocky/Math.h#31</em></p>
@@ -814,6 +848,16 @@
 <h3 id="tovkpixelformat">toVkPixelFormat</h3>
 <p><em>int toVkPixelFormat(int format)</em></p>
 <p><em>Defined at src/rocky/vsg/VSGUtils.h#376</em></p>
+<h3 id="addviewdependentstatetoshaderset">addViewDependentStateToShaderSet</h3>
+<p><em>ROCKY_EXPORT addViewDependentStateToShaderSet(int * shaderSet, int stageFlags)</em></p>
+<p>Convenience function that adds the VDS descriptor bindings to a shader set.</p>
+<h3 id="enableviewdependentstateuniforms">enableViewDependentStateUniforms</h3>
+<p><em>ROCKY_EXPORT enableViewDependentStateUniforms(int * gpc)</em></p>
+<p>Convenience function that enables VDS uniforms on a pipeline.</p>
+<h3 id="viewdependentstate">viewDependentState</h3>
+<p><em>int * viewDependentState(int * view)</em></p>
+<p><em>Defined at src/rocky/vsg/ViewDependentState.h#83</em></p>
+<p>Retrieve the VDS from a view.</p>
 <h2 id="enums">Enums</h2>
 <p>| enum class GeodeticInterpolation |</p>
 <p>--</p>
