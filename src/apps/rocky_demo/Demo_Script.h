@@ -87,22 +87,26 @@ namespace
             return std::make_shared<FlightScript>(*this);
         }
 
-        void OnCreate(entt::registry& registry, entt::entity entity) override
+        void onCreate(Registry& registry, entt::entity entity) override
         {
-            if (auto* transform = registry.try_get<Transform>(entity))
+            auto&& [_, reg] = registry.write();
+
+            if (auto* transform = reg.try_get<Transform>(entity))
             {
                 transform->position = start;
-                transform->dirty(registry);
+                transform->dirty(reg);
             }
 
-            updateLabel(registry, entity);
+            updateLabel(reg, entity);
         }
 
-        void OnUpdate(entt::registry& registry, entt::entity entity, float deltaTime) override
+        void onUpdate(Registry& registry, entt::entity entity, float deltaTime) override
         {
+            auto&& [_, reg] = registry.write();
+
             if (distance <= 0.0)
             {
-                land(registry, entity);
+                land(reg, entity);
                 return;
             }
 
@@ -112,24 +116,24 @@ namespace
             traveled = std::min(distance, traveled + static_cast<double>(speed) * deltaTime);
             GeoPoint current = positionAt(traveled);
 
-            if (auto* transform = registry.try_get<Transform>(entity))
+            if (auto* transform = reg.try_get<Transform>(entity))
             {
                 transform->position = current;
-                transform->dirty(registry);
+                transform->dirty(reg);
             }
 
             emitClock += deltaTime;
             while (emitClock >= emitInterval && traveled < distance)
             {
                 emitClock -= emitInterval;
-                emit(registry, current);
+                emit(reg, current);
             }
 
-            updateLabel(registry, entity);
+            updateLabel(reg, entity);
 
             if (traveled >= distance)
             {
-                land(registry, entity);
+                land(reg, entity);
             }
         }
 
@@ -327,14 +331,16 @@ namespace
             return std::make_shared<AirportFleetScript>(*this);
         }
 
-        void OnCreate(entt::registry& registry, entt::entity entity) override
+        void onCreate(Registry& registry, entt::entity entity) override
         {
-            spawnFlights(registry);
+            auto&& [_, reg] = registry.write();
+            spawnFlights(reg);
         }
 
-        void OnDestroy(entt::registry& registry, entt::entity entity) override
+        void onDestroy(Registry& registry, entt::entity entity) override
         {
-            cleanup(registry);
+            auto&& [_, reg] = registry.write();
+            cleanup(reg);
             if (state)
             {
                 state->entities.erase(
@@ -344,12 +350,14 @@ namespace
             }
         }
 
-        void OnUpdate(entt::registry& registry, entt::entity entity, float deltaTime) override
+        void onUpdate(Registry& registry, entt::entity entity, float deltaTime) override
         {
+            auto&& [_, reg] = registry.write();
+
             for (auto iter = flights.begin(); iter != flights.end();)
             {
                 auto& flight = *iter;
-                if (!registry.valid(flight.entity))
+                if (!reg.valid(flight.entity))
                 {
                     iter = flights.erase(iter);
                     continue;
@@ -358,13 +366,13 @@ namespace
                 flight.traveled = std::min(flight.distance, flight.traveled + static_cast<double>(flight.speed) * deltaTime);
                 auto current = GeoPoint(SRS::ECEF, (glm::dvec3)flight.start + flight.direction * flight.traveled);
 
-                if (auto* transform = registry.try_get<Transform>(flight.entity))
+                if (auto* transform = reg.try_get<Transform>(flight.entity))
                 {
                     transform->position = current;
-                    transform->dirty(registry);
+                    transform->dirty(reg);
                 }
 
-                if (auto* label = registry.try_get<Label>(flight.entity))
+                if (auto* label = reg.try_get<Label>(flight.entity))
                 {
                     if (flight.traveled >= flight.distance)
                     {
@@ -376,7 +384,7 @@ namespace
                         label->text = "Fleet " + flight.code + "\n" +
                             std::to_string(static_cast<int>(remaining / 1000.0)) + " km remaining";
                     }
-                    Label::dirty(registry, flight.entity);
+                    Label::dirty(reg, flight.entity);
                 }
 
                 ++iter;

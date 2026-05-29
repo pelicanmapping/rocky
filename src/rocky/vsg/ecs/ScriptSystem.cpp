@@ -6,6 +6,7 @@
 #include "ScriptSystem.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 ScriptSystem::ScriptSystem(Registry& registry) :
     System(registry)
@@ -31,15 +32,18 @@ ScriptSystem::on_construct_Script(entt::registry& r, entt::entity e)
 {
     auto& script = r.get<Script>(e);
     script.owner = e;
-    auto safe_runner = r.get<Script>(e).runner;
-    if (safe_runner) safe_runner->OnCreate(r, e);
+
+    auto& det = r.emplace<detail::ScriptDetail>(e);
 }
 
 void
 ScriptSystem::on_destroy_Script(entt::registry& r, entt::entity e)
 {
-    auto safe_runner = r.get<Script>(e).runner;
-    if (safe_runner) safe_runner->OnDestroy(r, e);
+    auto& script = r.get<Script>(e);
+    auto runner = script.runner;
+    if (runner)
+        _toDestroy.emplace_back(runner, e);
+    r.remove<detail::ScriptDetail>(e);
 }
 
 void
@@ -60,23 +64,46 @@ ScriptSystem::update(VSGContext vsgcontext)
 
     bool hasScripts = false;
 
-    _registry.write([&](entt::registry& r)
-        {            
-            r.view<Script>().each([&](auto entity, auto& script)
+    _registry.read([&](entt::registry& r)
+        {
+            r.view<Script, ScriptDetail>().each([&](auto& script, auto& det)
                 {
-                    if (r.valid(entity))
+                    if (script.runner)
                     {
-                        hasScripts = true;
-                        auto safe_runner = script.runner;
-                        if (safe_runner) safe_runner->OnUpdate(r, entity, deltaTime);
+                        if (!det.onCreateInvoked)
+                        {
+                            _toCreate.emplace_back(&script);
+                            det.onCreateInvoked = true;
+                        }
+
+                        _toUpdate.emplace_back(&script);
                     }
                 });
         });
 
-    if (hasScripts)
+    for (auto* script : _toCreate)
+    {
+        script->runner->onCreate(_registry, script->owner);
+    }
+
+    for(auto* script : _toUpdate)
+    {
+        script->runner->onUpdate(_registry, script->owner, deltaTime);
+    }
+
+    for (auto entry : _toDestroy)
+    {
+        entry.first->onDestroy(_registry, entry.second);
+    }
+
+    if (!_toUpdate.empty())
     {
         vsgcontext->requestFrame();
     }
+
+    _toCreate.clear();
+    _toUpdate.clear();
+    _toDestroy.clear();
 
     _lastTime = time;
 }
