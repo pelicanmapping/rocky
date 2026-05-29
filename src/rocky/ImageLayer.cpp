@@ -8,6 +8,7 @@
 #include "IOTypes.h"
 #include "GeoImage.h"
 #include "Image.h"
+#include "NetworkMonitor.h"
 #include "TileKey.h"
 #include "json.h"
 
@@ -68,6 +69,9 @@ ImageLayer::createTile(const TileKey& key, const IOOptions& io) const
 {
     // lock prevents closing the layer while creating an image
     std::shared_lock readLock(layerStateMutex());
+    NetworkMonitor::ScopedRequestLayer requestLayer(
+        io.services().networkMonitor,
+        name.empty() ? getLayerTypeName() : name);
 
     if (status().failed())
         return status().error();

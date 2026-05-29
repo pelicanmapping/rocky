@@ -5,6 +5,7 @@
  */
 #include "IOTypes.h"
 #include "Context.h"
+#include "NetworkMonitor.h"
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -16,6 +17,8 @@ IOOptions::IOOptions()
 
 Services::Services()
 {
+    networkMonitor = std::make_shared<NetworkMonitor>();
+
     readImageFromURI = [](const std::string& location, const IOOptions&) { 
         return Failure(Failure::ServiceUnavailable, "Services.readImageFromURI is not implemented"); };
 

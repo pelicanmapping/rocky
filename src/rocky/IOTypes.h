@@ -25,6 +25,7 @@ namespace ROCKY_NAMESPACE
     class Layer;
     class ContextImpl;
     class GeoExtent;
+    class NetworkMonitor;
 
     //! Service for reading an image from a URI
     using ReadImageURIService = std::function<
@@ -89,6 +90,9 @@ namespace ROCKY_NAMESPACE
 
         //! URI deadpool; URI will use this if available.
         std::shared_ptr<DealpoolService> deadpool;
+
+        //! Tracks URI request activity for external diagnostics and rendering.
+        std::shared_ptr<NetworkMonitor> networkMonitor;
 
         //! Jobs instance for scheduling asynchronous tasks
         WEEJOBS_NAMESPACE::runtime jobs;

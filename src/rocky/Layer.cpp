@@ -5,6 +5,7 @@
  */
 #include "Layer.h"
 #include "GeoExtent.h"
+#include "NetworkMonitor.h"
 #include "json.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -97,6 +98,9 @@ Layer::open(const IOOptions& io)
     if (!isOpen())
     {
         std::unique_lock lock(_state_mutex);
+        NetworkMonitor::ScopedRequestLayer requestLayer(
+            io.services().networkMonitor,
+            name.empty() ? getLayerTypeName() : name);
 
         auto r = openImplementation(io);
 

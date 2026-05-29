@@ -4,6 +4,8 @@
 #include <rocky/rocky.h>
 #include <atomic>
 #include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <random>
 #include <thread>
 #include <unordered_map>
@@ -194,6 +196,43 @@ TEST_CASE("Threading")
         CHECK(post_shutdown_job_ran == false);
         CHECK(runtime.total() == 0);
     }
+}
+
+TEST_CASE("NetworkMonitor")
+{
+    IOOptions io;
+    io.services().contentCache = std::make_shared<ContentCache>(4);
+
+    auto monitor = io.services().networkMonitor;
+    REQUIRE(monitor);
+    monitor->setEnabled(true);
+    monitor->clear();
+
+    auto temp = std::filesystem::temp_directory_path() / "rocky_network_monitor_test.txt";
+    {
+        std::ofstream out(temp, std::ios::binary);
+        out << "rocky";
+    }
+
+    {
+        NetworkMonitor::ScopedRequestLayer layer(monitor, "Test layer");
+        auto first = URI(temp.string()).read(io);
+        CHECK(first.ok());
+        auto second = URI(temp.string()).read(io);
+        CHECK(second.ok());
+    }
+
+    auto requests = monitor->requests();
+    REQUIRE(requests.size() == 2);
+    CHECK(requests[0].layer == "Test layer");
+    CHECK(requests[0].type == "File");
+    CHECK(requests[0].status == "OK");
+    CHECK(requests[0].bytesReceived == 5);
+    CHECK(requests[0].complete);
+    CHECK(requests[1].status == "Cache");
+    CHECK(requests[1].fromCache);
+
+    std::filesystem::remove(temp);
 }
 
 TEST_CASE("Math")

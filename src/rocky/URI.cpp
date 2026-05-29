@@ -8,6 +8,7 @@
 #include "URI.h"
 #include "Utils.h"
 #include "Context.h"
+#include "NetworkMonitor.h"
 #include "Version.h"
 #include "json.h"
 
@@ -161,6 +162,59 @@ namespace
                 return h.value;
         }
         return {};
+    }
+
+    std::string requestTypeForURI(const URI& uri)
+    {
+        return uri.isRemote() ? "Network" : "File";
+    }
+
+    std::string statusForFailure(const Failure& failure)
+    {
+        if (failure.type == Failure::OperationCanceled)
+        {
+            return "Canceled";
+        }
+        else if (failure.type == Failure::ResourceUnavailable)
+        {
+            return "Not found";
+        }
+        else
+        {
+            return "Error";
+        }
+    }
+
+    std::string requestDetails(
+        const std::string& contentType,
+        std::size_t bytesReceived,
+        int responseCode = 0,
+        const std::vector<KeyValuePair>* headers = nullptr)
+    {
+        std::stringstream buf;
+
+        if (responseCode > 0)
+        {
+            buf << "HTTP status: " << responseCode << '\n';
+        }
+
+        if (!contentType.empty())
+        {
+            buf << "Content-Type: " << contentType << '\n';
+        }
+
+        buf << "Bytes: " << bytesReceived;
+
+        if (headers && !headers->empty())
+        {
+            buf << "\n\nHeaders:";
+            for (auto& header : *headers)
+            {
+                buf << '\n' << header.name << ": " << header.value;
+            }
+        }
+
+        return buf.str();
     }
 
     bool split_url(
@@ -679,6 +733,21 @@ URI::findRotation()
 
 auto URI::read(const IOOptions& io) const -> Result<URIResponse>
 {
+    auto monitor = io.services().networkMonitor;
+    auto monitorHandle = monitor ? monitor->begin(full(), "Pending", requestTypeForURI(*this)) : 0;
+    auto endMonitor = [&](const std::string& status,
+        const std::string& detail = {},
+        std::size_t bytesReceived = 0,
+        const std::string& contentType = {},
+        bool fromCache = false,
+        int responseCode = 0)
+    {
+        if (monitor)
+        {
+            monitor->end(monitorHandle, status, detail, bytesReceived, contentType, fromCache, responseCode);
+        }
+    };
+
     // protect against multiple threads trying to read the same URI at the same time
     detail::ScopedGate<std::string> gate(io.services().uriGate, full());
 
@@ -689,6 +758,12 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
         {
             Result<URIResponse> result(cached->value());
             result->fromCache = true;
+            endMonitor(
+                "Cache",
+                requestDetails(result->content.type, result->content.data.size()),
+                result->content.data.size(),
+                result->content.type,
+                true);
             return result;
         }
     }
@@ -700,11 +775,14 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
     {
         if (auto r = io.services().deadpool->get(full()))
         {
+            endMonitor("Blacklisted", r.value().string());
             return r.value();
         }
     }
 
     auto t0 = std::chrono::steady_clock::now();
+    int responseCode = 0;
+    std::vector<KeyValuePair> responseHeaders;
 
     if (std::filesystem::exists(full()))
     {
@@ -754,8 +832,12 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
                 io.services().deadpool->put(full(), r.error());
             }
 
+            endMonitor(statusForFailure(r.error()), r.error().string());
             return r.error();
         }
+
+        responseCode = r.value().status;
+        responseHeaders = r.value().headers;
 
         std::string contentType = findHeader(r.value().headers, "Content-Type");
 
@@ -776,7 +858,9 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
     }
     else
     {
-        return Failure(Failure::ResourceUnavailable, full());
+        Failure failure(Failure::ResourceUnavailable, full());
+        endMonitor("Not found", failure.string());
+        return failure;
     }
 
     auto t1 = std::chrono::steady_clock::now();
@@ -785,6 +869,14 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
     {
         io.services().contentCache->put(full(), Result<Content>(content));
     }
+
+    endMonitor(
+        "OK",
+        requestDetails(content.type, content.data.size(), responseCode, responseHeaders.empty() ? nullptr : &responseHeaders),
+        content.data.size(),
+        content.type,
+        false,
+        responseCode);
 
     return URIResponse(content, t1 - t0);
 }

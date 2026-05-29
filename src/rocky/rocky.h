@@ -13,6 +13,7 @@
 #include <rocky/TMSElevationLayer.h>
 #include <rocky/MBTilesImageLayer.h>
 #include <rocky/MBTilesElevationLayer.h>
+#include <rocky/NetworkMonitor.h>
 #include <rocky/AzureImageLayer.h>
 #include <rocky/GDALFeatureSource.h>
 #include <rocky/contrib/EarthFileImporter.h>

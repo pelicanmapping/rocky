@@ -5,6 +5,7 @@
  */
 #include "ElevationLayer.h"
 #include "Heightfield.h"
+#include "NetworkMonitor.h"
 #include "json.h"
 
 #include <cinttypes>
@@ -310,6 +311,9 @@ ElevationLayer::createTile(const TileKey& key, const IOOptions& io) const
 {
     // lock prevents closing the layer while creating an image
     std::shared_lock readLock(layerStateMutex());
+    NetworkMonitor::ScopedRequestLayer requestLayer(
+        io.services().networkMonitor,
+        name.empty() ? getLayerTypeName() : name);
 
     if (status().failed())
         return status().error();

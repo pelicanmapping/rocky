@@ -48,6 +48,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Screenshot.h"
 #include "Demo_Synchro.h"
 #include "Demo_OrderedRendering.h"
+#include "Demo_NetworkMonitor.h"
 
 template<class T>
 int layerError(T layer)
@@ -134,6 +135,7 @@ std::vector<Demo> demos =
         Demo{ "Synchronization", Demo_Synchro }
     } },
     Demo{ "Stats", Demo_Stats },
+    Demo{ "Network monitor", Demo_NetworkMonitor },
     Demo{ "About", Demo_About }
 };
 
