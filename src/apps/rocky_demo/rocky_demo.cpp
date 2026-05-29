@@ -49,6 +49,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Screenshot.h"
 #include "Demo_Synchro.h"
 #include "Demo_OrderedRendering.h"
+#include "Demo_Script.h"
 
 template<class T>
 int layerError(T layer)
@@ -93,7 +94,6 @@ std::vector<Demo> demos =
             Demo{ "Mesh - Lighting", Demo_Mesh_Lighting }
         } },
         Demo{ "Point", Demo_Point },
-        //Demo{ "Icon", Demo_Icon },
         Demo{ "Label", Demo_Label },
         Demo{ "Widget", Demo_Widget },
         Demo{ "Model", Demo_Model }
@@ -113,7 +113,6 @@ std::vector<Demo> demos =
     } },
     Demo{ "Simulation", {},
     {
-        Demo{ "Scripted labels", Demo_Script },
         Demo{ "Simulated platforms", Demo_Simulation },
         Demo{ "Track histories", Demo_TrackHistory }
     } },
@@ -132,6 +131,7 @@ std::vector<Demo> demos =
         Demo{ "Scene graph inspector", Demo_SceneGraphInspector },
         Demo{ "Screenshot", Demo_Screenshot },
         Demo{ "Serialization", Demo_Serialization },
+        Demo{ "Script", Demo_Script },
         Demo{ "Sky", Demo_Environment },
         Demo{ "Synchronization", Demo_Synchro }
     } },

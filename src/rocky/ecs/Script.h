@@ -11,6 +11,7 @@ namespace ROCKY_NAMESPACE
 {
     /**
     * Script component.
+    * A Script contains a pointer to a Runner that will execute each frame.
     */
     class Script : public Component<Script>
     {
@@ -31,26 +32,8 @@ namespace ROCKY_NAMESPACE
         Script(std::shared_ptr<Runner> in_runner) :
             runner(std::move(in_runner)) { }
 
-        template<class T, typename... Args>
-        static Script create(Args&&... args) {
-            return Script(std::make_shared<T>(std::forward<Args>(args)...));
-        }
-
-        void OnCreate(entt::registry& registry, entt::entity entity) {
-            auto safe_runner = runner;
-            if (safe_runner) safe_runner->OnCreate(registry, entity);
-        }
-
-        void OnDestroy(entt::registry& registry, entt::entity entity) {
-            auto safe_runner = runner;
-            if (safe_runner) safe_runner->OnDestroy(registry, entity);
-        }
-
-        void OnUpdate(entt::registry& registry, entt::entity entity, float deltaTime) {
-            auto safe_runner = runner;
-            if (safe_runner) safe_runner->OnUpdate(registry, entity, deltaTime);
-        }
-
+    private:
         std::shared_ptr<Runner> runner;
+        friend class ScriptSystem;
     };
 }

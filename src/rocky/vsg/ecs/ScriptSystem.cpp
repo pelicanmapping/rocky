@@ -31,13 +31,15 @@ ScriptSystem::on_construct_Script(entt::registry& r, entt::entity e)
 {
     auto& script = r.get<Script>(e);
     script.owner = e;
-    script.OnCreate(r, e);
+    auto safe_runner = r.get<Script>(e).runner;
+    if (safe_runner) safe_runner->OnCreate(r, e);
 }
 
 void
 ScriptSystem::on_destroy_Script(entt::registry& r, entt::entity e)
 {
-    r.get<Script>(e).OnDestroy(r, e);
+    auto safe_runner = r.get<Script>(e).runner;
+    if (safe_runner) safe_runner->OnDestroy(r, e);
 }
 
 void
@@ -59,25 +61,16 @@ ScriptSystem::update(VSGContext vsgcontext)
     bool hasScripts = false;
 
     _registry.write([&](entt::registry& r)
-        {
-            std::vector<entt::entity> scripts;
-            r.view<Script>().each([&](auto entity, auto&)
+        {            
+            r.view<Script>().each([&](auto entity, auto& script)
                 {
-                    scripts.emplace_back(entity);
-                });
-
-            hasScripts = !scripts.empty();
-
-            for (auto entity : scripts)
-            {
-                if (r.valid(entity))
-                {
-                    if (auto* script = r.try_get<Script>(entity))
+                    if (r.valid(entity))
                     {
-                        script->OnUpdate(r, entity, deltaTime);
+                        hasScripts = true;
+                        auto safe_runner = script.runner;
+                        if (safe_runner) safe_runner->OnUpdate(r, entity, deltaTime);
                     }
-                }
-            }
+                });
         });
 
     if (hasScripts)
