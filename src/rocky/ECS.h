@@ -12,6 +12,7 @@
 #include <rocky/ecs/Label.h>
 #include <rocky/ecs/Widget.h>
 #include <rocky/ecs/Model.h>
+#include <rocky/ecs/Script.h>
 #include <rocky/ecs/Transform.h>
 #include <rocky/ecs/Visibility.h>
 #include <rocky/ecs/Declutter.h>

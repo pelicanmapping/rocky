@@ -35,6 +35,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Geocoder.h"
 #include "Demo_Terrain.h"
 #include "Demo_Simulation.h"
+#include "Demo_Script.h"
 #include "Demo_TrackHistory.h"
 #include "Demo_Decluttering.h"
 #include "Demo_GeoTransform.h"
@@ -112,6 +113,7 @@ std::vector<Demo> demos =
     } },
     Demo{ "Simulation", {},
     {
+        Demo{ "Scripted labels", Demo_Script },
         Demo{ "Simulated platforms", Demo_Simulation },
         Demo{ "Track histories", Demo_TrackHistory }
     } },
