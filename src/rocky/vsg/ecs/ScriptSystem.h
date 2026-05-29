@@ -9,6 +9,19 @@
 
 namespace ROCKY_NAMESPACE
 {
+    namespace detail
+    {
+        struct ScriptDetail
+        {
+            enum class State {
+                Creating,
+                Updating,
+                Destroying
+            };
+            State state = State::Creating;
+        };
+    };
+
     /**
     * ECS System to process Script components.
     */
@@ -30,5 +43,8 @@ namespace ROCKY_NAMESPACE
         void on_destroy_Script(entt::registry& registry, entt::entity entity);
 
         vsg::time_point _lastTime = vsg::time_point::min();
+        std::vector<Script*> _toCreate;
+        std::vector<Script*> _toUpdate;
+        std::vector<std::pair<std::shared_ptr<Script::Runner>, entt::entity>> _toDestroy;
     };
 }

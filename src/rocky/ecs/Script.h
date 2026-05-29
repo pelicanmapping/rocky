@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/Common.h>
 #include <rocky/ecs/Component.h>
+#include <rocky/ecs/Registry.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -16,15 +17,16 @@ namespace ROCKY_NAMESPACE
     class Script : public Component<Script>
     {
     public:
+        //! Sublass this to define behaviors on creation, update (frame) and destruction.
         class Runner
         {
         public:
             virtual ~Runner() = default;
 
             virtual std::shared_ptr<Runner> clone() const = 0;
-            virtual void OnCreate(entt::registry& registry, entt::entity entity) { }
-            virtual void OnDestroy(entt::registry& registry, entt::entity entity) { }
-            virtual void OnUpdate(entt::registry& registry, entt::entity entity, float deltaTime) { }
+            virtual void onCreate(Registry& registry, entt::entity entity) { }
+            virtual void onUpdate(Registry& registry, entt::entity entity, float deltaTime) { }
+            virtual void onDestroy(Registry& registry, entt::entity entity) {}
         };
 
         Script() = default;
