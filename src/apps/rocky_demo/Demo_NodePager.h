@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2025 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -49,11 +49,11 @@ auto Demo_NodePager = [](Application& app)
                     {
                         auto n = glm::normalize(bs.center);
                         bs.center += n * p.value().transform(ex.srs().geodeticSRS()).z;
-                        return vsg::dsphere(to_vsg(bs.center), bs.radius * 1.01);
+                        bs = Sphere(bs.center, bs.radius * 1.01);
                     }
                 }
 
-                return to_vsg(bs);
+                return bs;
             };
 
         // we'll use it to control tile paging:
@@ -72,13 +72,27 @@ auto Demo_NodePager = [](Application& app)
 
                 vsg::GeometryInfo gi(box);
                 gi.color = to_vsg(StockColor::Cyan);
-                gi.transform = to_vsg(key.profile.srs().ellipsoid().topocentricToGeocentricMatrix(to_glm(bs.center)));
+                gi.transform = to_vsg(key.profile.srs().ellipsoid().topocentricToGeocentricMatrix(bs.center));
 
                 vsg::StateInfo si;
                 si.lighting = false;
                 si.wireframe = true;
 
-                return builder.createBox(gi, si);
+                // add a label:
+                auto enode = EntityNode::create(app.registry);
+                app.registry.write([&](entt::registry& reg)
+                    {
+                        auto e = enode->entities.emplace_back(reg.create());
+                        auto& label = reg.emplace<Label>(e, key.str());
+                        auto& xform = reg.emplace<Transform>(e);
+                        xform.position = GeoPoint(app.mapNode->srs(), bs.center);
+                    });
+
+                auto group = vsg::Group::create();
+                group->addChild(builder.createBox(gi, si));
+                group->addChild(enode);                    
+
+                return NodePager::Payload::create(group);
             };
 
         // Always initialize a NodePager before using it:

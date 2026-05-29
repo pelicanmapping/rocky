@@ -38,21 +38,15 @@ auto Demo_Decluttering = [](Application& app)
     {
         declutter = DeclutterSystem::create(app.registry);
 
-        app.background.start("rocky::declutter", app.io(), [&app](Cancelable& cancelable)
+        app.workers.start("rocky::declutter", app.io(), [&app]()
             {
-                Log()->info("Declutter thread starting.");
-
-                while (!cancelable.canceled())
+                run_at_frequency f(updateHertz);
+                if (declutteringEnabled)
                 {
-                    run_at_frequency f(updateHertz);
-
-                    if (declutteringEnabled)
-                    {
-                        declutter->update(app.vsgcontext);
-                        app.vsgcontext->requestFrame();
-                    }
+                    declutter->update(app.vsgcontext);
+                    app.vsgcontext->requestFrame();
                 }
-                Log()->info("Declutter thread terminating.");
+                return true;
             });
 
         app.vsgcontext->requestFrame();

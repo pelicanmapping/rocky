@@ -6,7 +6,6 @@
 #pragma once
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/MapNode.h>
-#include <rocky/vsg/SkyNode.h>
 #include <rocky/ecs/Registry.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/DisplayManager.h>
@@ -89,8 +88,8 @@ namespace ROCKY_NAMESPACE
         //! Keeps track of windows and views
         DisplayManager display;
 
-        //! Runs ongoing background tasks
-        detail::BackgroundServices background;
+        //! Ongoing background tasks
+        detail::Workers workers;
 
         //! Global viewer instance
         vsg::ref_ptr<vsg::Viewer> viewer;

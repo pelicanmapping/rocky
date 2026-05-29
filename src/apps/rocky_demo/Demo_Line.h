@@ -387,23 +387,21 @@ auto Demo_Line_Shared = [](Application& app)
         app.vsgcontext->requestFrame();
     }
 
-    app.background.start("Animate shared lines", app.io(), [&](Cancelable& task)
+    app.workers.start("Animate shared lines", app.io(), [&]()
         {
-            while (!task.canceled())
-            {
-                app.registry.read([&](entt::registry& reg)
+            run_at_frequency hertz(60.0);
+            app.registry.read([&](entt::registry& reg)
+                {
+                    for (auto&& [e, t, s] : reg.view<Transform, SharedLineDemoObject>().each())
                     {
-                        for (auto&& [e, t, s] : reg.view<Transform, SharedLineDemoObject>().each())
-                        {
-                            double r = 360 * sin(0.01 * (double)app.frameCount());
-                            t.localMatrix = glm::mat4_cast(glm::angleAxis(glm::radians(r), glm::dvec3(0.0, 0.0, 1.0)));
-                            t.dirty(reg);
-                        }
-                    });
+                        double r = 360 * sin(0.01 * (double)app.frameCount());
+                        t.localMatrix = glm::mat4_cast(glm::angleAxis(glm::radians(r), glm::dvec3(0.0, 0.0, 1.0)));
+                        t.dirty(reg);
+                    }
+                });
 
-                app.vsgcontext->requestFrame();
-                std::this_thread::sleep_for(std::chrono::milliseconds(16));
-            }
+            app.vsgcontext->requestFrame();
+            return true;
         });
 
     ImGui::TextWrapped("Sharing: %d Line instances share LineStyle and LineGeometry components, but each has its own Transform.", count);

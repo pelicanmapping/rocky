@@ -64,11 +64,11 @@ auto Demo_MVTFeatures = [](Application& app)
                     {
                         auto n = glm::normalize(bs.center);
                         bs.center += n * p.value().transform(ex.srs().geodeticSRS()).z;
-                        return vsg::dsphere(to_vsg(bs.center), bs.radius * 1.01);
+                        bs.center *= 1.01;
                     }
                 }
 
-                return to_vsg(bs);
+                return bs;
             };
 
         // This (required) functor will create the actual geometry for each tile
@@ -86,7 +86,7 @@ auto Demo_MVTFeatures = [](Application& app)
                 if (status.failed())
                 {
                     Log()->warn(status.error().message);
-                    return entityNode;
+                    return NodePager::Payload::Ptr{};
                 }
 
                 std::vector<Feature> buildings, roads;
@@ -158,7 +158,7 @@ auto Demo_MVTFeatures = [](Application& app)
                         });
                 }
 
-                return entityNode;
+                return NodePager::Payload::create(entityNode);
             };
 
         // Always initialize a NodePager before using it:

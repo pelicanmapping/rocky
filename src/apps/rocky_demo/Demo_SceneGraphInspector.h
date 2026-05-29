@@ -27,7 +27,6 @@
 #include <cstdint>
 #include <iomanip>
 #include <map>
-#include <mutex>
 #include <sstream>
 
 using namespace ROCKY_NAMESPACE;

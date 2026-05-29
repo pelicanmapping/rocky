@@ -404,23 +404,27 @@ namespace ROCKY_NAMESPACE
         /**
         * Utility to manages loops that run in the background.
         */
-        class ROCKY_EXPORT BackgroundServices
+        class ROCKY_EXPORT Workers
         {
         public:
-            using Function = std::function<void(Cancelable&)>;
-            using Task = Future<bool>;
-            using Promise = Task;
+            using Function = std::function<bool()>;
+            using Worker = Future<bool>;
+            using Promise = Worker;
 
             //! Run a function in a thread with the given name.
+            //! @param name Name of the coroutine
+            //! @param io IO options to use when dispatching the task
+            //! @param function Function to run in a loop; if the function returns false,
+            //!    the task will terminate.
             Promise start(const std::string& name, IOOptions& io, Function function);
 
-            //! Signal all background threads to quite and wait for them to finish.
+            //! Signal all background tasks to quite and wait for them to finish.
             void quit();
 
         protected:
-            std::mutex mutex;
-            std::vector<Task> tasks;
-            jobs::detail::semaphore semaphore;
+            std::mutex _mutex;
+            std::vector<Worker> _workers;
+            jobs::detail::semaphore _semaphore;
         };
 
 

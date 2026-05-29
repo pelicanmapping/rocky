@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -13,6 +13,72 @@
 
 namespace ROCKY_NAMESPACE
 {
+    namespace detail
+    {
+        //! Base class for a pager of hierarchical tiled data
+        class ROCKY_EXPORT TiledDataPager
+        {
+        public:
+            //! Policy for refining leveld of detail
+            enum class RefinePolicy
+            {
+                //! Replace the lower level of detail payload with the higher one
+                Replace,
+
+                //! Render all loaded levels of detail at once
+                Accumulate
+            };
+
+            struct ROCKY_EXPORT Payload
+            {
+                using Ptr = std::shared_ptr<Payload>;
+            };
+
+
+            using BoundCalculator = std::function<Sphere(const TileKey& key, const IOOptions& io)>;
+
+            using PayloadCreator = std::function<Payload::Ptr(const TileKey& key, const IOOptions& io)>;
+
+        public:
+            TiledDataPager(const Profile& tilingProfile, const SRS& sceneSRS) :
+                profile(tilingProfile),
+                _renderingSRS(sceneSRS)
+            {
+                //nop
+            }
+
+
+            //! Whether this pager is paging
+            bool active = false;
+
+            //! Tiling profile this pager will use to create tiles
+            Profile profile;
+
+            //! Function that creates the payload for a tile key.
+            PayloadCreator createPayload;
+
+            //! Function that calculates a bounding sphere for a tile key.
+            BoundCalculator calculateBound;
+
+            //! Min level at which to create payloads
+            unsigned minLevel = 0;
+
+            //! Max level to which to subdivide
+            unsigned maxLevel = 18;
+
+            //! LOD switching metric (size of tile on screen)
+            float pixelError = 512.0f; // pixels 
+
+            //! Whether payloads accumulate as the level increases (Add), or whether
+            //! they replace the lower-LOD payload (Replace)
+            RefinePolicy refinePolicy = RefinePolicy::Replace;
+
+        protected:
+
+            SRS _renderingSRS;
+        };
+    }
+
     /**
     * Node that manages a dynamically paged scene graph.
     * The graph's structure is based on a Profile and each represents a TileKey in 
@@ -23,28 +89,9 @@ namespace ROCKY_NAMESPACE
     * TODO: support the concept of sampling elevation to get a bounding sphere at
     * the correct Z for a tile.
     */
-    class ROCKY_EXPORT NodePager : public vsg::Inherit<vsg::Group, NodePager>
+    class ROCKY_EXPORT NodePager : public vsg::Inherit<vsg::Group, NodePager>,
+        public detail::TiledDataPager
     {
-    public:
-        //! Policy for refining leveld of detail
-        enum class RefinePolicy
-        {
-            //! Replace the lower level of detail payload with the higher one
-            Replace,
-
-            //! Render all loaded levels of detail at once
-            Accumulate
-        };
-
-        using BoundCalculator = std::function<vsg::dsphere(const TileKey& key, const IOOptions& io)>;
-
-        using PayloadCreator = std::function<vsg::ref_ptr<vsg::Node>(const TileKey& key, const IOOptions& io)>;
-
-        using SubtileLoader = std::function<vsg::ref_ptr<vsg::Node>(const IOOptions& io)>;
-
-        using SubtileLoaderFactory = std::function<SubtileLoader(const TileKey& key)>;
-
-
     public:
         //! Construct a new node pager whose tiles will correspond to
         //! a tiling profile.
@@ -54,39 +101,23 @@ namespace ROCKY_NAMESPACE
 
         //! Call this after configuring the pager's settings.
         void initialize(VSGContext);
-
-        //! Whether this pager is paging
-        bool active = false;
-
-        //! Tiling profile this pager will use to create tiles
-        Profile profile;
-
-        //! Function that creates the payload for a tile key.
-        PayloadCreator createPayload;
-
-        //! Function that calculates a bounding sphere for a tile key.
-        BoundCalculator calculateBound;
        
         //! Fired when expired data is about to be removed from the scene graph
         Callback<vsg::ref_ptr<vsg::Object>> onExpire;
 
-        //! Min level at which to create payloads
-        unsigned minLevel = 0;
+    public:
+        struct Subtile
+        {
+            using Ptr = std::shared_ptr<Subtile>;
+            static Ptr create() { return std::make_shared<Subtile>(); }
+            vsg::ref_ptr<vsg::Node> node;
+        };
 
-        //! Max level to which to subdivide
-        unsigned maxLevel = 18;
+        using SubtileLoader = std::function<Subtile::Ptr(const IOOptions& io)>;
 
-        //! Whether payloads accumulate as the level increases (Add), or whether
-        //! they replace the lower-LOD payload (Replace)
-        RefinePolicy refinePolicy = RefinePolicy::Replace;
+        using SubtileLoaderFactory = std::function<SubtileLoader(const TileKey& key)>;
 
-        //! LOD switching metric (size of tile on screen)
-        float pixelError = 512.0f; // pixels 
-
-        //! Name of the job pool to use for node paging
-        std::string poolName = "rocky::nodepager";
-
-        //! Custom factory that will creaet a subtile loader function.
+        //! Custom factory that will create a subtile loader function.
         SubtileLoaderFactory subtileLoaderFactory = nullptr;
 
     public:
@@ -98,6 +129,13 @@ namespace ROCKY_NAMESPACE
         std::vector<TileKey> tileKeys() const;
 
         TileKey debugKey;
+
+        struct Payload : public ROCKY_NAMESPACE::Inherit<TiledDataPager::Payload, Payload>
+        {
+            using Ptr = std::shared_ptr<Payload>;
+            vsg::ref_ptr<vsg::Node> node;
+            Payload(vsg::ref_ptr<vsg::Node> n) : node(n) {}
+        };
 
     protected:
 
@@ -111,7 +149,7 @@ namespace ROCKY_NAMESPACE
         mutable std::mutex _sentry_mutex;
         CallbackSub _sentryUpdate;
         std::uint64_t _lastUpdateFrame = 0u;
-        SRS _renderingSRS;
+        std::string poolName = "rocky::nodepager";
 
         //! Creates a node for a TileKey.
         vsg::ref_ptr<vsg::Node> createNode(const TileKey& key, const IOOptions& io) const;

@@ -42,16 +42,12 @@ namespace
 
         void run()
         {
-            app.background.start("rocky::simulation", app.io(), [this](jobs::cancelable& token)
+            app.workers.start("rocky::simulation", app.io(), [this]()
                 {
-                    Log()->info("Simulation thread starting.");
-                    while (!token.canceled())
-                    {
-                        run_at_frequency f(sim_hertz);
-                        motion.update(app.vsgcontext);
-                        app.vsgcontext->requestFrame();
-                    }
-                    Log()->info("Simulation thread terminating.");
+                    run_at_frequency f(sim_hertz);
+                    motion.update(app.vsgcontext);
+                    app.vsgcontext->requestFrame();
+                    return true;
                 });
         }
     };

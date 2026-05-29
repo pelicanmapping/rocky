@@ -78,6 +78,9 @@ namespace ROCKY_NAMESPACE
         //! Entity of LabelStyle to use; if null a default style will apply
         entt::entity style = entt::null;
 
+        //! Create a new empty label
+        Label() {}
+
         //! Create a new label with text
         Label(std::string_view t) :
             text(t) { }

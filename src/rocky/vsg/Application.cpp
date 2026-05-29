@@ -5,6 +5,7 @@
  */
 #include "Application.h"
 #include "MapManipulator.h"
+#include "SkyNode.h"
 #include "ecs/TransformSystem.h"
 #include "imgui/ImGuiIntegration.h"
 
@@ -288,8 +289,8 @@ Application::ctor(int& argc, char** argv)
 
 Application::~Application()
 {
-    Log()->debug("Quitting background services...");
-    background.quit();
+    Log()->debug("Quitting background tasks...");
+    workers.quit();
 
     // Release app-owned scene/view resources while the context is still alive.
     // Several of these objects own weejobs futures; dropping them first gives

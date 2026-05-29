@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "NodePager.h"
@@ -50,9 +50,8 @@ namespace ROCKY_NAMESPACE
 
 
 NodePager::NodePager(const Profile& graphProfile, const SRS& sceneSRS) :
-    vsg::Inherit<vsg::Group, NodePager>(), 
-    profile(graphProfile),
-    _renderingSRS(sceneSRS)
+    vsg::Inherit<vsg::Group, NodePager>(),
+    TiledDataPager(graphProfile, sceneSRS)
 {
     ROCKY_SOFT_ASSERT(profile.valid());
 }
@@ -124,9 +123,9 @@ NodePager::createSubtileLoader(const TileKey& key) const
     // of the provided key.
     vsg::observer_ptr<NodePager> weak_pager(const_cast<NodePager*>(this));
 
-    return [weak_pager, key](const IOOptions& io) -> vsg::ref_ptr<vsg::Node>
+    return [weak_pager, key](const IOOptions& io) -> Subtile::Ptr
         {
-            vsg::ref_ptr<vsg::Group> result;
+            vsg::ref_ptr<vsg::Group> group;
 
             if (auto pager = weak_pager.ref_ptr())
             {
@@ -140,19 +139,21 @@ NodePager::createSubtileLoader(const TileKey& key) const
                     auto child = pager->createNode(child_key, io);
                     if (child)
                     {
-                        if (!result)
-                            result = vsg::Group::create();
+                        if (!group)
+                            group = vsg::Group::create();
 
-                        result->addChild(child);
+                        group->addChild(child);
                     }
                 }
 
-                if (result)
+                if (group)
                 {
-                    pager->vsgcontext->compile(result);
+                    pager->vsgcontext->compile(group);
                 }
             }
 
+            auto result = NodePager::Subtile::create();
+            result->node = group;
             return result;
         };
 }
@@ -164,15 +165,15 @@ NodePager::createNode(const TileKey& key, const IOOptions& io) const
 
     auto mapExtent = key.extent().transform(_renderingSRS);
 
-    vsg::dsphere tileBound =
+    auto tileBound = to_vsg(
         calculateBound ? calculateBound(key, io) :
-        to_vsg(mapExtent.createWorldBoundingSphere(0, 0));
+        mapExtent.createWorldBoundingSphere(0, 0));
 
     bool haveChildren = key.level < maxLevel;
     bool mayHavePayload = key.level >= minLevel;
 
     // Create the actual drawable data for this tile.
-    vsg::ref_ptr<vsg::Node> payload;
+    TiledDataPager::Payload::Ptr payload;
 
     // payload, which may or may not exist at this level:
     if (mayHavePayload)
@@ -195,14 +196,14 @@ NodePager::createNode(const TileKey& key, const IOOptions& io) const
         p->canLoadChild = true;
 
         if (payload)
-            p->payload = payload;
+            p->payload = static_cast<NodePager::Payload*>(payload.get())->node;
 
         result = p;
     }
 
     else if (payload)
     {
-        result = payload;
+        result = static_cast<NodePager::Payload*>(payload.get())->node;
     }
 
     return result;
@@ -268,7 +269,10 @@ PagedNode::startLoading() const
 
     auto load_job = [load, parent_weak, vsgcontext(pager->vsgcontext), orig_revision(revision), io(pager->vsgcontext->io)](Cancelable& c)
         {
-            vsg::ref_ptr<vsg::Node> result = load(io.with(c));
+            auto tile = load(io.with(c));
+            vsg::ref_ptr<vsg::Node> result;
+            if (tile)
+                result = static_cast<NodePager::Subtile*>(tile.get())->node;
             return result;
         };
 
