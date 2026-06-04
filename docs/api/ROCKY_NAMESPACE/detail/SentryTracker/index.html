@@ -454,7 +454,7 @@
 
 
 <h1 id="class-sentrytracker">class SentryTracker</h1>
-<p><em>Defined at src/rocky/SentryTracker.h#21</em></p>
+<p><em>Defined at src/rocky/SentryTracker.h#22</em></p>
 <p>Tracks usage data by maintaining a sentry-blocked linked list. Each time a something calls "emplace_or_update" the corresponding record moves to the right of the sentry marker. After a cycle you can call flush to process all users that did not call update() in the that cycle and dispose of them.</p>
 <h2 id="members">Members</h2>
 <p>public int _list</p>
@@ -465,34 +465,34 @@
 <h2 id="functions">Functions</h2>
 <h3 id="sentrytracker">SentryTracker<T></h3>
 <p><em>public void SentryTracker<T>()</em></p>
-<p><em>Defined at src/rocky/SentryTracker.h#34</em></p>
+<p><em>Defined at src/rocky/SentryTracker.h#35</em></p>
 <p>Construct a new tracker.</p>
 <h3 id="reset">reset</h3>
 <p><em>public void reset()</em></p>
-<p><em>Defined at src/rocky/SentryTracker.h#41</em></p>
+<p><em>Defined at src/rocky/SentryTracker.h#42</em></p>
 <p>Resets the tracker to its initial state. Tracked objects are NOT disposed.</p>
 <h3 id="emplace">emplace</h3>
 <p><em>public void * emplace(const T &amp; data)</em></p>
-<p><em>Defined at src/rocky/SentryTracker.h#55</em></p>
+<p><em>Defined at src/rocky/SentryTracker.h#56</em></p>
 <p>Emplace a new item in the tracker, and receive a token to use when calling update().</p>
 <h3 id="update">update</h3>
 <p><em>public void * update(void * token)</em></p>
-<p><em>Defined at src/rocky/SentryTracker.h#66</em></p>
+<p><em>Defined at src/rocky/SentryTracker.h#67</em></p>
 <p>Inform the tracker that the object associated with the token is still in use, and return a new token to replace the old one.</p>
 <h3 id="emplace_or_update">emplace_or_update</h3>
 <p><em>public void * emplace_or_update(const T &amp; data, void * token)</em></p>
-<p><em>Defined at src/rocky/SentryTracker.h#79</em></p>
+<p><em>Defined at src/rocky/SentryTracker.h#80</em></p>
 <p>Calls emplace if token is null, otherwise called update and returns a new token.</p>
 <h3 id="flush">flush</h3>
 <p><em>public void flush(unsigned int maxToDispose, unsigned int minCacheSize, CALLABLE &amp;&amp; dispose)</em></p>
-<p><em>Defined at src/rocky/SentryTracker.h#93</em></p>
+<p><em>Defined at src/rocky/SentryTracker.h#94</em></p>
 <p>Removes any tracked objects that were not updated since the last flush, and calls dispose() on each one.</p>
 <p><strong>maxToDispose</strong> Maximum number of objects to dispose of in this call</p>
 <p><strong>minCacheSize</strong> Minimum number of objects to keep in the list, even if some of them are expired</p>
 <p><strong>dispose</strong> Function to call when disposing of an object</p>
 <h3 id="snapshot">snapshot</h3>
 <p><em>public int snapshot()</em></p>
-<p><em>Defined at src/rocky/SentryTracker.h#128</em></p>
+<p><em>Defined at src/rocky/SentryTracker.h#129</em></p>
 <p>Snapshot of the object list (for debugging)</p>
 
 

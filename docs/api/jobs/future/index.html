@@ -697,11 +697,11 @@
 <p>Add a continuation to this future. Instead of the functor returning a value, it will instead have the option of resolving the incoming future/promise object. This is useful for operations that have their own way of running asynchronous code. Note: for some reason when you use this variant you must specific the template argument, e.g. result.then<int>(auto i, promise<int> p)</p>
 <h3 id="then_dispatch_1">then_dispatch</h3>
 <p><em>public void then_dispatch(runtime &amp; , int func, const context &amp; con)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#1266</em></p>
+<p><em>Defined at src/rocky/weejobs.h#1262</em></p>
 <p>Add a continuation to this future. The functor only takes an input value and has no return value (fire and forget).</p>
 <h3 id="then_dispatch_2">then_dispatch</h3>
 <p><em>public future<R> then_dispatch(runtime &amp; rt, F func, const context &amp; con)</em></p>
-<p><em>Defined at src/rocky/weejobs.h#1168</em></p>
+<p><em>Defined at src/rocky/weejobs.h#1164</em></p>
 
 
 
