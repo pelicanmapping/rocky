@@ -99,6 +99,10 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<rocky::MapNode> mapNode;
         vsg::ref_ptr<rocky::ECSNode> systemsNode;
 
+        //! Scene graph for compute pipelines
+        vsg::ref_ptr<vsg::Group> compute;
+        vsg::ref_ptr<rocky::ECSNode> computeSystemsNode;
+
         //! Continuous render mode.
         //! When true, the viewer will render frames continuously as fast as the CPU
         //! (or the VSYNC) will allow. When false, the viewer will only paint a frame

@@ -1,5 +1,18 @@
 #version 460
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
+
 #pragma import_defines(ROCKY_ATMOSPHERE)
+
+#pragma include "rocky.defines.h.glsl"
+#pragma include "rocky.viewdependentstate.glsl"
+#pragma include "rocky.lighting.glsl"
+#pragma include "rocky.atmo.glsl"
+#pragma include "rocky.debug.frag.glsl"
+#pragma include "rocky.frustumgrid.h.glsl"
 
 layout(push_constant) uniform PushConstants {
     mat4 projection;
@@ -18,7 +31,7 @@ layout(location = 0) in Varyings {
 } vary;
 
 // uniforms (TerrainState.h)
-layout(set = 0, binding = 9) uniform TerrainSettings {
+layout(set = 0, binding = BINDING_TERRAIN_SETTINGS) uniform TerrainSettings {
     vec4 backgroundColor;
     float atmosphere;
     float lighting;
@@ -26,12 +39,7 @@ layout(set = 0, binding = 9) uniform TerrainSettings {
     float debugNormals;
 } u_terrain;
 
-layout(set = 0, binding = 11) uniform sampler2D u_colorTex;
-
-#pragma include "rocky.viewdependentstate.glsl"
-#pragma include "rocky.lighting.glsl"
-#pragma include "rocky.atmo.glsl"
-#pragma include "rocky.debug.frag.glsl"
+layout(set = 0, binding = BINDING_TERRAIN_COLOR) uniform sampler2D u_colorTex;
 
 // outputs
 layout(location = 0) out vec4 outColor;
@@ -63,6 +71,8 @@ void main()
     // PBR lighting
     vec4 lit_color = applyLighting(outColor, vary.vertexVs, normalVs);
     outColor = mix(outColor, lit_color, u_terrain.lighting);
+
+    outColor.rgb = mix(outColor.rgb, frustumTileTestColor(gl_FragCoord.xy, vary.vertexVs), u_debugTiles);
 
     // show triangle outlines
     applyDebugTriangles(outColor, u_terrain.debugTriangles);

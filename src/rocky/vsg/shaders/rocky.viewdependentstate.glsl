@@ -1,10 +1,11 @@
-#pragma import_defined(ROCKY_BINDING_VIEW_DEPENDENT_STATE)
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
+#pragma include "rocky.defines.h.glsl"
 
-#ifndef ROCKY_BINDING_VIEW_DEPENDENT_STATE
-#define ROCKY_BINDING_VIEW_DEPENDENT_STATE 10
-#endif
-
-layout(set = 1, binding = ROCKY_BINDING_VIEW_DEPENDENT_STATE) uniform RockyVDS {
+layout(set = VDS_DESCRIPTOR_SET_INDEX, binding = BINDING_VDS_RENDER_PARAMS) uniform RenderParams {
     mat4 inverseViewMatrix;
     vec2 ellipsoidAxes;
     uint stereographic;

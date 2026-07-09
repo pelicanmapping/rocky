@@ -1,5 +1,9 @@
 #version 450
-
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 layout(location = 1) in Varyings {
     vec4 color;
     vec2 uv;
@@ -19,6 +23,8 @@ layout(set = 0, binding = 2) uniform sampler2D u_meshTexture;
 // lighting
 #include "rocky.lighting.glsl"
 
+// f+ tiles
+#include "rocky.frustumgrid.h.glsl"
 
 bool stipple(ivec2 p)
 {

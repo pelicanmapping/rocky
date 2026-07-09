@@ -1,3 +1,9 @@
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
+ 
 // rocky.atmo.glsl
 // Shared physically-based atmosphere rendering library.
 // Implements single-scattering with Rayleigh, Mie, and ozone absorption.

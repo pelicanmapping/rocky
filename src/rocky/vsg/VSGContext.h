@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/vsg/Common.h>
 #include <rocky/vsg/Polyfill.h>
+#include <rocky/vsg/SharedRenderData.h>
 #include <rocky/vsg/VSGUtils.h>
 #include <rocky/Context.h>
 #include <rocky/Callbacks.h>
@@ -83,6 +84,9 @@ namespace ROCKY_NAMESPACE
         //! (this is usually platform-specific)
         std::function<float()> devicePixelRatio = []() { return 1.0f; };
 
+        //! Shared rendering data (usually internal)
+        std::shared_ptr<SharedRenderData> sharedRenderData;
+
     public:
 
         //! Queue a function to run during the update pass.
@@ -159,6 +163,8 @@ namespace ROCKY_NAMESPACE
         std::mutex _functionsToRunDuringNextUpdateMutex;
         std::vector<std::function<void(VSGContext)>> _functionsToRunDuringNextUpdate;
 
+        bool _initialized = false;
+
     private:
         //! Construct a new VSG-based application instance
         VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer);
@@ -171,6 +177,7 @@ namespace ROCKY_NAMESPACE
         VSGContextImpl(VSGContextImpl&& rhs) noexcept = delete;
 
         void ctor(int& argc, char** argv);
+        void initialize();
 
         friend class Application;
         friend class VSGContextFactory;

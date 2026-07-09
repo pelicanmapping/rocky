@@ -1,5 +1,15 @@
 #version 450
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 #pragma import_defines(ROCKY_ATMOSPHERE)
+
+#pragma include "rocky.defines.h.glsl"
+#pragma include "rocky.viewdependentstate.glsl"
+#pragma include "rocky.lighting.glsl"
+#pragma include "rocky.projection.glsl"
 
 layout(push_constant) uniform PushConstants {
     mat4 projection;
@@ -11,10 +21,10 @@ layout(location = 0) in vec3 in_vertex_ts;
 layout(location = 1) in vec3 in_up_ts;
 layout(location = 2) in vec3 in_uvw;
 
-layout(set = 0, binding = 10) uniform sampler2D u_elevationTex;
+layout(set = 0, binding = BINDING_TERRAIN_ELEVATION) uniform sampler2D u_elevationTex;
 
 // uniforms (TerrainState.h)
-layout(set = 0, binding = 9) uniform TerrainSettings {
+layout(set = 0, binding = BINDING_TERRAIN_SETTINGS) uniform TerrainSettings {
     vec4 backgroundColor;
     float atmosphere;
     float lighting;
@@ -23,7 +33,7 @@ layout(set = 0, binding = 9) uniform TerrainSettings {
 } u_terrain;
 
 // rocky::TerrainTileDescriptors
-layout(set = 0, binding = 13) uniform TileData {
+layout(set = 0, binding = BINDING_TERRAIN_TILE) uniform TileData {
     mat4 elevationMatrix;
     mat4 colorMatrix;
     mat4 modelMatrix;
@@ -56,11 +66,6 @@ out gl_PerVertex {
 #define VERTEX_HAS_ELEVATION 4 // not subject to elevation texture
 #define VERTEX_SKIRT         8 // it's a skirt vertex (bitmask)
 #define VERTEX_CONSTRAINT   16 // part of a non-morphable constraint
-
-
-#pragma include "rocky.viewdependentstate.glsl"
-#pragma include "rocky.lighting.glsl"
-#pragma include "rocky.projection.glsl"
 
 
 // sample the elevation data at a UV tile coordinate and make a tangent-space position
@@ -133,7 +138,7 @@ void main()
     vary.normalVs = normalize(normalMatrix * computeTBN_ts(in_up_ts) * computeNormal_ts(in_uvw.st));
 
     // Rotation from view space to world space
-    mat3 rotate_vs_to_ws = getRotateVsToWs();
+    mat3 rotate_vs_to_ws = getRotateVsToWs(pc.modelview);
 
     // Sun direction in ECEF
     vary.sunDirEcef = rotate_vs_to_ws * (-getSunlightDirection());
@@ -142,7 +147,7 @@ void main()
     vary.discardVert = pc.projection[3][3] > 0.0 && (int(in_uvw.z) & VERTEX_SKIRT) != 0 ? 1.0 : 0.0;
 
     // apply an optional screen projection
-    position_vs = applyProjection(position_vs);
+    position_vs = applyProjection(position_vs, pc.projection);
 
     vary.vertexVs = position_vs.xyz / position_vs.w;
 

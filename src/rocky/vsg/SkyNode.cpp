@@ -6,6 +6,7 @@
 #include "SkyNode.h"
 #include "VSGUtils.h"
 #include "ViewDependentState.h"
+#include "ShaderDefines.h"
 #include <rocky/Ellipsoid.h>
 #include <rocky/Ephemeris.h>
 
@@ -228,7 +229,7 @@ namespace
         stategroup->add(pipelineConfig->bindGraphicsPipeline);
         stategroup->add(bindDescriptorSet);
         stategroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, 
-            pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
+            pipelineConfig->layout, VDS_DESCRIPTOR_SET_INDEX));
 
         return stategroup;
     }

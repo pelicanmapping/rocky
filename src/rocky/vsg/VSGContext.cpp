@@ -5,6 +5,7 @@
  */
 #include "VSGContext.h"
 #include "VSGUtils.h"
+#include "ShaderDefines.h"
 #include <rocky/Image.h>
 #include <rocky/URI.h>
 #include <rocky/GeoExtent.h>
@@ -276,7 +277,9 @@ VSGContextImpl::VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer) :
     rocky::ContextImpl(),
     _viewer(viewer)
 {
-    if (!_viewer) _viewer = vsg::Viewer::create();
+    if (!_viewer)
+        _viewer = vsg::Viewer::create();
+
     int argc = 0;
     const char* argv[1] = { "rocky" };
     ctor(argc, (char**)argv);
@@ -286,7 +289,9 @@ VSGContextImpl::VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer, int& argc, char
     rocky::ContextImpl(),
     _viewer(viewer)
 {
-    if (!_viewer) _viewer = vsg::Viewer::create();
+    if (!_viewer)
+        _viewer = vsg::Viewer::create();
+
     ctor(argc, argv);
 }
 
@@ -297,7 +302,11 @@ VSGContextImpl::ctor(int& argc, char** argv)
 
     readerWriterOptions = vsg::Options::create();
 
+    // TODO: add all the default binding defines to this:
     shaderCompileSettings = vsg::ShaderCompileSettings::create();
+
+    // global data that systems can share and use
+    sharedRenderData = std::make_shared<SharedRenderData>();
 
     _priorityUpdateQueue = PriorityUpdateQueue::create();
 
@@ -624,6 +633,13 @@ VSGContextImpl::upload(const vsg::BufferInfoList& bufferInfos)
 }
 
 void
+VSGContextImpl::initialize()
+{
+    sharedRenderData->initialize(device());
+    _initialized = true;
+}
+
+void
 VSGContextImpl::upload(const vsg::ImageInfoList& imageInfos)
 {
     // A way to upload images without using the dirty()/DYNAMIC_DATA mechanism,
@@ -661,6 +677,11 @@ VSGContextImpl::requestFrame()
 void
 VSGContextImpl::update()
 {
+    if (!_initialized)
+    {
+        initialize();
+    }
+
     // Every-time update functions
     onUpdate.fire(this);
 

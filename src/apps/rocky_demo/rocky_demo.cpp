@@ -47,6 +47,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Screenshot.h"
 #include "Demo_Synchro.h"
 #include "Demo_OrderedRendering.h"
+#include "Demo_FrustumGrid.h"
 
 template<class T>
 int layerError(T layer)
@@ -123,6 +124,7 @@ std::vector<Demo> demos =
     Demo{ "Sandbox", {},
     {
         Demo{ "Drawing", Demo_Draw },
+        Demo{ "Frustum grid", Demo_FrustumGrid },
         Demo{ "Geocoding", Demo_Geocoder },
         Demo{ "Ordered rendering", Demo_OrderedRendering },
         Demo{ "Render to texture", Demo_RTT },

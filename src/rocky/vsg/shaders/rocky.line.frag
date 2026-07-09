@@ -1,4 +1,9 @@
 #version 450
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 
 // inter-stage interface block
 struct Varyings {

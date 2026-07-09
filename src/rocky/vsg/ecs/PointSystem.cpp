@@ -7,6 +7,7 @@
 #include "TransformDetail.h"
 #include "ECSVisitors.h"
 #include "../ViewDependentState.h"
+#include "../ShaderDefines.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -243,7 +244,7 @@ PointSystemNode::initialize(VSGContext vsgcontext)
         // Assemble the commands required to activate this pipeline:
         c.commands = vsg::Commands::create();
         c.commands->children.push_back(c.config->bindGraphicsPipeline);
-        c.commands->children.push_back(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
+        c.commands->children.push_back(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VDS_DESCRIPTOR_SET_INDEX));
     }
 
     // Set up our default style detail, which is used when a style is missing.

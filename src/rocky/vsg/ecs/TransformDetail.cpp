@@ -261,19 +261,19 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
     // apply the optional screen-space projection:
     auto* vsgView = record.getCommandBuffer()->viewDependentState->view;
     auto vds = viewDependentState(vsgView);
-
-    if (vds && vds->uniforms().stereographic)
+    BufferAccess<RenderParams> rp(vds->renderParamsBuf);
+    if (rp->stereographic) //vds && vds-uniforms().stereographic)
     {
         auto& view = views[vsgView->viewID];
-        const auto& uniforms = vds->uniforms();
-        auto viewMatrix = vsg::inverse(to_dmat4(uniforms.inverseViewMatrix));
+        //const auto& uniforms = vds->uniforms();
+        auto viewMatrix = vsg::inverse(to_dmat4(rp->inverseViewMatrix));
 
         view.position = applyProjection(
             view.position,
-            to_dvec2(uniforms.ellipsoidAxes),
+            to_dvec2(rp->ellipsoidAxes),
             viewMatrix,
             view.proj,
-            uniforms.stereographic != 0);
+            rp->stereographic != 0);
     }
 
     view.passingCull = true;

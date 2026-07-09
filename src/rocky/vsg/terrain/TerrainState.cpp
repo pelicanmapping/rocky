@@ -8,6 +8,8 @@
 #include "TerrainSettings.h"
 #include "../VSGUtils.h"
 #include "../ViewDependentState.h"
+#include "../SharedRenderData.h"
+#include "../ShaderDefines.h"
 
 #include <rocky/Color.h>
 #include <rocky/Heightfield.h>
@@ -20,29 +22,22 @@
 #define TERRAIN_VERT_SHADER "shaders/rocky.terrain.vert"
 #define TERRAIN_FRAG_SHADER "shaders/rocky.terrain.frag"
 
-#define MAP_SETTINGS_UBO_NAME "map"
-#define MAP_SETTINGS_UBO_BINDING 8
-
+#define MAP_SETTINGS_UBO_NAME "u_map"
 #define TERRAIN_SETTINGS_UBO_NAME "u_terrain"
-#define TERRAIN_SETTINGS_UBO_BINDING 9
-
 #define ELEVATION_TEX_NAME "u_elevationTex"
-#define ELEVATION_TEX_BINDING 10
-
 #define COLOR_TEX_NAME "u_colorTex"
-#define COLOR_TEX_BINDING 11
-
-#define NORMAL_TEX_NAME "normal_tex"
-#define NORMAL_TEX_BINDING 12
-
+#define NORMAL_TEX_NAME "u_normalTex"
 #define TILE_UBO_NAME "u_tile"
-#define TILE_UBO_BINDING 13
+#define FRUSTUM_GRID_PARAMS_UBO_NAME "u_frustumGridParams"
+#define FRUSTUMS_SSBO_NAME "u_frustums"
 
 #define ATTR_VERTEX "in_vertexTs"
 #define ATTR_NORMAL "in_upTs"
 #define ATTR_UV "in_uvw"
 #define ATTR_VERTEX_NEIGHBOR "in_vertex_neighbor"
 #define ATTR_NORMAL_NEIGHBOR "in_normal_neighbor"
+
+//#define USE_FRUSTUM_GRID
 
 using namespace ROCKY_NAMESPACE;
 
@@ -84,7 +79,7 @@ TerrainState::createDefaultDescriptors(VSGContext context)
     // color channel
     // TODO: more than one - make this an array?
     // TODO: activate mipmapping
-    texturedefs.color = { COLOR_TEX_NAME, COLOR_TEX_BINDING, vsg::Sampler::create(), {} };
+    texturedefs.color = { COLOR_TEX_NAME, BINDING_TERRAIN_COLOR, vsg::Sampler::create(), {} };
     texturedefs.color.sampler->minFilter = VK_FILTER_LINEAR;
     texturedefs.color.sampler->magFilter = VK_FILTER_LINEAR;
     texturedefs.color.sampler->minLod = 0;
@@ -98,7 +93,7 @@ TerrainState::createDefaultDescriptors(VSGContext context)
     if (context->sharedObjects)
         context->sharedObjects->share(texturedefs.color.sampler);
 
-    texturedefs.elevation = { ELEVATION_TEX_NAME, ELEVATION_TEX_BINDING, vsg::Sampler::create(), {} };
+    texturedefs.elevation = { ELEVATION_TEX_NAME, BINDING_TERRAIN_ELEVATION, vsg::Sampler::create(), {} };
     texturedefs.elevation.sampler->minLod = 0;
     texturedefs.elevation.sampler->maxLod = VK_LOD_CLAMP_NONE;
     texturedefs.elevation.sampler->minFilter = VK_FILTER_LINEAR;
@@ -109,7 +104,7 @@ TerrainState::createDefaultDescriptors(VSGContext context)
         context->sharedObjects->share(texturedefs.elevation.sampler);
 
 #if 0
-    texturedefs.normal = { NORMAL_TEX_NAME, NORMAL_TEX_BINDING, vsg::Sampler::create(), {} };
+    texturedefs.normal = { NORMAL_TEX_NAME, BINDING_TERRAIN_NORMAL, vsg::Sampler::create(), {} };
     texturedefs.normal.sampler->maxLod = 16;
     texturedefs.normal.sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
     texturedefs.normal.sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
@@ -210,15 +205,15 @@ TerrainState::createShaderSet(VSGContext context) const
         VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, 
         VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(TILE_UBO_NAME, "", 0, TILE_UBO_BINDING,
+    shaderSet->addDescriptorBinding(TILE_UBO_NAME, "", 0, BINDING_TERRAIN_TILE,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, 
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(TERRAIN_SETTINGS_UBO_NAME, "", 0, TERRAIN_SETTINGS_UBO_BINDING,
+    shaderSet->addDescriptorBinding(TERRAIN_SETTINGS_UBO_NAME, "", 0, BINDING_TERRAIN_SETTINGS,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(MAP_SETTINGS_UBO_NAME, "", 0, MAP_SETTINGS_UBO_BINDING,
+    shaderSet->addDescriptorBinding(MAP_SETTINGS_UBO_NAME, "", 0, BINDING_MAP_SETTINGS,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
@@ -257,6 +252,11 @@ TerrainState::createPipelineConfig(VSGContext context) const
     config->enableDescriptor(TILE_UBO_NAME);
     config->enableDescriptor(TERRAIN_SETTINGS_UBO_NAME);
     config->enableDescriptor(MAP_SETTINGS_UBO_NAME);
+
+#ifdef USE_FRUSTUM_GRID
+    config->enableDescriptor(FRUSTUM_GRID_PARAMS_UBO_NAME);
+    config->enableDescriptor(FRUSTUMS_SSBO_NAME);
+#endif
 
     enableViewDependentStateUniforms(config);
 
@@ -297,7 +297,7 @@ TerrainState::createTerrainStateGroup(VSGContext context)
         // global settings uniform setup
         _terrainDescriptors.data = vsg::ubyteArray::create(sizeof(TerrainDescriptors::Uniforms));
         _terrainDescriptors.data->properties.dataVariance = vsg::DYNAMIC_DATA;
-        _terrainDescriptors.ubo = vsg::DescriptorBuffer::create(_terrainDescriptors.data, TERRAIN_SETTINGS_UBO_BINDING);
+        _terrainDescriptors.ubo = vsg::DescriptorBuffer::create(_terrainDescriptors.data, BINDING_TERRAIN_SETTINGS);
 
         // initialize to the defaults
         auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(_terrainDescriptors.data->dataPointer());
@@ -308,7 +308,7 @@ TerrainState::createTerrainStateGroup(VSGContext context)
     // Descriptors are the global terrain uniform buffer and the VSG view-dependent buffer.
     auto stateGroup = vsg::StateGroup::create();
     stateGroup->add(pipelineConfig->bindGraphicsPipeline);
-    stateGroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
+    stateGroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VDS_DESCRIPTOR_SET_INDEX));
     
     return stateGroup;
 }
@@ -405,10 +405,20 @@ TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel
     uniforms.min_height = renderModel.minHeight;
     uniforms.max_height = renderModel.maxHeight;
     uniforms.span = key.extent().height(Units::METERS);
-    descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, TILE_UBO_BINDING);
+    descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, BINDING_TERRAIN_TILE);
 
     // make the descriptor set, including terrain settings UBO and external UBOs
-    vsg::Descriptors allDescriptors{ descriptors.elevation, descriptors.color, descriptors.uniforms, _terrainDescriptors.ubo };
+    vsg::Descriptors allDescriptors{ 
+        descriptors.elevation, 
+        descriptors.color, 
+        descriptors.uniforms, 
+        _terrainDescriptors.ubo
+#ifdef USE_FRUSTUM_GRID
+        ,
+        vsgcontext->sharedRenderData->views[0].paramsBuf,
+        vsgcontext->sharedRenderData->views[0].frustumsBuf
+#endif
+    };
 
     // add any "user" descriptors (including the map's)
     allDescriptors.insert(allDescriptors.end(), _additionalDescriptors.begin(), _additionalDescriptors.end());

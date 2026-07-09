@@ -1,3 +1,8 @@
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 #extension GL_EXT_fragment_shader_barycentric : enable
 #pragma import_defines(ROCKY_HAS_VK_BARYCENTRIC_EXTENSION)
 

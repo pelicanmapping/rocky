@@ -458,6 +458,141 @@ namespace ROCKY_NAMESPACE
             sampler, moveImageData(image), 0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
     }
 
+    //! Convenience class for manipulating a descriptor buffer and its data
+    template<class T>
+    struct BufferAccess
+    {
+        vsg::ref_ptr<vsg::DescriptorBuffer>& _buf;
+        vsg::ref_ptr<vsg::Data> _data;
+        T* _iter = nullptr;
+
+        //! Construct a BufferHelper from an existing descriptor buffer.
+        //! The buffer must have at least one bufferInfo.
+        BufferAccess(vsg::ref_ptr<vsg::DescriptorBuffer>& buf) :
+            _buf(buf),
+            _data(buf->bufferInfoList[0]->data),
+            _iter(reinterpret_cast<T*>(_data->dataPointer()))
+        {
+            //nop
+        }
+
+        //! Construct a BufferHelper from an existing descriptor buffer,
+        //! or create a new one if the buffer is null. Allocate enough data
+        //! to hold "count" instances of T.
+        BufferAccess(vsg::ref_ptr<vsg::DescriptorBuffer>& buf,
+            std::uint32_t binding,
+            VkDescriptorType type,
+            unsigned count = 1u) :
+                _buf(buf)
+        {
+            if (_buf) {
+                auto& bi = _buf->bufferInfoList[0];
+                _data = bi->data;
+                _iter = reinterpret_cast<T*>(_data->dataPointer());
+            }
+            else {
+                _data = vsg::ubyteArray::create(sizeof(T) * std::max(1u, count));
+                _buf = vsg::DescriptorBuffer::create(_data, binding, 0, type);
+                *reinterpret_cast<T*>(_data->dataPointer()) = T();
+                _iter = reinterpret_cast<T*>(_data->dataPointer());
+            }
+        }
+
+        void reset()
+        {
+            *reinterpret_cast<T*>(_data->dataPointer()) = T();
+        }
+
+        vsg::Data* data() {
+            return _buf->bufferInfoList[0]->data;
+        }
+
+        void dirty() {
+            _buf->bufferInfoList[0]->data->dirty();
+        }
+
+        T* operator -> () { 
+            return _iter;
+        }
+
+        BufferAccess<T>& operator ++ ()
+        {
+            ++_iter;
+            return *this;
+        }
+
+        operator vsg::BufferInfoList& () const
+        {
+            return _buf->bufferInfoList;
+        }
+
+        vsg::BufferInfoList replace(vsg::ref_ptr<vsg::Data> data)
+        {
+            auto old = _buf->bufferInfoList;
+            _buf->bufferInfoList.clear();
+            _buf->bufferInfoList.emplace_back(vsg::BufferInfo::create(data));
+            return old;
+        }
+
+        vsg::BufferInfoList resize(std::uint32_t newCount)
+        {
+            auto data = vsg::ubyteArray::create(sizeof(T) * std::max(1u, newCount));
+            return replace(data);
+        }
+    };
+
+
+    //! Convenience class for creating and resizing a gpu-only descriptor buffer
+    template<class T>
+    struct GPUOnlyBufferAccess
+    {
+        GPUOnlyBufferAccess(vsg::ref_ptr<vsg::DescriptorBuffer>& buf,
+            std::uint32_t binding,
+            VkDescriptorType type,
+            vsg::Device* device = nullptr,
+            std::uint32_t count = 1) : _buf(buf), _device(device)
+        {
+            if (!_buf)
+                _buf = vsg::DescriptorBuffer::create(nullptr, binding, 0, type);
+
+            if (device)
+                resize(count);
+        }
+
+        GPUOnlyBufferAccess(vsg::ref_ptr<vsg::DescriptorBuffer>& buf,
+            vsg::Device* device)
+                : _buf(buf), _device(device)
+        {
+            ROCKY_SOFT_ASSERT(_buf);
+        }
+
+        //! Creates and installs a new buffer, and returns the old list
+        //! for disposal.
+        vsg::BufferInfoList resize(std::uint32_t count)
+        {
+            ROCKY_SOFT_ASSERT_AND_RETURN(_buf && _device, vsg::BufferInfoList{});
+
+            auto size = sizeof(T) * std::max(1u, count);
+
+            auto buffer = vsg::createBufferAndMemory(
+                _device, size,
+                VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                VK_SHARING_MODE_EXCLUSIVE,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+            auto bufferInfo = vsg::BufferInfo::create(buffer, 0, size);
+
+            auto old = _buf->bufferInfoList;
+
+            _buf->bufferInfoList = { bufferInfo };
+
+            return old;
+        }
+
+        vsg::ref_ptr<vsg::DescriptorBuffer>& _buf;
+        vsg::Device* _device;
+    };
+
     namespace detail 
     {
         /**

@@ -1,4 +1,9 @@
 #version 450
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 
 layout(push_constant) uniform PushConstants {
     mat4 projection;

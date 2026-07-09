@@ -1,4 +1,9 @@
 #version 450
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 
 // Physically-based atmospheric scattering fragment shader.
 // Single-scattering ray march with Rayleigh, Mie, and ozone absorption.

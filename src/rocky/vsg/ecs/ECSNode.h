@@ -96,6 +96,9 @@ namespace ROCKY_NAMESPACE
             inline void dispose(vsg::Object* object) const {
                 if (object) _toDispose->addChild(vsg::ref_ptr<vsg::Object>(object));
             }
+            inline void dispose(vsg::BufferInfoList& bil) const {
+                for (auto& bi : bil) dispose(bi);
+            }
             inline void requestUpload(vsg::BufferInfo* bi) const {
                 if (bi) _buffersToUpload.emplace_back(bi);
             }

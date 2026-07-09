@@ -1,5 +1,9 @@
 #version 450
-
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 layout(location = 1) in Varyings {
     flat vec4 color;
     flat float antialias;

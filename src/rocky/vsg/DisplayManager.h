@@ -288,7 +288,7 @@ namespace ROCKY_NAMESPACE
         bool _debuglayer = false;
         bool _vsync = true;
         bool _debuglayerUnique = false;
-        bool _debugCallbackInstalled = false;
+        VkDebugUtilsMessengerEXT _debugMessenger = VK_NULL_HANDLE;
 
         void configureTraits(vsg::WindowTraits* traits);
     };

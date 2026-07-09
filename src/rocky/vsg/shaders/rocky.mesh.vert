@@ -1,5 +1,14 @@
 #version 450
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 #pragma import_defines(ROCKY_ATMOSPHERE)
+
+#pragma include "rocky.viewdependentstate.glsl"
+#pragma include "rocky.projection.glsl"
+#pragma include "rocky.depthoffset.glsl"
 
 // vsg push constants
 layout(push_constant) uniform PushConstants {
@@ -46,10 +55,6 @@ out gl_PerVertex {
     float gl_ClipDistance[1];
 };
 
-#pragma include "rocky.viewdependentstate.glsl"
-#pragma include "rocky.projection.glsl"
-#pragma include "rocky.depthoffset.glsl"
-
 void main()
 {    
     bool hasPerVertexColors = (MASK_HAS_PER_VERTEX_COLORS & u_mesh.style.featureMask) != 0;
@@ -63,12 +68,12 @@ void main()
 
     vec4 vertexVs = pc.modelview * vec4(in_vertex, 1.0);
     
-    vertexVs = applyProjection(vertexVs);
+    vertexVs = applyProjection(vertexVs, pc.projection);
 
     mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));
     vary.normal = normalMatrix * in_normal;
     
-    vertexVs = applyDepthOffset(vertexVs, u_mesh.style.depthOffset);
+    vertexVs = applyDepthOffset(vertexVs, u_mesh.style.depthOffset, pc.projection);
 
     vary.vertexVs = vertexVs.xyz / vertexVs.w;
     vary.uv = in_uv;

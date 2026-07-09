@@ -1,3 +1,10 @@
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
+#pragma include "rocky.defines.h.glsl"
+
 #pragma import_defines(ROCKY_ATMOSPHERE)
 
 #pragma import_defines(VSG_SHADOWS_HARD)
@@ -5,17 +12,15 @@
 #define ROCKY_SHADOWS
 #endif
 
-#ifndef VIEW_DESCRIPTOR_SET
-#define VIEW_DESCRIPTOR_SET 1
-#endif
-
 // from VSG's view-dependent state
-layout(set = VIEW_DESCRIPTOR_SET, binding = 0) uniform VSGLightData {
+layout(set = VDS_DESCRIPTOR_SET_INDEX, binding = BINDING_VDS_VSG_LIGHTS) uniform VSGLightData {
     vec4 values[64];
 } u_lightData;
 
 // shadows.glsl is copied, unmodified, from vsgExamples
-vec3 g_eyePos; // expected by shadows.glsl
+// expected by shadows.glsl:
+vec3 g_eyePos;
+#define VIEW_DESCRIPTOR_SET VDS_DESCRIPTOR_SET_INDEX
 #pragma include "shadows.glsl"
 
 // placeholder

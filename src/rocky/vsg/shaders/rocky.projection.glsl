@@ -1,20 +1,25 @@
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 
 // the camera position in model space (or tile tangent space)
-vec3 getCameraMs()
+//vec3 getCameraMs()
+//{
+//    return -transpose(mat3(pc.modelview)) * pc.modelview[3].xyz;
+//}
+
+// get a matrix that will rotate a view-space vector into world-space
+mat3 getRotateVsToWs(in mat3 modelMatrix, in mat4 mvm)
 {
-    return -transpose(mat3(pc.modelview)) * pc.modelview[3].xyz;
+    return modelMatrix * transpose(mat3(mvm));
 }
 
 // get a matrix that will rotate a view-space vector into world-space
-mat3 getRotateVsToWs(in mat3 modelMatrix)
+mat3 getRotateVsToWs(in mat4 mvm)
 {
-    return modelMatrix * transpose(mat3(pc.modelview));
-}
-
-// get a matrix that will rotate a view-space vector into world-space
-mat3 getRotateVsToWs()
-{
-    return mat3(u_vds.inverseViewMatrix * pc.modelview) * transpose(mat3(pc.modelview));
+    return mat3(u_vds.inverseViewMatrix * mvm) * transpose(mat3(mvm));
 }
 
 // get the parametric distance along ta ray at which it intersects an ellipsoid
@@ -128,17 +133,17 @@ vec3 projectVertexToStereographic(in vec3 position_vs, in vec2 ellipsoid, in mat
     return antipode_vs + dir_vs * scale + height * planeNormal_vs;
 }
 
-vec3 projectAnchoredVertexToStereographic(in vec3 position_vs, in vec2 ellipsoid, in mat4 viewMatrix)
+vec3 projectAnchoredVertexToStereographic(in vec3 position_vs, in vec2 ellipsoid, in mat4 viewMatrix, in mat4 mvm)
 {
-    vec3 anchor_vs = pc.modelview[3].xyz;
+    vec3 anchor_vs = mvm[3].xyz;
     vec3 offset_vs = position_vs - anchor_vs;
     vec3 projected_anchor_vs = projectVertexToStereographic(anchor_vs, ellipsoid, viewMatrix);
     return projected_anchor_vs + offset_vs;
 }
 
-vec4 applyProjection(in vec4 position_vs)
+vec4 applyProjection(in vec4 position_vs, in mat4 proj)
 {
-    if (u_vds.stereographic > 0 && pc.projection[3][3] > 0.0)
+    if (u_vds.stereographic > 0 && proj[3][3] > 0.0)
     {
         mat4 viewMatrix = inverse(u_vds.inverseViewMatrix);
         position_vs.xyz = projectVertexToStereographic(position_vs.xyz, u_vds.ellipsoidAxes, viewMatrix);

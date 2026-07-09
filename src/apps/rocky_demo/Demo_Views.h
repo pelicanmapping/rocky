@@ -129,9 +129,10 @@ auto Demo_Views = [](Application& app)
                         {
                             if (auto vds = viewDependentState(view.vsgView))
                             {
-                                if (ImGuiLTable::Checkbox("Stereographic\n(Experimental)", &vds->uniforms().stereographic))
+                                BufferAccess<RenderParams> params(vds->renderParamsBuf);
+                                if (ImGuiLTable::Checkbox("Stereographic\n(Experimental)", &params->stereographic))
                                 {
-                                    vds->dirty();
+                                    params.dirty();
                                 }
                             }
                         }

@@ -1,4 +1,9 @@
 #version 450
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 
 // vsg push constants
 layout(push_constant) uniform PushConstants {
@@ -87,18 +92,18 @@ void main()
     float bias = u_line.style.depthOffset;
 
     vec4 curr_view = pc.modelview * vec4(in_vertex, 1);
-    curr_view      = applyProjection(curr_view);
-    curr_view      = applyDepthOffset(curr_view, bias);
+    curr_view      = applyProjection(curr_view, pc.projection);
+    curr_view      = applyDepthOffset(curr_view, bias, pc.projection);
     vec4 curr_clip = pc.projection * curr_view;
 
     vec4 prev_view = pc.modelview * vec4(in_vertexPrev, 1);
-    prev_view      = applyProjection(prev_view);
-    prev_view      = applyDepthOffset(prev_view, bias);
+    prev_view      = applyProjection(prev_view, pc.projection);
+    prev_view      = applyDepthOffset(prev_view, bias, pc.projection);
     vec4 prev_clip = pc.projection * prev_view;
 
     vec4 next_view = pc.modelview * vec4(in_vertexNext, 1);
-    next_view      = applyProjection(next_view);
-    next_view      = applyDepthOffset(next_view, bias);
+    next_view      = applyProjection(next_view, pc.projection);
+    next_view      = applyDepthOffset(next_view, bias, pc.projection);
     vec4 next_clip = pc.projection * next_view;
 
     vec2 curr_pixel = (curr_clip.xy / curr_clip.w) * viewport_size;

@@ -135,6 +135,7 @@ namespace ROCKY_NAMESPACE
         Result<> createProfiles(VSGContext);
         CallbackSubs _callbacks;
         std::vector<Layer::Ptr> _terrainLayers;
+        std::shared_ptr<SharedRenderData> _sharedRenderData;
         friend class TerrainState;
     };
 }

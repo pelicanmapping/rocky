@@ -117,7 +117,9 @@ Window::addView(vsg::ref_ptr<vsg::View> vsgView)
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext, s_nullView);
 
     // install the custom VDS:
-    vsgView->viewDependentState = ViewDependentStateEx::create(vsgView);
+    auto vds = ViewDependentStateEx::create(vsgView);;
+    vsgView->viewDependentState = vds;
+    vsgcontext->sharedRenderData->viewDependentState[vsgView->viewID] = vds;
 
     // rendergraph to control the view within a window:
     auto renderGraph = vsg::RenderGraph::create(vsgWindow, vsgView);
@@ -228,7 +230,20 @@ DisplayManager::initialize(VSGContext in_context, vsg::CommandLine& commandLine)
 
 DisplayManager::~DisplayManager()
 {
-    // nop
+#if 0
+    if (_debugMessenger != VK_NULL_HANDLE && sharedDevice() && sharedDevice()->getInstance())
+    {
+        auto vki = sharedDevice()->getInstance();
+        auto vkDestroyDebugUtilsMessengerEXT =
+            reinterpret_cast<PFN_vkDestroyDebugUtilsMessengerEXT>(
+                vkGetInstanceProcAddr(vki->vk(), "vkDestroyDebugUtilsMessengerEXT"));
+        if (vkDestroyDebugUtilsMessengerEXT)
+        {
+            vkDestroyDebugUtilsMessengerEXT(vki->vk(), _debugMessenger, nullptr);
+        }
+        _debugMessenger = VK_NULL_HANDLE;
+    }
+#endif
 }
 
 
@@ -238,85 +253,6 @@ DisplayManager::sharedDevice() const
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), {});
     return !vsgcontext->viewer()->windows().empty() ? vsgcontext->viewer()->windows().front()->getDevice() : vsg::ref_ptr<vsg::Device>{ };
 }
-
-
-#if 0
-void
-DisplayManager::install(Window& window, View& view) //vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<vsg::View> view)
-{
-    ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), void());
-    ROCKY_SOFT_ASSERT_AND_RETURN(window._commandGraph, void());
-
-    // Each window gets its own CommandGraph. We will store it here and then
-    // set it up later when the frame loop starts.
-    window._commandGraph = vsg::CommandGraph::create(window.vsgWindow());
-    //_commandGraphByWindow[window] = commandgraph;
-
-    bool user_provided_view = view.valid();
-    vsg::ref_ptr<vsg::Camera> camera;
-
-    if (!view && _app && _app->mapNode && _app->mainScene)
-    {        
-        // make a camera based on the mapNode's SRS
-        double nearFarRatio = 0.0000001;
-        double R = _app->mapNode->srs().ellipsoid().semiMajorAxis();
-        double ar = (double)window->extent2D().width / (double)window->extent2D().height;
-
-        camera = vsg::Camera::create(
-            vsg::Perspective::create(30.0, ar, R * nearFarRatio, R * 20.0),
-            vsg::LookAt::create(vsg::dvec3(R*5.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 0.0, 1.0)),
-            vsg::ViewportState::create(0, 0, window->extent2D().width, window->extent2D().height));
-
-        view = vsg::View::create(camera, _app->mainScene);
-        view->setValue("rocky_auto_created", true);
-    }
-
-    addViewToWindow(view, window, !user_provided_view);
-
-    // add the new window to our viewer
-    vsgcontext->viewer()->addWindow(window);
-    vsgcontext->viewer()->addRecordAndSubmitTaskAndPresentation({ commandgraph });
-
-    // Tell Rocky it needs to mutex-protect the terrain engine
-    // now that we have more than one window.
-    if (_app && vsgcontext->viewer()->windows().size() > 1)
-    {
-        _app->mapNode->terrainSettings().supportMultiThreadedRecord = true;
-    }
-
-    // install the debug layer if requested
-    if (_app && _app->_debuglayer && !_debugCallbackInstalled)
-    {
-        VkDebugUtilsMessengerCreateInfoEXT debug_utils_create_info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
-        debug_utils_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
-        debug_utils_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
-        debug_utils_create_info.pfnUserCallback = debug_utils_messenger_callback;
-
-        static VkDebugUtilsMessengerEXT debug_utils_messenger;
-
-        auto vki = window->getDevice()->getInstance();
-        
-        auto vkCreateDebugUtilsMessengerEXT =
-            reinterpret_cast<PFN_vkCreateDebugUtilsMessengerEXT>(
-                vkGetInstanceProcAddr(vki->vk(), "vkCreateDebugUtilsMessengerEXT"));
-
-        if (vkCreateDebugUtilsMessengerEXT)
-        {
-            Log()->info("Installed Vulkan debug callback messenger.");
-            vkCreateDebugUtilsMessengerEXT(vki->vk(), &debug_utils_create_info, nullptr, &debug_utils_messenger);
-        }
-
-        _debugCallbackInstalled = true;
-        s_debugCallbackMessagesUnique = _app->_debuglayerUnique;
-    }
-
-    if (sharedDevice()->supportsDeviceExtension(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME))
-    {
-        vsgcontext->shaderCompileSettings->defines.emplace("ROCKY_HAS_VK_BARYCENTRIC_EXTENSION");
-    }
-}
-#endif
 
 
 void
@@ -404,6 +340,8 @@ DisplayManager::configureTraits(vsg::WindowTraits* traits)
     {
         Log()->debug("Enabling: {}", VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
+        auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
+        bary.fragmentShaderBarycentric = VK_TRUE;
     }
     else
     {
@@ -534,14 +472,14 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
     onAddWindow.fire(window);
 
     // install the debug layer if requested
-    if (_debuglayer && !_debugCallbackInstalled)
+    if (_debuglayer && !_debugMessenger)
     {
         VkDebugUtilsMessengerCreateInfoEXT debug_utils_create_info = { VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT };
         debug_utils_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
         debug_utils_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
         debug_utils_create_info.pfnUserCallback = debug_utils_messenger_callback;
 
-        static VkDebugUtilsMessengerEXT debug_utils_messenger;
+        //static VkDebugUtilsMessengerEXT debug_utils_messenger;
 
         auto vki = sharedDevice()->getInstance();
 
@@ -552,10 +490,9 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
         if (vkCreateDebugUtilsMessengerEXT)
         {
             Log()->info("Installed Vulkan debug callback messenger.");
-            vkCreateDebugUtilsMessengerEXT(vki->vk(), &debug_utils_create_info, nullptr, &debug_utils_messenger);
+            vkCreateDebugUtilsMessengerEXT(vki->vk(), &debug_utils_create_info, nullptr, &_debugMessenger);
         }
 
-        _debugCallbackInstalled = true;
         s_debugCallbackMessagesUnique = _debuglayerUnique;
     }
 

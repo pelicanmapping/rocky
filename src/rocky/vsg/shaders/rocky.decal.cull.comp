@@ -1,0 +1,62 @@
+#version 450
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
+
+#pragma include "rocky.frustumgrid.h.glsl"
+#pragma include "rocky.decal.h.glsl"
+
+layout(local_size_x = TILES_PER_THREAD_GROUP, 
+       local_size_y = TILES_PER_THREAD_GROUP) in;
+
+
+// test for intersection between decal and frustum
+// by testing the decal's BS against all four frustum planes
+bool intersects(in Decal decal, in Frustum frustum)
+{
+    float radius;
+    vec3 posVS;
+
+    if (decal.distance > 0.0) // perspective
+    {
+        radius = decal.c; // precomputed bounding sphere radius
+        float midZ = -(decal.a + decal.b) * 0.5; // center of near..far range
+        posVS = (decal.mvm * vec4(0.0, 0.0, midZ, 1.0)).xyz;
+    }
+    else // orthographic
+    {
+        radius = length(vec3(decal.a, decal.b, decal.c));
+        posVS = (decal.mvm * vec4(0, 0, 0, 1)).xyz;
+    }
+
+    for (int i = 0; i < 4; ++i)
+    {
+        if (dot(frustum.planes[i].xyz, posVS) - frustum.planes[i].w < -radius)
+            return false;
+    }
+    return true;
+}
+
+void main()
+{
+    if (gl_GlobalInvocationID.x >= u_numTiles.x || gl_GlobalInvocationID.y >= u_numTiles.y)
+        return;
+
+    uint tile = gl_GlobalInvocationID.y * u_numTiles.x + gl_GlobalInvocationID.x;
+    Frustum frustum = frustums[tile];
+
+    uint total = uint(decals[0].textureIndex); // first decal just holds the count
+    uint found = 0;
+
+    for (uint i = 1; i < total + 1 && found < MAX_DECALS_PER_TILE; ++i)
+    {
+        if (intersects(decals[i], frustum))
+        {
+            decalTiles[tile].indices[found++] = i;
+        }
+    }
+
+    decalTiles[tile].count = found;
+}

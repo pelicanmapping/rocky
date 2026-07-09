@@ -4,22 +4,39 @@
  * MIT License
  */
 #pragma once
+//#include <rocky/vsg/SharedRenderData.h>
 #include <rocky/vsg/Common.h>
+#include <rocky/Math.h>
 
 namespace ROCKY_NAMESPACE
 {
-    // Shader binding set and binding points for VSG's view-dependent data.
-    // See vsg::ViewDependentState
-    constexpr int VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX = 1;
-    constexpr int VSG_VIEW_DEPENDENT_LIGHTS_BINDING = 0;
-    constexpr int VSG_VIEW_DEPENDENT_VIEWPORTS_BINDING = 1;
-    constexpr int VSG_VIEW_DEPENDENT_ROCKY_BINDING = 10;
-
     class MapNode;
+
+
+    struct RenderParams {
+        vsg::mat4 inverseViewMatrix;
+        vsg::vec2 ellipsoidAxes;
+        std::uint32_t stereographic; // bool
+        float _padding[1];
+    };
+    static_assert(sizeof(RenderParams) % 16 == 0, "RenderParams must be 16-byte aligned");
+
+    struct FrustumGridParams {
+        glm::fmat4 invProjMatrix;
+        glm::ivec4 viewport = { 0, 0, 0, 0 };
+        glm::uvec2 numTiles = { 1u, 1u };
+        glm::uint32_t pixelsPerTile = 16u;
+        glm::float32_t debugTiles = 0.0f;
+    };
+    static_assert(sizeof(FrustumGridParams) % 16 == 0, "FrustumGridParams must be 16-byte aligned");
+
+    struct FrustumGPU {
+        glm::fvec4 planes[4];
+    };
 
     /**
     * Extends vsg::ViewDependentState to add data for Rocky rendering.
-    * Shader usage (where "binding" === VSG_VIEW_DEPENDENT_ROCKY_BINDING)
+    * Shader usage (where "binding" === BINDING_ROCKY_VIEW_DEPENDENT_STATE)
     *
     *   layout(set = 1, binding = XXX) uniform RockyVDS {
     *       mat4 inverseViewMatrix;
@@ -36,6 +53,11 @@ namespace ROCKY_NAMESPACE
             //nop
         }
 
+        mutable vsg::ref_ptr<vsg::DescriptorBuffer> renderParamsBuf;
+        mutable vsg::ref_ptr<vsg::DescriptorBuffer> frustumParamsBuf;
+        vsg::ref_ptr<vsg::DescriptorBuffer> frustumsBuf;
+
+#if 0
         struct MyDescriptors
         {
             struct Uniforms
@@ -45,17 +67,20 @@ namespace ROCKY_NAMESPACE
                 std::uint32_t stereographic; // bool
                 float _padding[1];
             };
-            vsg::ref_ptr<vsg::Data> data;
-            vsg::ref_ptr<vsg::Descriptor> ubo;
+            vsg::ref_ptr<vsg::DescriptorBuffer> ubo;
+
+            vsg::ref_ptr<vsg::DescriptorBuffer> frustumParams;
+            vsg::ref_ptr<vsg::DescriptorBuffer> frustums;
         };
 
         MyDescriptors::Uniforms& uniforms() {
-            return *static_cast<MyDescriptors::Uniforms*>(_myDescriptors.data->dataPointer());
+            return *static_cast<MyDescriptors::Uniforms*>(_myDescriptors.ubo->bufferInfoList[0]->data->dataPointer());
         }
 
         void dirty() {
-            _myDescriptors.data->dirty();
+            _myDescriptors.ubo->bufferInfoList[0]->data->dirty();
         }
+#endif
 
     public:
         void init(vsg::ResourceRequirements& req) override;
@@ -63,7 +88,7 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::RecordTraversal& rt) const override;
 
     protected:
-        MyDescriptors _myDescriptors;
+        //MyDescriptors _myDescriptors;
         mutable vsg::observer_ptr<MapNode> _mapNode;
     };
     

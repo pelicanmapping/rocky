@@ -6,6 +6,7 @@
  */
 #include "MeshSystem.h"
 #include "../ViewDependentState.h"
+#include "../ShaderDefines.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -320,7 +321,7 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
 
         c.commands = vsg::Commands::create();
         c.commands->addChild(c.config->bindGraphicsPipeline);
-        c.commands->addChild(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VSG_VIEW_DEPENDENT_DESCRIPTOR_SET_INDEX));
+        c.commands->addChild(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VDS_DESCRIPTOR_SET_INDEX));
     }
 
     // Set up our default style detail, which is used when a MeshStyle is missing.

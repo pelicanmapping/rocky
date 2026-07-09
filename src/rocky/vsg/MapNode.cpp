@@ -5,14 +5,14 @@
  */
 #include "MapNode.h"
 #include "VSGUtils.h"
+#include "SharedRenderData.h"
+#include "ShaderDefines.h"
 #include "json.h"
 #include <rocky/Horizon.h>
 #include <rocky/vsg/NodeLayer.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
-
-#define MAP_SETTINGS_UBO_BINDING 8
 
 #undef LC
 #define LC "[MapNode] "
@@ -150,7 +150,7 @@ MapNode::configureState(VSGContext context)
     // global settings uniform setup
     _mapDescriptors.data = vsg::ubyteArray::create(sizeof(MapDescriptors::Uniforms));
     _mapDescriptors.data->properties.dataVariance = vsg::DYNAMIC_DATA;
-    _mapDescriptors.ubo = vsg::DescriptorBuffer::create(_mapDescriptors.data, MAP_SETTINGS_UBO_BINDING);
+    _mapDescriptors.ubo = vsg::DescriptorBuffer::create(_mapDescriptors.data, BINDING_MAP_SETTINGS);
 
     // initialize to the defaults
     auto& uniforms = *static_cast<MapDescriptors::Uniforms*>(_mapDescriptors.data->dataPointer());

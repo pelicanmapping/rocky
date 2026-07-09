@@ -1,5 +1,14 @@
 #version 450
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
 #pragma import_defines(ROCKY_ATMOSPHERE)
+
+#pragma include "rocky.viewdependentstate.glsl"
+#pragma include "rocky.projection.glsl"
+#pragma include "rocky.depthoffset.glsl"
 
 // vsg push constants
 layout(push_constant) uniform PushConstants {
@@ -41,10 +50,6 @@ out gl_PerVertex {
     float gl_PointSize;
 };
 
-#pragma include "rocky.viewdependentstate.glsl"
-#pragma include "rocky.projection.glsl"
-#pragma include "rocky.depthoffset.glsl"
-
 void main()
 {    
     bool perVertexColor = (u_point.style.perVertexMask & PER_VERTEX_COLOR) != 0;
@@ -54,8 +59,8 @@ void main()
     vary.antialias = u_point.style.antialias;
     
     vec4 view = pc.modelview * vec4(in_vertex, 1);
-    view = applyProjection(view);
-    view = applyDepthOffset(view, u_point.style.depthOffset);
+    view = applyProjection(view, pc.projection);
+    view = applyDepthOffset(view, u_point.style.depthOffset, pc.projection);
 
     gl_PointSize = (perVertexWidth ? in_width : u_point.style.width) * u_point.style.devicePixelRatio;
     gl_Position = pc.projection * view;

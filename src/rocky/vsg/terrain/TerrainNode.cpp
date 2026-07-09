@@ -136,6 +136,8 @@ TerrainNode::TerrainNode(VSGContext vsgcontext) :
     {
         addChild(vsg::MASK_ALL, _profileNodes);
     }
+
+    _sharedRenderData = vsgcontext->sharedRenderData;
 }
 
 TerrainNode::~TerrainNode()

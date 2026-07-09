@@ -8,8 +8,10 @@
 #include "SkyNode.h"
 #include "ecs/TransformSystem.h"
 #include "imgui/ImGuiIntegration.h"
-
 #include <rocky/contrib/EarthFileImporter.h>
+
+#include <rocky/vsg/FrustumGridSystem.h>
+#include <rocky/vsg/ecs/DecalSystem.h>
 
 #ifdef ROCKY_HAS_IMGUI
 #include <rocky/rocky_imgui.h>
@@ -205,6 +207,8 @@ Application::ctor(int& argc, char** argv)
 
     mapNode = rocky::MapNode::create(vsgcontext);
 
+    compute = vsg::Group::create();
+
     // the sun
     if (commandLine.read("--sky"))
     {
@@ -231,6 +235,10 @@ Application::ctor(int& argc, char** argv)
     {
         renderContinuously = true;
     }
+
+    // compute shader nodes that should come before the Map:
+    //scene->addChild(FrustumGridSystemNode::create(registry));
+    //scene->addChild(DecalSystemNode::create(registry));
 
     // a node to render the map/terrain
     scene->addChild(mapNode);
@@ -271,6 +279,20 @@ Application::ctor(int& argc, char** argv)
     // Create the ECS system manager and all its default systems.
     systemsNode = ECSNode::create(registry, true);
 
+
+    // compute shader nodes that should come before the Map:
+    // TODO: this will cause a one frame delay, deal with that later..
+    computeSystemsNode = ECSNode::create(registry, false);
+    compute->addChild(computeSystemsNode);
+
+    auto fgsystem = FrustumGridSystemNode::create(registry);
+    systemsNode->add(fgsystem);
+    computeSystemsNode->add(fgsystem);
+
+    //systemsNode->add(FrustumGridSystemNode::create(registry));
+    //systemsNode->add(DecalSystemNode::create(registry));
+
+
     auto xformSystem = systemsNode->get<TransformSystemNode>();
     if (xformSystem)
     {
@@ -291,10 +313,12 @@ Application::ctor(int& argc, char** argv)
         }
     });
 
+#if 1
     // replace our context's stock disposer with vsg's:
     vsgcontext->disposer = [deleteQueue(this->deleteQueue)](vsg::ref_ptr<vsg::Object> object) {
         deleteQueue->add(object);
     };
+#endif
 }
 
 Application::~Application()
@@ -325,6 +349,7 @@ Application::~Application()
     _activityStatus->set(false);
 
     systemsNode = {};
+    computeSystemsNode = {};
     mapNode = {};
     scene = {};
 
@@ -364,11 +389,15 @@ Application::realize()
             display.sharedDevice(),
             mainWindow.commandGraph->queueFamily);
 
+        // Initialize the context:
+        vsgcontext->initialize();
+
         // Initialize the ECS subsystem:
         if (systemsNode)
-        {
             systemsNode->initialize(vsgcontext);
-        }
+
+        if (computeSystemsNode)
+            computeSystemsNode->initialize(vsgcontext);
 
         // respond to the X or to hitting ESC
         // TODO: refactor this so it responds to individual windows and not the whole app?
@@ -432,9 +461,10 @@ Application::realize()
             {
                 // ECS updates - rendering or modifying entities
                 if (systemsNode)
-                {
                     systemsNode->update(vsgcontext);
-                }
+
+                if (computeSystemsNode)
+                    computeSystemsNode->update(vsgcontext);
             });
 
         // mark the viewer ready so that subsequent changes will know to
@@ -663,10 +693,12 @@ Application::install(vsg::ref_ptr<ImGuiRenderer> renderer, vsg::ref_ptr<vsg::Vie
 void
 Application::onAddWindow(Window& window)
 {
+    ROCKY_SOFT_ASSERT_AND_RETURN(window, void());
+
     // wait until the device is idle to avoid changing state while it's being used
     vsgcontext->viewer()->deviceWaitIdle();
 
-    if (window && window.views().empty() && mapNode && scene)
+    if (window.views().empty() && mapNode && scene)
     {
         // Window with no view? Make a default view covering the entire window
         auto extent = window.vsgWindow->extent2D();
@@ -682,6 +714,14 @@ Application::onAddWindow(Window& window)
         View& newView = window.addView(camera, scene);
         if (newView)
             newView.vsgView->setValue("rocky_auto_created", true);
+    }
+
+    // install our compute graph on this window.
+    // TODO: do we need it on EVERY window or just one??
+    if (window.commandGraph)
+    {
+        // install compute graph before render graph.
+        window.commandGraph->children.insert(window.commandGraph->children.begin(), compute);
     }
 
     // add the new window to the VSG viewer
