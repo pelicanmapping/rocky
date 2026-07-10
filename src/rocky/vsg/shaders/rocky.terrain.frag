@@ -5,7 +5,7 @@
  * MIT License
  */
 
-#pragma import_defines(ROCKY_ATMOSPHERE)
+#pragma import_defines(ROCKY_HAS_ATMOSPHERE)
 
 #pragma include "rocky.defines.h.glsl"
 #pragma include "rocky.viewdependentstate.glsl"
@@ -60,7 +60,7 @@ void main()
     // debug normals
     outColor.rgb = mix(outColor.rgb, (normalVs + 1.0) * 0.5, u_terrain.debugNormals);
 
-#if defined(ROCKY_ATMOSPHERE)
+#if defined(ROCKY_HAS_ATMOSPHERE)
     vec3 ground_color = applyAtmoColorToGround(
         outColor.rgb, vary.vertexVs, vary.lookWs,
         vary.cameraWs, normalize(vary.sunDirEcef), u_vds.ellipsoidAxes);
@@ -72,7 +72,9 @@ void main()
     vec4 lit_color = applyLighting(outColor, vary.vertexVs, normalVs);
     outColor = mix(outColor, lit_color, u_terrain.lighting);
 
+#ifdef ROCKY_HAS_FRUSTUM_GRID
     outColor.rgb = mix(outColor.rgb, frustumTileTestColor(gl_FragCoord.xy, vary.vertexVs), u_debugTiles);
+#endif
 
     // show triangle outlines
     applyDebugTriangles(outColor, u_terrain.debugTriangles);

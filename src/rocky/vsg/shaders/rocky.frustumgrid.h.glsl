@@ -3,6 +3,9 @@
  * Copyright 2026 Pelican Mapping
  * MIT License
  */
+#pragma import_defines(ROCKY_HAS_FRUSTUM_GRID)
+#ifdef ROCKY_HAS_FRUSTUM_GRID
+
 #pragma include "rocky.defines.h.glsl"
 
 #ifdef FRUSTUM_GRID_WRITES_ENABLED
@@ -70,3 +73,5 @@ vec3 frustumTileTestColor(in vec2 fragCoord, in vec3 posVs)
     float t = float(tile + 1);
     return vec3(fract(t * 0.1031), fract(t * 0.11369), fract(t * 0.13787));
 }
+
+#endif // ROCKY_USE_FRUSTUM_GRID_SYSTEM

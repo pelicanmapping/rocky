@@ -38,14 +38,8 @@ namespace ROCKY_NAMESPACE
             // (say, by another wrapper connected to another view)
             if (!e.handled && ((_window == nullptr) || (e.window.ref_ptr() == _window)))
             {
-                // activate the context associated with this window/view
-                if (_imguiContext)
-                {
-                    ImGui::SetCurrentContext(_imguiContext);
-                }
-
+                activateContext();
                 Inherit::apply(e);
-
                 onEvent.fire(e);
             }
         }
@@ -58,17 +52,17 @@ namespace ROCKY_NAMESPACE
         void apply(vsg::MoveEvent& e) override { propagate(e); }
         void apply(vsg::ConfigureWindowEvent& e) override { propagate(e); }
 
-        void apply(vsg::FrameEvent& e) override {
-            if (_imguiContext)
-                ImGui::SetCurrentContext(_imguiContext);
+        void apply(vsg::FrameEvent& e) override
+        {
+            activateContext();
             Inherit::apply(e);
             onEvent.fire(e);
         }
 
     private:
         vsg::ref_ptr<vsg::Window> _window;
-        VSGContext _vsgContext;
         ImGuiContext* _imguiContext;
+        void activateContext();
     };
 
     /**

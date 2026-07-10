@@ -163,8 +163,6 @@ namespace ROCKY_NAMESPACE
         std::mutex _functionsToRunDuringNextUpdateMutex;
         std::vector<std::function<void(VSGContext)>> _functionsToRunDuringNextUpdate;
 
-        bool _initialized = false;
-
     private:
         //! Construct a new VSG-based application instance
         VSGContextImpl(vsg::ref_ptr<vsg::Viewer> viewer);
@@ -177,7 +175,6 @@ namespace ROCKY_NAMESPACE
         VSGContextImpl(VSGContextImpl&& rhs) noexcept = delete;
 
         void ctor(int& argc, char** argv);
-        void initialize();
 
         friend class Application;
         friend class VSGContextFactory;

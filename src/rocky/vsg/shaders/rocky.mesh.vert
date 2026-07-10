@@ -4,7 +4,7 @@
  * Copyright 2026 Pelican Mapping
  * MIT License
  */
-#pragma import_defines(ROCKY_ATMOSPHERE)
+#pragma import_defines(ROCKY_HAS_ATMOSPHERE)
 
 #pragma include "rocky.viewdependentstate.glsl"
 #pragma include "rocky.projection.glsl"

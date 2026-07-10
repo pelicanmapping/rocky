@@ -322,7 +322,7 @@ SkyNode::setShowAtmosphere(bool show)
             addChild(_atmosphere);
 
             // activate in shaders
-            _context->shaderCompileSettings->defines.insert("ROCKY_ATMOSPHERE");
+            _context->shaderCompileSettings->defines.insert("ROCKY_HAS_ATMOSPHERE");
             // TODO: dirty shaders
         }
         else if (iter != children.end() && show == false)
@@ -330,7 +330,7 @@ SkyNode::setShowAtmosphere(bool show)
             children.erase(iter);
 
             // activate in shaders
-            _context->shaderCompileSettings->defines.erase("ROCKY_ATMOSPHERE");
+            _context->shaderCompileSettings->defines.erase("ROCKY_HAS_ATMOSPHERE");
             // TODO: dirty shaders
         }
     }

@@ -9,7 +9,7 @@
 // Implements single-scattering with Rayleigh, Mie, and ozone absorption.
 // Based on Bruneton 2017 scattering coefficients.
 
-#pragma import_defines(ROCKY_ATMOSPHERE)
+#pragma import_defines(ROCKY_HAS_ATMOSPHERE)
 
 #ifndef ROCKY_PI
 #define ROCKY_PI

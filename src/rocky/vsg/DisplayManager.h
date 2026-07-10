@@ -62,6 +62,9 @@ namespace ROCKY_NAMESPACE
         //! User data pointer for app-specific use
         std::shared_ptr<void> userData = nullptr;
 
+        //! Event handlers that this view installed and should be removed when the view is destroyed.
+        std::vector<vsg::ref_ptr<vsg::Visitor>> eventHandlersInstalled;
+
     protected:
 
         View(vsg::ref_ptr<vsg::View>, vsg::ref_ptr<vsg::RenderGraph>, DisplayManager*);

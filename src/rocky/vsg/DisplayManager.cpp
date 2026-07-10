@@ -9,10 +9,6 @@
 
 #include <vsg/vk/Instance.h>
 
-#ifdef ROCKY_HAS_IMGUI
-#include "imgui/ImGuiIntegration.h"
-#endif
-
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
 
@@ -117,7 +113,7 @@ Window::addView(vsg::ref_ptr<vsg::View> vsgView)
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext, s_nullView);
 
     // install the custom VDS:
-    auto vds = ViewDependentStateEx::create(vsgView);;
+    auto vds = ViewDependentStateEx::create(vsgView, vsgWindow->getOrCreateDevice());
     vsgView->viewDependentState = vds;
     vsgcontext->sharedRenderData->viewDependentState[vsgView->viewID] = vds;
 
@@ -177,6 +173,11 @@ Window::removeView(View& view)
         // callback before we actually do anything:
         _display->onRemoveView.fire(*this, view);
 
+        // destroy the view-dependent state for this view
+        auto& vds = vsgcontext->sharedRenderData->viewDependentState[view.viewID];
+        vsgcontext->dispose(vds);
+        vds = {};
+
         // remove the rendergraph from the command graph
         auto& rps = commandGraph->children;
         rps.erase(std::remove(rps.begin(), rps.end(), view.renderGraph), rps.end());
@@ -184,6 +185,13 @@ Window::removeView(View& view)
         // remove it from the active-view-ID list
         auto& ids = vsgcontext->activeViewIDs;
         ids.erase(std::remove(ids.begin(), ids.end(), view.viewID), ids.end());
+
+        // remove any event handlers this view installed:
+        for(auto& eh : view.eventHandlersInstalled)
+        {
+            auto& handlers = vsgcontext->viewer()->getEventHandlers();
+            handlers.erase(std::remove(handlers.begin(), handlers.end(), eh), handlers.end());
+        }
 
         // remove it from our tracking tables
         _views->_container.erase(iter);

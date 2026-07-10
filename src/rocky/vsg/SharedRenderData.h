@@ -8,7 +8,6 @@
 #include <rocky/vsg/Common.h>
 #include <rocky/vsg/ViewDependentState.h>
 #include <rocky/Rendering.h>
-#include <rocky/Math.h>
 
 namespace ROCKY_NAMESPACE
 {    
@@ -17,7 +16,7 @@ namespace ROCKY_NAMESPACE
     struct SharedRenderData
     {
         SharedRenderData();
-        void initialize(vsg::Device*);
+
         ViewLocal<vsg::ref_ptr<ViewDependentStateEx>> viewDependentState;
     };
 }

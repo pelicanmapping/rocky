@@ -52,3 +52,13 @@ void ImGuiRenderer::traverse(vsg::RecordTraversal& record) const
     Inherit::traverse(record);
 }
 
+
+
+void
+SendEventsToImGuiContext::activateContext()
+{
+    if (_imguiContext)
+    {
+        ImGui::SetCurrentContext(_imguiContext);
+    }
+}

@@ -25,24 +25,23 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::RecordTraversal& record) const override;
 
     private:
-        struct Viewport
+        struct Grid
         {
             ViewIDType viewID;
-            int x, y, width, height;
+            vsg::vec4 viewport;
             vsg::mat4 projection;
         };
 
         struct ViewDetail
         {
             vsg::ref_ptr<vsg::Commands> commands;
-            std::optional<Viewport> newViewport;
+            std::optional<Grid> newGrid;
         };
-
-        vsg::ref_ptr<vsg::ShaderStage> _shader;
 
         // Per-view data, calculated during the record traversal
         mutable ViewLocal<ViewDetail> _views;
 
+        vsg::ref_ptr<vsg::ShaderStage> _shader;
         std::shared_ptr<SharedRenderData> _sharedRenderData;
 
     };

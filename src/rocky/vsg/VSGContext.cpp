@@ -633,13 +633,6 @@ VSGContextImpl::upload(const vsg::BufferInfoList& bufferInfos)
 }
 
 void
-VSGContextImpl::initialize()
-{
-    sharedRenderData->initialize(device());
-    _initialized = true;
-}
-
-void
 VSGContextImpl::upload(const vsg::ImageInfoList& imageInfos)
 {
     // A way to upload images without using the dirty()/DYNAMIC_DATA mechanism,
@@ -677,11 +670,6 @@ VSGContextImpl::requestFrame()
 void
 VSGContextImpl::update()
 {
-    if (!_initialized)
-    {
-        initialize();
-    }
-
     // Every-time update functions
     onUpdate.fire(this);
 

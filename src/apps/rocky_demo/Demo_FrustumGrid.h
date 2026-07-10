@@ -14,10 +14,19 @@ auto Demo_FrustumGrid = [](Application& app)
 
     auto vds = app.vsgcontext->sharedRenderData->viewDependentState[0];
     BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
+    float debug = params->debugTiles;
 
-    if (ImGuiLTable::SliderFloat("Blend tiles", &params->debugTiles, 0.0f, 1.0f))
+    if (ImGuiLTable::SliderFloat("Blend tiles", &debug, 0.0f, 1.0f))
     {
-        app.vsgcontext->upload(params);
+        for(ViewIDType viewID = 0; viewID < ROCKY_MAX_NUMBER_OF_VIEWS; ++viewID)
+        {
+            auto vds = app.vsgcontext->sharedRenderData->viewDependentState[viewID];
+            if (vds) {
+                BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
+                params->debugTiles = std::clamp(debug, 0.0f, 1.0f);
+                app.vsgcontext->upload(params);
+            }
+        }
     }
 
     ImGuiLTable::End();

@@ -11,6 +11,12 @@
 using namespace ROCKY_NAMESPACE;
 
 
+ViewDependentStateEx::ViewDependentStateEx(vsg::ref_ptr<vsg::View> vsgView, vsg::ref_ptr<vsg::Device> device) :
+    Inherit(vsgView), _device(device)
+{
+    //nop
+}
+
 void
 ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 {
@@ -25,6 +31,10 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
     BufferAccess<FrustumGridParams> frustumParams(
         frustumParamsBuf,
         BINDING_VDS_FRUSTUM_GRID_PARAMS, TYPE_VDS_FRUSTUM_GRID_PARAMS);
+
+    GPUOnlyBufferAccess<FrustumGPU> buf(frustumsBuf,
+        BINDING_VDS_FRUSTUMS, TYPE_VDS_FRUSTUMS,
+        _device);
 
     // add it! It will automatically compile along with the others.
     //this->descriptorSet->descriptors.emplace_back(_myDescriptors.ubo);

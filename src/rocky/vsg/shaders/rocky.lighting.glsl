@@ -5,7 +5,7 @@
  */
 #pragma include "rocky.defines.h.glsl"
 
-#pragma import_defines(ROCKY_ATMOSPHERE)
+#pragma import_defines(ROCKY_HAS_ATMOSPHERE)
 
 #pragma import_defines(VSG_SHADOWS_HARD)
 #if defined(VSG_SHADOWS_HARD) || defined(VSG_SHADOWS_SOFT) || defined(VSG_SHADOWS_PCSS)

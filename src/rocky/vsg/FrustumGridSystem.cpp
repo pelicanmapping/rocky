@@ -22,8 +22,6 @@ namespace
 
     // Size of each square cluster in pixels
     constexpr std::uint32_t FRUSTUM_GRID_TILE_SIZE = 16;
-
-    constexpr std::uint32_t FIXED_FRUSTUM_GRID_TILES_PER_DIMENSION = 128;
 }
 
 FrustumGridSystemNode::FrustumGridSystemNode(Registry& r) :
@@ -53,6 +51,8 @@ FrustumGridSystemNode::initialize(VSGContext vsgcontext)
         status = Failure(Failure::ResourceUnavailable, "FrustumGridSystem: missing compute shader");
         return;
     }
+
+    _shader->module->hints = vsgcontext->shaderCompileSettings;
 }
 
 void
@@ -62,23 +62,23 @@ FrustumGridSystemNode::update(VSGContext vsgcontext)
 
     for(auto& view : _views)
     {
-        if (view.newViewport.has_value())
+        if (view.newGrid.has_value())
         {
             vsgcontext->viewer()->deviceWaitIdle(); // wait for any previous work to finish before we resize the buffers
 
-            auto& vp = view.newViewport.value();
-            auto& vds = _sharedRenderData->viewDependentState[vp.viewID];
+            auto& grid = view.newGrid.value();
+            auto& vds = _sharedRenderData->viewDependentState[grid.viewID];
 
             Log()->info("FrustumGridSystem: updating cluster grid for view {} to {}x{}", 
-                vp.viewID, vp.width, vp.height);
+                grid.viewID, grid.viewport[2], grid.viewport[3]);
 
             // Start by updating the paramters uniform with the new values:
             BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
-            params->invProjMatrix = to_glm(vsg::inverse(vp.projection));
-            params->viewport = glm::ivec4(vp.x, vp.y, vp.width, vp.height);
+            params->invProjMatrix = to_glm(vsg::inverse(grid.projection));
+            params->viewport = glm::ivec4(grid.viewport[0], grid.viewport[1], grid.viewport[2], grid.viewport[3]);
             params->numTiles = glm::uvec2(
-                (vp.width + FRUSTUM_GRID_TILE_SIZE - 1u) / FRUSTUM_GRID_TILE_SIZE,
-                (vp.height + FRUSTUM_GRID_TILE_SIZE - 1u) / FRUSTUM_GRID_TILE_SIZE);
+                (grid.viewport[2] + FRUSTUM_GRID_TILE_SIZE - 1u) / FRUSTUM_GRID_TILE_SIZE,
+                (grid.viewport[3] + FRUSTUM_GRID_TILE_SIZE - 1u) / FRUSTUM_GRID_TILE_SIZE);
             params->pixelsPerTile = FRUSTUM_GRID_TILE_SIZE; // assuming square tiles
             requestUpload(params);
 
@@ -146,7 +146,7 @@ FrustumGridSystemNode::update(VSGContext vsgcontext)
 
             requestCompile(view.commands);
 
-            view.newViewport.reset();
+            view.newGrid.reset();
         }
     }
 
@@ -159,17 +159,29 @@ FrustumGridSystemNode::traverse(vsg::RecordTraversal& record) const
     if (status.failed()) return;
 
     auto* state = record.getState();
-    //ROCKY_SOFT_ASSERT_AND_RETURN(_bindPipeline, void());
     ROCKY_SOFT_ASSERT_AND_RETURN(state && state->_commandBuffer, void());
 
     bool isCompute = !state->_commandBuffer->viewDependentState;
 
     if (isCompute)
     {
-        for (auto& view : _views)
+        for (unsigned viewID=0; viewID <_views.size(); ++viewID)
         {
+            auto& view = _views[viewID];
             if (view.commands)
-                view.commands->accept(record);
+            {
+                if (_sharedRenderData->viewDependentState[viewID])
+                {
+                    view.commands->accept(record);
+                }
+                else
+                {
+                    // detect a removed view and dispose of its contents
+                    dispose(view.commands);
+                    view.commands = {};
+                    view.newGrid.reset();
+                }
+            }
         }
     }
 
@@ -178,33 +190,36 @@ FrustumGridSystemNode::traverse(vsg::RecordTraversal& record) const
         auto viewID = state->_commandBuffer->viewID;
         auto vds = _sharedRenderData->viewDependentState[viewID];
 
+        //ROCKY_SOFT_ASSERT_AND_RETURN(vds, void());
+        if (!vds) {
+            // view has probably been destroyed but traversals are still in progress..why?
+            return;
+        }
+
         // Extract the viewport size:
         auto* viewportData = state->_commandBuffer->viewDependentState->viewportData.get();
         if (!viewportData || viewportData->empty())
             return;
 
         const auto& vp = (*viewportData)[0];
-        auto width = std::max(0u, (std::uint32_t)vp[2]);
-        auto height = std::max(0u, (std::uint32_t)vp[3]);
-        ROCKY_SOFT_ASSERT_AND_RETURN(width > 0u && height > 0u, void());
 
-        auto& view = _views[viewID];
-
-        // Access the shared data describing the frustum grid for this view,
-        // creating it if necessary.
         BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
 
-        // If the viewport size changes we have to reallocate the grid.
-        const bool changed = params->viewport[2] != width || params->viewport[3] != height;
-        if (changed)
+        if (params->viewport[2] != vp[2] || params->viewport[3] != vp[3])
         {
-            // queue an update for the next frame.
-            Viewport vp;
-            vp.viewID = viewID;
-            vp.x = params->viewport[0], vp.y = params->viewport[1];
-            vp.width = width, vp.height = height;
-            vp.projection = state->projectionMatrixStack.top();
-            view.newViewport = std::move(vp);
+            // If the viewport size changes we have to reallocate the grid.
+            // Queue an update for the next frame.
+            Grid newGrid;
+            newGrid.viewID = viewID;
+            newGrid.viewport = vp;
+            newGrid.projection = state->projectionMatrixStack.top();
+            _views[viewID].newGrid = std::move(newGrid);
+        }
+        else if (params->viewport[0] != vp[0] || params->viewport[1] != vp[1])
+        {
+            // viewport offset changed, update the params but don't reallocate the grid.
+            params->viewport = glm::ivec4(vp[0], vp[1], vp[2], vp[3]);
+            requestUpload(params);
         }
     }
 }

@@ -17,6 +17,8 @@
 #include <rocky/rocky_imgui.h>
 #endif
 
+#define USE_FRUSTUM_GRID_SYSTEM
+
 using namespace ROCKY_NAMESPACE;
 
 namespace
@@ -285,13 +287,12 @@ Application::ctor(int& argc, char** argv)
     computeSystemsNode = ECSNode::create(registry, false);
     compute->addChild(computeSystemsNode);
 
+#ifdef USE_FRUSTUM_GRID_SYSTEM
     auto fgsystem = FrustumGridSystemNode::create(registry);
     systemsNode->add(fgsystem);
     computeSystemsNode->add(fgsystem);
-
-    //systemsNode->add(FrustumGridSystemNode::create(registry));
-    //systemsNode->add(DecalSystemNode::create(registry));
-
+    vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_FRUSTUM_GRID");
+#endif
 
     auto xformSystem = systemsNode->get<TransformSystemNode>();
     if (xformSystem)
@@ -385,13 +386,6 @@ Application::realize()
         Window& mainWindow = display.window(0);
         ROCKY_SOFT_ASSERT_AND_RETURN(mainWindow, void());
 
-        auto computeCommandGraph = vsgcontext->getOrCreateComputeCommandGraph(
-            display.sharedDevice(),
-            mainWindow.commandGraph->queueFamily);
-
-        // Initialize the context:
-        vsgcontext->initialize();
-
         // Initialize the ECS subsystem:
         if (systemsNode)
             systemsNode->initialize(vsgcontext);
@@ -406,7 +400,7 @@ Application::realize()
         // This sets up the internal tasks that will, for each command graph, record
         // a scene graph and submit the results to the renderer each frame. Also sets
         // up whatever's necessary to present the resulting swapchain to the device.
-        vsg::CommandGraphs commandGraphs{ computeCommandGraph };
+        vsg::CommandGraphs commandGraphs;
 
         for (auto& window : display.windows())
         {
@@ -657,6 +651,7 @@ Application::install(vsg::ref_ptr<ImGuiRenderer> renderer, vsg::ref_ptr<vsg::Vie
     // install the event handler that will pass events from VSG to ImGui:
     auto& handlers = vsgcontext->viewer()->getEventHandlers();
     handlers.insert(handlers.begin(), renderer->eventTranslator);
+    view.eventHandlersInstalled.push_back(renderer->eventTranslator);
 
     // request a frame when the translator handles an ImGui event:
     _subscriptions += renderer->eventTranslator->onEvent([&](const vsg::UIEvent& e)
@@ -746,6 +741,7 @@ Application::onAddView(Window& window, View& view)
     // install a manipulator
     auto manip = MapManipulator::create(view.find<MapNode>(), window.vsgWindow, view.vsgView->camera, vsgcontext);
     display.setManipulatorForView(manip, view.vsgView);
+    view.eventHandlersInstalled.emplace_back(manip);
 
 #ifdef ROCKY_HAS_IMGUI
 
@@ -802,27 +798,27 @@ Application::onRemoveWindow(const Window& window)
 void
 Application::onRemoveView(const Window& window, const View& view)
 {
-    // wait until the device is idle to avoid changing state while it's being used
-    vsgcontext->viewer()->deviceWaitIdle();
-
-#ifdef ROCKY_HAS_IMGUI
-
-    // If we installed an ImGui renderer on this view, remove it.
-    if (auto* renderer = view.find<ImGuiRenderer>())
-    {
-        // remove the event translator that came along with the renderer:
-        if (renderer->eventTranslator)
-        {
-            auto& handlers = vsgcontext->viewer()->getEventHandlers();
-            handlers.erase(std::remove(handlers.begin(), handlers.end(), renderer->eventTranslator), handlers.end());
-        }
-
-        // and remove the renderer itself (is this necessary? probably not, if we're destroying the view..)
-        auto& c = view.renderGraph->children;
-        c.erase(std::remove(c.begin(), c.end(), renderer), c.end());
-    }
-
-#endif
+//    // wait until the device is idle to avoid changing state while it's being used
+//    vsgcontext->viewer()->deviceWaitIdle();
+//
+//#ifdef ROCKY_HAS_IMGUI
+//
+//    // If we installed an ImGui renderer on this view, remove it.
+//    if (auto* renderer = view.find<ImGuiRenderer>())
+//    {
+//        // remove the event translator that came along with the renderer:
+//        if (renderer->eventTranslator)
+//        {
+//            auto& handlers = vsgcontext->viewer()->getEventHandlers();
+//            handlers.erase(std::remove(handlers.begin(), handlers.end(), renderer->eventTranslator), handlers.end());
+//        }
+//
+//        // and remove the renderer itself (is this necessary? probably not, if we're destroying the view..)
+//        auto& c = view.renderGraph->children;
+//        c.erase(std::remove(c.begin(), c.end(), renderer), c.end());
+//    }
+//
+//#endif
 }
 
 

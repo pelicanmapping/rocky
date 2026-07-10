@@ -49,38 +49,11 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT ViewDependentStateEx : public vsg::Inherit<vsg::ViewDependentState, ViewDependentStateEx>
     {
     public:
-        ViewDependentStateEx(vsg::ref_ptr<vsg::View> vsgView) : Inherit(vsgView) {
-            //nop
-        }
+        ViewDependentStateEx(vsg::ref_ptr<vsg::View> vsgView, vsg::ref_ptr<vsg::Device> device);
 
         mutable vsg::ref_ptr<vsg::DescriptorBuffer> renderParamsBuf;
         mutable vsg::ref_ptr<vsg::DescriptorBuffer> frustumParamsBuf;
-        vsg::ref_ptr<vsg::DescriptorBuffer> frustumsBuf;
-
-#if 0
-        struct MyDescriptors
-        {
-            struct Uniforms
-            {
-                vsg::mat4 inverseViewMatrix;
-                vsg::vec2 ellipsoidAxes;
-                std::uint32_t stereographic; // bool
-                float _padding[1];
-            };
-            vsg::ref_ptr<vsg::DescriptorBuffer> ubo;
-
-            vsg::ref_ptr<vsg::DescriptorBuffer> frustumParams;
-            vsg::ref_ptr<vsg::DescriptorBuffer> frustums;
-        };
-
-        MyDescriptors::Uniforms& uniforms() {
-            return *static_cast<MyDescriptors::Uniforms*>(_myDescriptors.ubo->bufferInfoList[0]->data->dataPointer());
-        }
-
-        void dirty() {
-            _myDescriptors.ubo->bufferInfoList[0]->data->dirty();
-        }
-#endif
+        mutable vsg::ref_ptr<vsg::DescriptorBuffer> frustumsBuf;
 
     public:
         void init(vsg::ResourceRequirements& req) override;
@@ -90,6 +63,7 @@ namespace ROCKY_NAMESPACE
     protected:
         //MyDescriptors _myDescriptors;
         mutable vsg::observer_ptr<MapNode> _mapNode;
+        vsg::ref_ptr<vsg::Device> _device;
     };
     
 
