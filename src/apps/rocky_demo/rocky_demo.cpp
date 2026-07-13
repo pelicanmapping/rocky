@@ -124,7 +124,7 @@ std::vector<Demo> demos =
     Demo{ "Sandbox", {},
     {
         Demo{ "Drawing", Demo_Draw },
-        Demo{ "Frustum grid", Demo_FrustumGrid },
+        Demo{ "Forward+", Demo_FrustumGrid },
         Demo{ "Geocoding", Demo_Geocoder },
         Demo{ "Ordered rendering", Demo_OrderedRendering },
         Demo{ "Render to texture", Demo_RTT },

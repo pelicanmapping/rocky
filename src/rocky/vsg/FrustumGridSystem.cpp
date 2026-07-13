@@ -64,12 +64,13 @@ FrustumGridSystemNode::update(VSGContext vsgcontext)
     {
         if (view.newGrid.has_value())
         {
-            vsgcontext->viewer()->deviceWaitIdle(); // wait for any previous work to finish before we resize the buffers
+            // wait for any previous work to finish before we resize the buffers
+            vsgcontext->viewer()->deviceWaitIdle();
 
             auto& grid = view.newGrid.value();
             auto& vds = _sharedRenderData->viewDependentState[grid.viewID];
 
-            Log()->info("FrustumGridSystem: updating cluster grid for view {} to {}x{}", 
+            Log()->debug("FrustumGridSystem: updating cluster grid for view {} to {}x{}", 
                 grid.viewID, grid.viewport[2], grid.viewport[3]);
 
             // Start by updating the paramters uniform with the new values:
@@ -161,8 +162,8 @@ FrustumGridSystemNode::traverse(vsg::RecordTraversal& record) const
     auto* state = record.getState();
     ROCKY_SOFT_ASSERT_AND_RETURN(state && state->_commandBuffer, void());
 
+    // Is there a better way to detect a compute traversal?
     bool isCompute = !state->_commandBuffer->viewDependentState;
-
     if (isCompute)
     {
         for (unsigned viewID=0; viewID <_views.size(); ++viewID)
@@ -172,6 +173,7 @@ FrustumGridSystemNode::traverse(vsg::RecordTraversal& record) const
             {
                 if (_sharedRenderData->viewDependentState[viewID])
                 {
+                    // active view; dispatch compute shader
                     view.commands->accept(record);
                 }
                 else
@@ -185,7 +187,7 @@ FrustumGridSystemNode::traverse(vsg::RecordTraversal& record) const
         }
     }
 
-    else // isRender
+    else // rendering traversal:
     {
         auto viewID = state->_commandBuffer->viewID;
         auto vds = _sharedRenderData->viewDependentState[viewID];
@@ -218,6 +220,8 @@ FrustumGridSystemNode::traverse(vsg::RecordTraversal& record) const
         else if (params->viewport[0] != vp[0] || params->viewport[1] != vp[1])
         {
             // viewport offset changed, update the params but don't reallocate the grid.
+            // There will be a one frame delay.
+            // TODO: consider moving this to update?
             params->viewport = glm::ivec4(vp[0], vp[1], vp[2], vp[3]);
             requestUpload(params);
         }

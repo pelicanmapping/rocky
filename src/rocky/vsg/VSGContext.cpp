@@ -5,7 +5,6 @@
  */
 #include "VSGContext.h"
 #include "VSGUtils.h"
-#include "ShaderDefines.h"
 #include <rocky/Image.h>
 #include <rocky/URI.h>
 #include <rocky/GeoExtent.h>
@@ -253,21 +252,6 @@ namespace
             }
         }
     };
-
-    struct SimpleUpdateOperation : public vsg::Inherit<vsg::Operation, SimpleUpdateOperation>
-    {
-        std::function<void(VSGContext)> _function;
-        VSGContext _vsgcontext;
-
-        SimpleUpdateOperation(std::function<void(VSGContext)> function, VSGContext vsgcontext) :
-            _function(function),
-            _vsgcontext(vsgcontext) { }
-
-        void run() override
-        {
-            _function(_vsgcontext);
-        };
-    };
 }
 
 
@@ -300,9 +284,10 @@ VSGContextImpl::ctor(int& argc, char** argv)
 {
     vsg::CommandLine args(&argc, argv);
 
+    // holds all registered loader plugins
     readerWriterOptions = vsg::Options::create();
 
-    // TODO: add all the default binding defines to this:
+    // hints to pass to all shader loaders (like defines)
     shaderCompileSettings = vsg::ShaderCompileSettings::create();
 
     // global data that systems can share and use
@@ -315,8 +300,8 @@ VSGContextImpl::ctor(int& argc, char** argv)
     // and we won't have too many deletions per frame.
     _gc.resize(8);
 
-    // big capacity for this so we can copy it without worry about reallocating.
-    activeViewIDs.reserve(128);
+    // Reserve capacity for this so we can copy it without worry about reallocating
+    activeViewIDs.reserve(ROCKY_MAX_NUMBER_OF_VIEWS);
 
     args.read(readerWriterOptions);
 
@@ -523,22 +508,6 @@ VSGContextImpl::ext()
         }
     }
     return _vulkanExtensions;
-}
-
-vsg::ref_ptr<vsg::CommandGraph>
-VSGContextImpl::getComputeCommandGraph() const
-{
-    return _computeCommandGraph;
-}
-
-vsg::ref_ptr<vsg::CommandGraph>
-VSGContextImpl::getOrCreateComputeCommandGraph(vsg::ref_ptr<vsg::Device> device, int queueFamily)
-{
-    if (!_computeCommandGraph && device)
-    {
-        _computeCommandGraph = vsg::CommandGraph::create(device, queueFamily);
-    }
-    return _computeCommandGraph;
 }
 
 void

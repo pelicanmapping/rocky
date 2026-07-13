@@ -121,11 +121,8 @@ namespace ROCKY_NAMESPACE
         //! The VSG/Vulkan device shared by all displays
         vsg::ref_ptr<vsg::Device> device();
 
-        //! A command graph the application can use to run compute shaders
-        vsg::ref_ptr<vsg::CommandGraph> getComputeCommandGraph() const;
-        vsg::ref_ptr<vsg::CommandGraph> getOrCreateComputeCommandGraph(vsg::ref_ptr<vsg::Device> device, int queueFamily);
-
-        //! Run me once per frame to execute pending tasks and integrate compile results
+        //! Call this once per frame to execute pending tasks, integrate compile results,
+        //! and fire onUpdate callbacks.
         void update();
 
         //! Queue an operation to run during a future update pass.

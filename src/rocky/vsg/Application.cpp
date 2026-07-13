@@ -798,27 +798,7 @@ Application::onRemoveWindow(const Window& window)
 void
 Application::onRemoveView(const Window& window, const View& view)
 {
-//    // wait until the device is idle to avoid changing state while it's being used
-//    vsgcontext->viewer()->deviceWaitIdle();
-//
-//#ifdef ROCKY_HAS_IMGUI
-//
-//    // If we installed an ImGui renderer on this view, remove it.
-//    if (auto* renderer = view.find<ImGuiRenderer>())
-//    {
-//        // remove the event translator that came along with the renderer:
-//        if (renderer->eventTranslator)
-//        {
-//            auto& handlers = vsgcontext->viewer()->getEventHandlers();
-//            handlers.erase(std::remove(handlers.begin(), handlers.end(), renderer->eventTranslator), handlers.end());
-//        }
-//
-//        // and remove the renderer itself (is this necessary? probably not, if we're destroying the view..)
-//        auto& c = view.renderGraph->children;
-//        c.erase(std::remove(c.begin(), c.end(), renderer), c.end());
-//    }
-//
-//#endif
+    // nop
 }
 
 

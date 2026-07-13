@@ -16,7 +16,7 @@ auto Demo_FrustumGrid = [](Application& app)
     BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
     float debug = params->debugTiles;
 
-    if (ImGuiLTable::SliderFloat("Blend tiles", &debug, 0.0f, 1.0f))
+    if (ImGuiLTable::SliderFloat("Show frustum grid", &debug, 0.0f, 1.0f))
     {
         for(ViewIDType viewID = 0; viewID < ROCKY_MAX_NUMBER_OF_VIEWS; ++viewID)
         {
