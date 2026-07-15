@@ -6,18 +6,19 @@
 #pragma once
 //#include <rocky/vsg/SharedRenderData.h>
 #include <rocky/vsg/Common.h>
+#include <rocky/vsg/ShaderDefines.h>
 #include <rocky/Math.h>
 
 namespace ROCKY_NAMESPACE
 {
     class MapNode;
 
-
     struct RenderParams {
-        vsg::mat4 inverseViewMatrix;
-        vsg::vec2 ellipsoidAxes;
-        std::uint32_t stereographic; // bool
-        float _padding[1];
+        glm::fmat4 viewMatrix;
+        glm::fmat4 inverseViewMatrix;
+        glm::fvec2 ellipsoidAxes;
+        glm::uint32_t stereographic; // bool
+        glm::float32_t _padding[1];
     };
     static_assert(sizeof(RenderParams) % 16 == 0, "RenderParams must be 16-byte aligned");
 
@@ -33,18 +34,16 @@ namespace ROCKY_NAMESPACE
     struct FrustumGPU {
         glm::fvec4 planes[4];
     };
+    static_assert(sizeof(FrustumGPU) % 16 == 0, "FrustumGPU must be 16-byte aligned");
+
+    struct DecalTileGPU {
+        glm::uint32_t count = 0;
+        glm::uint32_t indices[MAX_DECALS_PER_TILE];
+    };
+    static_assert(sizeof(DecalTileGPU) % 16 == 0, "DecalTileGPU must be 16-byte aligned");
 
     /**
-    * Extends vsg::ViewDependentState to add data for Rocky rendering.
-    * Shader usage (where "binding" === BINDING_ROCKY_VIEW_DEPENDENT_STATE)
-    *
-    *   layout(set = 1, binding = XXX) uniform RockyVDS {
-    *       mat4 inverseViewMatrix;
-    *       vec2 ellipsoidAxes;
-    *       uint stereographic;
-    *       float _padding[1];
-    *   } u_vds;
-    *
+    * Extends vsg::ViewDependentState to add data for Rocky rendering    *
     */
     class ROCKY_EXPORT ViewDependentStateEx : public vsg::Inherit<vsg::ViewDependentState, ViewDependentStateEx>
     {
@@ -52,8 +51,13 @@ namespace ROCKY_NAMESPACE
         ViewDependentStateEx(vsg::ref_ptr<vsg::View> vsgView, vsg::ref_ptr<vsg::Device> device);
 
         mutable vsg::ref_ptr<vsg::DescriptorBuffer> renderParamsBuf;
-        mutable vsg::ref_ptr<vsg::DescriptorBuffer> frustumParamsBuf;
-        mutable vsg::ref_ptr<vsg::DescriptorBuffer> frustumsBuf;
+        vsg::ref_ptr<vsg::DescriptorBuffer> frustumParamsBuf;
+        vsg::ref_ptr<vsg::DescriptorBuffer> frustumsBuf;
+        vsg::ref_ptr<vsg::DescriptorBuffer> decalTilesBuf;
+
+        //! If you reallocated the memory behing any of the buffers above,
+        //! call this to rebuild the associated descriptor sets.
+        void recompileDescriptorSets();
 
     public:
         void init(vsg::ResourceRequirements& req) override;

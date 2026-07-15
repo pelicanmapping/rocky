@@ -479,7 +479,8 @@ namespace ROCKY_NAMESPACE
         //! Construct a BufferHelper from an existing descriptor buffer,
         //! or create a new one if the buffer is null. Allocate enough data
         //! to hold "count" instances of T.
-        BufferAccess(vsg::ref_ptr<vsg::DescriptorBuffer>& buf,
+        BufferAccess(
+            vsg::ref_ptr<vsg::DescriptorBuffer>& buf,
             std::uint32_t binding,
             VkDescriptorType type,
             unsigned count = 1u) :
@@ -498,8 +499,11 @@ namespace ROCKY_NAMESPACE
             }
         }
 
-        void reset()
-        {
+        std::size_t capacity() const {
+            return _data ? _data->dataSize() / sizeof(T) : 0;
+        }
+
+        void reset() {
             *reinterpret_cast<T*>(_data->dataPointer()) = T();
         }
 
@@ -534,9 +538,9 @@ namespace ROCKY_NAMESPACE
             return old;
         }
 
-        vsg::BufferInfoList resize(std::uint32_t newCount)
+        vsg::BufferInfoList resize(std::size_t newCount)
         {
-            auto data = vsg::ubyteArray::create(sizeof(T) * std::max(1u, newCount));
+            auto data = vsg::ubyteArray::create(sizeof(T) * std::max((std::size_t)1, newCount));
             return replace(data);
         }
     };
@@ -546,33 +550,40 @@ namespace ROCKY_NAMESPACE
     template<class T>
     struct GPUOnlyBufferAccess
     {
-        GPUOnlyBufferAccess(vsg::ref_ptr<vsg::DescriptorBuffer>& buf,
+        GPUOnlyBufferAccess(
+            vsg::ref_ptr<vsg::DescriptorBuffer>& buf,
             std::uint32_t binding,
             VkDescriptorType type,
             vsg::Device* device = nullptr,
             std::uint32_t count = 1) : _buf(buf), _device(device)
         {
             if (!_buf)
+            {
                 _buf = vsg::DescriptorBuffer::create(nullptr, binding, 0, type);
-
-            if (device)
-                resize(count);
+                if (_device)
+                    resize(count);
+            }
         }
 
-        GPUOnlyBufferAccess(vsg::ref_ptr<vsg::DescriptorBuffer>& buf,
+        GPUOnlyBufferAccess(
+            vsg::ref_ptr<vsg::DescriptorBuffer>& buf,
             vsg::Device* device)
                 : _buf(buf), _device(device)
         {
             ROCKY_SOFT_ASSERT(_buf);
         }
 
+        std::size_t capacity() const {
+            return _buf->bufferInfoList[0]->buffer->size / sizeof(T);
+        }
+
         //! Creates and installs a new buffer, and returns the old list
         //! for disposal.
-        vsg::BufferInfoList resize(std::uint32_t count)
+        vsg::BufferInfoList resize(std::size_t count)
         {
             ROCKY_SOFT_ASSERT_AND_RETURN(_buf && _device, vsg::BufferInfoList{});
 
-            auto size = sizeof(T) * std::max(1u, count);
+            auto size = sizeof(T) * std::max((std::size_t)1, count);
 
             auto buffer = vsg::createBufferAndMemory(
                 _device, size,

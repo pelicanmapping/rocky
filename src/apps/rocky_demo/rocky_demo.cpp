@@ -22,6 +22,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Model.h"
 #include "Demo_Label.h"
 #include "Demo_Widget.h"
+#include "Demo_Decal.h"
 #include "Demo_LineFeatures.h"
 #include "Demo_PolygonFeatures.h"
 #include "Demo_LabelFeatures.h"
@@ -95,7 +96,8 @@ std::vector<Demo> demos =
         //Demo{ "Icon", Demo_Icon },
         Demo{ "Label", Demo_Label },
         Demo{ "Widget", Demo_Widget },
-        Demo{ "Model", Demo_Model }
+        Demo{ "Model", Demo_Model },
+        Demo{ "Decal", Demo_Decal }
     } },
     Demo{ "VSG Nodes", {},
     {

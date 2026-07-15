@@ -34,13 +34,14 @@ namespace ROCKY_NAMESPACE
 
         struct ViewDetail
         {
+            vsg::dmat4 lastProjMatrix;
             vsg::ref_ptr<vsg::Commands> commands;
             std::optional<Grid> newGrid;
         };
 
         // Per-view data, calculated during the record traversal
         mutable ViewLocal<ViewDetail> _views;
-
+        mutable std::uint64_t _lastFrameCount = ~0U;
         vsg::ref_ptr<vsg::ShaderStage> _shader;
         std::shared_ptr<SharedRenderData> _sharedRenderData;
 

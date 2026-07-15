@@ -469,5 +469,11 @@ namespace ROCKY_NAMESPACE
         };
 #endif // ROCKY_HAS_ZLIB
 
+
+        struct CallStack
+        {
+            CallStack();
+            std::vector<std::string> symbols;
+        };
     }
 }

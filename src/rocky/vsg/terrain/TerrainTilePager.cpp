@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "TerrainTilePager.h"
@@ -21,11 +21,15 @@ using namespace ROCKY_NAMESPACE::detail;
 
 //----------------------------------------------------------------------------
 
-TerrainTilePager::TerrainTilePager(const TerrainSettings& settings, TerrainTileHost* host) :
+TerrainTilePager::TerrainTilePager(const TerrainSettings& settings, TerrainTileHost* host, VSGContext vsgcontext) :
     _host(host),
     _settings(settings)
 {
     _firstLOD = settings.minLevel;
+
+    _subs += vsgcontext->sharedRenderData->onDecalsBufReallocated([this, vsgcontext]() {
+        this->recompileDescriptorSets(vsgcontext);
+    });
 }
 
 TerrainTilePager::~TerrainTilePager()
@@ -44,6 +48,25 @@ TerrainTilePager::releaseAll()
     _loadData.clear();
     _mergeData.clear();
     _updateData.clear();
+}
+
+void
+TerrainTilePager::recompileDescriptorSets(VSGContext vsgcontext)
+{
+    std::scoped_lock lock(_mutex);
+    for (auto& [key, info] : _tiles)
+    {
+        if (info.tile)
+        {            
+            auto& bind = info.tile->renderModel.descriptors.bind;
+            if (bind)
+            {
+                bind->descriptorSet->release();
+                vsg::Context context(vsgcontext->device());
+                bind->descriptorSet->compile(context);
+            }
+        }
+    }
 }
 
 void

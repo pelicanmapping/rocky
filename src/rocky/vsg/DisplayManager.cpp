@@ -27,6 +27,7 @@ namespace
     }
 
     bool s_debugCallbackMessagesUnique = false;
+    bool s_debugBrutal = false;
     std::set<std::string> s_uniqueDebugMessages;
 
 
@@ -51,6 +52,16 @@ namespace
         else if (message_severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
         {
             Log()->error(str);
+            detail::CallStack callstack;
+            for(auto& symbol : callstack.symbols)
+            {
+                Log()->error("  {}", symbol);
+            }
+            if (s_debugBrutal)
+            {
+                Log()->warn("Brutal mode: exiting due to Vulkan validation error.");
+                exit(-1);
+            }
         }
         return VK_FALSE;
     }
@@ -229,8 +240,9 @@ DisplayManager::initialize(VSGContext in_context, vsg::CommandLine& commandLine)
 {
     initialize(in_context);
 
+    s_debugBrutal = commandLine.read("--debug-brutal");
     _debuglayerUnique = commandLine.read("--debug-once");
-    _debuglayer = _debuglayerUnique || commandLine.read("--debug");
+    _debuglayer = s_debugBrutal || _debuglayerUnique || commandLine.read("--debug");
     _apilayer = commandLine.read("--api");
     _vsync = !commandLine.read({ "--novsync", "--no-vsync" });
 }

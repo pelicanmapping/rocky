@@ -87,7 +87,6 @@ namespace ROCKY_NAMESPACE
 
         void configureState(VSGContext context);
 
-
         //! Holds any terrain-wide textures and uniforms.
         struct MapDescriptors
         {

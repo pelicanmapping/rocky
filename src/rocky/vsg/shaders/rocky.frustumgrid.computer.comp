@@ -4,9 +4,9 @@
  * Copyright 2026 Pelican Mapping
  * MIT License
  */
+#define SSBOS_ARE_WRITABLE
 
 // inspired by https://github.com/zimengyang/ForwardPlus_Vulkan
-#define FRUSTUM_GRID_WRITES_ENABLED
 #pragma include "rocky.frustumgrid.h.glsl"
 
 layout(local_size_x = FRUSTUM_GRID_TILES_PER_THREAD_GROUP, 

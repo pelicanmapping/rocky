@@ -265,13 +265,11 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
     if (rp->stereographic) //vds && vds-uniforms().stereographic)
     {
         auto& view = views[vsgView->viewID];
-        //const auto& uniforms = vds->uniforms();
-        auto viewMatrix = vsg::inverse(to_dmat4(rp->inverseViewMatrix));
 
         view.position = applyProjection(
             view.position,
-            to_dvec2(rp->ellipsoidAxes),
-            viewMatrix,
+            to_dvec2(to_vsg(rp->ellipsoidAxes)),
+            to_vsg(glm::dmat4(rp->viewMatrix)),
             view.proj,
             rp->stereographic != 0);
     }

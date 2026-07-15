@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
         public TerrainTileHost
     {
     public:
-        TerrainProfileNode(const Profile& profile, TerrainNode& terrain);
+        TerrainProfileNode(const Profile& profile, TerrainNode& terrain, VSGContext vsgcontext);
 
         virtual ~TerrainProfileNode();
 

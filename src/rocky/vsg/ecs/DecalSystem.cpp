@@ -18,42 +18,18 @@ namespace
 {
     struct MyPushConstants
     {
-        glm::mat4 projection;
         glm::mat4 modelview;
+        glm::mat4 projection;
     };
 
-    struct GPUDecalTile
+#if 0
+    struct DecalTileGPU
     {
-        std::uint32_t count;
+        std::uint32_t count = 0;
         std::uint32_t indices[MAX_DECALS_PER_TILE];
         std::uint32_t padding[3];
     };
-
-    struct GPUDecal
-    {
-        glm::fmat4 mvm;
-        glm::fmat4 mvmInverse;
-        union { 
-            glm::float32 halfX;
-            glm::float32 zMin;
-        };
-        union {
-            glm::float32 halfY;
-            glm::float32 zMax;
-        };
-        union {
-            glm::float32 halfZ;
-            glm::float32 cullingRadius;
-        };
-        union {
-            std::int32_t textureIndex = -1; // when index > 0
-            std::int32_t count; // when index == 0
-        };
-        float opacity = 1.0f;
-        float distance = 0.0f; // > 0 = persp
-        float tanHalfFovY = 0.0f;
-        float aspect = 1.0f;
-    };
+#endif
 
     struct DecalStyleDetail
     {
@@ -115,6 +91,7 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
             r.on_construct<DecalStyle>().connect<&DecalSystemNode::on_construct_DecalStyle>(*this);
             r.on_update<Decal>().connect<&DecalSystemNode::on_update_Decal>(*this);
             r.on_update<DecalStyle>().connect<&DecalSystemNode::on_update_DecalStyle>(*this);
+            r.on_destroy<Decal>().connect<&DecalSystemNode::on_destroy_Decal>(*this);
             r.on_destroy<DecalStyle>().connect<&DecalSystemNode::on_destroy_DecalStyle>(*this);
             r.on_destroy<DecalStyleDetail>().connect<&DecalSystemNode::on_destroy_DecalStyleDetail>(*this);
 
@@ -122,85 +99,271 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
             auto e = r.create();
             r.emplace<Decal::Dirty>(e);
             r.emplace<DecalStyle::Dirty>(e);
+
+            // Seed the running decal count in case decals already exist.
+            _totalNumDecals = 0u;
+            auto existing = r.view<Decal>();
+            existing.each([&](auto) { ++_totalNumDecals; });
         });
 }
 
 void
-DecalSystemNode::growGPUBuffersIfNeeded()
+DecalSystemNode::growGPUBuffersIfNeeded(VSGContext vsgcontext)
 {
     bool buffersChanged = false;
 
-    // Decal input buffer: keep room for all decals (+1 entry at index 0 for count).
-    std::uint32_t currentDecalCapacity = _decalsData ?
-        static_cast<std::uint32_t>(_decalsData->size() / sizeof(GPUDecal)) : 0u;
-    if (currentDecalCapacity > 0u)
-        --currentDecalCapacity;
-
-    // If the buffer doesn't yet exist, OR it needs to grow,
-    // make that happen here:
-    if (!_decalsData || _totalNumDecals > currentDecalCapacity)
+    // Recount from registry to keep capacity decisions in sync with actual entities.
+    _registry.read([&](entt::registry& reg)
     {
-        const std::uint32_t growBy = 32u;
+        _totalNumDecals = 0u;
+        auto decals = reg.view<Decal, ActiveState, Visibility, TransformDetail>();
+        decals.each([&](auto, auto&, auto&, auto&, auto&) { ++_totalNumDecals; });
+    });
 
-        const std::uint32_t newDecalCapacity = (_totalNumDecals > currentDecalCapacity + growBy) ?
+    if (!_sharedRenderData->decalsBuf)
+        buffersChanged = true;
+
+    // Decal input buffer: keep room for all decals (+1 entry at index 0 for count).
+    BufferAccess<DecalGPU> decals(_sharedRenderData->decalsBuf, BINDING_DECALS, TYPE_DECALS, 1u);
+    auto currentDecalsCapacity = decals.capacity();
+    if (currentDecalsCapacity > 0u)
+        --currentDecalsCapacity;
+
+    decals->count = _totalNumDecals;
+
+    // Does the decals buffer need to grow?
+    if (_totalNumDecals > currentDecalsCapacity)
+    {
+        constexpr std::size_t growBy = 32u;
+
+        const auto newDecalCapacity = (_totalNumDecals > currentDecalsCapacity + growBy) ?
             _totalNumDecals :
-            (currentDecalCapacity + growBy);
+            (currentDecalsCapacity + growBy);
 
-        _decalsData = vsg::ubyteArray::create((newDecalCapacity + 1u) * sizeof(GPUDecal));
+        auto old = decals.resize(newDecalCapacity + 1); // +1 for count at index 0
+        dispose(old);
+        requestCompile(_sharedRenderData->decalsBuf);
 
-        _decalsBuf = vsg::DescriptorBuffer::create(
-            _decalsData, BINDING_DECALS, 0, TYPE_DECALS);
+        // if we changed the buffer we have to also recompile the parenting DS:
+        // TODO: do this in response to onDecalsBufReallocated event just for consistency
+        if (_localDescriptorSet)
+        {
+            _localDescriptorSet->release();
+            vsg::Context context(vsgcontext->device());
+            _localDescriptorSet->compile(context);
+        }
 
-        requestCompile(_decalsBuf);
+        _sharedRenderData->onDecalsBufReallocated.fire();
+        
         buffersChanged = true;
     }
 
-    // Decal tile output buffer must match frustum tile capacity from FrustumGridSystem.
-    // Find the largest one.
-    std::uint32_t requiredTileCapacity = 0u;
     if (_sharedRenderData)
     {
         for (auto& vds : _sharedRenderData->viewDependentState)
         {
-            if (!vds->frustumsBuf)
+            if (!vds || !vds->frustumParamsBuf)
+                break;
+
+            auto& view = _views[vds->view->viewID];
+
+            // See if the frustum grid has changed size, and if so, resize the decal tiles buffer to match.
+            BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
+            auto numFrustumTiles = params->numTiles.x * params->numTiles.y;
+
+            GPUOnlyBufferAccess<DecalTileGPU> tiles(vds->decalTilesBuf, vsgcontext->device());
+
+            auto capacity = tiles.capacity();
+            if (capacity < numFrustumTiles)
+            {
+                Log()->info("DecalSystemNode: growing decal tiles buffer from {} to {} tiles at {} bytes", capacity, numFrustumTiles, numFrustumTiles * sizeof(DecalTileGPU));
+                auto old = tiles.resize(numFrustumTiles);
+                dispose(old);
+                requestCompile(vds->decalTilesBuf);
+
+                buffersChanged = true;
+            }
+
+            if (buffersChanged)
+            {
+                // reallocating buffers reuqires rebuilding the descriptor sets that hold them.
+                vds->recompileDescriptorSets();
+                dispose(view.commands);
+                view.commands = {};
+            }
+
+            // make sure we have the commands built.
+            if (!view.commands)
+            {
+                view.commands = vsg::Commands::create();
+
+                // use the ds layout from the first view-dependent state, which is shared by all views:
+                auto vdsDescriptorSetLayout = _sharedRenderData->viewDependentState[0]->descriptorSetLayout;
+
+                // a local DSL to capture our decals buffer (which is not view-dependent, but is shared by all views):
+
+                _localDescriptorSet = vsg::DescriptorSet::create();
+                _localDescriptorSet->setLayout = vsg::DescriptorSetLayout::create();
+                _localDescriptorSet->setLayout->addBinding(BINDING_DECALS, TYPE_DECALS, 1, VK_SHADER_STAGE_ALL);
+                _localDescriptorSet->descriptors.emplace_back(_sharedRenderData->decalsBuf);
+
+                auto pipelineLayout = vsg::PipelineLayout::create(
+                    vsg::DescriptorSetLayouts{
+                        _localDescriptorSet->setLayout, // set 0 (local)
+                        vds->descriptorSet->setLayout   // set 1 (VDS)
+                    }, 
+                    vsg::PushConstantRanges {}
+                );
+
+                auto pipeline = vsg::ComputePipeline::create(pipelineLayout, _cullingShader);
+
+                auto bindPipeline = vsg::BindComputePipeline::create(pipeline);
+
+                // binds the DS to the compute shader:
+                auto bindDescriptorSets = vsg::BindDescriptorSets::create(
+                    VK_PIPELINE_BIND_POINT_COMPUTE,
+                    pipeline->layout,
+                    vsg::DescriptorSets {
+                        _localDescriptorSet,
+                        vds->descriptorSet
+                    });
+
+                // sends the matrices to the culling shader:
+                //auto pushConstants = vsg::PushConstants::create(
+                //    pipelineLayout,
+                //    VK_SHADER_STAGE_COMPUTE_BIT,
+                //    0, sizeof(MyPushConstants),
+                //    _pushConstantsData);
+
+                // launches the compute shader:
+                auto dispatch = vsg::Dispatch::create(
+                    (params->numTiles.x + FRUSTUM_GRID_TILES_PER_THREAD_GROUP - 1u) / FRUSTUM_GRID_TILES_PER_THREAD_GROUP,
+                    (params->numTiles.y + FRUSTUM_GRID_TILES_PER_THREAD_GROUP - 1u) / FRUSTUM_GRID_TILES_PER_THREAD_GROUP,
+                    1u);
+
+                // and a barrier to ensure the frustums are written before any subsequent rendering:
+                auto bufferBarrier = vsg::BufferMemoryBarrier::create(
+                    VK_ACCESS_SHADER_WRITE_BIT,
+                    VK_ACCESS_SHADER_READ_BIT,
+                    VK_QUEUE_FAMILY_IGNORED,
+                    VK_QUEUE_FAMILY_IGNORED,
+                    vds->decalTilesBuf->bufferInfoList[0]->buffer,
+                    0, VK_WHOLE_SIZE);
+
+                auto barrier = vsg::PipelineBarrier::create(
+                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+                    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+                    0, // dependency flags
+                    bufferBarrier);
+
+                view.commands = vsg::Commands::create();
+                view.commands->addChild(bindPipeline);
+                view.commands->addChild(bindDescriptorSets);
+                view.commands->addChild(dispatch);
+                view.commands->addChild(barrier);
+
+                vsgcontext->compile(view.commands);
+            }
+        }
+    }
+}
+
+void
+DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
+{
+    // run the culling shader on ALL views
+    for (unsigned viewID = 0; viewID < _views.size(); ++viewID)
+    {
+        auto& view = _views[viewID];
+        auto& vds = _sharedRenderData->viewDependentState[viewID];
+
+        if (view.commands && vds)
+        {
+            auto vm = to_glm(vds->view->camera->viewMatrix->transform());
+
+            BufferAccess<DecalGPU> gpudecal(_sharedRenderData->decalsBuf);
+            const auto gpuCapacity = gpudecal.capacity();
+            if (gpuCapacity == 0u)
                 continue;
 
-            BufferAccess<FrustumGridParams> params(vds->frustumsBuf);
+            std::uint32_t written = 0u;
 
-            auto numTiles = params->numTiles.x * params->numTiles.y;
+            // Resolve the local matrix for each bbox
+            _registry.read([&](entt::registry& reg)
+            {
+                auto updateDecal = [&](auto entity, auto& decal, auto& active, auto& visibility, auto& transformDetail)
+                {
+                    // slot 0 is the count header
+                    if (written + 1u >= gpuCapacity)
+                        return;
 
-            if (numTiles > requiredTileCapacity)
-                requiredTileCapacity = numTiles;
+                    // first decal just holds the count, so advance first:
+                    ++gpudecal;
+                    ++written;
+
+                    // Ensure a fully initialized record every frame.
+                    gpudecal->count = 0;
+
+                    //auto mvm = ;
+                    auto model = to_glm(transformDetail.views[viewID].model);
+                    auto mvm = vm * model;
+
+                    auto localScale = glm::dvec3(
+                        glm::length(glm::dvec3(mvm[0])), //transformDetail.sync.localMatrix[0])),
+                        glm::length(glm::dvec3(mvm[1])), //transformDetail.sync.localMatrix[1])),
+                        glm::length(glm::dvec3(mvm[2]))); //transformDetail.sync.localMatrix[2])));
+
+                    if (localScale.x <= 0.0) localScale.x = 1.0;
+                    if (localScale.y <= 0.0) localScale.y = 1.0;
+                    if (localScale.z <= 0.0) localScale.z = 1.0;
+
+                    gpudecal->mvm = glm::fmat4(mvm);
+                    // NB: gpudecal->mvmInverse is computed in the culling shader.
+
+                    if (decal.projection == DecalProjection::Perspective)
+                    {
+                        float tanH = tanf(glm::radians(decal.fovY_deg * 0.5f));
+                        float halfDepth = static_cast<float>(localScale.z * 0.5);
+                        float nearClip = glm::max(1.0f, decal.distance - halfDepth);
+                        float farClip = decal.distance + halfDepth;
+                        float farHalfW = farClip * tanH * decal.aspectRatio;
+                        float farHalfH = farClip * tanH;
+                        float bsRadius = sqrtf(farHalfW * farHalfW + farHalfH * farHalfH);
+
+                        gpudecal->zMin = decal.distance - farClip;
+                        gpudecal->zMax = decal.distance - nearClip;
+                        gpudecal->cullingRadius = bsRadius;
+                        gpudecal->distance = decal.distance;
+                        gpudecal->tanHalfFovY = tanH;
+                        gpudecal->aspect = decal.aspectRatio;
+                    }
+                    else
+                    {
+                        gpudecal->halfX = static_cast<float>(localScale.x * 0.5);
+                        gpudecal->halfY = static_cast<float>(localScale.y * 0.5);
+                        gpudecal->halfZ = static_cast<float>(localScale.z * 0.5);
+                        gpudecal->distance = 0.0f;
+                        gpudecal->tanHalfFovY = 0.0f;
+                        gpudecal->aspect = 1.0f;
+                    }
+                };
+
+                reg.view<Decal, ActiveState, Visibility, TransformDetail>().each(updateDecal);
+            });
+
+            // Keep the shader-side loop bound aligned with what we actually wrote.
+            BufferAccess<DecalGPU> decalHeader(_sharedRenderData->decalsBuf);
+            decalHeader->count = static_cast<std::int32_t>(written);
+
+            requestUpload(_sharedRenderData->decalsBuf->bufferInfoList);
         }
-    }
-
-    if (requiredTileCapacity > 0u)
-    {
-        const std::uint32_t currentTileCapacity = _decalTilesData ?
-            static_cast<std::uint32_t>(_decalTilesData->size() / sizeof(GPUDecalTile)) : 0u;
-
-        if (!_decalTilesData || requiredTileCapacity > currentTileCapacity)
+        else
         {
-            _decalTilesData = vsg::ubyteArray::create(requiredTileCapacity * sizeof(GPUDecalTile));
+            // detect a removed view and dispose of its contents
+            if (view.commands)
+                dispose(view.commands);
 
-            _decalTilesBuf = vsg::DescriptorBuffer::create(
-                _decalTilesData, BINDING_DECAL_TILES, 0, TYPE_DECAL_TILES);
-
-            requestCompile(_decalTilesBuf);
-            buffersChanged = true;
-        }
-    }
-
-    if (buffersChanged)
-    {
-        for (auto& view : _views)
-        {
-            dispose(view.bindDescriptorSet);
-            dispose(view.commands);
-            view.bindDescriptorSet = nullptr;
-            view.commands = nullptr;
-            view.lastFrustumParamsBuf = nullptr;
-            view.lastFrustumsBuf = nullptr;
+            view.commands = {};
         }
     }
 }
@@ -208,49 +371,25 @@ DecalSystemNode::growGPUBuffersIfNeeded()
 void
 DecalSystemNode::initialize(VSGContext vsgcontext)
 {
-#if 0 // COMMENTED OUT WHILE BUILDING OTHER MODULES
-    auto shader = vsg::ShaderStage::read(
+    _sharedRenderData = vsgcontext->sharedRenderData;
+
+    // no likey
+    _vsgcontext = vsgcontext;
+
+    _cullingShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_COMPUTE_BIT,
         "main",
         vsg::findFile(DECAL_CULLING_SHADER, vsgcontext->searchPaths),
         vsgcontext->readerWriterOptions);
 
-    if (!shader)
+    if (!_cullingShader)
     {
         status = Failure(Failure::ResourceUnavailable, "DecalSystemNode: missing compute shader");
         return;
     }
 
-    // custom PC data to send the modelview matrix to the compute shader:
-    // TODO: delete these, don't need 'em
-    //_pcData = vsg::ubyteArray::create(sizeof(MyPushConstants));
-    //_pcCommand = vsg::PushConstants::create(VK_SHADER_STAGE_COMPUTE_BIT, 0, _pcData);
-
-    // the buffer objects we will bind to the compute shader
-    vsg::DescriptorSetLayoutBindings bindings = {
-        { BINDING_FRUSTUM_GRID_PARAMS, TYPE_FRUSTUM_GRID_PARAMS, 1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
-        { BINDING_FRUSTUMS,            TYPE_FRUSTUMS,            1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
-        { BINDING_DECALS,              TYPE_DECALS,              1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr },
-        { BINDING_DECAL_TILES,         TYPE_DECAL_TILES,         1, VK_SHADER_STAGE_COMPUTE_BIT, nullptr }
-    };
-    _descriptorSetLayout = vsg::DescriptorSetLayout::create(bindings);
-
-    auto pipelineLayout = vsg::PipelineLayout::create(
-        vsg::DescriptorSetLayouts{ _descriptorSetLayout },
-        vsg::PushConstantRanges {});
-
-    auto pipeline = vsg::ComputePipeline::create(pipelineLayout, shader);
-
-    _bindPipeline = vsg::BindComputePipeline::create(pipeline);
-
-    // we'll update our group sizes before each dispatch:
-    _dispatch = vsg::Dispatch::create(1, 1, 1);
-
-    // we will do this later in traverse() when we have the frustum grid SSBOs available
-    //requestCompile(_bindPipeline);
-
-    _sharedRenderData = vsgcontext->sharedRenderData;
-#endif
+    // convey #define settings to our new shader
+    _cullingShader->module->hints = vsgcontext->shaderCompileSettings;
 }
 
 void
@@ -259,7 +398,9 @@ DecalSystemNode::update(VSGContext vsgcontext)
     if (status.failed())
         return;
 
-    growGPUBuffersIfNeeded();
+    growGPUBuffersIfNeeded(vsgcontext);
+
+    updateDecalsSSBO(vsgcontext);
 
     Inherit::update(vsgcontext);
 }
@@ -268,134 +409,18 @@ DecalSystemNode::update(VSGContext vsgcontext)
 void
 DecalSystemNode::traverse(vsg::RecordTraversal& record) const
 {
-#if 0 // COMMENTED OUT WHILE BUILDING OTHER MODULES
     if (status.failed())
         return;
 
-    if (!_sharedRenderData)
-        return;
+    ROCKY_SOFT_ASSERT_AND_RETURN(_sharedRenderData, void());
 
-    auto vp = record.getCommandBuffer()->viewDependentState->view->camera->getViewport();
-    RenderingState rs{
-        record.getCommandBuffer()->viewID,
-        record.getFrameStamp()->frameCount,
-        { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
-    };
-
-    auto& fg = _sharedRenderData->frustumGrid[rs.viewID];
-    auto frustumParamsBuf = fg.paramsBuf;
-    auto frustumsBuf = fg.frustumsBuf;
-
-    auto& view = _views[rs.viewID];
-
-    if (!frustumParamsBuf || !frustumsBuf || !_decalsBuf || !_decalTilesBuf)
-        return;
-
-    // if the buffers change, we will need to rebuild our command list.
-    if (view.commands &&
-        (view.lastFrustumParamsBuf != frustumParamsBuf ||
-         view.lastFrustumsBuf != frustumsBuf))
+    for(auto& view : _views)
     {
-        dispose(view.bindDescriptorSet);
-        dispose(view.commands);
-        view.bindDescriptorSet = nullptr;
-        view.commands = nullptr;
-    }
-
-    // Assemble the decriptor set; we have to do this here because the frustum grid SSBOs
-    // convey through the record traversal aux data.
-    // TODO: possibly reevaluate this approach.
-    if (!view.commands)
-    {
-        // the descriptor set that will bind our 4 SSBOs to the culling shader.
-        // Make sure the descriptors appear in the same order as in the DS layout.
-        auto descriptorSet = vsg::DescriptorSet::create(
-            _descriptorSetLayout,
-            vsg::Descriptors{
-                frustumParamsBuf, frustumsBuf, _decalsBuf, _decalTilesBuf });
-
-        view.bindDescriptorSet = vsg::BindDescriptorSet::create(
-            VK_PIPELINE_BIND_POINT_COMPUTE, _bindPipeline->pipeline->layout, 0, descriptorSet);
-
-        // TODO: create a barrier??
-
-        view.commands = vsg::Commands::create();
-        view.commands->addChild(_bindPipeline);
-        view.commands->addChild(view.bindDescriptorSet);
-        view.commands->addChild(_dispatch);
-
-        requestCompile(view.commands);
-
-        view.lastFrustumParamsBuf = frustumParamsBuf;
-        view.lastFrustumsBuf = frustumsBuf;
-
-        // actual compile will happen on next update, so we are done for now
-        return;
-    }
-
-    // First: update the push constants for this view.
-    //auto* pc = reinterpret_cast<MyPushConstants*>(_pcData->dataPointer());
-    //pc->projection = to_glm(record.state->projectionMatrixStack.top());
-    //pc->modelview = to_glm(record.state->modelviewMatrixStack.top());
-
-    // TODO: iterate the decals and build a draw list
-    BufferAccess<GPUDecal> gpudecal(_decalsBuf);
-
-    // the first entry just holds the count.
-    gpudecal->count = _totalNumDecals;
-    ++gpudecal;
-
-    auto& mvm = record.state->modelviewMatrixStack.top();
-
-    _registry.read([&](entt::registry& reg)
-        {
-            auto iter = reg.view<Decal, ActiveState, Visibility>();
-            iter.each([&](auto entity, auto& decal, auto& active, auto& visibility)
-            {
-                gpudecal->mvm = decal.matrix * to_glm(mvm);
-                gpudecal->mvmInverse = glm::inverse(gpudecal->mvm);
-
-                if (decal.projection == DecalProjection::Perspective)
-                {
-                    float tanH = tanf(glm::radians(decal.fovY_deg * 0.5f));
-                    float halfDepth = decal.size.z * 0.5f;
-                    float nearClip = glm::max(1.0f, decal.distance - halfDepth);
-                    float farClip = decal.distance + halfDepth;
-                    float farHalfW = farClip * tanH * decal.aspectRatio;
-                    float farHalfH = farClip * tanH;
-                    float bsRadius = sqrtf(farHalfW * farHalfW + farHalfH * farHalfH);
-
-                    gpudecal->zMin = decal.distance - farClip;
-                    gpudecal->zMax = decal.distance - nearClip;
-                    gpudecal->cullingRadius = bsRadius;
-                    gpudecal->distance = decal.distance;
-                    gpudecal->tanHalfFovY = tanH;
-                    gpudecal->aspect = decal.aspectRatio;
-                }
-                else
-                {
-                    gpudecal->distance = 0.0f;
-                    gpudecal->tanHalfFovY = 0.0f;
-                    gpudecal->aspect = 1.0f;
-                }
-
-                ++gpudecal; // advance to next decal instance in the SSBO
-            });
-        });
-
-    // TODO: UPLOAD IMMEDIATELY. NEED TO WRITE CODE FOR THIS.
-    // TODO: See about repurposing TransferTask.
-    // TODO: for now (testing) we will be a frame behind.
-
-    // dispatch the cull shader
-    BufferAccess<FrustumGridParams> params(fg.paramsBuf);
-    _dispatch->groupCountX = (params->numTiles.x + FRUSTUM_GRID_TILES_PER_THREAD_GROUP - 1) / FRUSTUM_GRID_TILES_PER_THREAD_GROUP;
-    _dispatch->groupCountY = (params->numTiles.y + FRUSTUM_GRID_TILES_PER_THREAD_GROUP - 1) / FRUSTUM_GRID_TILES_PER_THREAD_GROUP;
-
-    view.commands->accept(record);
-
-    // TODO: barrier???
-#endif
+        if (view.commands)
+            view.commands->accept(record);
+        else
+            break;
+    }    
 }
 
 void

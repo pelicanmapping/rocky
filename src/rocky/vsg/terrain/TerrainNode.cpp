@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "TerrainNode.h"
@@ -14,10 +14,10 @@
 
 using namespace ROCKY_NAMESPACE;
 
-TerrainProfileNode::TerrainProfileNode(const Profile& in_profile, TerrainNode& in_terrain) :
+TerrainProfileNode::TerrainProfileNode(const Profile& in_profile, TerrainNode& in_terrain, VSGContext vsgcontext) :
     profile(in_profile),
     terrain(in_terrain),
-    _tiles(in_terrain, this)
+    _tiles(in_terrain, this, vsgcontext)
 {
     //nop
 }
@@ -255,18 +255,18 @@ TerrainNode::reset(VSGContext context)
 }
 
 Result<>
-TerrainNode::createProfiles(VSGContext context)
+TerrainNode::createProfiles(VSGContext vsgcontext)
 {
     if (profile.isComposite())
     {
         for (auto& subprofile : profile.subprofiles())
         {
-            _profileNodes->addChild(TerrainProfileNode::create(subprofile, *this));
+            _profileNodes->addChild(TerrainProfileNode::create(subprofile, *this, vsgcontext));
         }
     }
     else
     {
-        _profileNodes->addChild(TerrainProfileNode::create(profile, *this));
+        _profileNodes->addChild(TerrainProfileNode::create(profile, *this, vsgcontext));
     }
 
     return ResultVoidOK;

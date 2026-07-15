@@ -17,15 +17,15 @@ using namespace ROCKY_NAMESPACE::detail;
 #undef LC
 #define LC "[MapNode] "
 
-MapNode::MapNode(VSGContext context)
+MapNode::MapNode(VSGContext vsgcontext)
 {
     map = Map::create();
 
-    terrainNode = TerrainNode::create(context);
+    terrainNode = TerrainNode::create(vsgcontext);
     this->addChild(terrainNode);
 
     // set up the map-level UBO and install it in the terrain node.
-    configureState(context);
+    configureState(vsgcontext);
     terrainNode->state->add(_mapDescriptors.ubo);
 
     // default to geodetic:

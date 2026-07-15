@@ -30,6 +30,7 @@
 #define TILE_UBO_NAME "u_tile"
 #define FRUSTUM_GRID_PARAMS_UBO_NAME "u_frustumGridParams"
 #define FRUSTUMS_SSBO_NAME "u_frustums"
+#define DECALS_SSBO_NAME "u_decals"
 
 #define ATTR_VERTEX "in_vertexTs"
 #define ATTR_NORMAL "in_upTs"
@@ -197,25 +198,29 @@ TerrainState::createShaderSet(VSGContext context) const
     shaderSet->addAttributeBinding(ATTR_UV, "", 2, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
 
     // "binding" (4th param) must match "layout(location=X) uniform" in the shader
-    shaderSet->addDescriptorBinding(texturedefs.elevation.name, "", 0, texturedefs.elevation.uniform_binding,
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, 
+    shaderSet->addDescriptorBinding(texturedefs.elevation.name, "", 0,
+        texturedefs.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, 
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(texturedefs.color.name, "", 0, texturedefs.color.uniform_binding, 
-        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, 
+    shaderSet->addDescriptorBinding(texturedefs.color.name, "", 0,
+        texturedefs.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, 
         VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(TILE_UBO_NAME, "", 0, BINDING_TERRAIN_TILE,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, 
+    shaderSet->addDescriptorBinding(TILE_UBO_NAME, "", 0,
+        BINDING_TERRAIN_TILE, TYPE_TERRAIN_TILE, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(TERRAIN_SETTINGS_UBO_NAME, "", 0, BINDING_TERRAIN_SETTINGS,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+    shaderSet->addDescriptorBinding(TERRAIN_SETTINGS_UBO_NAME, "", 0, 
+        BINDING_TERRAIN_SETTINGS, TYPE_TERRAIN_SETTINGS, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(MAP_SETTINGS_UBO_NAME, "", 0, BINDING_MAP_SETTINGS,
-        VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
+    shaderSet->addDescriptorBinding(MAP_SETTINGS_UBO_NAME, "", 0,
+        BINDING_MAP_SETTINGS, TYPE_MAP_SETTINGS, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
+
+    shaderSet->addDescriptorBinding(DECALS_SSBO_NAME, "", 0,
+        BINDING_DECALS, TYPE_DECALS, 1,
+        VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
     addViewDependentStateToShaderSet(shaderSet);
 
@@ -252,6 +257,7 @@ TerrainState::createPipelineConfig(VSGContext context) const
     config->enableDescriptor(TILE_UBO_NAME);
     config->enableDescriptor(TERRAIN_SETTINGS_UBO_NAME);
     config->enableDescriptor(MAP_SETTINGS_UBO_NAME);
+    config->enableDescriptor(DECALS_SSBO_NAME);
 
 #ifdef USE_FRUSTUM_GRID
     config->enableDescriptor(FRUSTUM_GRID_PARAMS_UBO_NAME);
@@ -305,7 +311,7 @@ TerrainState::createTerrainStateGroup(VSGContext context)
     }
 
     // Just a StateGroup holding the graphics pipeline.
-    // Descriptors are the global terrain uniform buffer and the VSG view-dependent buffer.
+    // We bind the view-dependent descriptor set here, but the per-tile descriptor set is bound in each TerrainTileNode.
     auto stateGroup = vsg::StateGroup::create();
     stateGroup->add(pipelineConfig->bindGraphicsPipeline);
     stateGroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VDS_DESCRIPTOR_SET_INDEX));
@@ -314,7 +320,8 @@ TerrainState::createTerrainStateGroup(VSGContext context)
 }
 
 TerrainTileRenderModel
-TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel& oldRenderModel, const TerrainTileModel& dataModel, VSGContext vsgcontext) const
+TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel& oldRenderModel, 
+    const TerrainTileModel& dataModel, VSGContext vsgcontext) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), oldRenderModel);
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), oldRenderModel);
@@ -412,7 +419,8 @@ TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel
         descriptors.elevation, 
         descriptors.color, 
         descriptors.uniforms, 
-        _terrainDescriptors.ubo
+        _terrainDescriptors.ubo,
+        vsgcontext->sharedRenderData->decalsBuf
 #ifdef USE_FRUSTUM_GRID
         ,
         vsgcontext->sharedRenderData->views[0].paramsBuf,
@@ -452,29 +460,29 @@ TerrainState::updateProfile(const Profile& profile)
 void
 TerrainState::updateSettings(TerrainNode& terrain)
 {    
-    auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(_terrainDescriptors.data->dataPointer());
+    BufferAccess<TerrainDescriptors::Uniforms> settings(_terrainDescriptors.ubo);
 
-    if (uniforms.backgroundColor != terrain.backgroundColor.value())
+    if (settings->backgroundColor != terrain.backgroundColor.value())
     {
-        uniforms.backgroundColor = terrain.backgroundColor.value();
+        settings->backgroundColor = terrain.backgroundColor.value();
         _terrainDescriptors.data->dirty();
     }
 
-    if (uniforms.debugTriangles != (terrain.debugTriangles.value() ? 1.0f : 0.0f))
+    if (settings->debugTriangles != (terrain.debugTriangles.value() ? 1.0f : 0.0f))
     {
-        uniforms.debugTriangles = terrain.debugTriangles.value() ? 1.0f : 0.0f;
+        settings->debugTriangles = terrain.debugTriangles.value() ? 1.0f : 0.0f;
         _terrainDescriptors.data->dirty();
     }
 
-    if (uniforms.applyLighting != (terrain.lighting.value() ? 1.0f : 0.0f))
+    if (settings->applyLighting != (terrain.lighting.value() ? 1.0f : 0.0f))
     {
-        uniforms.applyLighting = terrain.lighting.value() ? 1.0f : 0.0f;
+        settings->applyLighting = terrain.lighting.value() ? 1.0f : 0.0f;
         _terrainDescriptors.data->dirty();
     }
 
-    if (uniforms.debugNormals != (terrain.debugNormals.value() ? 1.0f : 0.0f))
+    if (settings->debugNormals != (terrain.debugNormals.value() ? 1.0f : 0.0f))
     {
-        uniforms.debugNormals = terrain.debugNormals.value() ? 1.0f : 0.0f;
+        settings->debugNormals = terrain.debugNormals.value() ? 1.0f : 0.0f;
         _terrainDescriptors.data->dirty();
     }
 
@@ -487,5 +495,5 @@ TerrainState::updateSettings(TerrainNode& terrain)
         terrain._profileNodes->children.erase(terrain._profileNodes->children.begin());
     }
 
-    terrain.children[0].mask = terrain.castShadows.value() ? vsg::MASK_ALL : (vsg::MASK_ALL & ~0x01);    
+    terrain.children[0].mask = terrain.castShadows.value() ? vsg::MASK_ALL : (vsg::MASK_ALL & ~0x01);
 }

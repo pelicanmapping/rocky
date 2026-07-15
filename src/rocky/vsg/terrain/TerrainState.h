@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
         static_assert(sizeof(Uniforms) % 16 == 0, "TerrainDescriptors::Uniforms must be a multiple of 16 bytes in size");
 
         vsg::ref_ptr<vsg::Data> data;
-        vsg::ref_ptr<vsg::Descriptor> ubo;
+        vsg::ref_ptr<vsg::DescriptorBuffer> ubo;
     };
 
     //! Descriptors for a single terrain tile.
@@ -48,7 +48,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::DescriptorImage> color;
         vsg::ref_ptr<vsg::DescriptorImage> elevation;
         vsg::ref_ptr<vsg::DescriptorBuffer> uniforms;
-        vsg::ref_ptr<vsg::StateCommand> bind;
+        vsg::ref_ptr<vsg::BindDescriptorSet> bind;
     };
 
     //! One texture source image and its matrix.

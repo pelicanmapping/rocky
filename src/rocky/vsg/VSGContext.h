@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -115,8 +115,8 @@ namespace ROCKY_NAMESPACE
         //! to marking the buffer as DYNAMIC_DATA and marking it dirty(), which
         //! is inefficient for large numbers of buffers whose data is only
         //! updated periodically.
-        void upload(const vsg::BufferInfoList& bufferInfos);
-        void upload(const vsg::ImageInfoList& inageInfos);
+        void upload(const vsg::BufferInfoList& bufferInfos, bool now = false);
+        void upload(const vsg::ImageInfoList& imageInfos, bool now = false);
 
         //! The VSG/Vulkan device shared by all displays
         vsg::ref_ptr<vsg::Device> device();

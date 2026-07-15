@@ -85,14 +85,13 @@ FrustumGridSystemNode::update(VSGContext vsgcontext)
 
             // Allocate space on the GPU for all the actual frustums and update the buffer.
             // This will require a recompile of course.
+            Log()->info("FrustumSystemNode: reallocating {} tiles", params->numTiles.x * params->numTiles.y);
             GPUOnlyBufferAccess<FrustumGPU> frustums(vds->frustumsBuf, vsgcontext->device());
             auto old = frustums.resize(params->numTiles.x * params->numTiles.y);
             dispose(old);
 
-            // manually release and recompile the descriptor holding our SSBO
-            // so that it will point to the new buffer:
-            vds->descriptorSet->release();
-            vds->descriptorSet->compile(vsg::Context(vsgcontext->device()));
+            // reallocating buffers requires rebuilding the descriptor sets that hold them.
+            vds->recompileDescriptorSets();
 
             // first time through, build the command dispatcher
             if (!view.commands)
@@ -163,7 +162,10 @@ FrustumGridSystemNode::traverse(vsg::RecordTraversal& record) const
     ROCKY_SOFT_ASSERT_AND_RETURN(state && state->_commandBuffer, void());
 
     // Is there a better way to detect a compute traversal?
-    bool isCompute = !state->_commandBuffer->viewDependentState;
+    bool isCompute = _lastFrameCount != record.getFrameStamp()->frameCount;
+    _lastFrameCount = record.getFrameStamp()->frameCount;
+
+    //bool isCompute = !state->_commandBuffer->viewDependentState;
     if (isCompute)
     {
         for (unsigned viewID=0; viewID <_views.size(); ++viewID)
@@ -191,6 +193,7 @@ FrustumGridSystemNode::traverse(vsg::RecordTraversal& record) const
     {
         auto viewID = state->_commandBuffer->viewID;
         auto vds = _sharedRenderData->viewDependentState[viewID];
+        auto& view = _views[viewID];
 
         //ROCKY_SOFT_ASSERT_AND_RETURN(vds, void());
         if (!vds) {
@@ -205,17 +208,20 @@ FrustumGridSystemNode::traverse(vsg::RecordTraversal& record) const
 
         const auto& vp = (*viewportData)[0];
 
+        auto& projMatrix = state->projectionMatrixStack.top();
+
         BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
 
-        if (params->viewport[2] != vp[2] || params->viewport[3] != vp[3])
+        if (params->viewport[2] != vp[2] || params->viewport[3] != vp[3] || projMatrix[3][3] != view.lastProjMatrix[3][3])
         {
             // If the viewport size changes we have to reallocate the grid.
             // Queue an update for the next frame.
             Grid newGrid;
             newGrid.viewID = viewID;
             newGrid.viewport = vp;
-            newGrid.projection = state->projectionMatrixStack.top();
-            _views[viewID].newGrid = std::move(newGrid);
+            newGrid.projection = projMatrix;
+            view.newGrid = std::move(newGrid);
+            view.lastProjMatrix = projMatrix;
         }
         else if (params->viewport[0] != vp[0] || params->viewport[1] != vp[1])
         {

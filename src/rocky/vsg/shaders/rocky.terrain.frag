@@ -4,7 +4,6 @@
  * Copyright 2026 Pelican Mapping
  * MIT License
  */
-
 #pragma import_defines(ROCKY_HAS_ATMOSPHERE)
 
 #pragma include "rocky.defines.h.glsl"
@@ -13,6 +12,7 @@
 #pragma include "rocky.atmo.glsl"
 #pragma include "rocky.debug.frag.glsl"
 #pragma include "rocky.frustumgrid.h.glsl"
+#pragma include "rocky.decal.h.glsl"
 
 layout(push_constant) uniform PushConstants {
     mat4 projection;
@@ -72,9 +72,9 @@ void main()
     vec4 lit_color = applyLighting(outColor, vary.vertexVs, normalVs);
     outColor = mix(outColor, lit_color, u_terrain.lighting);
 
-#ifdef ROCKY_HAS_FRUSTUM_GRID
+    // decals and frustum tiles
     outColor.rgb = mix(outColor.rgb, frustumTileTestColor(gl_FragCoord.xy, vary.vertexVs), u_debugTiles);
-#endif
+    applyDecals(outColor.rgb, vary.vertexVs, gl_FragCoord.xy);
 
     // show triangle outlines
     applyDebugTriangles(outColor, u_terrain.debugTriangles);

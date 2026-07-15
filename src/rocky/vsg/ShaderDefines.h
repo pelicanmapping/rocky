@@ -4,7 +4,6 @@
  * MIT License
  */
 #pragma once
-#include "SharedRenderData.h"
 
-// include the shader header file, which will work from both GLSL and C++
+ // include the shader header file, which will work from both GLSL and C++
 #include "shaders/rocky.defines.h.glsl"

@@ -572,7 +572,7 @@ VSGContextImpl::dispose(vsg::ref_ptr<vsg::Object> object)
 }
 
 void
-VSGContextImpl::upload(const vsg::BufferInfoList& bufferInfos)
+VSGContextImpl::upload(const vsg::BufferInfoList& bufferInfos, bool now)
 {
     // A way to upload GPU buffers without using the dirty()/DYNAMIC_DATA mechanism,
     // which gets slow with a large number of buffers.
@@ -595,14 +595,19 @@ VSGContextImpl::upload(const vsg::BufferInfoList& bufferInfos)
         for (auto& task : tasks)
         {
             task->transferTask->assign(validBufferInfos);
-        }
 
+            if (now)
+            {
+                task->transferTask->transferData(vsg::TransferTask::TRANSFER_ALL);
+            }
+        }
+        
         requestFrame();
     }
 }
 
 void
-VSGContextImpl::upload(const vsg::ImageInfoList& imageInfos)
+VSGContextImpl::upload(const vsg::ImageInfoList& imageInfos, bool now)
 {
     // A way to upload images without using the dirty()/DYNAMIC_DATA mechanism,
     // which gets slow with a large number of buffers.
@@ -624,6 +629,11 @@ VSGContextImpl::upload(const vsg::ImageInfoList& imageInfos)
         for (auto& task : tasks)
         {
             task->transferTask->assign(validImageInfos);
+
+            if (now)
+            {
+                task->transferTask->transferData(vsg::TransferTask::TRANSFER_ALL);
+            }
         }
 
         requestFrame();

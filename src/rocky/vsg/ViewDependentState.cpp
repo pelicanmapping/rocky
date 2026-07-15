@@ -18,6 +18,18 @@ ViewDependentStateEx::ViewDependentStateEx(vsg::ref_ptr<vsg::View> vsgView, vsg:
 }
 
 void
+ViewDependentStateEx::recompileDescriptorSets()
+{
+    if (this->descriptorSet)
+    {
+        // immediately release and recompile the descriptor set to reflect allocation changes.
+        this->descriptorSet->release();
+        vsg::Context context(_device);
+        this->descriptorSet->compile(context);
+    }
+}   
+
+void
 ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 {
     Inherit::init(req);
@@ -36,11 +48,16 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
         BINDING_VDS_FRUSTUMS, TYPE_VDS_FRUSTUMS,
         _device);
 
+    GPUOnlyBufferAccess<DecalTileGPU> decalTiles(decalTilesBuf,
+        BINDING_VDS_DECAL_TILES, TYPE_VDS_DECAL_TILES,
+        _device);
+
     // add it! It will automatically compile along with the others.
     //this->descriptorSet->descriptors.emplace_back(_myDescriptors.ubo);
     this->descriptorSet->descriptors.emplace_back(renderParamsBuf);
     this->descriptorSet->descriptors.emplace_back(frustumParamsBuf);
     this->descriptorSet->descriptors.emplace_back(frustumsBuf);
+    this->descriptorSet->descriptors.emplace_back(decalTilesBuf);
 
     // add its shader-stage binding to the layout.
     this->descriptorSetLayout->addBinding(BINDING_VDS_RENDER_PARAMS,
@@ -51,6 +68,9 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 
     this->descriptorSetLayout->addBinding(BINDING_VDS_FRUSTUMS,
         TYPE_VDS_FRUSTUMS, 1, VK_SHADER_STAGE_ALL);
+
+    this->descriptorSetLayout->addBinding(BINDING_VDS_DECAL_TILES,
+        TYPE_VDS_DECAL_TILES, 1, VK_SHADER_STAGE_ALL);
 }
 
 
@@ -60,7 +80,8 @@ ViewDependentStateEx::traverse(vsg::RecordTraversal& rt) const
     // todo: update custom descriptors
     BufferAccess<RenderParams> renderParams(renderParamsBuf); //(_myDescriptors.ubo);
 
-    renderParams->inverseViewMatrix = vsg::inverse(view->camera->viewMatrix->transform());
+    renderParams->viewMatrix = to_glm(view->camera->viewMatrix->transform());
+    renderParams->inverseViewMatrix = to_glm(view->camera->viewMatrix->inverse());
 
     // ellipsoid params (TODO: don't need to update these constantly!)
     if (!_mapNode)
@@ -122,6 +143,13 @@ ROCKY_NAMESPACE::addViewDependentStateToShaderSet(vsg::ShaderSet* shaderSet, VkS
         BINDING_VDS_FRUSTUMS,
         TYPE_VDS_FRUSTUMS, 1,
         stageFlags, {});
+
+    shaderSet->addDescriptorBinding(
+        "rockyvds_decal_tiles", "",
+        VDS_DESCRIPTOR_SET_INDEX,
+        BINDING_VDS_DECAL_TILES,
+        TYPE_VDS_DECAL_TILES, 1,
+        stageFlags, {});
 }
 
 void
@@ -133,4 +161,5 @@ ROCKY_NAMESPACE::enableViewDependentStateUniforms(vsg::GraphicsPipelineConfigura
     gpc->enableDescriptor("rockyvds_render_params");
     gpc->enableDescriptor("rockyvds_frustum_grid_params");
     gpc->enableDescriptor("rockyvds_frustums");
+    gpc->enableDescriptor("rockyvds_decal_tiles");
 }

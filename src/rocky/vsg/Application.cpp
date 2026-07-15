@@ -18,6 +18,7 @@
 #endif
 
 #define USE_FRUSTUM_GRID_SYSTEM
+#define USE_DECAL_SYSTEM
 
 using namespace ROCKY_NAMESPACE;
 
@@ -238,10 +239,6 @@ Application::ctor(int& argc, char** argv)
         renderContinuously = true;
     }
 
-    // compute shader nodes that should come before the Map:
-    //scene->addChild(FrustumGridSystemNode::create(registry));
-    //scene->addChild(DecalSystemNode::create(registry));
-
     // a node to render the map/terrain
     scene->addChild(mapNode);
 
@@ -292,6 +289,12 @@ Application::ctor(int& argc, char** argv)
     systemsNode->add(fgsystem);
     computeSystemsNode->add(fgsystem);
     vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_FRUSTUM_GRID");
+#endif
+
+#ifdef USE_DECAL_SYSTEM
+    auto decalSystem = DecalSystemNode::create(registry);
+    computeSystemsNode->add(decalSystem);
+    vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_DECAL_SYSTEM");
 #endif
 
     auto xformSystem = systemsNode->get<TransformSystemNode>();

@@ -32,45 +32,30 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::Visitor&) override;
 
     private:
-        // Called when a decal geometry component is found in the dirty list
-        //void createOrUpdateGeometry(const DecalGeometry&, detail::DecalGeometryDetail&);
-
-        // Called when a decal style is found in the dirty list
-        //void createOrUpdateStyle(const DecalStyle&, detail::DecalStyleDetail&);
-
-        // Called when a specific view's properties change (e.g. srs switch)
-        //void createOrUpdateGeometryForView(ViewIDType, const DecalGeometry&, detail::DecalGeometryDetail&);
-
-
-
-        // Non-view dependent state, initialized once
-        vsg::ref_ptr<vsg::Dispatch> _dispatch;
-        vsg::ref_ptr<vsg::BindComputePipeline> _bindPipeline;
-        vsg::ref_ptr<vsg::DescriptorSetLayout> _descriptorSetLayout;
-        mutable vsg::ref_ptr<vsg::Commands> _commands;
 
         // Per-view data, calculated during the record traversal
         struct ViewDetail
         {
-            vsg::ref_ptr<vsg::BindDescriptorSet> bindDescriptorSet;
             vsg::ref_ptr<vsg::Commands> commands;
-            vsg::ref_ptr<vsg::DescriptorBuffer> lastFrustumParamsBuf;
-            vsg::ref_ptr<vsg::DescriptorBuffer> lastFrustumsBuf;
         };
         mutable ViewLocal<ViewDetail> _views;
-
+        mutable std::uint64_t _lastFrameCount = ~0U;
         std::shared_ptr<SharedRenderData> _sharedRenderData;
 
         // collection of all decals in the scene
         mutable unsigned _totalNumDecals = 0u;
-        mutable vsg::ref_ptr<vsg::ubyteArray> _decalsData;
-        mutable vsg::ref_ptr<vsg::DescriptorBuffer> _decalsBuf;
 
-        // GPU-only collection of tiles passing GPU cull
-        mutable vsg::ref_ptr<vsg::ubyteArray> _decalTilesData;
-        mutable vsg::ref_ptr<vsg::DescriptorBuffer> _decalTilesBuf;
+        vsg::ref_ptr<vsg::ShaderStage> _cullingShader;
 
-        void growGPUBuffersIfNeeded();
+        //mutable vsg::ref_ptr<vsg::DescriptorBuffer> _decalsBuf;
+        
+        vsg::ref_ptr<vsg::DescriptorSet> _localDescriptorSet;
+        vsg::ref_ptr<vsg::Data> _pushConstantsData;
+
+        VSGContext _vsgcontext;
+
+        void growGPUBuffersIfNeeded(VSGContext);
+        void updateDecalsSSBO(VSGContext);
 
         void on_construct_Decal(entt::registry& r, entt::entity e);
         void on_construct_DecalStyle(entt::registry& r, entt::entity e);

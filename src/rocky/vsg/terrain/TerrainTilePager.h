@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
 
     public:
         //! Consturct the tile manager.
-        TerrainTilePager(const TerrainSettings& settings, TerrainTileHost* host);
+        TerrainTilePager(const TerrainSettings& settings, TerrainTileHost* host, VSGContext vsgcontext);
 
         ~TerrainTilePager();
 
@@ -82,6 +82,7 @@ namespace ROCKY_NAMESPACE
         std::vector<TileKey> _updateData;
 
         unsigned _firstLOD = 0u;
+        CallbackSubscriptions _subs;
 
     private:
 
@@ -104,5 +105,8 @@ namespace ROCKY_NAMESPACE
             const IOOptions& io,
             std::shared_ptr<TerrainTileFactory> terrain,
             VSGContext vsgcontext) const;
+
+
+        void recompileDescriptorSets(VSGContext vsgcontext);
     };
 }

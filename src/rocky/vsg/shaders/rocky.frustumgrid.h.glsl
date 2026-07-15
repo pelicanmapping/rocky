@@ -3,15 +3,12 @@
  * Copyright 2026 Pelican Mapping
  * MIT License
  */
-#pragma import_defines(ROCKY_HAS_FRUSTUM_GRID)
-#ifdef ROCKY_HAS_FRUSTUM_GRID
-
 #pragma include "rocky.defines.h.glsl"
 
-#ifdef FRUSTUM_GRID_WRITES_ENABLED
-#define READ_ONLY
+#ifdef SSBOS_ARE_WRITABLE
+#define FRUSTUM_GRID_ACCESS
 #else
-#define READ_ONLY readonly
+#define FRUSTUM_GRID_ACCESS readonly
 #endif
 
 struct Frustum
@@ -28,7 +25,7 @@ layout(std140, set = VDS_DESCRIPTOR_SET_INDEX, binding = BINDING_VDS_FRUSTUM_GRI
     float u_debugTiles;
 };
 
-layout(std140, set = VDS_DESCRIPTOR_SET_INDEX, binding = BINDING_VDS_FRUSTUMS) READ_ONLY buffer Frustums
+layout(std430, set = VDS_DESCRIPTOR_SET_INDEX, binding = BINDING_VDS_FRUSTUMS) FRUSTUM_GRID_ACCESS buffer Frustums
 {
     Frustum frustums[];
 };
@@ -73,5 +70,3 @@ vec3 frustumTileTestColor(in vec2 fragCoord, in vec3 posVs)
     float t = float(tile + 1);
     return vec3(fract(t * 0.1031), fract(t * 0.11369), fract(t * 0.13787));
 }
-
-#endif // ROCKY_USE_FRUSTUM_GRID_SYSTEM
