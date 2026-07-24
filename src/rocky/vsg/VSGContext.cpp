@@ -201,6 +201,10 @@ namespace
 
         struct Task {
             Task() = default;
+            Task(const Task& rhs) = default;
+            Task(Task&& rhs) = default;
+            Task& operator=(const Task& rhs) = default;
+            Task& operator=(Task&& rhs) = default;
             Task(vsg::Operation* a, std::function<float()> b) : function(a), get_priority(b) {}
             vsg::ref_ptr<vsg::Operation> function;
             std::function<float()> get_priority;
@@ -732,4 +736,17 @@ VSGContextImpl::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, v
     {
         vsg::updateViewer(*viewer(), result);
     }
+}
+
+void
+VSGContextImpl::recompileDescriptorSet(vsg::ref_ptr<vsg::DescriptorSet> descriptorSet)
+{
+    ROCKY_SOFT_ASSERT_AND_RETURN(descriptorSet, void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(viewer(), void());
+
+    viewer()->deviceWaitIdle();
+    descriptorSet->release();
+    compile(descriptorSet);
+    //vsg::Context context(device());
+    //descriptorSet->compile(context);
 }

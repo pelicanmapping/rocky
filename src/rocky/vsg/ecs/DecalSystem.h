@@ -9,10 +9,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    namespace detail
-    {
-    }
-
     /**
      * ECS system that handles Decal components
      */
@@ -46,15 +42,12 @@ namespace ROCKY_NAMESPACE
         mutable unsigned _totalNumDecals = 0u;
 
         vsg::ref_ptr<vsg::ShaderStage> _cullingShader;
-
-        //mutable vsg::ref_ptr<vsg::DescriptorBuffer> _decalsBuf;
         
         vsg::ref_ptr<vsg::DescriptorSet> _localDescriptorSet;
-        vsg::ref_ptr<vsg::Data> _pushConstantsData;
 
-        VSGContext _vsgcontext;
-
-        void growGPUBuffersIfNeeded(VSGContext);
+        void rebuildCommands(ViewIDType, VSGContext);
+        void updateStyles(VSGContext);
+        void resizeGPUBuffersIfNeeded(VSGContext);
         void updateDecalsSSBO(VSGContext);
 
         void on_construct_Decal(entt::registry& r, entt::entity e);

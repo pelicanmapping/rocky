@@ -5,11 +5,12 @@
  */
 #pragma include "rocky.defines.h.glsl"
 
-layout(set = VDS_DESCRIPTOR_SET_INDEX, binding = BINDING_VDS_RENDER_PARAMS) uniform RenderParams
+layout(set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_RENDER_PARAMS) uniform RenderParams
 {
     mat4 viewMatrix;
     mat4 inverseViewMatrix;
     vec2 ellipsoidAxes;
     uint stereographic;
     float _padding[1];
-} u_vds;
+}
+u_renderParams;

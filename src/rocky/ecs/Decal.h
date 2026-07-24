@@ -39,5 +39,13 @@ namespace ROCKY_NAMESPACE
 
         //! Distance from projector to target in meters [perspective projection].
         float distance = 100.0f;
+
+        //! Style entity, if applicable
+        entt::entity style = entt::null;
+
+
+        Decal() = default;
+        Decal(entt::entity styleEntity) : 
+            Component<Decal>(), style(styleEntity) {}
     };
 }

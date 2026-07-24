@@ -493,6 +493,7 @@ namespace ROCKY_NAMESPACE
             }
             else {
                 _data = vsg::ubyteArray::create(sizeof(T) * std::max(1u, count));
+                _data->properties.dataVariance = vsg::DYNAMIC_DATA;
                 _buf = vsg::DescriptorBuffer::create(_data, binding, 0, type);
                 *reinterpret_cast<T*>(_data->dataPointer()) = T();
                 _iter = reinterpret_cast<T*>(_data->dataPointer());
@@ -530,18 +531,29 @@ namespace ROCKY_NAMESPACE
             return _buf->bufferInfoList;
         }
 
-        vsg::BufferInfoList replace(vsg::ref_ptr<vsg::Data> data)
+        void resize(std::size_t newCount, ObjectLifecycle* lifecycle)
         {
-            auto old = _buf->bufferInfoList;
-            _buf->bufferInfoList.clear();
-            _buf->bufferInfoList.emplace_back(vsg::BufferInfo::create(data));
-            return old;
-        }
+            ROCKY_SOFT_ASSERT_AND_RETURN(_buf, void());
 
-        vsg::BufferInfoList resize(std::size_t newCount)
-        {
-            auto data = vsg::ubyteArray::create(sizeof(T) * std::max((std::size_t)1, newCount));
-            return replace(data);
+            auto binding = _buf->dstBinding;
+            auto type = _buf->descriptorType;
+            auto element = _buf->dstArrayElement;
+
+            if (lifecycle)
+                lifecycle->dispose(_buf);
+
+            _data = vsg::ubyteArray::create(sizeof(T) * std::max((std::size_t)1, newCount));
+            _data->properties.dataVariance = vsg::DYNAMIC_DATA;
+            _buf = vsg::DescriptorBuffer::create(_data, binding, element, type);
+            *reinterpret_cast<T*>(_data->dataPointer()) = T();
+            _iter = reinterpret_cast<T*>(_data->dataPointer());
+
+            if (lifecycle)
+                lifecycle->compile(_buf);
+
+            //auto data = vsg::ubyteArray::create(sizeof(T) * std::max((std::size_t)1, newCount));
+            //data->properties.dataVariance = vsg::DYNAMIC_DATA;
+            //_buf->bufferInfoList = { vsg::BufferInfo::create(data) };
         }
     };
 
@@ -555,20 +567,28 @@ namespace ROCKY_NAMESPACE
             std::uint32_t binding,
             VkDescriptorType type,
             vsg::Device* device = nullptr,
-            std::uint32_t count = 1) : _buf(buf), _device(device)
+            std::size_t count = 1) : _buf(buf)
         {
             if (!_buf)
             {
                 _buf = vsg::DescriptorBuffer::create(nullptr, binding, 0, type);
-                if (_device)
-                    resize(count);
+                if (device)
+                {
+                    auto size = sizeof(T) * std::max((std::size_t)1, count);
+
+                    auto buffer = vsg::createBufferAndMemory(
+                        device, size,
+                        VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
+                        VK_SHARING_MODE_EXCLUSIVE,
+                        VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+                    _buf->bufferInfoList = { vsg::BufferInfo::create(buffer, 0, size) };
+                }
             }
         }
 
-        GPUOnlyBufferAccess(
-            vsg::ref_ptr<vsg::DescriptorBuffer>& buf,
-            vsg::Device* device)
-                : _buf(buf), _device(device)
+        GPUOnlyBufferAccess(vsg::ref_ptr<vsg::DescriptorBuffer>& buf)
+            : _buf(buf)
         {
             ROCKY_SOFT_ASSERT(_buf);
         }
@@ -579,29 +599,34 @@ namespace ROCKY_NAMESPACE
 
         //! Creates and installs a new buffer, and returns the old list
         //! for disposal.
-        vsg::BufferInfoList resize(std::size_t count)
+        void resize(std::size_t newCount, vsg::Device* device, ObjectLifecycle* lifecycle)
         {
-            ROCKY_SOFT_ASSERT_AND_RETURN(_buf && _device, vsg::BufferInfoList{});
+            ROCKY_SOFT_ASSERT_AND_RETURN(_buf && device, void());
 
-            auto size = sizeof(T) * std::max((std::size_t)1, count);
+            auto binding = _buf->dstBinding;
+            auto type = _buf->descriptorType;
+            auto element = _buf->dstArrayElement;
+
+            if (lifecycle)
+                lifecycle->dispose(_buf);
+
+            _buf = vsg::DescriptorBuffer::create(nullptr, binding, element, type);
+            
+            auto size = sizeof(T) * std::max((std::size_t)1, newCount);
 
             auto buffer = vsg::createBufferAndMemory(
-                _device, size,
+                device, size,
                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
                 VK_SHARING_MODE_EXCLUSIVE,
                 VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
 
-            auto bufferInfo = vsg::BufferInfo::create(buffer, 0, size);
+            _buf->bufferInfoList = { vsg::BufferInfo::create(buffer, 0, size) };
 
-            auto old = _buf->bufferInfoList;
-
-            _buf->bufferInfoList = { bufferInfo };
-
-            return old;
+            if (lifecycle)
+                lifecycle->compile(_buf);
         }
 
         vsg::ref_ptr<vsg::DescriptorBuffer>& _buf;
-        vsg::Device* _device;
     };
 
     namespace detail 

@@ -13,14 +13,14 @@
 #endif
 
 // from VSG's view-dependent state
-layout(set = VDS_DESCRIPTOR_SET_INDEX, binding = BINDING_VDS_VSG_LIGHTS) uniform VSGLightData {
+layout(set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_VSG_LIGHTS) uniform VSGLightData {
     vec4 values[64];
 } u_lightData;
 
 // shadows.glsl is copied, unmodified, from vsgExamples
 // expected by shadows.glsl:
 vec3 g_eyePos;
-#define VIEW_DESCRIPTOR_SET VDS_DESCRIPTOR_SET_INDEX
+#define VIEW_DESCRIPTOR_SET DESCRIPTOR_SET_VDS
 #pragma include "shadows.glsl"
 
 // placeholder

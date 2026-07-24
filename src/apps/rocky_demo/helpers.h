@@ -25,6 +25,83 @@ struct run_at_frequency
     std::chrono::duration<float> _max;
 };
 
+
+//! VSG event handler that captures mouse actions as geopoints.
+class GeoMouseHandler : public vsg::Inherit<vsg::Visitor, GeoMouseHandler>
+{
+public:
+    GeoMouseHandler(Application& in_app) : app(in_app) {}
+
+    Callback<const TerrainIntersection&, const View&> onMouseMove;
+    Callback<const TerrainIntersection&, const View&> onMouseClick;
+
+protected:
+    Application& app;
+
+    struct TerrainIntersectionAndView
+    {
+        TerrainIntersection intersection;
+        View view;
+    };
+
+    Result<TerrainIntersectionAndView> mapPoint(vsg::PointerEvent& e) const
+    {
+        auto& window = app.display.find(e.window.ref_ptr());
+        auto&& [isect, view] = geoPointAtWindowCoords(window, e.x, e.y);
+        if (isect)
+            return TerrainIntersectionAndView{ isect.value(), view };
+        else
+            return Failure{};
+    }
+
+    void apply(vsg::MoveEvent& e) override
+    {
+        if (onMouseMove)
+        {
+            if (auto r = mapPoint(e))
+                onMouseMove.fire(r.value().intersection, r.value().view);
+            else
+                onMouseMove.fire(TerrainIntersection(), View());
+        }
+    }
+
+    void apply(vsg::ButtonPressEvent& e) override
+    {
+        _buttonPress = e;
+    }
+
+    void apply(vsg::ButtonReleaseEvent& e) override
+    {
+        if (onMouseClick && isMouseClick(e))
+        {
+            if (auto r = mapPoint(e))
+                onMouseClick.fire(r.value().intersection, r.value().view);
+            else
+                onMouseClick.fire(TerrainIntersection(), View());
+        }
+        _buttonPress.reset();
+    }
+
+    bool isMouseClick(vsg::ButtonReleaseEvent& buttonRelease) const
+    {
+        if (!_buttonPress.has_value())
+            return false;
+
+        if (_buttonPress->window != buttonRelease.window)
+            return false;
+
+        if (std::abs(buttonRelease.x - _buttonPress->x) > 3)
+            return false;
+
+        if (std::abs(buttonRelease.y - _buttonPress->y) > 3)
+            return false;
+
+        return true;
+    }
+
+    mutable std::optional<vsg::ButtonPressEvent> _buttonPress;
+};
+
 const ImVec4 ImGuiErrorColor = ImVec4(1, 0.35f, 0.35f, 1);
 
 #if(IMGUI_VERSION_NUM < 18928)

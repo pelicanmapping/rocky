@@ -468,12 +468,5 @@ namespace ROCKY_NAMESPACE
             bool decompress(std::istream& in, std::string& out) const override;
         };
 #endif // ROCKY_HAS_ZLIB
-
-
-        struct CallStack
-        {
-            CallStack();
-            std::vector<std::string> symbols;
-        };
     }
 }

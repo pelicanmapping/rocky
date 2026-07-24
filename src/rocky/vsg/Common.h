@@ -21,3 +21,14 @@
 #if VSG_API_VERSION_LESS(1, 1, 12)
 #error "Rocky requires VSG 1.1.12 or later"
 #endif
+
+namespace ROCKY_NAMESPACE
+{
+    //! Marker class for the disposal interface
+    class ObjectLifecycle
+    {
+    public:
+        virtual void dispose(vsg::ref_ptr<vsg::Object>) = 0;
+        virtual vsg::CompileResult compile(vsg::ref_ptr<vsg::Object>) = 0;
+    };
+}

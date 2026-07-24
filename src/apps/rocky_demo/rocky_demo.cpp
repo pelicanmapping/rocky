@@ -245,6 +245,11 @@ int main(int argc, char** argv)
     app.install(imguiRenderer, window.view(0).vsgView);
     imguiRenderer->add(MainGUI::create(app));
 
+    // Add a general purpose handler for mouse events:
+    auto geomouse = GeoMouseHandler::create(app);
+    app.viewer->getEventHandlers().emplace_back(geomouse);
+    app.viewer->setObject("demo.mouse", geomouse);
+
     // Add a light if we need one
     if (!app.display.window(0).view(0).find<SkyNode>())
         app.scene->addChild(vsg::createHeadlight());

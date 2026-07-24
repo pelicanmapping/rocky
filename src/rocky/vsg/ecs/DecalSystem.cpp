@@ -8,6 +8,8 @@
 #include "../ViewDependentState.h"
 #include "../SharedRenderData.h"
 #include "../ShaderDefines.h"
+#include <rocky/vsg/VSGUtils.h>
+#include <rocky/Color.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -22,18 +24,18 @@ namespace
         glm::mat4 projection;
     };
 
-#if 0
-    struct DecalTileGPU
+    struct DecalDetail
     {
-        std::uint32_t count = 0;
-        std::uint32_t indices[MAX_DECALS_PER_TILE];
-        std::uint32_t padding[3];
+        // where is this decal in the SSBO?
+        std::int32_t ssboIndex = -1;
     };
-#endif
 
     struct DecalStyleDetail
     {
-        bool dummy;
+        vsg::ref_ptr<vsg::ImageInfo> texture;
+
+        // where is this texture in the descriptorimage?
+        std::int32_t descriptorImageIndex = -1;
     };
 }
 
@@ -42,9 +44,11 @@ void DecalSystemNode::on_construct_Decal(entt::registry& r, entt::entity e)
 {
     (void)r.get_or_emplace<ActiveState>(e);
     (void)r.get_or_emplace<Visibility>(e);
+    r.emplace<DecalDetail>(e);
     Decal::dirty(r, e);
     ++_totalNumDecals;
 }
+
 void DecalSystemNode::on_construct_DecalStyle(entt::registry& r, entt::entity e)
 {
     r.emplace<DecalStyleDetail>(e);
@@ -53,6 +57,8 @@ void DecalSystemNode::on_construct_DecalStyle(entt::registry& r, entt::entity e)
 
 void DecalSystemNode::on_destroy_Decal(entt::registry& r, entt::entity e)
 {
+    r.remove<DecalDetail>(e);
+
     ROCKY_SOFT_ASSERT(_totalNumDecals > 0, "DecalSystemNode: decal count mismatch");
     if (_totalNumDecals > 0)
         --_totalNumDecals;
@@ -64,14 +70,14 @@ void DecalSystemNode::on_destroy_DecalStyle(entt::registry& r, entt::entity e)
 }
 void DecalSystemNode::on_destroy_DecalStyleDetail(entt::registry& r, entt::entity e)
 {
-    auto& d = r.get<DecalStyleDetail>(e);
-    //dispose(d.bind);
+    // nop
 }
 
 void DecalSystemNode::on_update_Decal(entt::registry& r, entt::entity e)
 {
     Decal::dirty(r, e);
 }
+
 void DecalSystemNode::on_update_DecalStyle(entt::registry& r, entt::entity e)
 {
     DecalStyle::dirty(r, e);
@@ -108,7 +114,100 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
 }
 
 void
-DecalSystemNode::growGPUBuffersIfNeeded(VSGContext vsgcontext)
+DecalSystemNode::updateStyles(VSGContext vsgcontext)
+{
+    // process any objects marked dirty
+    auto&& [_, reg] = _registry.read();
+
+    DecalStyle::eachDirty(reg, [&](entt::entity e)
+    {
+        const auto& [style, styleDetail] = reg.get<DecalStyle, DecalStyleDetail>(e);
+        auto textures = vsgcontext->sharedRenderData->decalTextures;
+        if (!textures || textures->imageInfoList.empty())
+            return;
+
+        auto fallback = textures->imageInfoList[0]; // slot 0 reserved fallback
+
+        auto releaseSlot = [&]()
+        {
+            if (styleDetail.descriptorImageIndex > 0 &&
+                styleDetail.descriptorImageIndex < (std::int32_t)textures->imageInfoList.size())
+            {
+                dispose(textures->imageInfoList[styleDetail.descriptorImageIndex]);
+                textures->imageInfoList[styleDetail.descriptorImageIndex] = fallback;
+                requestCompile(textures);
+            }
+            styleDetail.descriptorImageIndex = -1;
+            styleDetail.texture = {};
+        };
+
+        if (style.image)
+        {
+            int slot = styleDetail.descriptorImageIndex;
+
+            // replacing existing style texture
+            if (slot > 0 && slot < static_cast<int>(textures->imageInfoList.size()))
+            {
+                dispose(textures->imageInfoList[slot]);
+                textures->imageInfoList[slot] = fallback;
+                styleDetail.texture = {};
+            }
+
+            // make a new texture from the image:
+            auto image = wrapImageInVSG(style.image);
+            if (image)
+            {
+                if (slot < 0)
+                {
+                    // find a free slot; skip slot 0 (fallback)
+                    for (std::size_t i = 1; i < textures->imageInfoList.size(); ++i)
+                    {
+                        if (textures->imageInfoList[i] == fallback)
+                        {
+                            slot = static_cast<int>(i);
+                            break;
+                        }
+                    }
+                }
+
+                if (slot < 0)
+                {
+                    Log()->warn("DecalSystemNode: out of decal texture slots (MAX_NUM_DECAL_TEXTURES={})", MAX_NUM_DECAL_TEXTURES);
+                    releaseSlot();
+                    return;
+                }
+
+                auto sampler = vsg::Sampler::create();
+                // TODO: set up sampler..
+                image->properties.dataVariance = vsg::DYNAMIC_DATA;
+                styleDetail.texture = vsg::ImageInfo::create(sampler, image);
+                textures->imageInfoList[slot] = styleDetail.texture;
+                styleDetail.descriptorImageIndex = slot;
+
+                requestCompile(styleDetail.texture);
+                requestCompile(textures);
+            }
+            else
+            {
+                Log()->warn("DecalSystemNode: failed to create texture for decal style");
+                releaseSlot();
+            }
+        }
+        else
+        {
+            // style lost image; release any previous slot
+            releaseSlot();
+        }
+    });
+
+    Decal::eachDirty(reg, [&](entt::entity e)
+    {
+        // nop
+    });
+}
+
+void
+DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
 {
     bool buffersChanged = false;
 
@@ -124,7 +223,8 @@ DecalSystemNode::growGPUBuffersIfNeeded(VSGContext vsgcontext)
         buffersChanged = true;
 
     // Decal input buffer: keep room for all decals (+1 entry at index 0 for count).
-    BufferAccess<DecalGPU> decals(_sharedRenderData->decalsBuf, BINDING_DECALS, TYPE_DECALS, 1u);
+    BufferAccess<DecalGPU> decals(_sharedRenderData->decalsBuf, BINDING_DECALS, TYPE_DECALS);
+
     auto currentDecalsCapacity = decals.capacity();
     if (currentDecalsCapacity > 0u)
         --currentDecalsCapacity;
@@ -140,132 +240,133 @@ DecalSystemNode::growGPUBuffersIfNeeded(VSGContext vsgcontext)
             _totalNumDecals :
             (currentDecalsCapacity + growBy);
 
-        auto old = decals.resize(newDecalCapacity + 1); // +1 for count at index 0
-        dispose(old);
-        requestCompile(_sharedRenderData->decalsBuf);
+        // creates a new descriptor buffer, so we have to notify users to rebuild DSets that use it.
+        decals.resize(newDecalCapacity + 1, vsgcontext);
+        buffersChanged = true;
 
         // if we changed the buffer we have to also recompile the parenting DS:
         // TODO: do this in response to onDecalsBufReallocated event just for consistency
         if (_localDescriptorSet)
         {
-            _localDescriptorSet->release();
-            vsg::Context context(vsgcontext->device());
-            _localDescriptorSet->compile(context);
+            auto old_ds = _localDescriptorSet;
+            _localDescriptorSet = vsg::DescriptorSet::create(old_ds->setLayout, old_ds->descriptors);
+            dispose(old_ds);
         }
-
-        _sharedRenderData->onDecalsBufReallocated.fire();
-        
-        buffersChanged = true;
     }
 
-    if (_sharedRenderData)
+    for (auto& vds : _sharedRenderData->viewDependentState)
     {
-        for (auto& vds : _sharedRenderData->viewDependentState)
+        if (!vds || !vds->frustumParamsBuf)
+            break;
+
+        auto& view = _views[vds->view->viewID];
+
+        // See if the frustum grid has changed size, and if so, resize the decal tiles buffer to match.
+        BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
+        auto numFrustumTiles = params->numTiles.x * params->numTiles.y;
+
+        GPUOnlyBufferAccess<DecalTileGPU> decalTiles(vds->decalTilesBuf);
+
+        auto numDecalTiles = decalTiles.capacity();
+        if (numDecalTiles != numFrustumTiles)
         {
-            if (!vds || !vds->frustumParamsBuf)
-                break;
+            Log()->info("DecalSystemNode: resizing decal tiles buffer from {} to {} tiles at {} bytes", numDecalTiles, numFrustumTiles, numFrustumTiles * sizeof(DecalTileGPU));
+            decalTiles.resize(numFrustumTiles, vsgcontext->device(), vsgcontext);
+            buffersChanged = true;
+        }
 
-            auto& view = _views[vds->view->viewID];
+        if (buffersChanged)
+        {
+            _sharedRenderData->rebuildVdsDescriptorSet(vds->view->viewID, vsgcontext);
 
-            // See if the frustum grid has changed size, and if so, resize the decal tiles buffer to match.
-            BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
-            auto numFrustumTiles = params->numTiles.x * params->numTiles.y;
+            dispose(view.commands);
+            view.commands = {};
+        }
 
-            GPUOnlyBufferAccess<DecalTileGPU> tiles(vds->decalTilesBuf, vsgcontext->device());
-
-            auto capacity = tiles.capacity();
-            if (capacity < numFrustumTiles)
-            {
-                Log()->info("DecalSystemNode: growing decal tiles buffer from {} to {} tiles at {} bytes", capacity, numFrustumTiles, numFrustumTiles * sizeof(DecalTileGPU));
-                auto old = tiles.resize(numFrustumTiles);
-                dispose(old);
-                requestCompile(vds->decalTilesBuf);
-
-                buffersChanged = true;
-            }
-
-            if (buffersChanged)
-            {
-                // reallocating buffers reuqires rebuilding the descriptor sets that hold them.
-                vds->recompileDescriptorSets();
-                dispose(view.commands);
-                view.commands = {};
-            }
-
-            // make sure we have the commands built.
-            if (!view.commands)
-            {
-                view.commands = vsg::Commands::create();
-
-                // use the ds layout from the first view-dependent state, which is shared by all views:
-                auto vdsDescriptorSetLayout = _sharedRenderData->viewDependentState[0]->descriptorSetLayout;
-
-                // a local DSL to capture our decals buffer (which is not view-dependent, but is shared by all views):
-
-                _localDescriptorSet = vsg::DescriptorSet::create();
-                _localDescriptorSet->setLayout = vsg::DescriptorSetLayout::create();
-                _localDescriptorSet->setLayout->addBinding(BINDING_DECALS, TYPE_DECALS, 1, VK_SHADER_STAGE_ALL);
-                _localDescriptorSet->descriptors.emplace_back(_sharedRenderData->decalsBuf);
-
-                auto pipelineLayout = vsg::PipelineLayout::create(
-                    vsg::DescriptorSetLayouts{
-                        _localDescriptorSet->setLayout, // set 0 (local)
-                        vds->descriptorSet->setLayout   // set 1 (VDS)
-                    }, 
-                    vsg::PushConstantRanges {}
-                );
-
-                auto pipeline = vsg::ComputePipeline::create(pipelineLayout, _cullingShader);
-
-                auto bindPipeline = vsg::BindComputePipeline::create(pipeline);
-
-                // binds the DS to the compute shader:
-                auto bindDescriptorSets = vsg::BindDescriptorSets::create(
-                    VK_PIPELINE_BIND_POINT_COMPUTE,
-                    pipeline->layout,
-                    vsg::DescriptorSets {
-                        _localDescriptorSet,
-                        vds->descriptorSet
-                    });
-
-                // sends the matrices to the culling shader:
-                //auto pushConstants = vsg::PushConstants::create(
-                //    pipelineLayout,
-                //    VK_SHADER_STAGE_COMPUTE_BIT,
-                //    0, sizeof(MyPushConstants),
-                //    _pushConstantsData);
-
-                // launches the compute shader:
-                auto dispatch = vsg::Dispatch::create(
-                    (params->numTiles.x + FRUSTUM_GRID_TILES_PER_THREAD_GROUP - 1u) / FRUSTUM_GRID_TILES_PER_THREAD_GROUP,
-                    (params->numTiles.y + FRUSTUM_GRID_TILES_PER_THREAD_GROUP - 1u) / FRUSTUM_GRID_TILES_PER_THREAD_GROUP,
-                    1u);
-
-                // and a barrier to ensure the frustums are written before any subsequent rendering:
-                auto bufferBarrier = vsg::BufferMemoryBarrier::create(
-                    VK_ACCESS_SHADER_WRITE_BIT,
-                    VK_ACCESS_SHADER_READ_BIT,
-                    VK_QUEUE_FAMILY_IGNORED,
-                    VK_QUEUE_FAMILY_IGNORED,
-                    vds->decalTilesBuf->bufferInfoList[0]->buffer,
-                    0, VK_WHOLE_SIZE);
-
-                auto barrier = vsg::PipelineBarrier::create(
-                    VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
-                    VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
-                    0, // dependency flags
-                    bufferBarrier);
-
-                view.commands = vsg::Commands::create();
-                view.commands->addChild(bindPipeline);
-                view.commands->addChild(bindDescriptorSets);
-                view.commands->addChild(dispatch);
-                view.commands->addChild(barrier);
-
-                vsgcontext->compile(view.commands);
-            }
+        // make sure we have the commands built.
+        if (!view.commands)
+        {
+            rebuildCommands(vds->view->viewID, vsgcontext);
         }
     }
+
+    if (buffersChanged)
+    {
+        vsgcontext->sharedRenderData->dirtySharedDescriptors();
+    }
+}
+
+void
+DecalSystemNode::rebuildCommands(ViewIDType viewID, VSGContext vsgcontext)
+{
+    auto& view = _views[viewID];
+    auto& vds = _sharedRenderData->viewDependentState[viewID];
+
+    vsgcontext->dispose(view.commands);
+
+    view.commands = vsg::Commands::create();
+
+    // use the ds layout from the first view-dependent state, which is shared by all views:
+    auto vdsDescriptorSetLayout = _sharedRenderData->viewDependentState[0]->descriptorSetLayout;
+
+    // a local DSL to capture our decals buffer (which is not view-dependent, but is shared by all views):
+    _localDescriptorSet = vsg::DescriptorSet::create();
+    _localDescriptorSet->setLayout = vsg::DescriptorSetLayout::create();
+    _localDescriptorSet->setLayout->addBinding(BINDING_DECALS, TYPE_DECALS, 1, VK_SHADER_STAGE_ALL);
+
+    _localDescriptorSet->descriptors.emplace_back(_sharedRenderData->decalsBuf);
+
+    auto pipelineLayout = vsg::PipelineLayout::create(
+        vsg::DescriptorSetLayouts{
+            vsg::DescriptorSetLayout::create(), // set 0 (empty)
+            vds->descriptorSet->setLayout,  // set 1 (VDS)
+            _localDescriptorSet->setLayout, // set 2 (global)
+        },
+        vsg::PushConstantRanges{}
+    );
+
+    auto pipeline = vsg::ComputePipeline::create(pipelineLayout, _cullingShader);
+
+    auto bindPipeline = vsg::BindComputePipeline::create(pipeline);
+
+    auto bindGlobal = vsg::BindDescriptorSet::create(
+        VK_PIPELINE_BIND_POINT_COMPUTE,
+        pipeline->layout,
+        DESCRIPTOR_SET_GLOBAL,
+        _localDescriptorSet);
+
+    auto bindVDS = vsg::BindDescriptorSet::create(
+        VK_PIPELINE_BIND_POINT_COMPUTE,
+        pipeline->layout,
+        DESCRIPTOR_SET_VDS,
+        vds->descriptorSet);
+
+    // launches the compute shader:
+    BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
+    auto dispatch = vsg::Dispatch::create(
+        (params->numTiles.x + FRUSTUM_GRID_TILES_PER_THREAD_GROUP - 1u) / FRUSTUM_GRID_TILES_PER_THREAD_GROUP,
+        (params->numTiles.y + FRUSTUM_GRID_TILES_PER_THREAD_GROUP - 1u) / FRUSTUM_GRID_TILES_PER_THREAD_GROUP,
+        1u);
+
+    // a general-purpose memory barrier to ensure that the compute shader writes are visible to subsequent reads
+    auto memoryBarrier = vsg::MemoryBarrier::create(
+        VK_ACCESS_SHADER_WRITE_BIT,
+        VK_ACCESS_SHADER_READ_BIT);
+
+    auto pipelineBarrier = vsg::PipelineBarrier::create(
+        VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT,
+        VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
+        0, // dependency flags
+        memoryBarrier);
+
+    view.commands = vsg::Commands::create();
+    view.commands->addChild(bindPipeline);
+    view.commands->addChild(bindGlobal);
+    view.commands->addChild(bindVDS);
+    view.commands->addChild(dispatch);
+    view.commands->addChild(pipelineBarrier);
+
+    vsgcontext->compile(view.commands);
 }
 
 void
@@ -286,32 +387,50 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
             if (gpuCapacity == 0u)
                 continue;
 
-            std::uint32_t written = 0u;
+            std::uint32_t decalIndex = 0u;
 
-            // Resolve the local matrix for each bbox
+            auto& vp = vds->viewportData->at(0);
+            RenderingState rs{
+                viewID, (FrameCountType)~0,
+                { vp[0], vp[1], vp[2], vp[3] }
+            };
+
             _registry.read([&](entt::registry& reg)
             {
-                auto updateDecal = [&](auto entity, auto& decal, auto& active, auto& visibility, auto& transformDetail)
+                auto updateDecal = [&](auto entity, auto& decal, auto& decalDetail, auto& active, auto& visibility, auto& transformDetail)
                 {
-                    // slot 0 is the count header
-                    if (written + 1u >= gpuCapacity)
+                    ROCKY_HARD_ASSERT(decalIndex + 1u < gpuCapacity, "DecalSystemNode: decal SSBO overflow");
+
+                    if (!visible(visibility, rs))
+                    {
                         return;
+                    }
 
                     // first decal just holds the count, so advance first:
                     ++gpudecal;
-                    ++written;
+                    ++decalIndex;
 
-                    // Ensure a fully initialized record every frame.
-                    gpudecal->count = 0;
+                    // update the detail record with the index of this decal in the SSBO,
+                    // so we can find it later if we need to change the style
+                    decalDetail.ssboIndex = decalIndex;
+                    
+                    // store the texture arena index if we have a texture; else -1 to indicate no texture.
+                    gpudecal->textureIndex = -1;
+                    if (decal.style != entt::null)
+                    {
+                        if (auto* styleDetail = reg.try_get<DecalStyleDetail>(decal.style))
+                        {
+                            gpudecal->textureIndex = styleDetail->descriptorImageIndex;
+                        }
+                    }
 
-                    //auto mvm = ;
                     auto model = to_glm(transformDetail.views[viewID].model);
                     auto mvm = vm * model;
 
                     auto localScale = glm::dvec3(
-                        glm::length(glm::dvec3(mvm[0])), //transformDetail.sync.localMatrix[0])),
-                        glm::length(glm::dvec3(mvm[1])), //transformDetail.sync.localMatrix[1])),
-                        glm::length(glm::dvec3(mvm[2]))); //transformDetail.sync.localMatrix[2])));
+                        glm::length(glm::dvec3(mvm[0])),
+                        glm::length(glm::dvec3(mvm[1])),
+                        glm::length(glm::dvec3(mvm[2])));
 
                     if (localScale.x <= 0.0) localScale.x = 1.0;
                     if (localScale.y <= 0.0) localScale.y = 1.0;
@@ -348,14 +467,13 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     }
                 };
 
-                reg.view<Decal, ActiveState, Visibility, TransformDetail>().each(updateDecal);
+                reg.view<Decal, DecalDetail, ActiveState, Visibility, TransformDetail>().each(updateDecal);
             });
 
             // Keep the shader-side loop bound aligned with what we actually wrote.
             BufferAccess<DecalGPU> decalHeader(_sharedRenderData->decalsBuf);
-            decalHeader->count = static_cast<std::int32_t>(written);
-
-            requestUpload(_sharedRenderData->decalsBuf->bufferInfoList);
+            decalHeader->count = decalIndex;
+            decalHeader.dirty();
         }
         else
         {
@@ -372,9 +490,6 @@ void
 DecalSystemNode::initialize(VSGContext vsgcontext)
 {
     _sharedRenderData = vsgcontext->sharedRenderData;
-
-    // no likey
-    _vsgcontext = vsgcontext;
 
     _cullingShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_COMPUTE_BIT,
@@ -398,7 +513,9 @@ DecalSystemNode::update(VSGContext vsgcontext)
     if (status.failed())
         return;
 
-    growGPUBuffersIfNeeded(vsgcontext);
+    updateStyles(vsgcontext);
+
+    resizeGPUBuffersIfNeeded(vsgcontext);
 
     updateDecalsSSBO(vsgcontext);
 

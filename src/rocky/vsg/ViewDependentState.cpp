@@ -18,18 +18,6 @@ ViewDependentStateEx::ViewDependentStateEx(vsg::ref_ptr<vsg::View> vsgView, vsg:
 }
 
 void
-ViewDependentStateEx::recompileDescriptorSets()
-{
-    if (this->descriptorSet)
-    {
-        // immediately release and recompile the descriptor set to reflect allocation changes.
-        this->descriptorSet->release();
-        vsg::Context context(_device);
-        this->descriptorSet->compile(context);
-    }
-}   
-
-void
 ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 {
     Inherit::init(req);
@@ -48,16 +36,11 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
         BINDING_VDS_FRUSTUMS, TYPE_VDS_FRUSTUMS,
         _device);
 
-    GPUOnlyBufferAccess<DecalTileGPU> decalTiles(decalTilesBuf,
-        BINDING_VDS_DECAL_TILES, TYPE_VDS_DECAL_TILES,
-        _device);
-
     // add it! It will automatically compile along with the others.
     //this->descriptorSet->descriptors.emplace_back(_myDescriptors.ubo);
     this->descriptorSet->descriptors.emplace_back(renderParamsBuf);
     this->descriptorSet->descriptors.emplace_back(frustumParamsBuf);
     this->descriptorSet->descriptors.emplace_back(frustumsBuf);
-    this->descriptorSet->descriptors.emplace_back(decalTilesBuf);
 
     // add its shader-stage binding to the layout.
     this->descriptorSetLayout->addBinding(BINDING_VDS_RENDER_PARAMS,
@@ -69,10 +52,20 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
     this->descriptorSetLayout->addBinding(BINDING_VDS_FRUSTUMS,
         TYPE_VDS_FRUSTUMS, 1, VK_SHADER_STAGE_ALL);
 
+
+#ifdef ROCKY_HAS_DECALS
+
+    GPUOnlyBufferAccess<DecalTileGPU> decalTiles(decalTilesBuf,
+        BINDING_VDS_DECAL_TILES, TYPE_VDS_DECAL_TILES,
+        _device);
+
+    this->descriptorSet->descriptors.emplace_back(decalTilesBuf);
+
     this->descriptorSetLayout->addBinding(BINDING_VDS_DECAL_TILES,
         TYPE_VDS_DECAL_TILES, 1, VK_SHADER_STAGE_ALL);
-}
 
+#endif // ROCKY_HAS_DECALS
+}
 
 void
 ViewDependentStateEx::traverse(vsg::RecordTraversal& rt) const
@@ -106,11 +99,11 @@ ROCKY_NAMESPACE::addViewDependentStateToShaderSet(vsg::ShaderSet* shaderSet, VkS
     // VSG view-dependent data. You must include it all even if you only intend to use
     // one of the uniforms.
     shaderSet->customDescriptorSetBindings.push_back(
-        vsg::ViewDependentStateBinding::create(VDS_DESCRIPTOR_SET_INDEX));
+        vsg::ViewDependentStateBinding::create(DESCRIPTOR_SET_VDS));
 
     shaderSet->addDescriptorBinding(
         "vsg_lights", "",
-        VDS_DESCRIPTOR_SET_INDEX,
+        DESCRIPTOR_SET_VDS,
         BINDING_VDS_VSG_LIGHTS,
         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1,
         stageFlags, {});
@@ -118,38 +111,40 @@ ROCKY_NAMESPACE::addViewDependentStateToShaderSet(vsg::ShaderSet* shaderSet, VkS
     // VSG viewport state
     shaderSet->addDescriptorBinding(
         "vsg_viewports", "",
-        VDS_DESCRIPTOR_SET_INDEX,
+        DESCRIPTOR_SET_VDS,
         BINDING_VDS_VSG_VIEWPORTS,
         VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1,
         stageFlags, {});
 
     shaderSet->addDescriptorBinding(
         "rockyvds_render_params", "",
-        VDS_DESCRIPTOR_SET_INDEX,
+        DESCRIPTOR_SET_VDS,
         BINDING_VDS_RENDER_PARAMS,
         TYPE_VDS_RENDER_PARAMS, 1,
         stageFlags, {});
 
     shaderSet->addDescriptorBinding(
         "rockyvds_frustum_grid_params", "",
-        VDS_DESCRIPTOR_SET_INDEX,
+        DESCRIPTOR_SET_VDS,
         BINDING_VDS_FRUSTUM_GRID_PARAMS,
         TYPE_VDS_FRUSTUM_GRID_PARAMS, 1,
         stageFlags, {});
 
     shaderSet->addDescriptorBinding(
         "rockyvds_frustums", "",
-        VDS_DESCRIPTOR_SET_INDEX,
+        DESCRIPTOR_SET_VDS,
         BINDING_VDS_FRUSTUMS,
         TYPE_VDS_FRUSTUMS, 1,
         stageFlags, {});
 
+#ifdef ROCKY_HAS_DECALS
     shaderSet->addDescriptorBinding(
         "rockyvds_decal_tiles", "",
-        VDS_DESCRIPTOR_SET_INDEX,
+        DESCRIPTOR_SET_VDS,
         BINDING_VDS_DECAL_TILES,
         TYPE_VDS_DECAL_TILES, 1,
         stageFlags, {});
+#endif
 }
 
 void
@@ -161,5 +156,8 @@ ROCKY_NAMESPACE::enableViewDependentStateUniforms(vsg::GraphicsPipelineConfigura
     gpc->enableDescriptor("rockyvds_render_params");
     gpc->enableDescriptor("rockyvds_frustum_grid_params");
     gpc->enableDescriptor("rockyvds_frustums");
+
+#ifdef ROCKY_HAS_DECALS
     gpc->enableDescriptor("rockyvds_decal_tiles");
+#endif
 }

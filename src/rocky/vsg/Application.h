@@ -204,7 +204,7 @@ namespace ROCKY_NAMESPACE
     //! @param x X coordinate in window space
     //! @param y Y coordinate in window space
     //! @return GeoPoint at the given window coordinates
-    extern ROCKY_EXPORT Result<GeoPoint>
+    extern ROCKY_EXPORT Result<TerrainIntersection>
         geoPointAtWindowCoords(View& view, int x, int y);
 
     //! Return the GeoPoint at the given window coordinates (e.g., mouse position).
@@ -212,7 +212,7 @@ namespace ROCKY_NAMESPACE
     //! @param x X coordinate in window space
     //! @param y Y coordinate in window space
     //! @return GeoPoint at the given window coordinates
-    extern ROCKY_EXPORT std::tuple<Result<GeoPoint>, View>
+    extern ROCKY_EXPORT std::tuple<Result<TerrainIntersection>, View>
         geoPointAtWindowCoords(Window& window, int x, int y);
 }
 

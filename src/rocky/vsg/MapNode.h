@@ -86,21 +86,6 @@ namespace ROCKY_NAMESPACE
         CallbackSub _updateSub;
 
         void configureState(VSGContext context);
-
-        //! Holds any terrain-wide textures and uniforms.
-        struct MapDescriptors
-        {
-            struct Uniforms
-            {
-                vsg::vec2 ellipsoidAxes{ 1.0, 1.0 };
-                float _padding[2];
-            };
-            static_assert(sizeof(Uniforms) % 16 == 0, "MapDescriptors::Uniforms must be a multiple of 16 bytes in size");
-
-            vsg::ref_ptr<vsg::Data> data;
-            vsg::ref_ptr<vsg::Descriptor> ubo;
-        };
-        MapDescriptors _mapDescriptors;
     };
 }
 

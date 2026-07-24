@@ -6,6 +6,9 @@
  
 // GLSL include file - decal subsystem
 #include "rocky.defines.h.glsl"
+#ifdef ROCKY_HAS_DECALS
+
+#extension GL_EXT_nonuniform_qualifier : enable
 
 #ifdef SSBOS_ARE_WRITABLE
 #define DECALS_ACCESS
@@ -26,7 +29,7 @@ struct Decal
     float a; // halfX extent (ortho) or zmin (persp)
     float b; // halfY extent (ortho) or zmax (persp)
     float c; // halfZ extent (ortho) or culling radius (persp)
-    int count; // used by element 0 as total decal count
+    int textureIndex; // used by element 0 as total decal count
     float distance; // > 0 = persp
     float tanHalfFovY;
     float aspect;
@@ -34,16 +37,20 @@ struct Decal
 };
 
 // SSBO containing the output tiles that pass cull (GPU only)
-layout(std430, set = VDS_DESCRIPTOR_SET_INDEX, binding = BINDING_VDS_DECAL_TILES) DECALS_ACCESS buffer DecalTiles
+layout(std430, set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_DECAL_TILES) DECALS_ACCESS buffer DecalTiles
 {
-    DecalTile decalTiles[];
-};
+    DecalTile tile[];
+}
+b_decalTiles;
 
 // SSBO containing the input decals to be culled
-layout(std430, binding = BINDING_DECALS) DECALS_ACCESS buffer Decals
+layout(std430, set = DESCRIPTOR_SET_GLOBAL, binding = BINDING_DECALS) DECALS_ACCESS buffer Decals
 {
-    Decal decals[];
-};
+    Decal decal[];
+}
+b_decals;
+
+layout(set = DESCRIPTOR_SET_GLOBAL, binding = BINDING_DECAL_TEXTURES) uniform sampler2D u_decalTextures[MAX_NUM_DECAL_TEXTURES];
 
 
 void applyDecals(inout vec3 color, in vec3 vertexVs, in vec2 fragCoord)
@@ -57,11 +64,11 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec2 fragCoord)
     //    return;
     //}
 
-    DecalTile tile = decalTiles[index];
+    DecalTile tile = b_decalTiles.tile[index];
 
     for(int i=0; i < tile.count; ++i)
     {
-        Decal decal = decals[tile.indices[i]];
+        Decal decal = b_decals.decal[tile.indices[i]];
 
         // tranform the view-space vertex into unit-decal-space
         vec3 local = (decal.mvmInverse * vec4(vertexVs, 1.0)).xyz;
@@ -91,9 +98,7 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec2 fragCoord)
         }
         else // orthographic
         {
-            vec3 bbox = vec3(0.5); //vec3(decal.a, decal.b, decal.c); // decal.a,b,c = tangent bbox half-extents
-            //vec3 bbox = vec3(decal.a, decal.b, decal.c); // decal.a,b,c = tangent bbox half-extents
-            //if (all(lessThanEqual(abs(local), bbox)))
+            vec3 bbox = vec3(0.5);
             if (abs(local.x) <= bbox.x && abs(local.y) <= bbox.y && abs(local.z) <= bbox.z)
             {
                 //uv = (local.xy / bbox.xy + vec2(1.0)) * vec2(0.5);
@@ -104,17 +109,20 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec2 fragCoord)
 
         if (inside)
         {
-            //int ti = decal.textureIndex;
-            //vec4 tex = ti >= 0 ? texture(sampler2D(decalTextures[ti]), uv) : vec4(1, 0, 0, 1);
-            //color.rgb = mix(color.rgb, tex.rgb, tex.a * decal.opacity * (1.0 - u_debugTiles));
-            
-            // DEBUG:            
-            // make a RGB color out of uv coords for debugging viz:
-            vec2 p = fract(uv * 10.0);
-            float grid = step(0.05, p.x) * step(0.05, p.y);
-            vec3 decalColor = vec3(fract(uv), 0.0) * grid;
-
-            color.rgb = mix(color.rgb, decalColor, 0.75);
+            int ti = decal.textureIndex;
+            if (ti >= 0) 
+            {
+                //vec4 tex = texture(u_decalTextures[ti], uv);
+                vec4 tex = texture(u_decalTextures[nonuniformEXT(ti)], uv);
+                color.rgb = mix(color.rgb, tex.rgb, tex.a * (1.0 - u_debugTiles));
+            }
+            else
+            {
+                vec2 p = fract(uv * 10.0);
+                float grid = step(0.05, p.x) * step(0.05, p.y);
+                vec3 decalColor = vec3(fract(uv), 0.0) * grid;
+                color.rgb = mix(color.rgb, decalColor, 0.75);
+            }
         }
     }
 
@@ -123,3 +131,5 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec2 fragCoord)
     vec3 debugColor = vec3(0, ramp, ramp);
     color.rgb = mix(color.rgb, debugColor, clamp(float(tile.count), 0, 1) * u_debugTiles * 0.5);
 }
+
+#endif // ROCKY_HAS_DECALS

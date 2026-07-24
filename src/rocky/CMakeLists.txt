@@ -8,6 +8,7 @@ endif()
 # version variables found in the CMake configuration.
 set(version_h ${ROCKY_BUILDTIME_INCLUDE_DIR}/rocky/Version.h)
 
+rocky_glob(TEMPLATES_CORE *.in)
 rocky_glob(HEADERS_CORE *.h)
 list(APPEND HEADERS_CORE ${version_h})
 rocky_glob(SOURCES_CORE *.cpp tinyxml/*.cpp)
@@ -245,7 +246,7 @@ else()
 endif()
 
 add_library(rocky ${BUILD_TYPE}
-    ${HEADERS_CORE} ${SOURCES_CORE}
+    ${HEADERS_CORE} ${SOURCES_CORE} ${TEMPLATES_CORE}
     ${HEADERS_ECS} ${SOURCES_ECS}
     ${HEADERS_CONTRIB} ${SOURCES_CONTRIB}    
     ${HEADERS_NO_INSTALL}

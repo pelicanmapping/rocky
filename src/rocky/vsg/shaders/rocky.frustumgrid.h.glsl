@@ -16,19 +16,21 @@ struct Frustum
     vec4 planes[4];
 };
 
-layout(std140, set = VDS_DESCRIPTOR_SET_INDEX, binding = BINDING_VDS_FRUSTUM_GRID_PARAMS) uniform FrustumGridParams
+layout(std140, set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_FRUSTUM_GRID_PARAMS) uniform FrustumGridParams
 {
     mat4 u_invProjMatrix;
     ivec4 u_viewport;
     ivec2 u_numTiles;
     uint u_pixelsPerTile;
+    uint u_projIsOrtho;
     float u_debugTiles;
 };
 
-layout(std430, set = VDS_DESCRIPTOR_SET_INDEX, binding = BINDING_VDS_FRUSTUMS) FRUSTUM_GRID_ACCESS buffer Frustums
+layout(std430, set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_FRUSTUMS) FRUSTUM_GRID_ACCESS buffer Frustums
 {
-    Frustum frustums[];
-};
+    Frustum frustum[];
+}
+b_frustums;
 
 int frustumIndex(in vec2 fragCoord)
 {
@@ -61,7 +63,7 @@ vec3 frustumTileTestColor(in vec2 fragCoord, in vec3 posVs)
     if (tile < 0)
         return vec3(1, 0, 1);
 
-    Frustum f = frustums[tile];
+    Frustum f = b_frustums.frustum[tile];
 
     // fails if either the frustum or the intersection test is incorrect:
     if (!intersectsFrustum(f, posVs, 0.0))

@@ -19,7 +19,7 @@ mat3 getRotateVsToWs(in mat3 modelMatrix, in mat4 mvm)
 // get a matrix that will rotate a view-space vector into world-space
 mat3 getRotateVsToWs(in mat4 mvm)
 {
-    return mat3(u_vds.inverseViewMatrix * mvm) * transpose(mat3(mvm));
+    return mat3(u_renderParams.inverseViewMatrix * mvm) * transpose(mat3(mvm));
 }
 
 // get the parametric distance along ta ray at which it intersects an ellipsoid
@@ -143,10 +143,10 @@ vec3 projectAnchoredVertexToStereographic(in vec3 position_vs, in vec2 ellipsoid
 
 vec4 applyProjection(in vec4 position_vs, in mat4 proj)
 {
-    if (u_vds.stereographic > 0 && proj[3][3] > 0.0)
+    if (u_renderParams.stereographic > 0 && proj[3][3] > 0.0)
     {
-        mat4 viewMatrix = inverse(u_vds.inverseViewMatrix);
-        position_vs.xyz = projectVertexToStereographic(position_vs.xyz, u_vds.ellipsoidAxes, viewMatrix);
+        mat4 viewMatrix = inverse(u_renderParams.inverseViewMatrix);
+        position_vs.xyz = projectVertexToStereographic(position_vs.xyz, u_renderParams.ellipsoidAxes, viewMatrix);
     }
     return position_vs;
 }

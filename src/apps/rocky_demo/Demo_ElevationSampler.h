@@ -6,45 +6,8 @@
 #pragma once
 #include "helpers.h"
 #include <rocky/ElevationSampler.h>
+
 using namespace ROCKY_NAMESPACE;
-
-namespace
-{
-    //! VSG event handler that captures mouse actions as geopoints.
-    class ElevationSamplerMouseHandler : public vsg::Inherit<vsg::Visitor, ElevationSamplerMouseHandler>
-    {
-    public:
-        ElevationSamplerMouseHandler(Application& in_app) : app(in_app) {}
-        Callback<const GeoPoint&, const View&> onMouseMove;
-
-    protected:
-        Application& app;
-
-        struct PointAndView
-        {
-            GeoPoint point;
-            View view;
-        };
-
-        Result<PointAndView> mapPoint(vsg::PointerEvent& e) const
-        {
-            auto& window = app.display.find(e.window.ref_ptr());
-            auto&& [point, view] = geoPointAtWindowCoords(window, e.x, e.y);
-            if (point)
-                return PointAndView{ point.value(), view };
-            else
-                return Failure{};
-        }
-
-        void apply(vsg::MoveEvent& e) override
-        {
-            if (auto r = mapPoint(e))
-                onMouseMove.fire(r.value().point, r.value().view);
-            else
-                onMouseMove.fire(GeoPoint(), View());
-        }
-    };
-}
 
 auto Demo_ElevationSampler = [](Application& app)
 {
@@ -90,25 +53,24 @@ auto Demo_ElevationSampler = [](Application& app)
         sampler.cache = std::make_shared<LRUCache<TileKey, Result<GeoImage>>>(64); // tile cache
 
         // event handler to capture mouse movements:
-        auto handler = ElevationSamplerMouseHandler::create(app);
-        app.viewer->getEventHandlers().emplace_back(handler);
+        auto handler = app.viewer->getObject<GeoMouseHandler>("demo.mouse");
 
-        subs += handler->onMouseMove([&](const GeoPoint& p, const View& view)
+        subs += handler->onMouseMove([&](const TerrainIntersection& i, const View& view)
             {
-                if (p.valid())
+                if (i.point)
                 {
                     app.registry.read([&](entt::registry& r)
                         {
                             auto& transform = r.get<Transform>(entity);
-                            transform.position = p;
+                            transform.position = i.point;
                             transform.dirty(r);
                         });
 
-                    mouse = p.transform(SRS::WGS84);
+                    mouse = i.point.transform(SRS::WGS84);
 
                     viewID = view.viewID;
 
-                    sample = app.io().services().jobs.dispatch([&app, point(p)](Cancelable& c)
+                    sample = app.io().services().jobs.dispatch([&app, point(i.point)](Cancelable& c)
                         {
                             return sampler.sample(point, app.io().with(c));
                         });
@@ -131,7 +93,7 @@ auto Demo_ElevationSampler = [](Application& app)
     if (intersection)
     {
         ImGuiLTable::Text("Ray intersection", "", "");
-        GeoPoint i = intersection->transform(SRS::WGS84);
+        GeoPoint i = intersection->point.transform(SRS::WGS84);
         ImGuiLTable::Text("WGS84:", "%.2f, %.2f, %.2f", i.x, i.y, i.z);
 
         // Various coordinate spaces:
@@ -146,6 +108,7 @@ auto Demo_ElevationSampler = [](Application& app)
         ImGuiLTable::Text("World:", "%.2lf, %.2lf, %.2lf", world.x, world.y, world.z);
         ImGuiLTable::Text("View:", "%.2lf, %.2lf, %.2lf", viewPos.x / viewPos.w, viewPos.y / viewPos.w, viewPos.z / viewPos.w);
         ImGuiLTable::Text("Clip:", "%.3lf, %.3lf, %.7lf", clipPos.x / clipPos.w, clipPos.y / clipPos.w, clipPos.z / clipPos.w);
+        ImGuiLTable::Text("Normal:", "%.3lf, %.3lf, %.3lf", intersection->normal.x, intersection->normal.y, intersection->normal.z);
 
         if (sampler.layer)
         {

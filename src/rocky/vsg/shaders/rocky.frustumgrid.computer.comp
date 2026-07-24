@@ -62,13 +62,26 @@ void main()
     vec3 LR_VS = screenToView(LR).xyz;
 
     // and make the bounding planes:
-    const vec3 eye = vec3(0);
+    if (u_projIsOrtho == 1)
+    {
+        // orthographic projection matrix:
+        float minX = min(min(UL_VS.x, UR_VS.x), min(LL_VS.x, LR_VS.x));
+        float maxX = max(max(UL_VS.x, UR_VS.x), max(LL_VS.x, LR_VS.x));
+        float minY = min(min(UL_VS.y, UR_VS.y), min(LL_VS.y, LR_VS.y));
+        float maxY = max(max(UL_VS.y, UR_VS.y), max(LL_VS.y, LR_VS.y));
 
-    Frustum f;
-    f.planes[0] = createPlane(eye, LL_VS, UL_VS); // left plane
-    f.planes[1] = createPlane(eye, UR_VS, LR_VS); // right plane
-    f.planes[2] = createPlane(eye, UL_VS, UR_VS); // top plane
-    f.planes[3] = createPlane(eye, LR_VS, LL_VS); // bottom plane
-
-    frustums[tile] = f;
+        b_frustums.frustum[tile].planes[0] = vec4(1.0, 0.0, 0.0, minX);    // left
+        b_frustums.frustum[tile].planes[1] = vec4(-1.0, 0.0, 0.0, -maxX);  // right
+        b_frustums.frustum[tile].planes[2] = vec4(0.0, -1.0, 0.0, -maxY);  // top
+        b_frustums.frustum[tile].planes[3] = vec4(0.0, 1.0, 0.0, minY);    // bottom 
+    }
+    else
+    {
+        // perspective projection matrix:
+        const vec3 eye = vec3(0);
+        b_frustums.frustum[tile].planes[0] = createPlane(eye, LL_VS, UL_VS); // left plane
+        b_frustums.frustum[tile].planes[1] = createPlane(eye, UR_VS, LR_VS); // right plane
+        b_frustums.frustum[tile].planes[2] = createPlane(eye, UL_VS, UR_VS); // top plane
+        b_frustums.frustum[tile].planes[3] = createPlane(eye, LR_VS, LL_VS); // bottom plane
+    }
 }

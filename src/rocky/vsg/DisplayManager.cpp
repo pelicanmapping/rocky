@@ -293,16 +293,28 @@ DisplayManager::configureTraits(vsg::WindowTraits* traits)
     // install necessary device features
     traits->deviceFeatures->get().fillModeNonSolid = VK_TRUE;
 
-    auto& ds1 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicStateFeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT>();
+    auto& ds1 = traits->deviceFeatures->get<
+        VkPhysicalDeviceExtendedDynamicStateFeaturesEXT, 
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT>();
     ds1.extendedDynamicState = VK_TRUE;
 
-    auto& ds2 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState2FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT>();
+    auto& ds2 = traits->deviceFeatures->get<
+        VkPhysicalDeviceExtendedDynamicState2FeaturesEXT,
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_2_FEATURES_EXT>();
     ds2.extendedDynamicState2 = VK_TRUE;
 
-    // Query which extended_dynamic_state_3 features are actually supported.
-    // Some Vulkan implementations (e.g., MoltenVK on macOS) don't support all features
-    // of an extension even when the extension itself is reported as supported.
-    auto& ds3 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicState3FeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
+    auto& ds3 = traits->deviceFeatures->get<
+        VkPhysicalDeviceExtendedDynamicState3FeaturesEXT,
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
+
+    // This enables non-uniform indexing of sampler arrays in the shader
+    auto& vulkan12features = traits->deviceFeatures->get<
+        VkPhysicalDeviceVulkan12Features,
+        VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES>();
+    vulkan12features.descriptorIndexing = VK_TRUE;
+    vulkan12features.runtimeDescriptorArray = VK_TRUE; // for unsized []
+    vulkan12features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+
 
     vsg::ref_ptr<vsg::Instance> tempInstance;
     vsg::ref_ptr<vsg::PhysicalDevice> pd;
@@ -326,8 +338,10 @@ DisplayManager::configureTraits(vsg::WindowTraits* traits)
 
     if (pd && pd->vk() != VK_NULL_HANDLE)
     {
-        // Query features from existing device's physical device
-        auto supportedDS3 = pd->getFeatures<
+        // Query which extended_dynamic_state_3 features are actually supported.
+        // Some Vulkan implementations (e.g., MoltenVK on macOS) don't support all features
+        // of an extension even when the extension itself is reported as supported.
+        auto& supportedDS3 = pd->getFeatures<
             VkPhysicalDeviceExtendedDynamicState3FeaturesEXT,
             VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
 
@@ -360,7 +374,9 @@ DisplayManager::configureTraits(vsg::WindowTraits* traits)
     {
         Log()->debug("Enabling: {}", VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
         traits->deviceExtensionNames.push_back(VK_KHR_FRAGMENT_SHADER_BARYCENTRIC_EXTENSION_NAME);
-        auto& bary = traits->deviceFeatures->get<VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
+        auto& bary = traits->deviceFeatures->get<
+            VkPhysicalDeviceFragmentShaderBarycentricFeaturesKHR,
+            VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FRAGMENT_SHADER_BARYCENTRIC_FEATURES_KHR>();
         bary.fragmentShaderBarycentric = VK_TRUE;
     }
     else

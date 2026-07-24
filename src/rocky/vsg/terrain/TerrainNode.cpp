@@ -126,7 +126,7 @@ TerrainNode::TerrainNode(VSGContext vsgcontext) :
     // create the graphics pipeline to render this map
     state = std::make_shared<TerrainState>(vsgcontext);
 
-    _profileNodes = state->createTerrainStateGroup(vsgcontext);
+    state->buildTerrainStateGroup(_profileNodes, vsgcontext);
 
     if (!_profileNodes)
     {
@@ -273,13 +273,23 @@ TerrainNode::createProfiles(VSGContext vsgcontext)
 }
 
 bool
-TerrainNode::update(VSGContext context)
+TerrainNode::update(VSGContext vsgcontext)
 {
+    if (vsgcontext->sharedRenderData->sharedDescriptorsChanged(_sharedDataRevision))
+    {
+        Log()->info("TerrainNode: shared buffers changed; updating global descriptor set");
+        state->buildTerrainStateGroup(_profileNodes, vsgcontext);
+        vsgcontext->compile(_profileNodes);
+    }
+
+
     bool changes = false;
     for (auto& child : _profileNodes->children)
     {
         if (auto c = child.cast<TerrainProfileNode>())
-            changes = c->update(context) || changes;
+        {
+            changes = c->update(vsgcontext) || changes;
+        }
     }
 
     // check for settings changes
@@ -296,7 +306,7 @@ TerrainProfileNode::settings() const
     return terrain;
 }
 
-Result<GeoPoint>
+Result<TerrainIntersection>
 TerrainNode::intersect(const GeoPoint& input) const
 {
     if (!input)
@@ -329,5 +339,21 @@ TerrainNode::intersect(const GeoPoint& input) const
         lsi.intersections.begin(), lsi.intersections.end(),
         [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
 
-    return GeoPoint(renderingSRS, closest->get()->worldIntersection);
+    // given the intersection object, calcluate the normal vector at the intersection point:
+    auto verts = closest->get()->arrays.front()->cast<vsg::vec3Array>();
+    auto& indices = closest->get()->indexRatios;
+    vsg::vec3 normal = vsg::normalize(vsg::cross(
+        verts->at(indices[1].index) - verts->at(indices[0].index),
+        verts->at(indices[2].index) - verts->at(indices[0].index)));
+
+    // transform the normal into world space:
+    auto worldNormal = glm::dmat3(to_glm(closest->get()->localToWorld)) * glm::dvec3(to_glm(normal));
+
+    TerrainIntersection result;
+    result.point = GeoPoint(renderingSRS, closest->get()->worldIntersection);
+    result.normal = glm::normalize(worldNormal);
+
+    return result;
+
+    //return GeoPoint(renderingSRS, closest->get()->worldIntersection);
 }

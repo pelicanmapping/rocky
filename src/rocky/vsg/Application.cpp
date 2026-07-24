@@ -17,8 +17,7 @@
 #include <rocky/rocky_imgui.h>
 #endif
 
-#define USE_FRUSTUM_GRID_SYSTEM
-#define USE_DECAL_SYSTEM
+#define ROCKY_HAS_FRUSTUM_GRID
 
 using namespace ROCKY_NAMESPACE;
 
@@ -284,14 +283,14 @@ Application::ctor(int& argc, char** argv)
     computeSystemsNode = ECSNode::create(registry, false);
     compute->addChild(computeSystemsNode);
 
-#ifdef USE_FRUSTUM_GRID_SYSTEM
+#ifdef ROCKY_HAS_FRUSTUM_GRID
     auto fgsystem = FrustumGridSystemNode::create(registry);
     systemsNode->add(fgsystem);
     computeSystemsNode->add(fgsystem);
     vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_FRUSTUM_GRID");
 #endif
 
-#ifdef USE_DECAL_SYSTEM
+#ifdef ROCKY_HAS_DECALS
     auto decalSystem = DecalSystemNode::create(registry);
     computeSystemsNode->add(decalSystem);
     vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_DECAL_SYSTEM");
@@ -317,7 +316,7 @@ Application::ctor(int& argc, char** argv)
         }
     });
 
-#if 1
+#if 0
     // replace our context's stock disposer with vsg's:
     vsgcontext->disposer = [deleteQueue(this->deleteQueue)](vsg::ref_ptr<vsg::Object> object) {
         deleteQueue->add(object);
@@ -440,6 +439,8 @@ Application::realize()
         // max number of descriptor sets of a specific type per pool:
         //resourceHints->descriptorPoolSizes.push_back(
         //    VkDescriptorPoolSize{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 });
+
+        resourceHints->maxSlots = {4, 4};
 
         viewer->compile(resourceHints);
 
@@ -807,7 +808,7 @@ Application::onRemoveView(const Window& window, const View& view)
 
 
 
-Result<GeoPoint>
+Result<TerrainIntersection>
 ROCKY_NAMESPACE::geoPointAtWindowCoords(View& view, int x, int y)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(view, Failure_AssertionFailure);
@@ -826,11 +827,25 @@ ROCKY_NAMESPACE::geoPointAtWindowCoords(View& view, int x, int y)
         lsi.intersections.begin(), lsi.intersections.end(),
         [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
 
-    return GeoPoint(terrain->renderingSRS, closest->get()->worldIntersection);
+    // calcluate the normal vector at the intersection point:
+    auto verts = closest->get()->arrays.front()->cast<vsg::vec3Array>();
+    auto& indices = closest->get()->indexRatios;
+    vsg::vec3 normal = vsg::normalize(vsg::cross(
+        verts->at(indices[1].index) - verts->at(indices[0].index),
+        verts->at(indices[2].index) - verts->at(indices[0].index)));
+
+    // transform the normal into world space:
+    auto worldNormal = glm::dmat3(to_glm(closest->get()->localToWorld)) * glm::dvec3(to_glm(normal));
+
+    TerrainIntersection result;
+    result.point = GeoPoint(terrain->renderingSRS, closest->get()->worldIntersection);
+    result.normal = glm::normalize(worldNormal);
+
+    return result;
 }
 
 
-std::tuple<Result<GeoPoint>, View>
+std::tuple<Result<TerrainIntersection>, View>
 ROCKY_NAMESPACE::geoPointAtWindowCoords(Window& window, int x, int y)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(window, std::make_tuple(Failure_AssertionFailure, View()));

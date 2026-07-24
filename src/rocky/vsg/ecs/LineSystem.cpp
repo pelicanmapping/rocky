@@ -247,7 +247,7 @@ LineSystemNode::initialize(VSGContext vsgcontext)
         // Assemble the commands required to activate this pipeline:
         c.commands = vsg::Commands::create();
         c.commands->children.push_back(c.config->bindGraphicsPipeline);
-        c.commands->children.push_back(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, VDS_DESCRIPTOR_SET_INDEX));
+        c.commands->children.push_back(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, c.config->layout, DESCRIPTOR_SET_VDS));
     }
 
     // Set up our default style detail, which is used when a MeshStyle is missing.

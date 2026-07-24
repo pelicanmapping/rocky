@@ -21,19 +21,10 @@ layout(location = 0) in vec3 in_vertex_ts;
 layout(location = 1) in vec3 in_up_ts;
 layout(location = 2) in vec3 in_uvw;
 
-layout(set = 0, binding = BINDING_TERRAIN_ELEVATION) uniform sampler2D u_elevationTex;
-
-// uniforms (TerrainState.h)
-layout(set = 0, binding = BINDING_TERRAIN_SETTINGS) uniform TerrainSettings {
-    vec4 backgroundColor;
-    float atmosphere;
-    float lighting;
-    float debugTriangles;
-    float debugNormals;
-} u_terrain;
+layout(set = DESCRIPTOR_SET_LOCAL, binding = BINDING_TERRAIN_ELEVATION) uniform sampler2D u_elevationTex;
 
 // rocky::TerrainTileDescriptors
-layout(set = 0, binding = BINDING_TERRAIN_TILE) uniform TileData {
+layout(set = DESCRIPTOR_SET_LOCAL, binding = BINDING_TERRAIN_TILE) uniform TileData {
     mat4 elevationMatrix;
     mat4 colorMatrix;
     mat4 modelMatrix;
@@ -153,7 +144,7 @@ void main()
 
     // For lighting:
     vec3 camera_ts = -transpose(mat3(pc.modelview)) * pc.modelview[3].xyz;
-    vary.cameraWs = (u_vds.inverseViewMatrix * pc.modelview * vec4(camera_ts, 1.0)).xyz;
+    vary.cameraWs = (u_renderParams.inverseViewMatrix * pc.modelview * vec4(camera_ts, 1.0)).xyz;
     vary.lookWs = rotate_vs_to_ws * normalize(vary.vertexVs);
 
     gl_Position = pc.projection * position_vs;

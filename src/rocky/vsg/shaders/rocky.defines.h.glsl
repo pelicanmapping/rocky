@@ -2,7 +2,19 @@
 #ifndef ROCKY_DEFINES
 #define ROCKY_DEFINES
 
-#define VDS_DESCRIPTOR_SET_INDEX             1
+#define ROCKY_HAS_DECALS
+
+
+// transient/local bindings (in descriptor set 0):
+#define DESCRIPTOR_SET_LOCAL                 0
+
+#define BINDING_TERRAIN_COLOR                1
+#define BINDING_TERRAIN_ELEVATION            2
+#define BINDING_TERRAIN_TILE                 3
+
+
+// view dependent state (in descriptor set 1):
+#define DESCRIPTOR_SET_VDS                   1
 
 #define BINDING_VDS_VSG_LIGHTS               0
 #define BINDING_VDS_VSG_VIEWPORTS            1
@@ -11,17 +23,20 @@
 #define BINDING_VDS_FRUSTUMS                12
 #define BINDING_VDS_DECAL_TILES             13
 
-#define BINDING_DECALS                       7
-#define BINDING_MAP_SETTINGS                 8
-#define BINDING_TERRAIN_SETTINGS             9
+// map global state (in descriptor set 2):
+#define DESCRIPTOR_SET_GLOBAL                2
 
-#define BINDING_TERRAIN_COLOR               11
-#define BINDING_TERRAIN_ELEVATION           12
-#define BINDING_TERRAIN_TILE                13
+#define BINDING_MAP_SETTINGS                 1
+#define BINDING_TERRAIN_SETTINGS             2
+#define BINDING_DECALS                       3
+#define BINDING_DECAL_TEXTURES               4
 
 
+// configuration and limits:
+#define FRUSTUM_GRID_TILE_SIZE_PIXELS       16
 #define FRUSTUM_GRID_TILES_PER_THREAD_GROUP 16
 #define MAX_DECALS_PER_TILE                 19
+#define MAX_NUM_DECAL_TEXTURES              64
 
 
 #ifdef __cplusplus
@@ -32,6 +47,7 @@
 
 #define TYPE_VDS_DECAL_TILES          VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
 #define TYPE_DECALS                   VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+#define TYPE_DECAL_TEXTURES           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 
 #define TYPE_MAP_SETTINGS             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 #define TYPE_TERRAIN_SETTINGS         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER

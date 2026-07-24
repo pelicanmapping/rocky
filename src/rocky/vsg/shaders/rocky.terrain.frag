@@ -31,7 +31,7 @@ layout(location = 0) in Varyings {
 } vary;
 
 // uniforms (TerrainState.h)
-layout(set = 0, binding = BINDING_TERRAIN_SETTINGS) uniform TerrainSettings {
+layout(set = DESCRIPTOR_SET_GLOBAL, binding = BINDING_TERRAIN_SETTINGS) uniform TerrainSettings {
     vec4 backgroundColor;
     float atmosphere;
     float lighting;
@@ -39,7 +39,7 @@ layout(set = 0, binding = BINDING_TERRAIN_SETTINGS) uniform TerrainSettings {
     float debugNormals;
 } u_terrain;
 
-layout(set = 0, binding = BINDING_TERRAIN_COLOR) uniform sampler2D u_colorTex;
+layout(set = DESCRIPTOR_SET_LOCAL, binding = BINDING_TERRAIN_COLOR) uniform sampler2D u_colorTex;
 
 // outputs
 layout(location = 0) out vec4 outColor;
@@ -63,7 +63,7 @@ void main()
 #if defined(ROCKY_HAS_ATMOSPHERE)
     vec3 ground_color = applyAtmoColorToGround(
         outColor.rgb, vary.vertexVs, vary.lookWs,
-        vary.cameraWs, normalize(vary.sunDirEcef), u_vds.ellipsoidAxes);
+        vary.cameraWs, normalize(vary.sunDirEcef), u_renderParams.ellipsoidAxes);
 
     outColor.rgb = mix(outColor.rgb, ground_color, u_terrain.lighting * u_terrain.atmosphere);
 #endif
@@ -72,9 +72,12 @@ void main()
     vec4 lit_color = applyLighting(outColor, vary.vertexVs, normalVs);
     outColor = mix(outColor, lit_color, u_terrain.lighting);
 
-    // decals and frustum tiles
+    // debug: frustum tiles visualization:
     outColor.rgb = mix(outColor.rgb, frustumTileTestColor(gl_FragCoord.xy, vary.vertexVs), u_debugTiles);
+
+#ifdef ROCKY_HAS_DECALS
     applyDecals(outColor.rgb, vary.vertexVs, gl_FragCoord.xy);
+#endif
 
     // show triangle outlines
     applyDebugTriangles(outColor, u_terrain.debugTriangles);

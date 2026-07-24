@@ -506,7 +506,7 @@ ZLibCompressor::decompress(std::istream& fin, std::string& target) const
 #include <cxxabi.h>
 #endif
 
-detail::CallStack::CallStack()
+detail::CallStack::CallStack(bool dumpNow)
 {
 #ifdef WIN32
     HANDLE process = GetCurrentProcess();
@@ -554,4 +554,10 @@ detail::CallStack::CallStack()
     }
     free(bt);
 #endif
+
+    if (dumpNow)
+    {
+        for(auto& s : symbols)
+            std::cerr << "   " << s << std::endl;
+    }
 }

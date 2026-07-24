@@ -31,6 +31,7 @@
 #define FRUSTUM_GRID_PARAMS_UBO_NAME "u_frustumGridParams"
 #define FRUSTUMS_SSBO_NAME "u_frustums"
 #define DECALS_SSBO_NAME "u_decals"
+#define DECAL_TEXTURES_UBO_NAME "u_decalTextures"
 
 #define ATTR_VERTEX "in_vertexTs"
 #define ATTR_NORMAL "in_upTs"
@@ -195,32 +196,46 @@ TerrainState::createShaderSet(VSGContext context) const
     // "binding" (3rd param) must match "layout(location=X) in" in the vertex shader
     shaderSet->addAttributeBinding(ATTR_VERTEX, "", 0, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
     shaderSet->addAttributeBinding(ATTR_NORMAL, "", 1, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
-    shaderSet->addAttributeBinding(ATTR_UV, "", 2, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
+    shaderSet->addAttributeBinding(ATTR_UV,     "", 2, VK_FORMAT_R32G32B32_SFLOAT, vsg::vec3Array::create(1));
 
     // "binding" (4th param) must match "layout(location=X) uniform" in the shader
-    shaderSet->addDescriptorBinding(texturedefs.elevation.name, "", 0,
+    shaderSet->addDescriptorBinding(texturedefs.elevation.name, "",
+        DESCRIPTOR_SET_LOCAL,
         texturedefs.elevation.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, 
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(texturedefs.color.name, "", 0,
+    shaderSet->addDescriptorBinding(texturedefs.color.name, "",
+        DESCRIPTOR_SET_LOCAL,
         texturedefs.color.uniform_binding, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, 
         VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(TILE_UBO_NAME, "", 0,
+    shaderSet->addDescriptorBinding(TILE_UBO_NAME, "",
+        DESCRIPTOR_SET_LOCAL,
         BINDING_TERRAIN_TILE, TYPE_TERRAIN_TILE, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(TERRAIN_SETTINGS_UBO_NAME, "", 0, 
+
+    shaderSet->addDescriptorBinding(TERRAIN_SETTINGS_UBO_NAME, "",
+        DESCRIPTOR_SET_GLOBAL,
         BINDING_TERRAIN_SETTINGS, TYPE_TERRAIN_SETTINGS, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(MAP_SETTINGS_UBO_NAME, "", 0,
+    shaderSet->addDescriptorBinding(MAP_SETTINGS_UBO_NAME, "",
+        DESCRIPTOR_SET_GLOBAL,
         BINDING_MAP_SETTINGS, TYPE_MAP_SETTINGS, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(DECALS_SSBO_NAME, "", 0,
+#ifdef ROCKY_HAS_DECALS
+    shaderSet->addDescriptorBinding(DECALS_SSBO_NAME, "",
+        DESCRIPTOR_SET_GLOBAL,
         BINDING_DECALS, TYPE_DECALS, 1,
         VK_SHADER_STAGE_FRAGMENT_BIT, {});
+
+    shaderSet->addDescriptorBinding(DECAL_TEXTURES_UBO_NAME, "",
+        DESCRIPTOR_SET_GLOBAL,
+        BINDING_DECAL_TEXTURES, TYPE_DECAL_TEXTURES, MAX_NUM_DECAL_TEXTURES,
+        VK_SHADER_STAGE_FRAGMENT_BIT, {});
+#endif
 
     addViewDependentStateToShaderSet(shaderSet);
 
@@ -247,7 +262,7 @@ TerrainState::createPipelineConfig(VSGContext context) const
     // activate the arrays we intend to use
     config->enableArray(ATTR_VERTEX, VK_VERTEX_INPUT_RATE_VERTEX, 12);
     config->enableArray(ATTR_NORMAL, VK_VERTEX_INPUT_RATE_VERTEX, 12);
-    config->enableArray(ATTR_UV, VK_VERTEX_INPUT_RATE_VERTEX, 12);
+    config->enableArray(ATTR_UV,     VK_VERTEX_INPUT_RATE_VERTEX, 12);
 
     // activate the descriptors we intend to use
     config->enableTexture(texturedefs.elevation.name);
@@ -257,11 +272,10 @@ TerrainState::createPipelineConfig(VSGContext context) const
     config->enableDescriptor(TILE_UBO_NAME);
     config->enableDescriptor(TERRAIN_SETTINGS_UBO_NAME);
     config->enableDescriptor(MAP_SETTINGS_UBO_NAME);
-    config->enableDescriptor(DECALS_SSBO_NAME);
 
-#ifdef USE_FRUSTUM_GRID
-    config->enableDescriptor(FRUSTUM_GRID_PARAMS_UBO_NAME);
-    config->enableDescriptor(FRUSTUMS_SSBO_NAME);
+#ifdef ROCKY_HAS_DECALS
+    config->enableDescriptor(DECALS_SSBO_NAME);
+    config->enableDescriptor(DECAL_TEXTURES_UBO_NAME);
 #endif
 
     enableViewDependentStateUniforms(config);
@@ -279,6 +293,9 @@ TerrainState::createPipelineConfig(VSGContext context) const
     config->accept(sps);
     config->init();
 
+    ROCKY_HARD_ASSERT(config->layout, "pipelineConfig->layout is null");
+    ROCKY_HARD_ASSERT(config->bindGraphicsPipeline, "pipelineConfig->bindGraphicsPipeline is null");
+
     return config;
 }
 
@@ -288,35 +305,65 @@ TerrainState::add(vsg::ref_ptr<vsg::Descriptor> descriptor)
     _additionalDescriptors.emplace_back(descriptor);
 }
 
-vsg::ref_ptr<vsg::StateGroup>
-TerrainState::createTerrainStateGroup(VSGContext context)
+void
+TerrainState::buildTerrainStateGroup(vsg::ref_ptr<vsg::StateGroup>& stateGroup, VSGContext vsgcontext)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), {});
+    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), void());
 
     // create the configurator object:
-    pipelineConfig = createPipelineConfig(context);
-
-    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, {});
-
-    if (!_terrainDescriptors.data)
+    if (!pipelineConfig)
     {
-        // global settings uniform setup
-        _terrainDescriptors.data = vsg::ubyteArray::create(sizeof(TerrainDescriptors::Uniforms));
-        _terrainDescriptors.data->properties.dataVariance = vsg::DYNAMIC_DATA;
-        _terrainDescriptors.ubo = vsg::DescriptorBuffer::create(_terrainDescriptors.data, BINDING_TERRAIN_SETTINGS);
-
-        // initialize to the defaults
-        auto& uniforms = *static_cast<TerrainDescriptors::Uniforms*>(_terrainDescriptors.data->dataPointer());
-        uniforms = TerrainDescriptors::Uniforms();
+        pipelineConfig = createPipelineConfig(vsgcontext);
     }
 
-    // Just a StateGroup holding the graphics pipeline.
-    // We bind the view-dependent descriptor set here, but the per-tile descriptor set is bound in each TerrainTileNode.
-    auto stateGroup = vsg::StateGroup::create();
-    stateGroup->add(pipelineConfig->bindGraphicsPipeline);
-    stateGroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, VDS_DESCRIPTOR_SET_INDEX));
-    
-    return stateGroup;
+    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, void());
+
+    // global terrain settings uniform setup
+    BufferAccess<TerrainSettingsGPU> terrainSettings(
+        _terrainSettingsBuf,
+        BINDING_TERRAIN_SETTINGS, TYPE_TERRAIN_SETTINGS);
+
+    vsg::Descriptors globals {
+        _terrainSettingsBuf,
+        vsgcontext->sharedRenderData->mapSettingsBuf
+    };
+
+#ifdef ROCKY_HAS_DECALS
+    globals.emplace_back(vsgcontext->sharedRenderData->decalsBuf);
+    globals.emplace_back(vsgcontext->sharedRenderData->decalTextures);
+#endif
+
+    ROCKY_HARD_ASSERT(
+        pipelineConfig->layout->setLayouts[DESCRIPTOR_SET_GLOBAL]->bindings.size() == globals.size(),
+        "TerrainState: global descriptor count does not match set layout");
+
+    auto globalDescriptorSet = vsg::DescriptorSet::create(
+        pipelineConfig->layout->setLayouts[DESCRIPTOR_SET_GLOBAL],
+        globals);
+
+    // binds the descriptor set to the pipeline
+    auto bindGlobals = vsg::BindDescriptorSet::create(
+        VK_PIPELINE_BIND_POINT_GRAPHICS,
+        pipelineConfig->layout,
+        DESCRIPTOR_SET_GLOBAL,
+        globalDescriptorSet
+    );
+
+    if (!stateGroup)
+    {
+        stateGroup = vsg::StateGroup::create();
+    }
+
+    auto old = stateGroup->stateCommands;
+
+    stateGroup->stateCommands = vsg::StateCommands {
+        pipelineConfig->bindGraphicsPipeline,
+        vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineConfig->layout, DESCRIPTOR_SET_VDS),
+        bindGlobals
+    };
+
+    for(auto& command : old)
+        vsgcontext->dispose(command);
 }
 
 TerrainTileRenderModel
@@ -414,25 +461,34 @@ TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel
     uniforms.span = key.extent().height(Units::METERS);
     descriptors.uniforms = vsg::DescriptorBuffer::create(ubo, BINDING_TERRAIN_TILE);
 
-    // make the descriptor set, including terrain settings UBO and external UBOs
-    vsg::Descriptors allDescriptors{ 
-        descriptors.elevation, 
-        descriptors.color, 
-        descriptors.uniforms, 
-        _terrainDescriptors.ubo,
-        vsgcontext->sharedRenderData->decalsBuf
-#ifdef USE_FRUSTUM_GRID
-        ,
-        vsgcontext->sharedRenderData->views[0].paramsBuf,
-        vsgcontext->sharedRenderData->views[0].frustumsBuf
+#if 0
+    // Ensure texture descriptors are always valid before creating the descriptor set.
+    if (!descriptors.elevation)
+        descriptors.elevation = defaultTileDescriptors.elevation;
+
+    if (!descriptors.color)
+        descriptors.color = defaultTileDescriptors.color;
 #endif
+
+    ROCKY_HARD_ASSERT(descriptors.elevation, "TerrainState: elevation descriptor is null");
+    ROCKY_HARD_ASSERT(!descriptors.elevation->imageInfoList.empty(), "TerrainState: elevation imageInfoList is empty");
+    ROCKY_HARD_ASSERT(descriptors.elevation->imageInfoList[0], "TerrainState: elevation imageInfo[0] is null");
+    ROCKY_HARD_ASSERT(descriptors.elevation->imageInfoList[0]->imageView, "TerrainState: elevation imageView is null");
+
+    ROCKY_HARD_ASSERT(descriptors.color, "TerrainState: color descriptor is null");
+    ROCKY_HARD_ASSERT(!descriptors.color->imageInfoList.empty(), "TerrainState: color imageInfoList is empty");
+    ROCKY_HARD_ASSERT(descriptors.color->imageInfoList[0], "TerrainState: color imageInfo[0] is null");
+    ROCKY_HARD_ASSERT(descriptors.color->imageInfoList[0]->imageView, "TerrainState: color imageView is null");
+
+    // descriptor set:
+    vsg::Descriptors allDescriptors{
+        descriptors.elevation,
+        descriptors.color,
+        descriptors.uniforms
     };
 
-    // add any "user" descriptors (including the map's)
-    allDescriptors.insert(allDescriptors.end(), _additionalDescriptors.begin(), _additionalDescriptors.end());
-    
     auto descriptorSet = vsg::DescriptorSet::create(
-        pipelineConfig->layout->setLayouts[0],
+        pipelineConfig->layout->setLayouts[DESCRIPTOR_SET_LOCAL],
         allDescriptors
     );
 
@@ -440,11 +496,10 @@ TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel
     descriptors.bind = vsg::BindDescriptorSet::create(
         VK_PIPELINE_BIND_POINT_GRAPHICS,
         pipelineConfig->layout,
-        0, // first set
+        DESCRIPTOR_SET_LOCAL, // first set
         descriptorSet
     );
 
-    // Compile the objects. Everything should be under the bind command.
     vsgcontext->compile(descriptors.bind);
 
     return renderModel;
@@ -460,30 +515,30 @@ TerrainState::updateProfile(const Profile& profile)
 void
 TerrainState::updateSettings(TerrainNode& terrain)
 {    
-    BufferAccess<TerrainDescriptors::Uniforms> settings(_terrainDescriptors.ubo);
+    BufferAccess<TerrainSettingsGPU> settings(_terrainSettingsBuf);
 
     if (settings->backgroundColor != terrain.backgroundColor.value())
     {
         settings->backgroundColor = terrain.backgroundColor.value();
-        _terrainDescriptors.data->dirty();
+        settings.dirty();
     }
 
     if (settings->debugTriangles != (terrain.debugTriangles.value() ? 1.0f : 0.0f))
     {
         settings->debugTriangles = terrain.debugTriangles.value() ? 1.0f : 0.0f;
-        _terrainDescriptors.data->dirty();
+        settings.dirty();
     }
 
     if (settings->applyLighting != (terrain.lighting.value() ? 1.0f : 0.0f))
     {
         settings->applyLighting = terrain.lighting.value() ? 1.0f : 0.0f;
-        _terrainDescriptors.data->dirty();
+        settings.dirty();
     }
 
     if (settings->debugNormals != (terrain.debugNormals.value() ? 1.0f : 0.0f))
     {
         settings->debugNormals = terrain.debugNormals.value() ? 1.0f : 0.0f;
-        _terrainDescriptors.data->dirty();
+        settings.dirty();
     }
 
     if (terrain.wireframe && (_wireframe->referenceCount() == 1))

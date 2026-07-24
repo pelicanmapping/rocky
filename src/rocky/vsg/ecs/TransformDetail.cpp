@@ -145,7 +145,7 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
         view.revision = sync.revision;
 
         // first time through, cache information about the world SRS and ellipsoid for this view.
-        if (!cache.pos_to_world)
+        if (!cache.pos_to_world || sync.position.srs != cache.pos_to_world.from())
         {
             if (record.getValue("rocky.worldsrs", cache.world_srs))
             {

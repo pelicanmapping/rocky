@@ -83,6 +83,7 @@ namespace ROCKY_NAMESPACE
 
         unsigned _firstLOD = 0u;
         CallbackSubscriptions _subs;
+        Revision _sharedDataRevision = 0;
 
     private:
 

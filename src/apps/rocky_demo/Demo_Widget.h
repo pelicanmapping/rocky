@@ -15,7 +15,7 @@ namespace
         DemoWidgetMouseHandler(Application& in_app) : app(in_app) {}
         std::optional<vsg::ButtonPressEvent> _press;
 
-        Callback<const GeoPoint&> onClick;
+        Callback<const TerrainIntersection&> onClick;
 
         void apply(vsg::ButtonPressEvent& e) override
         {
@@ -33,10 +33,10 @@ namespace
                 if (dx < 5 && dy < 5) // click threshold
                 {
                     auto& window = app.display.find(_press->window.ref_ptr());
-                    auto&& [point, view] = geoPointAtWindowCoords(window, _press->x, _press->y);
-                    if (point)
+                    auto&& [isect, view] = geoPointAtWindowCoords(window, _press->x, _press->y);
+                    if (isect)
                     {
-                        onClick.fire(point.value());
+                        onClick.fire(isect.value());
                         e.handled = true;
                     }
                     
@@ -60,15 +60,15 @@ auto Demo_Widget = [](Application& app)
         auto handler = DemoWidgetMouseHandler::create(app);
         app.viewer->getEventHandlers().emplace_back(handler);
 
-        sub = handler->onClick([&](const GeoPoint& p)
+        sub = handler->onClick([&](const TerrainIntersection& isect)
             {
-                if (move_widget_on_map_click)
+                if (isect.point && move_widget_on_map_click)
                 {
                     app.registry.read([&](entt::registry& r)
                         {
                             auto& transform = r.get<Transform>(entity);
                             auto old = transform.position.transform(SRS::WGS84);
-                            auto pos = p.transform(SRS::WGS84);
+                            auto pos = isect.point.transform(SRS::WGS84);
                             pos.z = old.z;
                             transform.position = pos;
                             transform.dirty(r);

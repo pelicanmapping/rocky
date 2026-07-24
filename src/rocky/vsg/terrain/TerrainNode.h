@@ -22,6 +22,12 @@ namespace ROCKY_NAMESPACE
     class GeoPoint;
     class TerrainNode;
 
+    struct TerrainIntersection
+    {
+        GeoPoint point;
+        glm::vec3 normal;
+    };
+
     /**
     * Node that renders a terrain (or part of one) in a specific tiling profile.
     */
@@ -79,7 +85,7 @@ namespace ROCKY_NAMESPACE
     public:
         
         //! Intersect a point with the loaded terrain geometry.
-        Result<GeoPoint> intersect(const GeoPoint& input) const;
+        Result<TerrainIntersection> intersect(const GeoPoint& input) const;
 
     public:
         //! Construct a new terrain node
@@ -136,6 +142,7 @@ namespace ROCKY_NAMESPACE
         CallbackSubs _callbacks;
         std::vector<Layer::Ptr> _terrainLayers;
         std::shared_ptr<SharedRenderData> _sharedRenderData;
+        Revision _sharedDataRevision = 0;
         friend class TerrainState;
     };
 }

@@ -16,21 +16,15 @@ namespace ROCKY_NAMESPACE
     class TerrainNode;
 
     //! Holds any terrain-wide textures and uniforms.
-    struct TerrainDescriptors
+    struct TerrainSettingsGPU
     {
-        struct Uniforms
-        {
-            glm::fvec4 backgroundColor = Color("#08AEE0");
-            float applyAtmosphere = 1.0f;
-            float applyLighting = 0.0f;
-            float debugTriangles = 0.0f;
-            float debugNormals = 0.0f;
-        };
-        static_assert(sizeof(Uniforms) % 16 == 0, "TerrainDescriptors::Uniforms must be a multiple of 16 bytes in size");
-
-        vsg::ref_ptr<vsg::Data> data;
-        vsg::ref_ptr<vsg::DescriptorBuffer> ubo;
+        glm::fvec4 backgroundColor = Color("#08AEE0");
+        float applyAtmosphere = 1.0f;
+        float applyLighting = 0.0f;
+        float debugTriangles = 0.0f;
+        float debugNormals = 0.0f;
     };
+    static_assert(sizeof(TerrainSettingsGPU) % 16 == 0, "TerrainSettingsGPU::Uniforms must be a multiple of 16 bytes in size");
 
     //! Descriptors for a single terrain tile.
     struct TerrainTileDescriptors
@@ -97,7 +91,7 @@ namespace ROCKY_NAMESPACE
         ~TerrainState();
 
         //! Configures an existing stategroup for rendering terrain
-        vsg::ref_ptr<vsg::StateGroup> createTerrainStateGroup(VSGContext context);
+        void buildTerrainStateGroup(vsg::ref_ptr<vsg::StateGroup>& sg, VSGContext context);
 
         //! Add an external descriptor that should be bound to the pipeline.
         void add(vsg::ref_ptr<vsg::Descriptor>);
@@ -177,7 +171,7 @@ namespace ROCKY_NAMESPACE
         texturedefs;
 
         // terrain-wide settings, etc.
-        TerrainDescriptors _terrainDescriptors;
+        vsg::ref_ptr<vsg::DescriptorBuffer> _terrainSettingsBuf;
 
         // descriptors added via add() method
         vsg::Descriptors _additionalDescriptors;

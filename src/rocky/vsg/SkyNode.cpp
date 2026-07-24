@@ -229,7 +229,7 @@ namespace
         stategroup->add(pipelineConfig->bindGraphicsPipeline);
         stategroup->add(bindDescriptorSet);
         stategroup->add(vsg::BindViewDescriptorSets::create(VK_PIPELINE_BIND_POINT_GRAPHICS, 
-            pipelineConfig->layout, VDS_DESCRIPTOR_SET_INDEX));
+            pipelineConfig->layout, DESCRIPTOR_SET_VDS));
 
         return stategroup;
     }

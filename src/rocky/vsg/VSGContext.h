@@ -35,7 +35,7 @@ namespace ROCKY_NAMESPACE
      * Rocky runtime context to use with a VSG-based application.
      * Use VSGContextFactory::create to VSGContext instance.
      */
-    class ROCKY_EXPORT VSGContextImpl : public ContextImpl
+    class ROCKY_EXPORT VSGContextImpl : public ContextImpl, public ObjectLifecycle
     {
     public:
         //! VSG viewer
@@ -100,7 +100,7 @@ namespace ROCKY_NAMESPACE
         //! many compile operations as possible (e.g., with vsg::Objects) for good
         //! performance.
         //! @return the compile result, which you should use to check for errors.
-        vsg::CompileResult compile(vsg::ref_ptr<vsg::Object> object);
+        vsg::CompileResult compile(vsg::ref_ptr<vsg::Object> object) override;
 
         //! Destroys a VSG object, eventually. 
         //! Call this to get rid of descriptor sets you plan to replace.
@@ -109,7 +109,7 @@ namespace ROCKY_NAMESPACE
         //! compiling new objects, which will result in a validation error
         //! and leaked memory.
         //! https://github.com/vsg-dev/VulkanSceneGraph/discussions/949
-        void dispose(vsg::ref_ptr<vsg::Object> object);
+        void dispose(vsg::ref_ptr<vsg::Object> object) override;
 
         //! Queues a bufferinfo list for transfer to the GPU. This is an alternative
         //! to marking the buffer as DYNAMIC_DATA and marking it dirty(), which
@@ -132,6 +132,9 @@ namespace ROCKY_NAMESPACE
 
         //! Utility to compile a new rendergraph before adding it to a scene.
         void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window);
+
+        //! Utility to safely recompile a descriptor set.
+        void recompileDescriptorSet(vsg::ref_ptr<vsg::DescriptorSet> descriptorSet);
 
         //! Destructor
         virtual ~VSGContextImpl();

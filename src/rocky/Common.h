@@ -124,6 +124,15 @@ namespace ROCKY_NAMESPACE
         bool operator<(const NamedFunction& other) const { return id < other.id; }
         NamedFunction(void* in_in, std::function<void()> in_func) : id(in_in), func(in_func) { }
     };
+
+    namespace detail
+    {
+        struct ROCKY_EXPORT CallStack
+        {
+            CallStack(bool dumpNow =false);
+            std::vector<std::string> symbols;
+        };
+    }
 }
 
 #define ROCKY_ABOUT(NAME, VER) namespace { struct __about_##NAME { __about_##NAME() { rocky::ContextImpl::about().insert(std::string(#NAME) + " " + VER); } }; __about_##NAME about_##NAME; }
@@ -137,10 +146,9 @@ namespace ROCKY_NAMESPACE
 #endif
 
 #define ROCKY_QUIET_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << ""; }
-#define ROCKY_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; }
-#define ROCKY_SOFT_ASSERT_AND_RETURN(EXPR, RETVAL, ...) if(!(EXPR)) { std::cerr << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; return RETVAL; }
-#define ROCKY_IF_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; } else
-#define ROCKY_HARD_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << "FATAL ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; abort(); }
+#define ROCKY_SOFT_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; ROCKY_NAMESPACE::detail::CallStack(true); }
+#define ROCKY_SOFT_ASSERT_AND_RETURN(EXPR, RETVAL, ...) if(!(EXPR)) { std::cerr << "ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; ROCKY_NAMESPACE::detail::CallStack(true); return RETVAL; }
+#define ROCKY_HARD_ASSERT(EXPR, ...) if(!(EXPR)) { std::cerr << "FATAL ASSERTION FAILURE (" << __func__ << " @ " << ROCKY_FILE << ":" << __LINE__ << ") " #EXPR " ..." << __VA_ARGS__ "" << std::endl; ROCKY_NAMESPACE::detail::CallStack(true); abort(); }
 
 #define ROCKY_HARD_ASSERT_STATUS(STATUS) \
     if(STATUS .failed()) { std::cerr \

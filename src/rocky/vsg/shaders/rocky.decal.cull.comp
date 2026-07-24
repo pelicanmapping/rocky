@@ -48,26 +48,26 @@ void main()
     uint tile = gl_GlobalInvocationID.y * u_numTiles.x + gl_GlobalInvocationID.x;
 
     // Defensive bounds checks in case frustum/decal-tile buffers lag a resize.
-    uint frustumCount = uint(frustums.length());
-    uint decalTileCount = uint(decalTiles.length());
+    uint frustumCount = uint(b_frustums.frustum.length());
+    uint decalTileCount = uint(b_decalTiles.tile.length());
     if (tile >= frustumCount || tile >= decalTileCount)
         return;
 
-    Frustum frustum = frustums[tile];
+    Frustum frustum = b_frustums.frustum[tile];
 
-    uint total = uint(decals[0].count); // first decal just holds the count
+    uint total = uint(b_decals.decal[0].textureIndex); // first decal just holds the count in its texture index field
     uint found = 0;
 
     for (uint i = 1; i < total + 1 && found < MAX_DECALS_PER_TILE; ++i)
     {
-        if (intersects(decals[i], frustum))
+        if (intersects(b_decals.decal[i], frustum))
         {
-            decalTiles[tile].indices[found++] = i;
+            b_decalTiles.tile[tile].indices[found++] = i;
 
             // Calculate the inverse here instead of on the CPU:
-            decals[i].mvmInverse = inverse(decals[i].mvm);
+            b_decals.decal[i].mvmInverse = inverse(b_decals.decal[i].mvm);
         }
     }
 
-    decalTiles[tile].count = found;
+    b_decalTiles.tile[tile].count = found;
 }

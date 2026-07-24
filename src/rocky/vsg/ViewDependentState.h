@@ -4,7 +4,6 @@
  * MIT License
  */
 #pragma once
-//#include <rocky/vsg/SharedRenderData.h>
 #include <rocky/vsg/Common.h>
 #include <rocky/vsg/ShaderDefines.h>
 #include <rocky/Math.h>
@@ -27,9 +26,10 @@ namespace ROCKY_NAMESPACE
         glm::ivec4 viewport = { 0, 0, 0, 0 };
         glm::uvec2 numTiles = { 1u, 1u };
         glm::uint32_t pixelsPerTile = 16u;
+        glm::uint32_t projIsOrtho = 0;
         glm::float32_t debugTiles = 0.0f;
     };
-    static_assert(sizeof(FrustumGridParams) % 16 == 0, "FrustumGridParams must be 16-byte aligned");
+    //static_assert(sizeof(FrustumGridParams) % 16 == 0, "FrustumGridParams must be 16-byte aligned");
 
     struct FrustumGPU {
         glm::fvec4 planes[4];
@@ -55,9 +55,9 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::DescriptorBuffer> frustumsBuf;
         vsg::ref_ptr<vsg::DescriptorBuffer> decalTilesBuf;
 
-        //! If you reallocated the memory behing any of the buffers above,
-        //! call this to rebuild the associated descriptor sets.
-        void recompileDescriptorSets();
+        Revision revision = 0;
+
+        vsg::ref_ptr<vsg::Device> device() { return _device; }
 
     public:
         void init(vsg::ResourceRequirements& req) override;
@@ -65,7 +65,6 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::RecordTraversal& rt) const override;
 
     protected:
-        //MyDescriptors _myDescriptors;
         mutable vsg::observer_ptr<MapNode> _mapNode;
         vsg::ref_ptr<vsg::Device> _device;
     };

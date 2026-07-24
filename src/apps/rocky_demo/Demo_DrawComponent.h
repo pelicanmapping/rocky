@@ -31,7 +31,8 @@ namespace
             {
                 if (auto& view = window.viewAtCoords(e.x, e.y))
                 {
-                    return geoPointAtWindowCoords(view, e.x, e.y);
+                    auto isect = geoPointAtWindowCoords(view, e.x, e.y);
+                    return isect->point;
                 }
             }
 

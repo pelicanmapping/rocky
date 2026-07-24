@@ -26,7 +26,6 @@ MapNode::MapNode(VSGContext vsgcontext)
 
     // set up the map-level UBO and install it in the terrain node.
     configureState(vsgcontext);
-    terrainNode->state->add(_mapDescriptors.ubo);
 
     // default to geodetic:
     profile = Profile("global-geodetic");
@@ -141,32 +140,26 @@ MapNode::update(VSGContext vsgcontext)
         _openedLayers = true;
     }
 
+    // update the ubo
+    BufferAccess<MapSettingsGPU> mapSettings(vsgcontext->sharedRenderData->mapSettingsBuf);
+    mapSettings->ellipsoidAxes.x = srs().ellipsoid().semiMajorAxis();
+    mapSettings->ellipsoidAxes.y = srs().ellipsoid().semiMinorAxis();
+    mapSettings.dirty();
+
     return terrainNode->update(vsgcontext);
 }
 
 void
-MapNode::configureState(VSGContext context)
+MapNode::configureState(VSGContext vsgcontext)
 {
     // global settings uniform setup
-    _mapDescriptors.data = vsg::ubyteArray::create(sizeof(MapDescriptors::Uniforms));
-    _mapDescriptors.data->properties.dataVariance = vsg::DYNAMIC_DATA;
-    _mapDescriptors.ubo = vsg::DescriptorBuffer::create(_mapDescriptors.data, BINDING_MAP_SETTINGS);
-
-    // initialize to the defaults
-    auto& uniforms = *static_cast<MapDescriptors::Uniforms*>(_mapDescriptors.data->dataPointer());
-    uniforms = MapDescriptors::Uniforms();
+    BufferAccess<MapSettingsGPU> mapSettings(
+        vsgcontext->sharedRenderData->mapSettingsBuf, BINDING_MAP_SETTINGS, TYPE_MAP_SETTINGS);
 }
 
 void
 MapNode::traverse(vsg::RecordTraversal& record) const
 {
-    // update the ubo
-    auto& uniforms = *static_cast<MapDescriptors::Uniforms*>(_mapDescriptors.data->dataPointer());
-    uniforms.ellipsoidAxes.x = srs().ellipsoid().semiMajorAxis();
-    uniforms.ellipsoidAxes.y = srs().ellipsoid().semiMinorAxis();
-    _mapDescriptors.data->dirty();
-
-
     auto viewID = record.getCommandBuffer()->viewID;
 
     auto& horizon = _horizon[viewID];
