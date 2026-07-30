@@ -1,0 +1,56 @@
+/**
+ * rocky c++
+ * Copyright 2026 Pelican Mapping
+ * MIT License
+ */
+#pragma once
+#include <rocky/Common.h>
+#include <rocky/Math.h>
+#include <rocky/ecs/Component.h>
+
+namespace ROCKY_NAMESPACE
+{
+
+    //! Component that represents an optical device like a camera,
+    //! sensor, or projector that processes light through a lens.
+    struct Optics : public Component<Optics>
+    {
+        enum class Projection
+        {
+            Perspective,
+            Orthographic
+        };
+
+        Projection projection = Projection::Orthographic;
+
+        //! Matrix that transforms the rotation or positional offset
+        //! of the optics. Typically Optics is used in conjunction with a Transform
+        //! component that will position it in the world.
+        glm::dmat4 pose = glm::dmat4(1.0);
+
+        //! Distance from the lens to the focal plane in meters.
+        double focalDistance = 1.0;
+        glm::dvec3 focalPoint;
+
+        //! Lens parameters (perspective projection)
+        double fovY = 45.0; // degrees
+        double aspectRatio = 1.0;
+
+        // When calculating near/far clip planes for a persepctive projection:
+        // near = focalDistance * nearScale + nearBias
+        // far = focalDistance * farScale + farBias
+        double nearScale = 0.5;
+        double farScale = 1.5;
+        double nearBias = 0.0;
+        double farBias = 0.0;
+
+        //! Lens parameters (orthographic projection)
+        double width = 1000.0;
+        double height = 1000.0;
+        double depth = 1000.0;
+
+        //! Whether to attempt to automatically compute
+        //! a focal distance based on the scene geometry.
+        bool autoComputeFocalDistance = true;
+    };
+}

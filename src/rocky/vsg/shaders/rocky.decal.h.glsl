@@ -33,7 +33,7 @@ struct Decal
     float distance; // > 0 = persp
     float tanHalfFovY;
     float aspect;
-    float _padding;
+    float opacity;
 };
 
 // SSBO containing the output tiles that pass cull (GPU only)
@@ -53,20 +53,15 @@ b_decals;
 layout(set = DESCRIPTOR_SET_GLOBAL, binding = BINDING_DECAL_TEXTURES) uniform sampler2D u_decalTextures[MAX_NUM_DECAL_TEXTURES];
 
 
-void applyDecals(inout vec3 color, in vec3 vertexVs, in vec2 fragCoord)
+void applyDecals(inout vec3 color, in vec3 vertexVs, in vec3 normalVs, in vec2 fragCoord)
 {
     int index = frustumIndex(fragCoord);
     if (index < 0)
         return;
 
-    //if (index >= decalTiles.length()) {
-    //    color = vec3(1,0,0);
-    //    return;
-    //}
-
     DecalTile tile = b_decalTiles.tile[index];
 
-    for(int i=0; i < tile.count; ++i)
+    for (int i = 0; i < tile.count; ++i)
     {
         Decal decal = b_decals.decal[tile.indices[i]];
 
@@ -83,11 +78,12 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec2 fragCoord)
 
         if (decal.distance > 0.0) // perspective
         {
-            // decal.a = zmin (far), decal.b = zmax (near)
+            // decal.a = -far, decal.b = -near (projector looks down local -Z)
             if (local.z >= decal.a && local.z <= decal.b)
             {
-                float halfW = (decal.distance - local.z) * decal.tanHalfFovY * decal.aspect;
-                float halfH = (decal.distance - local.z) * decal.tanHalfFovY;
+                float depth = -local.z; // positive forward distance from projector
+                float halfW = depth * decal.tanHalfFovY * decal.aspect;
+                float halfH = depth * decal.tanHalfFovY;
 
                 if (abs(local.x) <= halfW && abs(local.y) <= halfH)
                 {
@@ -101,27 +97,51 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec2 fragCoord)
             vec3 bbox = vec3(0.5);
             if (abs(local.x) <= bbox.x && abs(local.y) <= bbox.y && abs(local.z) <= bbox.z)
             {
-                //uv = (local.xy / bbox.xy + vec2(1.0)) * vec2(0.5);
                 uv = local.xy + vec2(0.5);
                 inside = true;
             }
         }
 
+#if 0
+        // Backface rejection relative to projector direction.
+        if (inside)
+        {
+            vec3 N = normalize(normalVs);
+            vec3 projDirVs; // projector -> fragment direction in view space
+
+            if (decal.distance > 0.0) // perspective projector
+            {
+                vec3 projectorPosVs = vec3(decal.mvm[3]);
+                projDirVs = normalize(vertexVs - projectorPosVs);
+            }
+            else // orthographic projector
+            {
+                // projector forward is local -Z
+                projDirVs = normalize(-vec3(decal.mvm[2]));
+            }
+
+            // front-facing to projector means normal opposes projector->fragment direction
+            if (dot(N, projDirVs) >= 0.0)
+            {
+                inside = false;
+            }
+        }
+#endif
+
         if (inside)
         {
             int ti = decal.textureIndex;
-            if (ti >= 0) 
+            if (ti >= 0)
             {
-                //vec4 tex = texture(u_decalTextures[ti], uv);
                 vec4 tex = texture(u_decalTextures[nonuniformEXT(ti)], uv);
-                color.rgb = mix(color.rgb, tex.rgb, tex.a * (1.0 - u_debugTiles));
+                color.rgb = mix(color.rgb, tex.rgb, tex.a * decal.opacity);
             }
             else
             {
                 vec2 p = fract(uv * 10.0);
                 float grid = step(0.05, p.x) * step(0.05, p.y);
                 vec3 decalColor = vec3(fract(uv), 0.0) * grid;
-                color.rgb = mix(color.rgb, decalColor, 0.75);
+                color.rgb = mix(color.rgb, decalColor, decal.opacity);
             }
         }
     }
@@ -129,7 +149,7 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec2 fragCoord)
     // debugging overlay to show tile density
     float ramp = clamp(float(tile.count) / 5.0, 0.0, 1.0);
     vec3 debugColor = vec3(0, ramp, ramp);
-    color.rgb = mix(color.rgb, debugColor, clamp(float(tile.count), 0, 1) * u_debugTiles * 0.5);
+    color.rgb = mix(color.rgb, debugColor, clamp(float(tile.count), 0, 1) * u_debugTiles * 0.75);
 }
 
 #endif // ROCKY_HAS_DECALS

@@ -73,10 +73,10 @@ void main()
     outColor = mix(outColor, lit_color, u_terrain.lighting);
 
     // debug: frustum tiles visualization:
-    outColor.rgb = mix(outColor.rgb, frustumTileTestColor(gl_FragCoord.xy, vary.vertexVs), u_debugTiles);
+    outColor.rgb = mix(outColor.rgb, frustumTileTestColor(gl_FragCoord.xy, vary.vertexVs), u_debugTiles * 0.35);
 
 #ifdef ROCKY_HAS_DECALS
-    applyDecals(outColor.rgb, vary.vertexVs, gl_FragCoord.xy);
+    applyDecals(outColor.rgb, vary.vertexVs, normalVs, gl_FragCoord.xy);
 #endif
 
     // show triangle outlines

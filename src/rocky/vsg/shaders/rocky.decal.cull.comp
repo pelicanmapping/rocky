@@ -23,7 +23,7 @@ bool intersects(in Decal decal, in Frustum frustum)
     if (decal.distance > 0.0) // perspective
     {
         radius = decal.c; // precomputed bounding sphere radius
-        float midZ = -(decal.a + decal.b) * 0.5; // center of near..far range
+        float midZ = (decal.a + decal.b) * 0.5; // center of near..far range
         posVS = (decal.mvm * vec4(0.0, 0.0, midZ, 1.0)).xyz;
     }
     else // orthographic

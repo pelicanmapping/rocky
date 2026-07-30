@@ -8,8 +8,8 @@
 #include "../ViewDependentState.h"
 #include "../SharedRenderData.h"
 #include "../ShaderDefines.h"
+#include <rocky/ecs/Optics.h>
 #include <rocky/vsg/VSGUtils.h>
-#include <rocky/Color.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -119,6 +119,8 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
     // process any objects marked dirty
     auto&& [_, reg] = _registry.read();
 
+    bool sharedDescriptorsDirty = false;
+
     DecalStyle::eachDirty(reg, [&](entt::entity e)
     {
         const auto& [style, styleDetail] = reg.get<DecalStyle, DecalStyleDetail>(e);
@@ -136,6 +138,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
                 dispose(textures->imageInfoList[styleDetail.descriptorImageIndex]);
                 textures->imageInfoList[styleDetail.descriptorImageIndex] = fallback;
                 requestCompile(textures);
+                sharedDescriptorsDirty = true;
             }
             styleDetail.descriptorImageIndex = -1;
             styleDetail.texture = {};
@@ -151,6 +154,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
                 dispose(textures->imageInfoList[slot]);
                 textures->imageInfoList[slot] = fallback;
                 styleDetail.texture = {};
+                sharedDescriptorsDirty = true;
             }
 
             // make a new texture from the image:
@@ -186,6 +190,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
 
                 requestCompile(styleDetail.texture);
                 requestCompile(textures);
+                sharedDescriptorsDirty = true;
             }
             else
             {
@@ -199,6 +204,11 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
             releaseSlot();
         }
     });
+
+    if (sharedDescriptorsDirty)
+    {
+        vsgcontext->sharedRenderData->dirtySharedDescriptors();
+    }
 
     Decal::eachDirty(reg, [&](entt::entity e)
     {
@@ -372,7 +382,7 @@ DecalSystemNode::rebuildCommands(ViewIDType viewID, VSGContext vsgcontext)
 void
 DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 {
-    // run the culling shader on ALL views
+    // update for each view:
     for (unsigned viewID = 0; viewID < _views.size(); ++viewID)
     {
         auto& view = _views[viewID];
@@ -406,6 +416,11 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         return;
                     }
 
+                    auto e_optics = decal.optics != entt::null ? decal.optics : decal.owner;
+                    auto* optics = reg.try_get<Optics>(e_optics);
+                    if (!optics)
+                        return;
+
                     // first decal just holds the count, so advance first:
                     ++gpudecal;
                     ++decalIndex;
@@ -414,12 +429,18 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     // so we can find it later if we need to change the style
                     decalDetail.ssboIndex = decalIndex;
                     
+                    
                     // store the texture arena index if we have a texture; else -1 to indicate no texture.
+                    gpudecal->opacity = 1.0f;
                     gpudecal->textureIndex = -1;
-                    if (decal.style != entt::null)
+
+                    //if (decal.style != entt::null)
                     {
-                        if (auto* styleDetail = reg.try_get<DecalStyleDetail>(decal.style))
+                        auto e_style = decal.style != entt::null ? decal.style : decal.owner;
+                        auto [style, styleDetail] = reg.try_get<DecalStyle, DecalStyleDetail>(e_style);
+                        if (style)
                         {
+                            gpudecal->opacity = style->opacity;
                             gpudecal->textureIndex = styleDetail->descriptorImageIndex;
                         }
                     }
@@ -427,41 +448,79 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     auto model = to_glm(transformDetail.views[viewID].model);
                     auto mvm = vm * model;
 
-                    auto localScale = glm::dvec3(
-                        glm::length(glm::dvec3(mvm[0])),
-                        glm::length(glm::dvec3(mvm[1])),
-                        glm::length(glm::dvec3(mvm[2])));
+                    auto decalModel = to_glm(transformDetail.views[viewID].model);
+                    auto decalMvm = vm * decalModel;
 
-                    if (localScale.x <= 0.0) localScale.x = 1.0;
-                    if (localScale.y <= 0.0) localScale.y = 1.0;
-                    if (localScale.z <= 0.0) localScale.z = 1.0;
+                    auto decalLocalScale = glm::dvec3(
+                        glm::length(glm::dvec3(decalMvm[0])),
+                        glm::length(glm::dvec3(decalMvm[1])),
+                        glm::length(glm::dvec3(decalMvm[2])));
 
-                    gpudecal->mvm = glm::fmat4(mvm);
-                    // NB: gpudecal->mvmInverse is computed in the culling shader.
+                    if (decalLocalScale.x <= 0.0) decalLocalScale.x = 1.0;
+                    if (decalLocalScale.y <= 0.0) decalLocalScale.y = 1.0;
+                    if (decalLocalScale.z <= 0.0) decalLocalScale.z = 1.0;
 
-                    if (decal.projection == DecalProjection::Perspective)
+                    if (optics->projection == Optics::Projection::Perspective)
                     {
-                        float tanH = tanf(glm::radians(decal.fovY_deg * 0.5f));
-                        float halfDepth = static_cast<float>(localScale.z * 0.5);
-                        float nearClip = glm::max(1.0f, decal.distance - halfDepth);
-                        float farClip = decal.distance + halfDepth;
-                        float farHalfW = farClip * tanH * decal.aspectRatio;
-                        float farHalfH = farClip * tanH;
-                        float bsRadius = sqrtf(farHalfW * farHalfW + farHalfH * farHalfH);
+                        auto* opticsTransformDetail = reg.try_get<TransformDetail>(e_optics);
+                        if (!opticsTransformDetail)
+                            return;
 
-                        gpudecal->zMin = decal.distance - farClip;
-                        gpudecal->zMax = decal.distance - nearClip;
+                        // Build projector world matrix from optics owner transform + optics local pose.
+                        glm::dmat4 opticsModel = to_glm(opticsTransformDetail->views[viewID].model) * optics->pose;
+
+                        // Strip scale from projector basis so metric near/far/focal values remain valid.
+                        glm::dvec3 x(opticsModel[0]);
+                        glm::dvec3 y(opticsModel[1]);
+                        glm::dvec3 z(opticsModel[2]);
+
+                        double lx = glm::length(x);
+                        double ly = glm::length(y);
+                        double lz = glm::length(z);
+                        if (lx <= 0.0 || ly <= 0.0 || lz <= 0.0)
+                            return;
+
+                        x /= lx;
+                        y /= ly;
+                        z /= lz;
+
+                        opticsModel[0] = glm::dvec4(x, 0.0);
+                        opticsModel[1] = glm::dvec4(y, 0.0);
+                        opticsModel[2] = glm::dvec4(z, 0.0);
+
+                        auto opticsMvm = vm * opticsModel;
+                        gpudecal->mvm = glm::fmat4(opticsMvm);
+                        // NB: gpudecal->mvmInverse is computed in the culling shader.
+
+                        auto nearDistance = optics->focalDistance * optics->nearScale + optics->nearBias;
+                        auto farDistance = optics->focalDistance * optics->farScale + optics->farBias;
+
+                        float tanH = tanf(glm::radians(static_cast<float>(optics->fovY) * 0.5f));
+                        float nearClip = std::max(0.01f, (float)nearDistance);
+                        float farClip = std::max(nearClip + 0.01f, (float)farDistance);
+
+                        float halfDepth = 0.5f * (farClip - nearClip);
+                        float farHalfW = farClip * tanH * static_cast<float>(optics->aspectRatio);
+                        float farHalfH = farClip * tanH;
+                        float bsRadius = sqrtf(farHalfW * farHalfW + farHalfH * farHalfH + halfDepth * halfDepth);
+
+                        // Projector looks down local -Z; visible range is [-far, -near].
+                        gpudecal->zMin = -farClip;
+                        gpudecal->zMax = -nearClip;
                         gpudecal->cullingRadius = bsRadius;
-                        gpudecal->distance = decal.distance;
+                        gpudecal->distance = 1.0f; // perspective flag (>0)
                         gpudecal->tanHalfFovY = tanH;
-                        gpudecal->aspect = decal.aspectRatio;
+                        gpudecal->aspect = static_cast<float>(optics->aspectRatio);
                     }
                     else
                     {
-                        gpudecal->halfX = static_cast<float>(localScale.x * 0.5);
-                        gpudecal->halfY = static_cast<float>(localScale.y * 0.5);
-                        gpudecal->halfZ = static_cast<float>(localScale.z * 0.5);
-                        gpudecal->distance = 0.0f;
+                        // Orthographic remains decal-transform-based (includes scale as box extents).
+                        gpudecal->mvm = glm::fmat4(decalMvm);
+                        // NB: gpudecal->mvmInverse is computed in the culling shader.
+                        gpudecal->halfX = static_cast<float>(decalLocalScale.x * 0.5);
+                        gpudecal->halfY = static_cast<float>(decalLocalScale.y * 0.5);
+                        gpudecal->halfZ = static_cast<float>(decalLocalScale.z * 0.5);
+                        gpudecal->distance = 0.0f; // zero means orthographic
                         gpudecal->tanHalfFovY = 0.0f;
                         gpudecal->aspect = 1.0f;
                     }

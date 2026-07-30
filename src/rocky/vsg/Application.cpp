@@ -12,6 +12,7 @@
 
 #include <rocky/vsg/FrustumGridSystem.h>
 #include <rocky/vsg/ecs/DecalSystem.h>
+#include <rocky/vsg/ecs/OpticsSystem.h>
 
 #ifdef ROCKY_HAS_IMGUI
 #include <rocky/rocky_imgui.h>
@@ -277,9 +278,13 @@ Application::ctor(int& argc, char** argv)
     // Create the ECS system manager and all its default systems.
     systemsNode = ECSNode::create(registry, true);
 
+    // optics: set a target:
+    if (auto* opticsSystem = systemsNode->get<OpticsSystemNode>())
+    {
+        opticsSystem->target = mapNode->terrainNode;
+    }
 
-    // compute shader nodes that should come before the Map:
-    // TODO: this will cause a one frame delay, deal with that later..
+    // Systems with compute shader traversals also need to go here:
     computeSystemsNode = ECSNode::create(registry, false);
     compute->addChild(computeSystemsNode);
 

@@ -42,7 +42,7 @@ namespace ROCKY_NAMESPACE
         float distance = 0.0f; // > 0 = persp
         float tanHalfFovY = 0.0f;
         float aspect = 1.0f;
-        float _padding = 0.0f;
+        float opacity = 1.0f;
     };
     static_assert(sizeof(DecalGPU) % 16 == 0, "DecalGPU must be 16-byte aligned");
 

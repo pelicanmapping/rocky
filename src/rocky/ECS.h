@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2025 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -13,6 +13,7 @@
 #include <rocky/ecs/Widget.h>
 #include <rocky/ecs/Model.h>
 #include <rocky/ecs/Decal.h>
+#include <rocky/ecs/Optics.h>
 #include <rocky/ecs/Transform.h>
 #include <rocky/ecs/Visibility.h>
 #include <rocky/ecs/Declutter.h>

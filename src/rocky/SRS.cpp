@@ -558,7 +558,11 @@ namespace
     };
 
     // create an SRS repo per thread since proj is not thread safe.
-    thread_local SRSFactory g_srs_factory;
+
+    SRSFactory& g_srs_factory() {
+        static thread_local SRSFactory _g_srs_factory;
+        return _g_srs_factory;
+    }
 }
 
 
@@ -578,7 +582,7 @@ SRS::SRS(std::string_view h) :
 const char*
 SRS::name() const
 {
-    PJ* pj = g_srs_factory.get_or_create(_definition).pj;
+    PJ* pj = g_srs_factory().get_or_create(_definition).pj;
     if (!pj) return "";
     return proj_get_name(pj);
 }
@@ -586,7 +590,7 @@ SRS::name() const
 bool
 SRS::_establish_valid() const
 {
-    _valid = !_definition.empty() && g_srs_factory.get_or_create(_definition).pj != nullptr;
+    _valid = !_definition.empty() && g_srs_factory().get_or_create(_definition).pj != nullptr;
     return _valid.value();
 }
 
@@ -598,7 +602,7 @@ SRS::isGeodetic() const
 
     if (!_crs_type.has_value())
     {
-        _crs_type = g_srs_factory.get_horiz_crs_type(_definition);
+        _crs_type = g_srs_factory().get_horiz_crs_type(_definition);
     }
 
     return
@@ -614,7 +618,7 @@ SRS::isGeocentric() const
 
     if (!_crs_type.has_value())
     {
-        _crs_type = (int)g_srs_factory.get_horiz_crs_type(_definition);
+        _crs_type = (int)g_srs_factory().get_horiz_crs_type(_definition);
     }
 
     return (PJ_TYPE)_crs_type.value() == PJ_TYPE_GEOCENTRIC_CRS;
@@ -628,7 +632,7 @@ SRS::isProjected() const
 
     if (!_crs_type.has_value())
     {
-        _crs_type = (int)g_srs_factory.get_horiz_crs_type(_definition);
+        _crs_type = (int)g_srs_factory().get_horiz_crs_type(_definition);
     }
 
     return (PJ_TYPE)_crs_type.value() == PJ_TYPE_PROJECTED_CRS;
@@ -640,7 +644,7 @@ SRS::isQSC() const
     if (!valid())
         return false;
 
-    return g_srs_factory.get_or_create(definition()).isQSC;
+    return g_srs_factory().get_or_create(definition()).isQSC;
 }
 
 bool
@@ -649,7 +653,7 @@ SRS::hasVerticalDatumShift() const
     if (!valid())
         return false;
 
-    return g_srs_factory.get_or_create(definition()).vert_crs_type != PJ_TYPE_UNKNOWN;
+    return g_srs_factory().get_or_create(definition()).vert_crs_type != PJ_TYPE_UNKNOWN;
 }
 
 bool
@@ -658,11 +662,11 @@ SRS::equivalentTo(const SRS& rhs) const
     if (definition().empty() || rhs.definition().empty())
         return false;
 
-    PJ* pj1 = g_srs_factory.get_or_create(definition()).pj;
+    PJ* pj1 = g_srs_factory().get_or_create(definition()).pj;
     if (!pj1)
         return false;
 
-    PJ* pj2 = g_srs_factory.get_or_create(rhs.definition()).pj;
+    PJ* pj2 = g_srs_factory().get_or_create(rhs.definition()).pj;
     if (!pj2)
         return false;
 
@@ -671,7 +675,7 @@ SRS::equivalentTo(const SRS& rhs) const
         PJ_COMP_EQUIVALENT;
 
     return proj_is_equivalent_to_with_ctx(
-        g_srs_factory.threading_context(), pj1, pj2, criterion);
+        g_srs_factory().threading_context(), pj1, pj2, criterion);
 }
 
 bool
@@ -683,12 +687,12 @@ SRS::horizontallyEquivalentTo(const SRS& rhs) const
     if (isGeodetic() && rhs.isGeodetic() && ellipsoid() == rhs.ellipsoid())
         return true;
 
-    auto& lhs_entry = g_srs_factory.get_or_create(definition());
+    auto& lhs_entry = g_srs_factory().get_or_create(definition());
     PJ* pj1 = lhs_entry.pj;
     if (!pj1)
         return false;
 
-    auto& rhs_entry = g_srs_factory.get_or_create(rhs.definition());
+    auto& rhs_entry = g_srs_factory().get_or_create(rhs.definition());
     PJ* pj2 = rhs_entry.pj;
     if (!pj2)
         return false;
@@ -701,23 +705,23 @@ SRS::horizontallyEquivalentTo(const SRS& rhs) const
     PJ* rhs_horiz_pj = nullptr;
 
     lhs_horiz_pj = lhs_entry.crs_type == PJ_TYPE_COMPOUND_CRS ?
-        proj_crs_get_sub_crs(g_srs_factory.threading_context(), pj1, 0) : pj1;
+        proj_crs_get_sub_crs(g_srs_factory().threading_context(), pj1, 0) : pj1;
 
     rhs_horiz_pj = rhs_entry.crs_type == PJ_TYPE_COMPOUND_CRS ?
-        proj_crs_get_sub_crs(g_srs_factory.threading_context(), pj2, 0) : pj2;
+        proj_crs_get_sub_crs(g_srs_factory().threading_context(), pj2, 0) : pj2;
 
     PJ_COMPARISON_CRITERION criterion =
         isGeodetic() ? PJ_COMP_EQUIVALENT_EXCEPT_AXIS_ORDER_GEOGCRS :
         PJ_COMP_EQUIVALENT;
 
     return proj_is_equivalent_to_with_ctx(
-        g_srs_factory.threading_context(), lhs_horiz_pj, rhs_horiz_pj, criterion);
+        g_srs_factory().threading_context(), lhs_horiz_pj, rhs_horiz_pj, criterion);
 }
 
 const std::string&
 SRS::wkt() const
 {
-    return g_srs_factory.get_wkt(definition());
+    return g_srs_factory().get_wkt(definition());
 }
 
 UnitsType
@@ -729,19 +733,19 @@ SRS::units() const
 const Ellipsoid&
 SRS::ellipsoid() const
 {
-    return g_srs_factory.get_ellipsoid(definition());
+    return g_srs_factory().get_ellipsoid(definition());
 }
 
 const Box&
 SRS::bounds() const
 {
-    return g_srs_factory.get_bounds(definition());
+    return g_srs_factory().get_bounds(definition());
 }
 
 const Box&
 SRS::geodeticBounds() const
 {
-    return g_srs_factory.get_geodetic_bounds(definition());
+    return g_srs_factory().get_geodetic_bounds(definition());
 }
 
 SRSOperation
@@ -753,13 +757,13 @@ SRS::to(const SRS& rhs) const
 const SRS&
 SRS::geodeticSRS() const
 {
-    return isGeodetic() ? *this : g_srs_factory.get_or_create(_definition).geodeticSRS;
+    return isGeodetic() ? *this : g_srs_factory().get_or_create(_definition).geodeticSRS;
 }
 
 const SRS&
 SRS::geocentricSRS() const
 {
-    return isGeocentric() ? *this : g_srs_factory.get_or_create(_definition).geocentricSRS;
+    return isGeocentric() ? *this : g_srs_factory().get_or_create(_definition).geocentricSRS;
 }
 
 glm::dmat4
@@ -875,14 +879,14 @@ SRS::transformDistance(const Distance& input, const UnitsType& outputUnits, cons
 const std::string&
 SRS::errorMessage() const
 {
-    return g_srs_factory.get_error_message(definition());
+    return g_srs_factory().get_error_message(definition());
 }
 
 std::string
 SRS::string() const
 {
     if (valid())
-        return g_srs_factory.get_or_create(definition()).proj;
+        return g_srs_factory().get_or_create(definition()).proj;
     else
         return "";
 }
@@ -900,7 +904,7 @@ SRSOperation::SRSOperation(const SRS& from, const SRS& to) :
     _nop = (_from == _to);
     if (_from.valid() && _to.valid())
     {
-        _handle = (void*)g_srs_factory.get_or_create_operation(_from.definition(), _to.definition());
+        _handle = (void*)g_srs_factory().get_or_create_operation(_from.definition(), _to.definition());
     }
 }
 

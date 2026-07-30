@@ -23,7 +23,7 @@ endif()
 
 set_target_properties(${APP_NAME} PROPERTIES FOLDER "apps")
 
-# MSVC requires /bigobj on debug mode
-if(MSVC)
-    target_compile_options(${APP_NAME} PRIVATE "$<$<CONFIG:Debug>:/bigobj>")
+# MSVC may require /bigobj for large translation units.
+if (MSVC)
+    target_compile_options(${APP_NAME} PRIVATE /bigobj)
 endif()

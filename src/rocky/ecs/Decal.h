@@ -11,12 +11,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    enum class DecalProjection
-    {
-        Orthographic,
-        Perspective            
-    };
-
     struct DecalStyle : public Component<DecalStyle>
     {
         //! Image to use for decal
@@ -24,27 +18,24 @@ namespace ROCKY_NAMESPACE
 
         //! Texture dimensions in world units (meters)
         std::optional<glm::dvec2> textureSize;
+
+        //! Opacity
+        float opacity = 1.0f;
     };
+
 
     struct Decal : public Component<Decal>
     {
-        //! Projection mode
-        DecalProjection projection = DecalProjection::Orthographic;
-
-        //! Vertical field of view in degrees [perspective projection]
-        float fovY_deg = 45.0f;
-
-        //! Width / height ratio [perspective projection]
-        float aspectRatio = 1.0f;
-
-        //! Distance from projector to target in meters [perspective projection].
-        float distance = 100.0f;
+        // testing!
+        entt::entity optics = entt::null;
 
         //! Style entity, if applicable
         entt::entity style = entt::null;
 
-
+        //! Construct a default decal
         Decal() = default;
+
+        //! Construct a decal with a style attached to a different entity
         Decal(entt::entity styleEntity) : 
             Component<Decal>(), style(styleEntity) {}
     };

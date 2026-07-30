@@ -13,6 +13,7 @@
 #include "TransformSystem.h"
 #include "ModelSystem.h"
 #include "NodeGraphSystem.h"
+#include "OpticsSystem.h"
 
 ROCKY_ABOUT(entt, ENTT_VERSION);
 
@@ -118,6 +119,7 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
     if (addDefaultSystems)
     {
         add(TransformSystemNode::create(registry));
+        add(OpticsSystemNode::create(registry));
         add(NodeSystemNode::create(registry));
         add(ModelSystemNode::create(registry));
         add(MeshSystemNode::create(registry));

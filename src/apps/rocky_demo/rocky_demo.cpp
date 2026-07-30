@@ -97,7 +97,12 @@ std::vector<Demo> demos =
         Demo{ "Label", Demo_Label },
         Demo{ "Widget", Demo_Widget },
         Demo{ "Model", Demo_Model },
-        Demo{ "Decal", Demo_Decal }
+        Demo{ "Decal", {}, {
+            Demo{ "Orthographic", Demo_Decal_Orthographic },
+            Demo{ "Perspective", Demo_Decal_Perspective },
+            Demo{ "Projector", Demo_Decal_Projector },
+            Demo{ "Stamper", Demo_Decal_Stamper }
+        } }
     } },
     Demo{ "VSG Nodes", {},
     {
