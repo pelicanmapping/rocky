@@ -27,6 +27,9 @@ namespace ROCKY_NAMESPACE
 
     private:
         void updateOptics(VSGContext);
+
+        void on_construct_Optics(entt::registry& r, entt::entity e);
+        void on_destroy_Optics(entt::registry& r, entt::entity e);
     };
 }
 

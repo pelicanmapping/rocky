@@ -135,10 +135,7 @@ auto Demo_Decal_Stamper = [](Application& app)
         auto& io = app.io();
         auto r = io.services().readImageFromURI("https://readymap.org/readymap/filemanager/download/public/textures/reference_grid_Color.jpg", io);
         if (r.ok())
-        {
             image = r.value();
-            image->flipVerticalInPlace();
-        }
 
         auto [_, reg] = app.registry.write();
 
@@ -277,7 +274,6 @@ auto Demo_Decal_Projector = [](Application& app)
         Image::Ptr image;
         if (r.ok()) {
             image = r.value();
-            image->flipVerticalInPlace();
         }
 
         auto [_, reg] = app.registry.write();
@@ -287,11 +283,11 @@ auto Demo_Decal_Projector = [](Application& app)
         // a 3D model
         auto& model = reg.emplace<Model>(e_platform);
         model.uri = URI(modelFile);
+        model.localMatrix = glm::rotate(glm::dmat4(1), glm::radians(90.0), glm::dvec3(0,0,1));
 
         // place and orient the model:
         auto& transform = reg.emplace<Transform>(e_platform);
         transform.position = GeoPoint(SRS::WGS84, -120.0, 34.0, 50000.0).transform(SRS::ECEF);
-        transform.localMatrix = glm::rotate(glm::dmat4(1), glm::radians(90.0), glm::dvec3(0,0,1));
         transform.topocentric = true;
 
         // scale up the model so we can see it:
@@ -307,8 +303,9 @@ auto Demo_Decal_Projector = [](Application& app)
         // define the projector's optical parameters:
         auto& optics = reg.emplace<Optics>(e_platform);
         optics.projection = Optics::Projection::Perspective;
-        optics.fovY = 45.0f;
+        optics.fovY = 35.0f;
         optics.autoComputeFocalDistance = true;
+        optics.autoComputeNearFar = true;
         
         // style the decal:
         auto& style = reg.emplace<DecalStyle>(e_platform);
@@ -330,7 +327,7 @@ auto Demo_Decal_Projector = [](Application& app)
 
         // A worker to animate the platform and its projector:
         MotionSystem motionsys(app.registry);
-        double heading = 0.0, pitch = -65.0;
+        double heading = 90.0, pitch = 25.0;
         auto animate = [&app, motionsys, heading, pitch](VSGContext) mutable
         {
             // update the platform's position based on its Motion component:
@@ -339,8 +336,8 @@ auto Demo_Decal_Projector = [](Application& app)
             auto&& [_, r] = app.registry.write();
 
             // pan the projector from left to right:
-            heading = 10.0 * sin((double)(app.frameCount()) * 0.01);
-            auto& optics = r.get<Optics>(e_platform);
+            heading = -90.0 + 10.0 * sin((double)(app.frameCount()) * 0.01);
+            auto& [optics, opticsDetail] = r.get<Optics, detail::OpticsDetail>(e_platform);
             optics.pose = glm::mat4_cast(quaternion_from_euler_degrees(pitch, 0.0, heading));
 
             // update the frustum geometry to represent a frustum view of the optics:
@@ -356,8 +353,8 @@ auto Demo_Decal_Projector = [](Application& app)
             double nearDistance = optics.focalDistance * optics.nearScale + optics.nearBias;
             double farDistance = optics.focalDistance * optics.farScale + optics.farBias;
 
-            double nearClip = std::max(0.01, nearDistance);
-            double farClip = std::max(nearClip + 0.01, farDistance);
+            double nearClip = std::max(0.01, opticsDetail.nearDistance);
+            double farClip = std::max(nearClip + 0.01, opticsDetail.farDistance);
 
             double tanHalfFovY = tan(glm::radians(optics.fovY * 0.5));
             double nearHalfH = nearClip * tanHalfFovY;
@@ -411,7 +408,7 @@ auto Demo_Decal_Projector = [](Application& app)
                 if (tether) {
                     Viewpoint vp = manip->viewpoint();
                     vp.pointFunction = [&]() {
-                        auto [_, reg] = app.registry.read();
+                        auto&& [_, reg] = app.registry.read();
                         auto& xform = reg.get<Transform>(e_platform);
                         return xform.position;
                     };

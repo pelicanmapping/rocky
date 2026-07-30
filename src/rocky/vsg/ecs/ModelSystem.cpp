@@ -228,17 +228,17 @@ ModelSystemNode::update(VSGContext vsgcontext)
                     if (det.node)
                         dispose(det.node);
 
-                    auto loadModel = [uri(model.uri), io(vsgcontext->io), options(vsgcontext->readerWriterOptions)](Cancelable& c)
+                    auto loadModel = [model(model), io(vsgcontext->io), options(vsgcontext->readerWriterOptions)](Cancelable& c)
                         -> Result<vsg::ref_ptr<vsg::Node>>
                         {
                             if (c.canceled())
                                 return Failure_OperationCanceled;
 
-                            auto rr = uri.read(io);
+                            auto rr = model.uri.read(io);
                             if (!rr)
                                 return rr.error();
 
-                            std::filesystem::path path(uri.full());
+                            std::filesystem::path path(model.uri.full());
                             auto opts = vsg::clone(options);
                             opts->extensionHint = path.extension();
                             if (opts->extensionHint.empty())
@@ -248,6 +248,14 @@ ModelSystemNode::update(VSGContext vsgcontext)
                             auto node = vsg::read_cast<vsg::Node>(buf, opts);
                             if (!node)
                                 return Failure("vsg::read_cast failed to parse data (type not supported?)");
+
+                            if (model.localMatrix.has_value())
+                            {
+                                auto mt = vsg::MatrixTransform::create();
+                                mt->matrix = to_vsg(model.localMatrix.value());
+                                mt->addChild(node);
+                                node = mt;
+                            }
 
                             return node;
                         };
@@ -267,7 +275,7 @@ ModelSystemNode::update(VSGContext vsgcontext)
                 });
         });
 
-    // clean out any finished loaders and propogate any errors.
+    // clean out any finished loaders and propagate any errors.
     while (!_loaders.empty())
     {
         auto& entry = _loaders.front();

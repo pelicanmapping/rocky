@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "DecalSystem.h"
+#include "OpticsSystem.h"
 #include "ECSVisitors.h"
 #include "../ViewDependentState.h"
 #include "../SharedRenderData.h"
@@ -417,7 +418,8 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     }
 
                     auto e_optics = decal.optics != entt::null ? decal.optics : decal.owner;
-                    auto* optics = reg.try_get<Optics>(e_optics);
+
+                    auto [optics, opticsDetail] = reg.try_get<Optics, OpticsDetail>(e_optics);
                     if (!optics)
                         return;
 
@@ -492,12 +494,9 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         gpudecal->mvm = glm::fmat4(opticsMvm);
                         // NB: gpudecal->mvmInverse is computed in the culling shader.
 
-                        auto nearDistance = optics->focalDistance * optics->nearScale + optics->nearBias;
-                        auto farDistance = optics->focalDistance * optics->farScale + optics->farBias;
-
                         float tanH = tanf(glm::radians(static_cast<float>(optics->fovY) * 0.5f));
-                        float nearClip = std::max(0.01f, (float)nearDistance);
-                        float farClip = std::max(nearClip + 0.01f, (float)farDistance);
+                        float nearClip = std::max(1.0f, (float)opticsDetail->nearDistance);
+                        float farClip = std::max(nearClip + 1.0f, (float)opticsDetail->farDistance);
 
                         float halfDepth = 0.5f * (farClip - nearClip);
                         float farHalfW = farClip * tanH * static_cast<float>(optics->aspectRatio);
@@ -511,6 +510,8 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         gpudecal->distance = 1.0f; // perspective flag (>0)
                         gpudecal->tanHalfFovY = tanH;
                         gpudecal->aspect = static_cast<float>(optics->aspectRatio);
+
+                        Log()->info("Bounding radius = {} near = {} far = {}", bsRadius, nearClip, farClip);
                     }
                     else
                     {

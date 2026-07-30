@@ -278,7 +278,7 @@ Application::ctor(int& argc, char** argv)
     // Create the ECS system manager and all its default systems.
     systemsNode = ECSNode::create(registry, true);
 
-    // optics: set a target:
+    // optics: set a target for terrain intersections:
     if (auto* opticsSystem = systemsNode->get<OpticsSystemNode>())
     {
         opticsSystem->target = mapNode->terrainNode;

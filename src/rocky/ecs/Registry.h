@@ -65,7 +65,7 @@ namespace ROCKY_NAMESPACE
 
         //! Returns a reference to a write-locked EnTT registry.
         //! 
-        //! A write-lock is appropritae for calls to create(), destroy(), clear(), emplace().
+        //! A write-lock is appropriate for calls to create(), destroy(), clear(), emplace().
         //! Note: you do not need a write lock for in-place component changes.
         //! 
         //! usage:

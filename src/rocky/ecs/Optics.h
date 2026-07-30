@@ -13,7 +13,7 @@ namespace ROCKY_NAMESPACE
 
     //! Component that represents an optical device like a camera,
     //! sensor, or projector that processes light through a lens.
-    struct Optics : public Component<Optics>
+    struct Optics // : public Component<Optics>
     {
         enum class Projection
         {
@@ -52,5 +52,19 @@ namespace ROCKY_NAMESPACE
         //! Whether to attempt to automatically compute
         //! a focal distance based on the scene geometry.
         bool autoComputeFocalDistance = true;
+
+        //! When true, attemp to automatically compute near/far scale/bias values based on
+        //! the scene geometry and the focal distance.
+        bool autoComputeNearFar = true;
+    };
+
+    namespace detail
+    {
+        struct OpticsDetail
+        {
+            double focalDistance = 1.0;
+            double nearDistance = 1.0;
+            double farDistance = 1.0;
+        };
     };
 }
