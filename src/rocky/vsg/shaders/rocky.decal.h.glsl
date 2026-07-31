@@ -26,14 +26,14 @@ struct Decal
 {
     mat4 mvm;
     mat4 mvmInverse; // computed in cull shader
-    float a; // halfX extent (ortho) or zmin (persp)
-    float b; // halfY extent (ortho) or zmax (persp)
-    float c; // halfZ extent (ortho) or culling radius (persp)
     int textureIndex; // used by element 0 as total decal count
-    float distance; // > 0 = persp
-    float tanHalfFovY;
-    float aspect;
     float opacity;
+    float distance; // > 0 = persp
+    float zMin; // persp: -near
+    float zMax; // persp: -far
+    float cullingRadius; // persp
+    float tanHalfFovY; // persp
+    float aspect; // persp
 };
 
 // SSBO containing the output tiles that pass cull (GPU only)
@@ -79,7 +79,7 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec3 normalVs, in vec2 f
         if (decal.distance > 0.0) // perspective
         {
             // decal.a = -far, decal.b = -near (projector looks down local -Z)
-            if (local.z >= decal.a && local.z <= decal.b)
+            if (local.z >= decal.zMin && local.z <= decal.zMax)
             {
                 float depth = -local.z; // positive forward distance from projector
                 float halfW = depth * decal.tanHalfFovY * decal.aspect;

@@ -24,25 +24,16 @@ namespace ROCKY_NAMESPACE
         glm::fmat4 mvm;
         glm::fmat4 mvmInverse; // GPU only
         union {
-            glm::float32 halfX;
-            glm::float32 zMin;
-        };
-        union {
-            glm::float32 halfY;
-            glm::float32 zMax;
-        };
-        union {
-            glm::float32 halfZ;
-            glm::float32 cullingRadius;
-        };
-        union {
             std::int32_t textureIndex = -1; // negative means no texture
             std::int32_t count; // used by entry 0 as total decal count
         };
-        float distance = 0.0f; // > 0 = persp
-        float tanHalfFovY = 0.0f;
-        float aspect = 1.0f;
-        float opacity = 1.0f;
+        glm::float32 opacity = 1.0f;
+        glm::float32 distance = 0.0f; // > 0 = persp
+        glm::float32 zMin = 1.0f;
+        glm::float32 zMax = 10.0f;
+        glm::float32 cullingRadius = 1.0f;
+        glm::float32 tanHalfFovY = 0.0f;
+        glm::float32 aspect = 1.0f;
     };
     static_assert(sizeof(DecalGPU) % 16 == 0, "DecalGPU must be 16-byte aligned");
 

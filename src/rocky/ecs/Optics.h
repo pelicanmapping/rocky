@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/Common.h>
 #include <rocky/Math.h>
+#include <rocky/Rendering.h>
 #include <rocky/ecs/Component.h>
 
 namespace ROCKY_NAMESPACE
@@ -13,7 +14,7 @@ namespace ROCKY_NAMESPACE
 
     //! Component that represents an optical device like a camera,
     //! sensor, or projector that processes light through a lens.
-    struct Optics // : public Component<Optics>
+    struct Optics
     {
         enum class Projection
         {
@@ -30,7 +31,6 @@ namespace ROCKY_NAMESPACE
 
         //! Distance from the lens to the focal plane in meters.
         double focalDistance = 1.0;
-        glm::dvec3 focalPoint;
 
         //! Lens parameters (perspective projection)
         double fovY = 45.0; // degrees
@@ -39,15 +39,10 @@ namespace ROCKY_NAMESPACE
         // When calculating near/far clip planes for a persepctive projection:
         // near = focalDistance * nearScale + nearBias
         // far = focalDistance * farScale + farBias
-        double nearScale = 0.5;
-        double farScale = 1.5;
+        double nearScale = 1.0;
+        double farScale = 1.0;
         double nearBias = 0.0;
         double farBias = 0.0;
-
-        //! Lens parameters (orthographic projection)
-        double width = 1000.0;
-        double height = 1000.0;
-        double depth = 1000.0;
 
         //! Whether to attempt to automatically compute
         //! a focal distance based on the scene geometry.
@@ -58,13 +53,16 @@ namespace ROCKY_NAMESPACE
         bool autoComputeNearFar = true;
     };
 
-    namespace detail
+    struct OpticsViewDetail
     {
-        struct OpticsDetail
-        {
-            double focalDistance = 1.0;
-            double nearDistance = 1.0;
-            double farDistance = 1.0;
-        };
+        glm::dvec3 focalPoint;
+        double focalDistance = 1.0;
+        double nearDistance = 1.0;
+        double farDistance = 1.0;
+    };
+
+    struct OpticsDetail
+    {
+        ViewLocal<OpticsViewDetail> views;
     };
 }

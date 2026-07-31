@@ -191,8 +191,6 @@ namespace
 
 auto Demo_Simulation = [](Application& app)
 {
-    const char* icon_location = "https://readymap.org/readymap/filemanager/download/public/icons/airport.png";
-
     // Make an entity for us to tether to and set it in motion
     static NodeLayer::Ptr layer;
     static vsg::ref_ptr<EntityNode> entityNode;
@@ -217,7 +215,7 @@ auto Demo_Simulation = [](Application& app)
     {
         // add an icon:
         auto io = app.vsgcontext->io;
-        auto image = io.services().readImageFromURI(icon_location, io);
+        auto image = io.services().readImageFromURI(ICON_AIRPORT, io);
         if (image.ok())
         {
             image.value()->flipVerticalInPlace();

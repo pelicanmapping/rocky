@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2025 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -8,6 +8,11 @@
 #include <filesystem>
 
 using namespace std::chrono_literals;
+
+#define TEXTURE_GRID "https://readymap.org/readymap/filemanager/download/public/textures/reference_grid_Color.jpg"
+#define MODEL_AIRPLANE "https://readymap.org/readymap/filemanager/download/public/models/C130_WFF_AIR_0824.glb"
+#define ICON_AIRPORT "https://readymap.org/readymap/filemanager/download/public/icons/airport.png"
+
 
 // utility to run a loop at a specific frequency (in Hz)
 struct run_at_frequency
