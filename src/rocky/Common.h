@@ -27,6 +27,7 @@
 #include <rocky/Log.h>
 #include <rocky/option.h>
 #include <string>
+#include <cstring> // for std::strrchr on linux
 #include <memory>
 #include <iostream>
 #include <cstdlib>
