@@ -79,7 +79,7 @@ auto Demo_LabelFeatures = [](Application& app)
                 style.fontName = ROCKY_DEMO_DEFAULT_FONT;
 
                 // create an entity for each candidate
-                for (auto& [name, candidate] : candidates)
+                for (const auto& [name, candidate] : candidates)
                 {
                     auto entity = reg.create();
 

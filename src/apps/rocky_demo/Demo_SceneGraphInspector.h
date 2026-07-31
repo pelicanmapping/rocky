@@ -849,7 +849,7 @@ namespace
                     ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthFixed);
                     ImGui::TableSetupColumn("Value", ImGuiTableColumnFlags_WidthStretch);
 
-                    for (auto& [key, value] : auxiliary->userObjects)
+                    for (const auto& [key, value] : auxiliary->userObjects)
                     {
                         auto display = scene_graph_inspector_format_object(value.get());
                         ImGui::TableNextRow();

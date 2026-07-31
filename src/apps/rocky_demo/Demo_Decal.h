@@ -15,21 +15,21 @@ struct PerspectiveFrustumView
 {
     entt::entity e = entt::null;
 
-    void init(entt::registry& r)
-    {
-        e = r.create();
-        auto& frustum_transform = r.emplace<Transform>(e);
-        frustum_transform.frustumCulled = false;
-        auto& lineStyle = r.emplace<LineStyle>(e);
-        lineStyle.color = StockColor::White;
-        auto& lineGeom = r.emplace<LineGeometry>(e);
-        lineGeom.topology = LineTopology::Segments;
-        lineGeom.points.resize(24);
-        auto& line = r.emplace<Line>(e, lineGeom, lineStyle);
-    }
-
     void update(entt::registry& r, const Transform& hostTransform, const Optics& optics, const OpticsViewDetail& opticsDetail)
     {
+        if (e == entt::null)
+        {
+            e = r.create();
+            auto& frustum_transform = r.emplace<Transform>(e);
+            frustum_transform.frustumCulled = false;
+            auto& lineStyle = r.emplace<LineStyle>(e);
+            lineStyle.color = StockColor::White;
+            auto& lineGeom = r.emplace<LineGeometry>(e);
+            lineGeom.topology = LineTopology::Segments;
+            lineGeom.points.resize(24);
+            auto& line = r.emplace<Line>(e, lineGeom, lineStyle);
+        }
+
         auto& frustum_xform = r.get<Transform>(e);
         auto& lineGeom = r.get<LineGeometry>(e);
 
@@ -138,8 +138,6 @@ auto Demo_Decal_Perspective = [](Application& app)
 
         reg.emplace<Decal>(e_decal);
 
-        frustumView.init(reg);
-
         if (auto manip = MapManipulator::get(app.display.window(0).view(0).vsgView))
         {
             Viewpoint vp;
@@ -155,7 +153,7 @@ auto Demo_Decal_Perspective = [](Application& app)
     {
         ImGuiLTable::Checkbox("Show", &reg.get<Visibility>(e_decal).visible[0]);
 
-        auto& [optics, opticsDetail, style] = reg.get<Optics, OpticsDetail, DecalStyle>(e_decal);
+        auto&& [optics, opticsDetail, style] = reg.get<Optics, OpticsDetail, DecalStyle>(e_decal);
 
         if (ImGuiLTable::SliderFloat("Opacity", &style.color.a, 0.0f, 1.0f, "%.1f"))
         {
@@ -245,9 +243,6 @@ auto Demo_Decal_Projector = [](Application& app)
         // the decal itself:
         reg.emplace<Decal>(e_platform);
 
-        // A frustum view to visualize the optics and the projection:
-        frustumView.init(reg);
-
         // A worker to animate the platform and its projector:
         MotionSystem motionsys(app.registry);
         double heading = 90.0, pitch = 25.0;
@@ -260,7 +255,7 @@ auto Demo_Decal_Projector = [](Application& app)
 
             // pan the projector from left to right:
             heading = -90.0 + 10.0 * sin((double)(app.frameCount()) * 0.01);
-            auto& [optics, opticsDetail] = r.get<Optics, OpticsDetail>(e_platform);
+            const auto& [optics, opticsDetail] = r.get<Optics, OpticsDetail>(e_platform);
             optics.pose = glm::mat4_cast(quaternion_from_euler_degrees(pitch, 0.0, heading));
 
             // update the frustum geometry to represent a frustum view of the optics:
