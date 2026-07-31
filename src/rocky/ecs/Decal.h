@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/Common.h>
 #include <rocky/Image.h>
+#include <rocky/Color.h>
 #include <rocky/ecs/Component.h>
 #include <optional>
 
@@ -19,8 +20,8 @@ namespace ROCKY_NAMESPACE
         //! Texture dimensions in world units (meters)
         std::optional<glm::dvec2> textureSize;
 
-        //! Opacity
-        float opacity = 1.0f;
+        //! Color to modulate with the texture image (if there is one)
+        Color color = StockColor::White;
     };
 
 

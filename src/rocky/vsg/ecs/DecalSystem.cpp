@@ -435,14 +435,14 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     
                     
                     // store the texture arena index if we have a texture; else -1 to indicate no texture.
-                    gpudecal->opacity = 1.0f;
+                    gpudecal->color = StockColor::White;
                     gpudecal->textureIndex = -1;
 
                     auto e_style = decal.style != entt::null ? decal.style : decal.owner;
                     auto [style, styleDetail] = reg.try_get<DecalStyle, DecalStyleDetail>(e_style);
                     if (style)
                     {
-                        gpudecal->opacity = style->opacity;
+                        gpudecal->color = style->color;
                         gpudecal->textureIndex = styleDetail->descriptorImageIndex;
                     }
 

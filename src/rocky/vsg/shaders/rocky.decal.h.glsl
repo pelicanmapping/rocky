@@ -26,14 +26,15 @@ struct Decal
 {
     mat4 mvm;
     mat4 mvmInverse; // computed in cull shader
+    vec4 color; // modulation color
     int textureIndex; // used by element 0 as total decal count
-    float opacity;
     float distance; // > 0 = persp
     float zMin; // persp: -near
     float zMax; // persp: -far
     float cullingRadius; // persp
     float tanHalfFovY; // persp
     float aspect; // persp
+    int _padding[1];
 };
 
 // SSBO containing the output tiles that pass cull (GPU only)
@@ -134,14 +135,14 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec3 normalVs, in vec2 f
             if (ti >= 0)
             {
                 vec4 tex = texture(u_decalTextures[nonuniformEXT(ti)], uv);
-                color.rgb = mix(color.rgb, tex.rgb, tex.a * decal.opacity);
+                color.rgb = mix(color.rgb, tex.rgb * decal.color.rgb, tex.a * decal.color.a);
             }
             else
             {
                 vec2 p = fract(uv * 10.0);
                 float grid = step(0.05, p.x) * step(0.05, p.y);
                 vec3 decalColor = vec3(fract(uv), 0.0) * grid;
-                color.rgb = mix(color.rgb, decalColor, decal.opacity);
+                color.rgb = mix(color.rgb, decalColor * decal.color.rgb, decal.color.a);
             }
         }
     }

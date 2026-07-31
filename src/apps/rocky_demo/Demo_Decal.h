@@ -134,7 +134,7 @@ auto Demo_Decal_Perspective = [](Application& app)
         optics.pose = glm::rotate(glm::dmat4(1), glm::radians(45.0), glm::dvec3(1, 0, 0));
 
         auto& style = reg.emplace<DecalStyle>(e_decal);
-        style.opacity = 0.5f;
+        style.color.a = 0.5f;
 
         reg.emplace<Decal>(e_decal);
 
@@ -157,7 +157,7 @@ auto Demo_Decal_Perspective = [](Application& app)
 
         auto& [optics, opticsDetail, style] = reg.get<Optics, OpticsDetail, DecalStyle>(e_decal);
 
-        if (ImGuiLTable::SliderFloat("Opacity", &style.opacity, 0.0f, 1.0f, "%.1f"))
+        if (ImGuiLTable::SliderFloat("Opacity", &style.color.a, 0.0f, 1.0f, "%.1f"))
         {
             style.dirty(reg);
         }
@@ -240,7 +240,7 @@ auto Demo_Decal_Projector = [](Application& app)
         // style the decal:
         auto& style = reg.emplace<DecalStyle>(e_platform);
         style.image = image;
-        style.opacity = 0.5f;
+        style.color.a = 0.5f;
 
         // the decal itself:
         reg.emplace<Decal>(e_platform);
