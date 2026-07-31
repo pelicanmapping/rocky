@@ -341,7 +341,7 @@ DisplayManager::configureTraits(vsg::WindowTraits* traits)
         // Query which extended_dynamic_state_3 features are actually supported.
         // Some Vulkan implementations (e.g., MoltenVK on macOS) don't support all features
         // of an extension even when the extension itself is reported as supported.
-        auto& supportedDS3 = pd->getFeatures<
+        auto supportedDS3 = pd->getFeatures<
             VkPhysicalDeviceExtendedDynamicState3FeaturesEXT,
             VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_3_FEATURES_EXT>();
 
