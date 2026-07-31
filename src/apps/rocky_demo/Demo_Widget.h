@@ -7,45 +7,6 @@
 #include "helpers.h"
 using namespace ROCKY_NAMESPACE;
 
-namespace
-{
-    struct DemoWidgetMouseHandler : public vsg::Inherit<vsg::Visitor, DemoWidgetMouseHandler>
-    {
-        Application& app;
-        DemoWidgetMouseHandler(Application& in_app) : app(in_app) {}
-        std::optional<vsg::ButtonPressEvent> _press;
-
-        Callback<const TerrainIntersection&> onClick;
-
-        void apply(vsg::ButtonPressEvent& e) override
-        {
-            if (e.button == 1) // left mouse button
-            {
-                _press = e;
-            }
-        }
-
-        void apply(vsg::ButtonReleaseEvent& e) override
-        {
-            if (_press.has_value())
-            {
-                auto dx = std::abs(e.x - _press->x), dy = std::abs(e.y - _press->y);
-                if (dx < 5 && dy < 5) // click threshold
-                {
-                    auto& window = app.display.find(_press->window.ref_ptr());
-                    auto&& [isect, view] = geoPointAtWindowCoords(window, _press->x, _press->y);
-                    if (isect)
-                    {
-                        onClick.fire(isect.value());
-                        e.handled = true;
-                    }
-                    
-                }
-            }
-            _press.reset();
-        }
-    };
-}
 
 auto Demo_Widget = [](Application& app)
 {
@@ -57,12 +18,11 @@ auto Demo_Widget = [](Application& app)
 
     if (entity == entt::null)
     {
-        auto handler = DemoWidgetMouseHandler::create(app);
-        app.viewer->getEventHandlers().emplace_back(handler);
+        auto handler = app.viewer->getObject<GeoMouseHandler>("demo.mouse");
 
-        sub = handler->onClick([&](const TerrainIntersection& isect)
+        sub = handler->onLeftClick([&](const TerrainIntersection& isect, const View& view)
             {
-                if (isect.point && move_widget_on_map_click)
+                if (move_widget_on_map_click)
                 {
                     app.registry.read([&](entt::registry& r)
                         {

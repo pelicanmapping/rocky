@@ -393,7 +393,7 @@ auto Demo_Decal_Stamper = [](Application& app)
 
         auto handler = app.viewer->getObject<GeoMouseHandler>("demo.mouse");
         subs += handler->onMouseMove(onMouseMove);
-        subs += handler->onMouseClick(onMouseClick);
+        subs += handler->onLeftClick(onMouseClick);
     }
 
 

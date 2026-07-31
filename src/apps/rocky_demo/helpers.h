@@ -31,18 +31,20 @@ struct run_at_frequency
 };
 
 
+
 //! VSG event handler that captures mouse actions as geopoints.
 class GeoMouseHandler : public vsg::Inherit<vsg::Visitor, GeoMouseHandler>
 {
 public:
     GeoMouseHandler(Application& in_app) : app(in_app) {}
 
+    Callback<const TerrainIntersection&, const View&> onLeftClick;
+    Callback<const TerrainIntersection&, const View&> onRightClick;
     Callback<const TerrainIntersection&, const View&> onMouseMove;
-    Callback<const TerrainIntersection&, const View&> onMouseClick;
 
 protected:
     Application& app;
-
+    std::optional<vsg::ButtonPressEvent> _press[4];
     struct TerrainIntersectionAndView
     {
         TerrainIntersection intersection;
@@ -72,39 +74,47 @@ protected:
 
     void apply(vsg::ButtonPressEvent& e) override
     {
-        _buttonPress = e;
+        _press[e.button] = e;
     }
 
     void apply(vsg::ButtonReleaseEvent& e) override
     {
-        if (onMouseClick && isMouseClick(e))
+        auto& press = _press[e.button];
+        if (press.has_value())
         {
-            if (auto r = mapPoint(e))
-                onMouseClick.fire(r.value().intersection, r.value().view);
-            else
-                onMouseClick.fire(TerrainIntersection(), View());
+            auto dx = std::abs(e.x - press->x), dy = std::abs(e.y - press->y);
+            if (dx < 5 && dy < 5) // click threshold
+            {
+                if (auto p = mapPoint(press.value()))
+                {
+                    if (e.button == 1)
+                        onLeftClick.fire(p.value().intersection, p.value().view);
+                    else if (e.button == 3)
+                        onRightClick.fire(p.value().intersection, p.value().view);
+                }
+            }
         }
-        _buttonPress.reset();
+        press.reset();
     }
 
-    bool isMouseClick(vsg::ButtonReleaseEvent& buttonRelease) const
-    {
-        if (!_buttonPress.has_value())
-            return false;
+    //bool isMouseClick(vsg::ButtonReleaseEvent& buttonRelease) const
+    //{
+    //    if (!_buttonPress.has_value())
+    //        return false;
 
-        if (_buttonPress->window != buttonRelease.window)
-            return false;
+    //    if (_buttonPress->window != buttonRelease.window)
+    //        return false;
 
-        if (std::abs(buttonRelease.x - _buttonPress->x) > 3)
-            return false;
+    //    if (std::abs(buttonRelease.x - _buttonPress->x) > 3)
+    //        return false;
 
-        if (std::abs(buttonRelease.y - _buttonPress->y) > 3)
-            return false;
+    //    if (std::abs(buttonRelease.y - _buttonPress->y) > 3)
+    //        return false;
 
-        return true;
-    }
+    //    return true;
+    //}
 
-    mutable std::optional<vsg::ButtonPressEvent> _buttonPress;
+    //mutable std::optional<vsg::ButtonPressEvent> _buttonPress;
 };
 
 const ImVec4 ImGuiErrorColor = ImVec4(1, 0.35f, 0.35f, 1);
