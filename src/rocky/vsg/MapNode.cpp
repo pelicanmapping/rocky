@@ -24,9 +24,6 @@ MapNode::MapNode(VSGContext vsgcontext)
     terrainNode = TerrainNode::create(vsgcontext);
     this->addChild(terrainNode);
 
-    // set up the map-level UBO and install it in the terrain node.
-    configureState(vsgcontext);
-
     // default to geodetic:
     profile = Profile("global-geodetic");
 }
@@ -140,21 +137,7 @@ MapNode::update(VSGContext vsgcontext)
         _openedLayers = true;
     }
 
-    // update the ubo
-    BufferAccess<MapSettingsGPU> mapSettings(vsgcontext->sharedRenderData->mapSettingsBuf);
-    mapSettings->ellipsoidAxes.x = srs().ellipsoid().semiMajorAxis();
-    mapSettings->ellipsoidAxes.y = srs().ellipsoid().semiMinorAxis();
-    mapSettings.dirty();
-
     return terrainNode->update(vsgcontext);
-}
-
-void
-MapNode::configureState(VSGContext vsgcontext)
-{
-    // global settings uniform setup
-    BufferAccess<MapSettingsGPU> mapSettings(
-        vsgcontext->sharedRenderData->mapSettingsBuf, BINDING_MAP_SETTINGS, TYPE_MAP_SETTINGS);
 }
 
 void
@@ -238,7 +221,7 @@ MapNode::create(VSGContext vsgcontext)
 
     vsg::observer_ptr<MapNode> weak_mapNode(mapNode);
 
-    mapNode->_updateSub = vsgcontext->onUpdate([weak_mapNode](VSGContext context)
+    mapNode->_subs += vsgcontext->onUpdate([weak_mapNode](VSGContext context)
         {
             if (auto mapNode = weak_mapNode.ref_ptr())
             {

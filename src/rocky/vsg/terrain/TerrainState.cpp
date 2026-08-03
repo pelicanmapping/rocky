@@ -22,15 +22,15 @@
 #define TERRAIN_VERT_SHADER "shaders/rocky.terrain.vert"
 #define TERRAIN_FRAG_SHADER "shaders/rocky.terrain.frag"
 
-#define MAP_SETTINGS_UBO_NAME "u_map"
+//#define MAP_SETTINGS_UBO_NAME "u_map"
 #define TERRAIN_SETTINGS_UBO_NAME "u_terrain"
 #define ELEVATION_TEX_NAME "u_elevationTex"
 #define COLOR_TEX_NAME "u_colorTex"
 #define NORMAL_TEX_NAME "u_normalTex"
 #define TILE_UBO_NAME "u_tile"
-#define FRUSTUM_GRID_PARAMS_UBO_NAME "u_frustumGridParams"
-#define FRUSTUMS_SSBO_NAME "u_frustums"
-#define DECALS_SSBO_NAME "u_decals"
+//#define FRUSTUM_GRID_PARAMS_UBO_NAME "u_frustumGridParams"
+//#define FRUSTUMS_SSBO_NAME "u_frustums"
+//#define DECALS_SSBO_NAME "u_decals"
 #define DECAL_TEXTURES_UBO_NAME "u_decalTextures"
 
 #define ATTR_VERTEX "in_vertexTs"
@@ -220,16 +220,16 @@ TerrainState::createShaderSet(VSGContext context) const
         BINDING_TERRAIN_SETTINGS, TYPE_TERRAIN_SETTINGS, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    shaderSet->addDescriptorBinding(MAP_SETTINGS_UBO_NAME, "",
-        DESCRIPTOR_SET_GLOBAL,
-        BINDING_MAP_SETTINGS, TYPE_MAP_SETTINGS, 1,
-        VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    //shaderSet->addDescriptorBinding(MAP_SETTINGS_UBO_NAME, "",
+    //    DESCRIPTOR_SET_GLOBAL,
+    //    BINDING_MAP_SETTINGS, TYPE_MAP_SETTINGS, 1,
+    //    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
 #ifdef ROCKY_HAS_DECALS
-    shaderSet->addDescriptorBinding(DECALS_SSBO_NAME, "",
-        DESCRIPTOR_SET_GLOBAL,
-        BINDING_DECALS, TYPE_DECALS, 1,
-        VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    //shaderSet->addDescriptorBinding(DECALS_SSBO_NAME, "",
+    //    DESCRIPTOR_SET_GLOBAL,
+    //    BINDING_VDS_DECALS, TYPE_VDS_DECALS, 1,
+    //    VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
     shaderSet->addDescriptorBinding(DECAL_TEXTURES_UBO_NAME, "",
         DESCRIPTOR_SET_GLOBAL,
@@ -271,10 +271,10 @@ TerrainState::createPipelineConfig(VSGContext context) const
 
     config->enableDescriptor(TILE_UBO_NAME);
     config->enableDescriptor(TERRAIN_SETTINGS_UBO_NAME);
-    config->enableDescriptor(MAP_SETTINGS_UBO_NAME);
+    //config->enableDescriptor(MAP_SETTINGS_UBO_NAME);
 
 #ifdef ROCKY_HAS_DECALS
-    config->enableDescriptor(DECALS_SSBO_NAME);
+    //config->enableDescriptor(DECALS_SSBO_NAME);
     config->enableDescriptor(DECAL_TEXTURES_UBO_NAME);
 #endif
 
@@ -318,18 +318,17 @@ TerrainState::buildTerrainStateGroup(vsg::ref_ptr<vsg::StateGroup>& stateGroup, 
 
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig, void());
 
+    vsg::Descriptors globals;
+
     // global terrain settings uniform setup
     BufferAccess<TerrainSettingsGPU> terrainSettings(
         _terrainSettingsBuf,
         BINDING_TERRAIN_SETTINGS, TYPE_TERRAIN_SETTINGS);
 
-    vsg::Descriptors globals {
-        _terrainSettingsBuf,
-        vsgcontext->sharedRenderData->mapSettingsBuf
-    };
+    globals.emplace_back(_terrainSettingsBuf);
 
 #ifdef ROCKY_HAS_DECALS
-    globals.emplace_back(vsgcontext->sharedRenderData->decalsBuf);
+    //globals.emplace_back(vsgcontext->sharedRenderData->decalsBuf);
     globals.emplace_back(vsgcontext->sharedRenderData->decalTextures);
 #endif
 

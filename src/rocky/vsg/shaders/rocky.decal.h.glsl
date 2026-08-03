@@ -45,7 +45,7 @@ layout(std430, set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_DECAL_TILES) DECA
 b_decalTiles;
 
 // SSBO containing the input decals to be culled
-layout(std430, set = DESCRIPTOR_SET_GLOBAL, binding = BINDING_DECALS) DECALS_ACCESS buffer Decals
+layout(std430, set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_DECALS) DECALS_ACCESS buffer Decals
 {
     Decal decal[];
 }

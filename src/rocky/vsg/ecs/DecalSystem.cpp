@@ -230,47 +230,38 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
         decals.each([&](auto, auto&, auto&, auto&, auto&) { ++_totalNumDecals; });
     });
 
-    if (!_sharedRenderData->decalsBuf)
-        buffersChanged = true;
-
-    // Decal input buffer: keep room for all decals (+1 entry at index 0 for count).
-    BufferAccess<DecalGPU> decals(_sharedRenderData->decalsBuf, BINDING_DECALS, TYPE_DECALS);
-
-    auto currentDecalsCapacity = decals.capacity();
-    if (currentDecalsCapacity > 0u)
-        --currentDecalsCapacity;
-
-    decals->count = _totalNumDecals;
-
-    // Does the decals buffer need to grow?
-    if (_totalNumDecals > currentDecalsCapacity)
-    {
-        constexpr std::size_t growBy = 32u;
-
-        const auto newDecalCapacity = (_totalNumDecals > currentDecalsCapacity + growBy) ?
-            _totalNumDecals :
-            (currentDecalsCapacity + growBy);
-
-        // creates a new descriptor buffer, so we have to notify users to rebuild DSets that use it.
-        decals.resize(newDecalCapacity + 1, vsgcontext);
-        buffersChanged = true;
-
-        // if we changed the buffer we have to also recompile the parenting DS:
-        // TODO: do this in response to onDecalsBufReallocated event just for consistency
-        if (_localDescriptorSet)
-        {
-            auto old_ds = _localDescriptorSet;
-            _localDescriptorSet = vsg::DescriptorSet::create(old_ds->setLayout, old_ds->descriptors);
-            dispose(old_ds);
-        }
-    }
-
     for (auto& vds : _sharedRenderData->viewDependentState)
     {
         if (!vds || !vds->frustumParamsBuf)
             break;
 
         auto& view = _views[vds->view->viewID];
+
+        if (!vds->decalsBuf)
+            buffersChanged = true;
+
+        // Decal input buffer: keep room for all decals (+1 entry at index 0 for count).
+        BufferAccess<DecalGPU> decals(vds->decalsBuf);
+
+        auto currentDecalsCapacity = decals.capacity();
+        if (currentDecalsCapacity > 0u)
+            --currentDecalsCapacity;
+
+        // Does the decals buffer need to grow?
+        if (_totalNumDecals >= currentDecalsCapacity)
+        {
+            constexpr std::size_t growBy = 16u;
+
+            const auto newDecalCapacity = (_totalNumDecals > currentDecalsCapacity + growBy) ?
+                _totalNumDecals :
+                (currentDecalsCapacity + growBy);
+
+            Log()->info("DecalSystemNode: resizing decals buffer to {} at {} bytes", newDecalCapacity, newDecalCapacity * sizeof(DecalGPU));
+
+            // creates a new descriptor buffer, so we have to notify users to rebuild DSets that use it.
+            decals.resize(newDecalCapacity + 1, vsgcontext);
+            buffersChanged = true;
+        }
 
         // See if the frustum grid has changed size, and if so, resize the decal tiles buffer to match.
         BufferAccess<FrustumGridParamsGPU> params(vds->frustumParamsBuf);
@@ -320,18 +311,10 @@ DecalSystemNode::rebuildCommands(ViewIDType viewID, VSGContext vsgcontext)
     // use the ds layout from the first view-dependent state, which is shared by all views:
     auto vdsDescriptorSetLayout = _sharedRenderData->viewDependentState[0]->descriptorSetLayout;
 
-    // a local DSL to capture our decals buffer (which is not view-dependent, but is shared by all views):
-    _localDescriptorSet = vsg::DescriptorSet::create();
-    _localDescriptorSet->setLayout = vsg::DescriptorSetLayout::create();
-    _localDescriptorSet->setLayout->addBinding(BINDING_DECALS, TYPE_DECALS, 1, VK_SHADER_STAGE_ALL);
-
-    _localDescriptorSet->descriptors.emplace_back(_sharedRenderData->decalsBuf);
-
     auto pipelineLayout = vsg::PipelineLayout::create(
         vsg::DescriptorSetLayouts{
             vsg::DescriptorSetLayout::create(), // set 0 (empty)
-            vds->descriptorSet->setLayout,  // set 1 (VDS)
-            _localDescriptorSet->setLayout, // set 2 (global)
+            vds->descriptorSet->setLayout,      // set 1 (VDS)
         },
         vsg::PushConstantRanges{}
     );
@@ -339,12 +322,6 @@ DecalSystemNode::rebuildCommands(ViewIDType viewID, VSGContext vsgcontext)
     auto pipeline = vsg::ComputePipeline::create(pipelineLayout, _cullingShader);
 
     auto bindPipeline = vsg::BindComputePipeline::create(pipeline);
-
-    auto bindGlobal = vsg::BindDescriptorSet::create(
-        VK_PIPELINE_BIND_POINT_COMPUTE,
-        pipeline->layout,
-        DESCRIPTOR_SET_GLOBAL,
-        _localDescriptorSet);
 
     auto bindVDS = vsg::BindDescriptorSet::create(
         VK_PIPELINE_BIND_POINT_COMPUTE,
@@ -372,7 +349,6 @@ DecalSystemNode::rebuildCommands(ViewIDType viewID, VSGContext vsgcontext)
 
     view.commands = vsg::Commands::create();
     view.commands->addChild(bindPipeline);
-    view.commands->addChild(bindGlobal);
     view.commands->addChild(bindVDS);
     view.commands->addChild(dispatch);
     view.commands->addChild(pipelineBarrier);
@@ -393,13 +369,14 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
         {
             auto vm = to_glm(vds->view->camera->viewMatrix->transform());
 
-            BufferAccess<DecalGPU> gpudecal(_sharedRenderData->decalsBuf);
+            BufferAccess<DecalGPU> gpudecal(vds->decalsBuf);
             const auto gpuCapacity = gpudecal.capacity();
             if (gpuCapacity == 0u)
                 continue;
 
             std::uint32_t decalIndex = 0u;
 
+            // TODO: why are we reading viewport 0 only?
             auto& vp = vds->viewportData->at(0);
             RenderingState rs{
                 viewID, (FrameCountType)~0,
@@ -509,10 +486,10 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                 reg.view<Decal, DecalDetail, ActiveState, Visibility, TransformDetail>().each(updateDecal);
             });
 
-            // Keep the shader-side loop bound aligned with what we actually wrote.
-            BufferAccess<DecalGPU> decalHeader(_sharedRenderData->decalsBuf);
-            decalHeader->count = decalIndex;
-            decalHeader.dirty();
+            // Update the decal count (kept in record #0):
+            gpudecal.reset();
+            gpudecal->count = decalIndex;
+            gpudecal.dirty();
         }
         else
         {

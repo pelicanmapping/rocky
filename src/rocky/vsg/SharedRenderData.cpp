@@ -36,15 +36,7 @@ namespace
 
 SharedRenderData::SharedRenderData()
 {
-    BufferAccess<MapSettingsGPU> mapSettings(
-        mapSettingsBuf,
-        BINDING_MAP_SETTINGS, TYPE_MAP_SETTINGS);
-
 #ifdef ROCKY_HAS_DECALS
-
-    BufferAccess<DecalGPU> decals(
-        decalsBuf,
-        BINDING_DECALS, TYPE_DECALS); //, 32u);
 
     // arena to hold all decal textures (shared by all views).
     // All entries are initialized to a valid fallback image.
@@ -56,11 +48,8 @@ SharedRenderData::SharedRenderData()
         BINDING_DECAL_TEXTURES,
         0, // array element
         TYPE_DECAL_TEXTURES);
-
 #endif
 }
-
-
 
 void
 SharedRenderData::dirtySharedDescriptors()
@@ -79,7 +68,7 @@ SharedRenderData::rebuildVdsDescriptorSet(ViewIDType viewID, ObjectLifecycle* li
 
     auto numRockyDescriptors = 3; // renderParams, frustumParams, frustums
 #ifdef ROCKY_HAS_DECALS
-    numRockyDescriptors += 1; // decalTiles
+    numRockyDescriptors += 2; // decals, decalTiles
 #endif
 
     vsg::Descriptors newDescriptors;
@@ -90,6 +79,7 @@ SharedRenderData::rebuildVdsDescriptorSet(ViewIDType viewID, ObjectLifecycle* li
     newDescriptors.emplace_back(vds->frustumParamsBuf);
     newDescriptors.emplace_back(vds->frustumsBuf);
 #ifdef ROCKY_HAS_DECALS
+    newDescriptors.emplace_back(vds->decalsBuf);
     newDescriptors.emplace_back(vds->decalTilesBuf);
 #endif
 

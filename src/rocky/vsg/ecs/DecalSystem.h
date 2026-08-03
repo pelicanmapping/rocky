@@ -42,8 +42,6 @@ namespace ROCKY_NAMESPACE
         mutable unsigned _totalNumDecals = 0u;
 
         vsg::ref_ptr<vsg::ShaderStage> _cullingShader;
-        
-        vsg::ref_ptr<vsg::DescriptorSet> _localDescriptorSet;
 
         void rebuildCommands(ViewIDType, VSGContext);
         void updateStyles(VSGContext);

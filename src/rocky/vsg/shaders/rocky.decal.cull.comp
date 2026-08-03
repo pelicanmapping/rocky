@@ -1,4 +1,3 @@
-#version 450
 /**
  * rocky c++
  * Copyright 2026 Pelican Mapping
@@ -10,11 +9,11 @@
 #pragma include "rocky.decal.h.glsl"
 
 layout(local_size_x = FRUSTUM_GRID_TILES_PER_THREAD_GROUP,
-       local_size_y = FRUSTUM_GRID_TILES_PER_THREAD_GROUP) in;
+    local_size_y = FRUSTUM_GRID_TILES_PER_THREAD_GROUP) in;
 
 
 // test for intersection between decal and frustum
-// by testing the decal's BS against all four frustum planes
+// by testing the decal's BS against all four frustum boundaries
 bool intersects(in Decal decal, in Frustum frustum)
 {
     float radius;
@@ -36,12 +35,7 @@ bool intersects(in Decal decal, in Frustum frustum)
         posVS = (decal.mvm * vec4(0, 0, 0, 1)).xyz;
     }
 
-    for (int i = 0; i < 4; ++i)
-    {
-        if (dot(frustum.planes[i].xyz, posVS) - frustum.planes[i].w < -radius)
-            return false;
-    }
-    return true;
+    return intersectsFrustum(frustum, posVS, radius);
 }
 
 void main()

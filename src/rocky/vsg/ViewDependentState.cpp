@@ -54,6 +54,14 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 
 
 #ifdef ROCKY_HAS_DECALS
+    BufferAccess<DecalGPU> decals(decalsBuf,
+        BINDING_VDS_DECALS, TYPE_VDS_DECALS);
+
+    this->descriptorSet->descriptors.emplace_back(decalsBuf);
+
+    this->descriptorSetLayout->addBinding(BINDING_VDS_DECALS,
+        TYPE_VDS_DECALS, 1, VK_SHADER_STAGE_ALL);
+
 
     GPUOnlyBufferAccess<DecalTileGPU> decalTiles(decalTilesBuf,
         BINDING_VDS_DECAL_TILES, TYPE_VDS_DECAL_TILES,
@@ -63,7 +71,6 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 
     this->descriptorSetLayout->addBinding(BINDING_VDS_DECAL_TILES,
         TYPE_VDS_DECAL_TILES, 1, VK_SHADER_STAGE_ALL);
-
 #endif // ROCKY_HAS_DECALS
 }
 
@@ -71,7 +78,7 @@ void
 ViewDependentStateEx::traverse(vsg::RecordTraversal& rt) const
 {
     // todo: update custom descriptors
-    BufferAccess<RenderParamsGPU> renderParams(renderParamsBuf); //(_myDescriptors.ubo);
+    BufferAccess<RenderParamsGPU> renderParams(renderParamsBuf);
 
     renderParams->viewMatrix = to_glm(view->camera->viewMatrix->transform());
     renderParams->inverseViewMatrix = to_glm(view->camera->viewMatrix->inverse());
@@ -139,6 +146,13 @@ ROCKY_NAMESPACE::addViewDependentStateToShaderSet(vsg::ShaderSet* shaderSet, VkS
 
 #ifdef ROCKY_HAS_DECALS
     shaderSet->addDescriptorBinding(
+        "rockyvds_decals", "",
+        DESCRIPTOR_SET_VDS,
+        BINDING_VDS_DECALS,
+        TYPE_VDS_DECALS, 1,
+        stageFlags, {});
+
+    shaderSet->addDescriptorBinding(
         "rockyvds_decal_tiles", "",
         DESCRIPTOR_SET_VDS,
         BINDING_VDS_DECAL_TILES,
@@ -156,8 +170,8 @@ ROCKY_NAMESPACE::enableViewDependentStateUniforms(vsg::GraphicsPipelineConfigura
     gpc->enableDescriptor("rockyvds_render_params");
     gpc->enableDescriptor("rockyvds_frustum_grid_params");
     gpc->enableDescriptor("rockyvds_frustums");
-
 #ifdef ROCKY_HAS_DECALS
+    gpc->enableDescriptor("rockyvds_decals");
     gpc->enableDescriptor("rockyvds_decal_tiles");
 #endif
 }

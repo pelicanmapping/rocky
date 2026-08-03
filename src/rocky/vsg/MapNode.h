@@ -83,9 +83,7 @@ namespace ROCKY_NAMESPACE
 
         mutable ViewLocal<Horizon> _horizon;
 
-        CallbackSub _updateSub;
-
-        void configureState(VSGContext context);
+        CallbackSubs _subs;
     };
 }
 

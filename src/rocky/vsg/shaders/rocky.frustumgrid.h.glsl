@@ -13,7 +13,9 @@
 
 struct Frustum
 {
-    vec4 planes[4];
+    // Ortho:       (minX, maxX, minY, maxY)
+    // Perspective: (minX/Z, maxX/Z, minY/Z, maxY/Z)
+    vec4 bounds;
 };
 
 layout(std140, set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_FRUSTUM_GRID_PARAMS) uniform FrustumGridParams
@@ -49,11 +51,38 @@ int frustumIndex(in vec2 fragCoord)
 
 bool intersectsFrustum(in Frustum f, in vec3 posVs, in float radius)
 {
-    for (int i = 0; i < 4; ++i)
+    if (u_projIsOrtho == 1u)
     {
-        if (dot(f.planes[i].xyz, posVs) - f.planes[i].w < -radius)
-            return false;
+        if (posVs.x < f.bounds.x - radius) return false;
+        if (posVs.x > f.bounds.y + radius) return false;
+        if (posVs.y < f.bounds.z - radius) return false;
+        if (posVs.y > f.bounds.w + radius) return false;
+        return true;
     }
+
+    // Perspective bounds are stored as:
+    // (minXOverNegZ, maxXOverNegZ, minYOverNegZ, maxYOverNegZ)
+    float minXOverNegZ = f.bounds.x;
+    float maxXOverNegZ = f.bounds.y;
+    float minYOverNegZ = f.bounds.z;
+    float maxYOverNegZ = f.bounds.w;
+
+    // left:   x + minXOverNegZ * z >= 0
+    float d0 = posVs.x + minXOverNegZ * posVs.z;
+    if (d0 < -radius * sqrt(1.0 + minXOverNegZ * minXOverNegZ)) return false;
+
+    // right: -x - maxXOverNegZ * z >= 0
+    float d1 = -posVs.x - maxXOverNegZ * posVs.z;
+    if (d1 < -radius * sqrt(1.0 + maxXOverNegZ * maxXOverNegZ)) return false;
+
+    // bottom: y + minYOverNegZ * z >= 0
+    float d2 = posVs.y + minYOverNegZ * posVs.z;
+    if (d2 < -radius * sqrt(1.0 + minYOverNegZ * minYOverNegZ)) return false;
+
+    // top:   -y - maxYOverNegZ * z >= 0
+    float d3 = -posVs.y - maxYOverNegZ * posVs.z;
+    if (d3 < -radius * sqrt(1.0 + maxYOverNegZ * maxYOverNegZ)) return false;
+
     return true;
 }
 
@@ -67,7 +96,7 @@ vec3 frustumTileTestColor(in vec2 fragCoord, in vec3 posVs)
 
     // fails if either the frustum or the intersection test is incorrect:
     if (!intersectsFrustum(f, posVs, 0.0))
-        return vec3(1,0,0);
+        return vec3(1, 0, 0);
 
     float t = float(tile + 1);
     return vec3(fract(t * 0.1031), fract(t * 0.11369), fract(t * 0.13787));

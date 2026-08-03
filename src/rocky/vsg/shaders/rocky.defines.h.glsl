@@ -21,15 +21,15 @@
 #define BINDING_VDS_RENDER_PARAMS           10
 #define BINDING_VDS_FRUSTUM_GRID_PARAMS     11
 #define BINDING_VDS_FRUSTUMS                12
-#define BINDING_VDS_DECAL_TILES             13
+#define BINDING_VDS_DECALS                  13
+#define BINDING_VDS_DECAL_TILES             14
 
 // map global state (in descriptor set 2):
 #define DESCRIPTOR_SET_GLOBAL                2
 
-#define BINDING_MAP_SETTINGS                 1
-#define BINDING_TERRAIN_SETTINGS             2
-#define BINDING_DECALS                       3
-#define BINDING_DECAL_TEXTURES               4
+//#define BINDING_MAP_SETTINGS                 1
+#define BINDING_TERRAIN_SETTINGS             1
+#define BINDING_DECAL_TEXTURES               2
 
 
 // configuration and limits:
@@ -45,11 +45,11 @@
 #define TYPE_VDS_FRUSTUM_GRID_PARAMS  VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 #define TYPE_VDS_FRUSTUMS             VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
 
+#define TYPE_VDS_DECALS               VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
 #define TYPE_VDS_DECAL_TILES          VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
-#define TYPE_DECALS                   VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
 #define TYPE_DECAL_TEXTURES           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 
-#define TYPE_MAP_SETTINGS             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
+//#define TYPE_MAP_SETTINGS             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 #define TYPE_TERRAIN_SETTINGS         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 #define TYPE_TERRAIN_TILE             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 

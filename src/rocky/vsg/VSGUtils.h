@@ -513,7 +513,7 @@ namespace ROCKY_NAMESPACE
         }
 
         void reset() {
-            *reinterpret_cast<T*>(_data->dataPointer()) = T();
+            _iter = reinterpret_cast<T*>(_data->dataPointer());
         }
 
         vsg::Data* data() {
