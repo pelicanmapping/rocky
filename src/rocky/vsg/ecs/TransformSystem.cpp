@@ -76,7 +76,7 @@ TransformSystemNode::traverse(vsg::RecordTraversal& record) const
             if (srs_changed)
                 transform_detail.reset(viewID);
 
-            at_least_one_transform_changed = transform_detail.update(record, &pixel_scale)
+            at_least_one_transform_changed = transform_detail.traverse(record, &pixel_scale)
                 || at_least_one_transform_changed;
         });
 
@@ -85,7 +85,7 @@ TransformSystemNode::traverse(vsg::RecordTraversal& record) const
             if (srs_changed)
                 transform_detail.reset(viewID);
 
-            at_least_one_transform_changed = transform_detail.update(record, nullptr)
+            at_least_one_transform_changed = transform_detail.traverse(record, nullptr)
                 || at_least_one_transform_changed;
         });
 

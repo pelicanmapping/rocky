@@ -22,13 +22,13 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 {
     Inherit::init(req);
 
-    BufferAccess<RenderParams> renderParams(
+    BufferAccess<RenderParamsGPU> renderParams(
         renderParamsBuf,
         BINDING_VDS_RENDER_PARAMS, TYPE_VDS_RENDER_PARAMS);
 
     renderParams.data()->properties.dataVariance = vsg::DYNAMIC_DATA;
 
-    BufferAccess<FrustumGridParams> frustumParams(
+    BufferAccess<FrustumGridParamsGPU> frustumParams(
         frustumParamsBuf,
         BINDING_VDS_FRUSTUM_GRID_PARAMS, TYPE_VDS_FRUSTUM_GRID_PARAMS);
 
@@ -71,7 +71,7 @@ void
 ViewDependentStateEx::traverse(vsg::RecordTraversal& rt) const
 {
     // todo: update custom descriptors
-    BufferAccess<RenderParams> renderParams(renderParamsBuf); //(_myDescriptors.ubo);
+    BufferAccess<RenderParamsGPU> renderParams(renderParamsBuf); //(_myDescriptors.ubo);
 
     renderParams->viewMatrix = to_glm(view->camera->viewMatrix->transform());
     renderParams->inverseViewMatrix = to_glm(view->camera->viewMatrix->inverse());

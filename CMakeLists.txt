@@ -117,3 +117,8 @@ endfunction()
 
 # source code
 add_subdirectory(src)
+
+# Strict conformance
+add_compile_options(
+    $<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/permissive->
+)

@@ -44,6 +44,14 @@ namespace ROCKY_NAMESPACE
                 object.traverse(*this);
             }
         };
+
+        //! Is this vsg view a shadow map creator?
+        inline bool isShadowView(vsg::View* view)
+        {
+            // NOTE: this value (0x01) is hardcoded in ViewDependentState::init()
+            return (view && view->mask == 0x01);
+        }
+
     }
 
     // vsg-glm conversions.

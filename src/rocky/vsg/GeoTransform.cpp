@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2023 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "GeoTransform.h"
@@ -15,7 +15,7 @@ GeoTransform::traverse(vsg::RecordTraversal& record) const
         _transformDetail.sync = *this;
     }
 
-    _transformDetail.update(record, nullptr);
+    _transformDetail.traverse(record, nullptr);
 
     RenderingState rs{
         record.getCommandBuffer()->viewID,

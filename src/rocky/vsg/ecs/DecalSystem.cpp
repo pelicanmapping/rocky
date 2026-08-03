@@ -273,7 +273,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
         auto& view = _views[vds->view->viewID];
 
         // See if the frustum grid has changed size, and if so, resize the decal tiles buffer to match.
-        BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
+        BufferAccess<FrustumGridParamsGPU> params(vds->frustumParamsBuf);
         auto numFrustumTiles = params->numTiles.x * params->numTiles.y;
 
         GPUOnlyBufferAccess<DecalTileGPU> decalTiles(vds->decalTilesBuf);
@@ -353,7 +353,7 @@ DecalSystemNode::rebuildCommands(ViewIDType viewID, VSGContext vsgcontext)
         vds->descriptorSet);
 
     // launches the compute shader:
-    BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
+    BufferAccess<FrustumGridParamsGPU> params(vds->frustumParamsBuf);
     auto dispatch = vsg::Dispatch::create(
         (params->numTiles.x + FRUSTUM_GRID_TILES_PER_THREAD_GROUP - 1u) / FRUSTUM_GRID_TILES_PER_THREAD_GROUP,
         (params->numTiles.y + FRUSTUM_GRID_TILES_PER_THREAD_GROUP - 1u) / FRUSTUM_GRID_TILES_PER_THREAD_GROUP,

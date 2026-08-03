@@ -96,25 +96,6 @@ protected:
         }
         press.reset();
     }
-
-    //bool isMouseClick(vsg::ButtonReleaseEvent& buttonRelease) const
-    //{
-    //    if (!_buttonPress.has_value())
-    //        return false;
-
-    //    if (_buttonPress->window != buttonRelease.window)
-    //        return false;
-
-    //    if (std::abs(buttonRelease.x - _buttonPress->x) > 3)
-    //        return false;
-
-    //    if (std::abs(buttonRelease.y - _buttonPress->y) > 3)
-    //        return false;
-
-    //    return true;
-    //}
-
-    //mutable std::optional<vsg::ButtonPressEvent> _buttonPress;
 };
 
 const ImVec4 ImGuiErrorColor = ImVec4(1, 0.35f, 0.35f, 1);

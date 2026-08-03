@@ -190,6 +190,10 @@ auto Demo_Decal_Perspective = [](Application& app)
 
 auto Demo_Decal_Projector = [](Application& app)
 {
+    // This demo shows an aircraft with a projected image eminating from
+    // the platform on to the terrain, representing a gimbal-mouted
+    // camera or remote sensing device.
+
     static entt::entity e_platform = entt::null;
     static PerspectiveFrustumView frustumView;
     static CallbackSubs subs;
@@ -208,45 +212,48 @@ auto Demo_Decal_Projector = [](Application& app)
 
         e_platform = reg.create();
 
-        // a 3D model
+        // a 3D model to display the aircraft
         auto& model = reg.emplace<Model>(e_platform);
         model.uri = URI(MODEL_AIRPLANE);
         model.localMatrix = glm::rotate(glm::dmat4(1), glm::radians(90.0), glm::dvec3(0,0,1));
 
-        // place and orient the model:
+        // place and orient the model. Later we'll create an animation callback
+        // that will move it each frame.
         auto& transform = reg.emplace<Transform>(e_platform);
         transform.position = GeoPoint(SRS::WGS84, -119.5, 34.0, 50000.0).transform(SRS::ECEF);
         transform.topocentric = true;
 
-        // scale up the model so we can see it:
+        // scale up the model so we can see it from any zoom range:
         auto& pixelScale = reg.emplace<PixelScale>(e_platform);
         pixelScale.minPixels = 256;
         pixelScale.maxPixels = FLT_MAX;
 
-        // put the model in motion:
+        // a simple motion model for the aircraft:
         auto& motion = reg.emplace<MotionGreatCircle>(e_platform);
         motion.normalAxis = SRS::WGS84.ellipsoid().rotationAxis(transform.position, 90.0);
         motion.velocity = glm::dvec3(2200, 0, 0);
 
-        // define the projector's optical parameters:
+        // Now we define the optical parameters of the remote sensing device.
+        // autoComputeFocalDistance will perform a terrain intersection to find the
+        // distance to the terrain and set the focal distance accordingly.
         auto& optics = reg.emplace<Optics>(e_platform);
         optics.projection = Optics::Projection::Perspective;
-        optics.fovY = 35.0f;
+        optics.fovY = 35.0f; // degrees
         optics.autoComputeFocalDistance = true;
         optics.autoComputeNearFar = true;
         
-        // style the decal:
+        // Style our Decal with a texture and a semi-transparent alpha value.
         auto& style = reg.emplace<DecalStyle>(e_platform);
         style.image = image;
         style.color.a = 0.5f;
 
-        // the decal itself:
+        // The Decal instance itself works in conjuction with Optics, DecalStyle,
+        // and a Transform to project the image onto the terrain.
         reg.emplace<Decal>(e_platform);
 
         // A worker to animate the platform and its projector:
         MotionSystem motionsys(app.registry);
-        double heading = 90.0, pitch = 25.0;
-        auto animate = [&app, motionsys, heading, pitch](VSGContext) mutable
+        auto animate = [&app, motionsys](VSGContext) mutable
         {
             // update the platform's position based on its Motion component:
             motionsys.update(app.vsgcontext);
@@ -254,21 +261,21 @@ auto Demo_Decal_Projector = [](Application& app)
             auto&& [_, r] = app.registry.write();
 
             // pan the projector from left to right:
-            heading = -90.0 + 10.0 * sin((double)(app.frameCount()) * 0.01);
+            const double pitch = 25.0;
+            double heading = -90.0 + 10.0 * sin((double)(app.frameCount()) * 0.01);
             const auto& [optics, opticsDetail] = r.get<Optics, OpticsDetail>(e_platform);
             optics.pose = glm::mat4_cast(quaternion_from_euler_degrees(pitch, 0.0, heading));
 
             // update the frustum geometry to represent a frustum view of the optics:
             auto& platform_xform = r.get<Transform>(e_platform);
             frustumView.update(r, platform_xform, optics, opticsDetail.views[0]);
-
             
             app.vsgcontext->requestFrame();
         };  
         subs += app.vsgcontext->onUpdate(animate);
 
 
-        // zoom to the aoi:
+        // zoom to the action!
         if (auto manip = MapManipulator::get(app.display.window(0).view(0).vsgView))
         {
             Viewpoint vp;

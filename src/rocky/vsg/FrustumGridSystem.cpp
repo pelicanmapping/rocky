@@ -65,7 +65,7 @@ FrustumGridSystemNode::update(VSGContext vsgcontext)
                 auto& grid = view.newGrid.value();
 
                 // Start by updating the paramters uniform with the new values:
-                BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
+                BufferAccess<FrustumGridParamsGPU> params(vds->frustumParamsBuf);
                 params->invProjMatrix = to_glm(vsg::inverse(grid.projection));
                 params->projIsOrtho = std::abs(grid.projection[3][3] - 1.0) < 1e-9 ? 1 : 0;
                 params->viewport = glm::ivec4(grid.viewport[0], grid.viewport[1], grid.viewport[2], grid.viewport[3]);
@@ -141,7 +141,7 @@ FrustumGridSystemNode::update(VSGContext vsgcontext)
             else
             {
                 // transmit the current viewport and inverse projection matrix to the GPU for this view
-                BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
+                BufferAccess<FrustumGridParamsGPU> params(vds->frustumParamsBuf);
                 auto& vp = vds->viewportData->at(0);
                 params->viewport = glm::ivec4(vp[0], vp[1], vp[2], vp[3]);
                 params->invProjMatrix = to_glm(vds->view->camera->projectionMatrix->inverse());
@@ -210,7 +210,7 @@ FrustumGridSystemNode::traverse(vsg::RecordTraversal& record) const
 
         auto& projMatrix = state->projectionMatrixStack.top();
 
-        BufferAccess<FrustumGridParams> params(vds->frustumParamsBuf);
+        BufferAccess<FrustumGridParamsGPU> params(vds->frustumParamsBuf);
 
         if (params->viewport[2] != vp[2] || params->viewport[3] != vp[3] || projMatrix[3][3] != view.lastProjMatrix[3][3])
         {

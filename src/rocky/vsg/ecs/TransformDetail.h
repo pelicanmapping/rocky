@@ -1,6 +1,6 @@
 /**
  * rocky c++
- * Copyright 2025 Pelican Mapping
+ * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
@@ -20,7 +20,7 @@ namespace ROCKY_NAMESPACE
         int revision = -1;    // revision of this data, for syncing
         vsg::dmat4 model;     // model matrix (possibly adjusted by dynamic scale)
         vsg::dmat4 baseModel; // model matrix before dynamic scale adjustment
-        vsg::dmat4 pixelScaleBaseModel; // model matrix with local scale removed
+        vsg::dmat4 baseModelWithoutScale; // model matrix with local scale removed
         vsg::dmat4 proj;      // projection matrix
         vsg::dmat4 modelview; // modelview matrix
         vsg::dmat4 mvp;       // modelview-projection matrix
@@ -66,7 +66,7 @@ namespace ROCKY_NAMESPACE
 
         //! Updates the per-view data for the given record traversal.
         //! Return true if any updates were made due to a dirty Transform.
-        bool update(vsg::RecordTraversal&, const PixelScale*);
+        bool traverse(vsg::RecordTraversal&, const PixelScale*);
 
         //! Push the matrix associated with this transform onto the record stack
         void push(vsg::RecordTraversal&) const;

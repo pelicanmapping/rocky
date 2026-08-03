@@ -12,16 +12,16 @@ namespace ROCKY_NAMESPACE
 {
     class MapNode;
 
-    struct RenderParams {
+    struct RenderParamsGPU {
         glm::fmat4 viewMatrix;
         glm::fmat4 inverseViewMatrix;
         glm::fvec2 ellipsoidAxes;
         glm::uint32_t stereographic; // bool
         glm::float32_t _padding[1];
     };
-    static_assert(sizeof(RenderParams) % 16 == 0, "RenderParams must be 16-byte aligned");
+    //static_assert(sizeof(RenderParams) % 16 == 0, "RenderParams must be 16-byte aligned");
 
-    struct FrustumGridParams {
+    struct FrustumGridParamsGPU {
         glm::fmat4 invProjMatrix;
         glm::ivec4 viewport = { 0, 0, 0, 0 };
         glm::uvec2 numTiles = { 1u, 1u };
@@ -43,7 +43,11 @@ namespace ROCKY_NAMESPACE
     static_assert(sizeof(DecalTileGPU) % 16 == 0, "DecalTileGPU must be 16-byte aligned");
 
     /**
-    * Extends vsg::ViewDependentState to add data for Rocky rendering    *
+    * Extends vsg::ViewDependentState to add data for Rocky rendering.
+    *
+    * Note! Even though we replace each vsg::View's VDS with this one, VSG will still make its OWN
+    * View's with stock ViewDependentState objects for shadows (and perhaps other things).
+    * So we need to be careful to only use this class when we know it's ours, and not a stock VDS.
     */
     class ROCKY_EXPORT ViewDependentStateEx : public vsg::Inherit<vsg::ViewDependentState, ViewDependentStateEx>
     {

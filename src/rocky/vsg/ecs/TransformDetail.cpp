@@ -127,7 +127,7 @@ TransformDetail::reset(std::uint32_t viewID)
 }
 
 bool
-TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelScale)
+TransformDetail::traverse(vsg::RecordTraversal& record, const PixelScale* pixelScale)
 {
     if (!sync.position.valid())
         return false;
@@ -188,7 +188,7 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
                 }
 
                 view.baseModel = view.model;
-                view.pixelScaleBaseModel = localMatrixHasScale ?
+                view.baseModelWithoutScale = localMatrixHasScale ?
                     view.baseModel * vsg::scale(1.0 / localMatrixScale.x, 1.0 / localMatrixScale.y, 1.0 / localMatrixScale.z) :
                     view.baseModel;
             }
@@ -218,7 +218,7 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
     {
         // Start from the local-scale-neutral base model so we don't compound scale adjustments
         // or apply Transform::localMatrix scale along with PixelScale.
-        view.model = view.pixelScaleBaseModel;
+        view.model = view.baseModelWithoutScale;
         model_scale = vsg::length(vsg::dvec3(view.model[0][0], view.model[0][1], view.model[0][2]));
         scaled_radius = sync.radius;
         culling_radius = scaled_radius;
@@ -260,18 +260,23 @@ TransformDetail::update(vsg::RecordTraversal& record, const PixelScale* pixelSca
 
     // apply the optional screen-space projection:
     auto* vsgView = record.getCommandBuffer()->viewDependentState->view;
-    auto vds = viewDependentState(vsgView);
-    BufferAccess<RenderParams> rp(vds->renderParamsBuf);
-    if (rp->stereographic) //vds && vds-uniforms().stereographic)
+    if (!detail::isShadowView(vsgView))
     {
-        auto& view = views[vsgView->viewID];
+        if (auto vds = viewDependentState(vsgView))
+        {
+            BufferAccess<RenderParamsGPU> rp(vds->renderParamsBuf);
+            if (rp->stereographic)
+            {
+                auto& view = views[vsgView->viewID];
 
-        view.position = applyProjection(
-            view.position,
-            to_dvec2(to_vsg(rp->ellipsoidAxes)),
-            to_vsg(glm::dmat4(rp->viewMatrix)),
-            view.proj,
-            rp->stereographic != 0);
+                view.position = applyProjection(
+                    view.position,
+                    to_dvec2(to_vsg(rp->ellipsoidAxes)),
+                    to_vsg(glm::dmat4(rp->viewMatrix)),
+                    view.proj,
+                    rp->stereographic != 0);
+            }
+        }
     }
 
     view.passingCull = true;
