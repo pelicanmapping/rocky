@@ -224,7 +224,11 @@ namespace ROCKY_NAMESPACE
         auto sesh = session(io);
         sesh.srs = srs;
         sesh.referenceLatitude = begin->y;
-        return sesh.clampRange(begin, end);
+        auto ok = sesh.clampRange(begin, end);
+        if (ok)
+            return ResultVoidOK;
+        else
+            return Failure{};
     }
 
     template<class VEC3_ITER>
