@@ -136,6 +136,10 @@ namespace ROCKY_NAMESPACE
         //! Utility to safely recompile a descriptor set.
         void recompileDescriptorSet(vsg::ref_ptr<vsg::DescriptorSet> descriptorSet);
 
+        void addViewDependentStateToShaderSet(vsg::ShaderSet* shaderSet, VkShaderStageFlags stageFlags);
+
+        void enableViewDependentStateUniforms(vsg::GraphicsPipelineConfigurator* gpc);
+
         //! Destructor
         virtual ~VSGContextImpl();
 

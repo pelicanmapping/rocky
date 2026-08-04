@@ -55,7 +55,6 @@ void
 SharedRenderData::dirtySharedDescriptors()
 {
     ++revision;
-    //onSharedDescriptorsChanged.fire();
 }
 
 void

@@ -170,6 +170,7 @@ ROCKY_NAMESPACE::enableViewDependentStateUniforms(vsg::GraphicsPipelineConfigura
     gpc->enableDescriptor("rockyvds_render_params");
     gpc->enableDescriptor("rockyvds_frustum_grid_params");
     gpc->enableDescriptor("rockyvds_frustums");
+
 #ifdef ROCKY_HAS_DECALS
     gpc->enableDescriptor("rockyvds_decals");
     gpc->enableDescriptor("rockyvds_decal_tiles");

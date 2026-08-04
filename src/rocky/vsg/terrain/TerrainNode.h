@@ -22,6 +22,7 @@ namespace ROCKY_NAMESPACE
     class GeoPoint;
     class TerrainNode;
 
+    //! Represents the result of a terrain intersection query.
     struct TerrainIntersection
     {
         GeoPoint point;
@@ -62,6 +63,8 @@ namespace ROCKY_NAMESPACE
 
         const TerrainSettings& settings() const override;
 
+        TerrainActivity& activity() override;
+
         TerrainTilePager& tiles() override {
             return _tiles;
         }
@@ -76,11 +79,13 @@ namespace ROCKY_NAMESPACE
         Result<> createRootTiles(VSGContext);
     };
 
+
     /**
      * Root node of the terrain geometry
      */
     class ROCKY_EXPORT TerrainNode : public vsg::Inherit<vsg::Switch, TerrainNode>,
-        public TerrainSettings
+        public TerrainSettings,
+        public TerrainActivity
     {
     public:
         

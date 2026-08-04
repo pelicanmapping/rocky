@@ -277,7 +277,7 @@ TerrainNode::update(VSGContext vsgcontext)
 {
     if (vsgcontext->sharedRenderData->sharedDescriptorsChanged(_sharedDataRevision))
     {
-        Log()->info("TerrainNode: shared buffers changed; updating global descriptor set");
+        Log()->debug("TerrainNode: shared buffers changed; updating global descriptor set");
         state->buildTerrainStateGroup(_profileNodes, vsgcontext);
         vsgcontext->compile(_profileNodes);
     }
@@ -302,6 +302,12 @@ TerrainNode::update(VSGContext vsgcontext)
 
 const TerrainSettings&
 TerrainProfileNode::settings() const
+{
+    return terrain;
+}
+
+TerrainActivity&
+TerrainProfileNode::activity()
 {
     return terrain;
 }

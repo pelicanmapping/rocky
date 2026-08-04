@@ -72,6 +72,16 @@ namespace
 auto Demo_Terrain = [](Application& app)
 {
     static Layer::Ptr axesLayer;
+    static CallbackSubs subs;
+    static GeoExtent lastTerrainLoadedExtent;
+
+    if (subs.empty())
+    {
+        subs += app.mapNode->terrainNode->onTileLoaded([&](const TileKey& key)
+        {
+            lastTerrainLoadedExtent = key.extent().transform(SRS::WGS84);
+        });
+    }
 
     auto&& [window, view] = app.display.windowAndViewAtCoords(ImGui::GetMousePos().x, ImGui::GetMousePos().y);
 
@@ -143,6 +153,8 @@ auto Demo_Terrain = [](Application& app)
 
         float* nodata = (float*)&mapNode->terrainSettings().backgroundColor.mutable_value();
         ImGuiLTable::ColorEdit3("No-data color", nodata);
+
+        ImGuiLTable::Text("Last loaded", "%s", lastTerrainLoadedExtent.toString().c_str());
 
         ImGuiLTable::End();
     }

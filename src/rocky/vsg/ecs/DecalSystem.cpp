@@ -256,7 +256,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
                 _totalNumDecals :
                 (currentDecalsCapacity + growBy);
 
-            Log()->info("DecalSystemNode: resizing decals buffer to {} at {} bytes", newDecalCapacity, newDecalCapacity * sizeof(DecalGPU));
+            Log()->debug("DecalSystemNode: resizing decals buffer to {} at {} bytes", newDecalCapacity, newDecalCapacity * sizeof(DecalGPU));
 
             // creates a new descriptor buffer, so we have to notify users to rebuild DSets that use it.
             decals.resize(newDecalCapacity + 1, vsgcontext);
@@ -272,7 +272,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
         auto numDecalTiles = decalTiles.capacity();
         if (numDecalTiles != numFrustumTiles)
         {
-            Log()->info("DecalSystemNode: resizing decal tiles buffer from {} to {} tiles at {} bytes", numDecalTiles, numFrustumTiles, numFrustumTiles * sizeof(DecalTileGPU));
+            Log()->debug("DecalSystemNode: resizing decal tiles buffer from {} to {} tiles at {} bytes", numDecalTiles, numFrustumTiles, numFrustumTiles * sizeof(DecalTileGPU));
             decalTiles.resize(numFrustumTiles, vsgcontext->device(), vsgcontext);
             buffersChanged = true;
         }

@@ -28,9 +28,7 @@
 #define COLOR_TEX_NAME "u_colorTex"
 #define NORMAL_TEX_NAME "u_normalTex"
 #define TILE_UBO_NAME "u_tile"
-//#define FRUSTUM_GRID_PARAMS_UBO_NAME "u_frustumGridParams"
-//#define FRUSTUMS_SSBO_NAME "u_frustums"
-//#define DECALS_SSBO_NAME "u_decals"
+
 #define DECAL_TEXTURES_UBO_NAME "u_decalTextures"
 
 #define ATTR_VERTEX "in_vertexTs"
@@ -155,7 +153,7 @@ TerrainState::createDefaultDescriptors(VSGContext context)
 }
 
 vsg::ref_ptr<vsg::ShaderSet>
-TerrainState::createShaderSet(VSGContext context) const
+TerrainState::createShaderSet(VSGContext vsgcontext) const
 {
     // Creates a ShaderSet for terrain rendering.
     //
@@ -175,14 +173,14 @@ TerrainState::createShaderSet(VSGContext context) const
     auto vertexShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_VERTEX_BIT,
         "main",
-        vsg::findFile(TERRAIN_VERT_SHADER, context->searchPaths),
-        context->readerWriterOptions);
+        vsg::findFile(TERRAIN_VERT_SHADER, vsgcontext->searchPaths),
+        vsgcontext->readerWriterOptions);
 
     auto fragmentShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_FRAGMENT_BIT,
         "main",
-        vsg::findFile(TERRAIN_FRAG_SHADER, context->searchPaths),
-        context->readerWriterOptions);
+        vsg::findFile(TERRAIN_FRAG_SHADER, vsgcontext->searchPaths),
+        vsgcontext->readerWriterOptions);
 
     if (!vertexShader || !fragmentShader)
     {
@@ -220,17 +218,7 @@ TerrainState::createShaderSet(VSGContext context) const
         BINDING_TERRAIN_SETTINGS, TYPE_TERRAIN_SETTINGS, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
-    //shaderSet->addDescriptorBinding(MAP_SETTINGS_UBO_NAME, "",
-    //    DESCRIPTOR_SET_GLOBAL,
-    //    BINDING_MAP_SETTINGS, TYPE_MAP_SETTINGS, 1,
-    //    VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
-
 #ifdef ROCKY_HAS_DECALS
-    //shaderSet->addDescriptorBinding(DECALS_SSBO_NAME, "",
-    //    DESCRIPTOR_SET_GLOBAL,
-    //    BINDING_VDS_DECALS, TYPE_VDS_DECALS, 1,
-    //    VK_SHADER_STAGE_FRAGMENT_BIT, {});
-
     shaderSet->addDescriptorBinding(DECAL_TEXTURES_UBO_NAME, "",
         DESCRIPTOR_SET_GLOBAL,
         BINDING_DECAL_TEXTURES, TYPE_DECAL_TEXTURES, MAX_NUM_DECAL_TEXTURES,
@@ -248,7 +236,7 @@ TerrainState::createShaderSet(VSGContext context) const
 
 
 vsg::ref_ptr<vsg::GraphicsPipelineConfig>
-TerrainState::createPipelineConfig(VSGContext context) const
+TerrainState::createPipelineConfig(VSGContext vsgcontext) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), {});
 
@@ -257,7 +245,7 @@ TerrainState::createPipelineConfig(VSGContext context) const
     auto config = vsg::GraphicsPipelineConfig::create(shaderSet);
 
     // Apply any custom compile settings / defines:
-    config->shaderHints = context->shaderCompileSettings;
+    config->shaderHints = vsgcontext->shaderCompileSettings;
 
     // activate the arrays we intend to use
     config->enableArray(ATTR_VERTEX, VK_VERTEX_INPUT_RATE_VERTEX, 12);
@@ -271,10 +259,8 @@ TerrainState::createPipelineConfig(VSGContext context) const
 
     config->enableDescriptor(TILE_UBO_NAME);
     config->enableDescriptor(TERRAIN_SETTINGS_UBO_NAME);
-    //config->enableDescriptor(MAP_SETTINGS_UBO_NAME);
 
 #ifdef ROCKY_HAS_DECALS
-    //config->enableDescriptor(DECALS_SSBO_NAME);
     config->enableDescriptor(DECAL_TEXTURES_UBO_NAME);
 #endif
 
@@ -328,7 +314,6 @@ TerrainState::buildTerrainStateGroup(vsg::ref_ptr<vsg::StateGroup>& stateGroup, 
     globals.emplace_back(_terrainSettingsBuf);
 
 #ifdef ROCKY_HAS_DECALS
-    //globals.emplace_back(vsgcontext->sharedRenderData->decalsBuf);
     globals.emplace_back(vsgcontext->sharedRenderData->decalTextures);
 #endif
 

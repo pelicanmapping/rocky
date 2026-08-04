@@ -29,8 +29,6 @@ FrustumGridSystemNode::initialize(VSGContext vsgcontext)
         return;
     }
 
-    _sharedRenderData = vsgcontext->sharedRenderData;
-
     _shader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_COMPUTE_BIT,
         "main",
@@ -44,6 +42,8 @@ FrustumGridSystemNode::initialize(VSGContext vsgcontext)
     }
 
     _shader->module->hints = vsgcontext->shaderCompileSettings;
+
+    _sharedRenderData = vsgcontext->sharedRenderData;
 }
 
 void
@@ -78,7 +78,7 @@ FrustumGridSystemNode::update(VSGContext vsgcontext)
                 // Allocate space on the GPU for all the actual frustums and update the buffer.
                 // This will require a recompile of course.
 
-                Log()->info("FrustumGridSystem: updating frustum grid for view {} to {}x{} at {} bytes",
+                Log()->debug("FrustumGridSystem: updating frustum grid for view {} to {}x{} at {} bytes",
                     grid.viewID, params->numTiles.x, params->numTiles.y,
                     params->numTiles.x * params->numTiles.y * sizeof(FrustumGPU));
 

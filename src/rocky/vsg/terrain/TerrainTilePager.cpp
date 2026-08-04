@@ -26,10 +26,6 @@ TerrainTilePager::TerrainTilePager(const TerrainSettings& settings, TerrainTileH
     _settings(settings)
 {
     _firstLOD = settings.minLevel;
-
-    //_subs += vsgcontext->sharedRenderData->onDecalsBufReallocated([this, vsgcontext]() {
-    //    this->recompileDescriptorSets(vsgcontext);
-    //});
 }
 
 TerrainTilePager::~TerrainTilePager()
@@ -53,24 +49,7 @@ TerrainTilePager::releaseAll()
 void
 TerrainTilePager::recompileDescriptorSets(VSGContext vsgcontext)
 {
-#if 0
-    std::scoped_lock lock(_mutex);
-    for (auto& [key, info] : _tiles)
-    {
-        if (info.tile)
-        {            
-            auto& bind = info.tile->renderModel.descriptors.bind;
-            if (bind)
-            {
-                auto old_ds = bind->descriptorSet;
-                auto new_ds = vsg::DescriptorSet::create(old_ds->setLayout, old_ds->descriptors);
-                bind->descriptorSet = new_ds;
-                vsgcontext->compile(new_ds);
-                //vsgcontext->recompileDescriptorSet(bind->descriptorSet);
-            }
-        }
-    }
-#endif
+    //nop
 }
 
 void
@@ -145,32 +124,6 @@ bool
 TerrainTilePager::update(std::shared_ptr<TerrainTileFactory> tileFactory, VSGContext vsgcontext)
 {
     std::scoped_lock lock(_mutex);
-
-#if 0
-    if (_sharedDataRevision != vsgcontext->sharedRenderData->revision)
-    {
-        Log()->info("TerrainTilePager: shared buffers changed; updating global descriptor sets");
-
-        // if any of the shared descriptors changed, we need to rebuild our
-        // per-tile descriptor sets that reference them.
-        for (auto& [key, info] : _tiles)
-        {
-            if (info.tile)
-            {
-                auto& bind = info.tile->renderModel.descriptors.bind;
-                if (bind)
-                {
-                    auto old_ds = bind->descriptorSet;
-                    auto new_ds = vsg::DescriptorSet::create(old_ds->setLayout, old_ds->descriptors);
-                    bind->descriptorSet = new_ds;
-                    vsgcontext->compile(new_ds);
-                }
-            }
-        }
-
-        _sharedDataRevision = vsgcontext->sharedRenderData->revision;
-    }
-#endif
 
     auto fs = vsgcontext->viewer()->getFrameStamp();
     auto& io = vsgcontext->io;
@@ -472,14 +425,22 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io,
         auto tile = tileFactory->host->tiles().getTile(key);
         if (tile)
         {
+            // get rid of old state:
             for (auto c : tile->stategroup->stateCommands)
                 vsgcontext->dispose(c);
 
-            tile->stategroup->stateCommands = { tile->renderModel.descriptors.bind };
+            // set new ones:
+            tile->stategroup->stateCommands = {
+                tile->renderModel.descriptors.bind
+            };
 
+            // update the surface proxy witth new elevation data:
             tile->surface->setElevation(
                 tile->renderModel.elevation.image,
-                tile->renderModel.elevation.matrix);
+                tile->renderModel.elevation.matrix);            
+
+            // notify the activity interface
+            tileFactory->host->activity().onTileLoaded.fire(key);
 
             vsgcontext->requestFrame();
             return true;
