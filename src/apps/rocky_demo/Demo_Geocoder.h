@@ -27,6 +27,8 @@ auto Demo_Geocoder = [](Application& app)
             style.depthOffset = 9000.0f; //meters
             reg.emplace<Line>(outline, geom, style);
 
+            reg.emplace<Overlay>(outline);
+
             // configure a label for the selected place:
             label = reg.create();
             reg.emplace<Label>(label, "");

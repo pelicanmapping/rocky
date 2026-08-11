@@ -1,10 +1,12 @@
 /**
+/**
  * rocky c++
  * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #pragma once
 #include <rocky/ecs/Decal.h>
+#include <rocky/ecs/Overlay.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 
 namespace ROCKY_NAMESPACE
@@ -50,11 +52,14 @@ namespace ROCKY_NAMESPACE
 
         void on_construct_Decal(entt::registry& r, entt::entity e);
         void on_construct_DecalStyle(entt::registry& r, entt::entity e);
+        void on_construct_Overlay(entt::registry& r, entt::entity e);
         void on_destroy_Decal(entt::registry& r, entt::entity e);
         void on_destroy_DecalStyle(entt::registry& r, entt::entity e);
+        void on_destroy_Overlay(entt::registry& r, entt::entity e);
         void on_destroy_DecalStyleDetail(entt::registry& r, entt::entity e);
         void on_update_Decal(entt::registry& r, entt::entity e);
         void on_update_DecalStyle(entt::registry& r, entt::entity e);
+        void on_update_Overlay(entt::registry& r, entt::entity e);
     };
 }
 

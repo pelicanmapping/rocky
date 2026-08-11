@@ -13,6 +13,7 @@
 #include <rocky/ecs/Widget.h>
 #include <rocky/ecs/Model.h>
 #include <rocky/ecs/Decal.h>
+#include <rocky/ecs/Overlay.h>
 #include <rocky/ecs/Optics.h>
 #include <rocky/ecs/Transform.h>
 #include <rocky/ecs/Visibility.h>

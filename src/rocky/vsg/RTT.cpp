@@ -9,7 +9,8 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
     vsg::Context& context,
     const VkExtent2D& extent,
     vsg::ref_ptr<vsg::ImageInfo> colorImageInfo,
-    vsg::ref_ptr<vsg::ImageInfo> depthImageInfo)
+    vsg::ref_ptr<vsg::ImageInfo> depthImageInfo,
+    const vsg::vec4& clearColor)
 {
     auto device = context.device;
 
@@ -161,7 +162,7 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
     rendergraph->framebuffer = fbuf;
 
     rendergraph->clearValues.resize(2);
-    rendergraph->clearValues[0].color = { {1.0f, 0.3f, 0.4f, 1.0f} };
+    rendergraph->clearValues[0].color = { {clearColor.r, clearColor.g, clearColor.b, clearColor.a} };
     rendergraph->clearValues[1].depthStencil = VkClearDepthStencilValue{ 0.0f, 0 };
 
     return rendergraph;

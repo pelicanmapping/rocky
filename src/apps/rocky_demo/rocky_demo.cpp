@@ -23,6 +23,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Label.h"
 #include "Demo_Widget.h"
 #include "Demo_Decal.h"
+#include "Demo_Overlay.h"
 #include "Demo_LineFeatures.h"
 #include "Demo_PolygonFeatures.h"
 #include "Demo_LabelFeatures.h"
@@ -49,6 +50,8 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Synchro.h"
 #include "Demo_OrderedRendering.h"
 #include "Demo_FrustumGrid.h"
+#include "Demo_Clamping.h"
+
 
 template<class T>
 int layerError(T layer)
@@ -102,6 +105,10 @@ std::vector<Demo> demos =
             Demo{ "Perspective", Demo_Decal_Perspective },
             Demo{ "Projector", Demo_Decal_Projector },
             Demo{ "Stamper", Demo_Decal_Stamper }
+        } },
+        Demo{ "Overlay", {}, {
+            Demo{ "Overlay geometry (absolute)", Demo_Overlay_Absolute },
+            Demo{ "Overlay geometry (relative)", Demo_Overlay_Relative }
         } }
     } },
     Demo{ "VSG Nodes", {},
@@ -130,6 +137,7 @@ std::vector<Demo> demos =
     Demo{ "Terrain", Demo_Terrain },
     Demo{ "Sandbox", {},
     {
+        Demo{ "Clamping", Demo_Clamping },
         Demo{ "Drawing", Demo_Draw },
         Demo{ "Forward+", Demo_FrustumGrid },
         Demo{ "Geocoding", Demo_Geocoder },

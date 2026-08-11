@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "ModelSystem.h"
+#include "OverlayRenderContext.h"
+#include "OverlayBakeSystem.h"
 #include "ECSVisitors.h"
 #include "TransformDetail.h"
 #include <rocky/ecs/Model.h>
@@ -79,13 +81,25 @@ ModelSystemNode::traverse(vsg::RecordTraversal& record) const
         { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
     };
 
+    int renderDomain = RenderDomain_Main;
+    record.getValue(RENDER_DOMAIN_KEY, renderDomain);
+    entt::entity overlayTarget = entt::null;
+    if (renderDomain == RenderDomain_OverlayBake)
+        record.getValue(OVERLAY_BAKE_TARGET_KEY, overlayTarget);
+
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
-            auto iter = reg.view<Model, ModelDetail, ActiveState, Visibility>();
-
-            iter.each([&](auto entity, auto& model, auto& det, auto& active, auto& visibility)
+            auto renderEntity = [&](auto entity, auto& model, auto& det, auto& active, auto& visibility)
                 {
+                    if (renderDomain == RenderDomain_OverlayBake)
+                    {
+                        if (!reg.any_of<Overlay>(entity))
+                            return;
+                        if (overlayTarget != entt::null && entity != overlayTarget)
+                            return;
+                    }
+
                     if (det.node)
                     {
                         if (model.radius <= 0.0)
@@ -107,11 +121,17 @@ ModelSystemNode::traverse(vsg::RecordTraversal& record) const
                         if (visible(visibility, rs))
                         {
                             auto* xformDetail = reg.try_get<TransformDetail>(entity);
+                            bool useTransform = !(renderDomain == RenderDomain_OverlayBake && reg.any_of<AutoOverlayTransform>(entity));
                             if (xformDetail)
                             {
-                                if (xformDetail->views[rs.viewID].passingCull)
+                                bool passes = (renderDomain == RenderDomain_OverlayBake) || xformDetail->views[rs.viewID].passingCull;
+                                if (useTransform && passes)
                                 {
                                     _drawList.emplace_back(det.node, xformDetail);
+                                }
+                                else if (!useTransform)
+                                {
+                                    _drawList.emplace_back(det.node, nullptr);
                                 }
                             }
                             else
@@ -120,7 +140,18 @@ ModelSystemNode::traverse(vsg::RecordTraversal& record) const
                             }
                         }
                     }
-                });
+                };
+
+            if (renderDomain == RenderDomain_OverlayBake)
+            {
+                auto iter = reg.view<Model, ModelDetail, ActiveState, Visibility>();
+                iter.each(renderEntity);
+            }
+            else
+            {
+                auto iter = reg.view<Model, ModelDetail, ActiveState, Visibility>(entt::exclude<Overlay>);
+                iter.each(renderEntity);
+            }
 
             // Render collected data.
             for (auto& drawable : _drawList)

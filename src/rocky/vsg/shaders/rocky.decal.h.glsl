@@ -131,6 +131,11 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec3 normalVs, in vec2 f
 
         if (inside)
         {
+            if (decal._padding[0] != 0)
+            {
+                uv.y = 1.0 - uv.y;
+            }
+
             int ti = decal.textureIndex;
             if (ti >= 0)
             {

@@ -26,6 +26,7 @@ namespace ROCKY_NAMESPACE
             vsg::Context& context,
             const VkExtent2D& extent,
             vsg::ref_ptr<vsg::ImageInfo> colorImageInfo,
-            vsg::ref_ptr<vsg::ImageInfo> depthImageInfo);
+            vsg::ref_ptr<vsg::ImageInfo> depthImageInfo,
+            const vsg::vec4& clearColor = vsg::vec4(1.0f, 0.3f, 0.4f, 1.0f));
     };
 }

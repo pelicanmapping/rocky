@@ -4,6 +4,8 @@
  * MIT License
  */
 #include "PointSystem.h"
+#include "OverlayRenderContext.h"
+#include "OverlayBakeSystem.h"
 #include "TransformDetail.h"
 #include "ECSVisitors.h"
 #include "../ViewDependentState.h"
@@ -456,6 +458,12 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
     _styleDetailBins.clear();
     _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
+    int renderDomain = RenderDomain_Main;
+    record.getValue(RENDER_DOMAIN_KEY, renderDomain);
+    entt::entity overlayTarget = entt::null;
+    if (renderDomain == RenderDomain_OverlayBake)
+        record.getValue(OVERLAY_BAKE_TARGET_KEY, overlayTarget);
+
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
 
@@ -483,9 +491,16 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
 
             int count = 0;
 
-            auto iter = reg.view<Point, ActiveState, Visibility>();
-            iter.each([&](auto entity, auto& point, auto& active, auto& visibility)
+            auto renderEntity = [&](auto entity, auto& point, auto& active, auto& visibility)
                 {
+                    if (renderDomain == RenderDomain_OverlayBake)
+                    {
+                        if (!reg.any_of<Overlay>(entity))
+                            return;
+                        if (overlayTarget != entt::null && entity != overlayTarget)
+                            return;
+                    }
+
                     auto* geomDetail = reg.try_get<PointGeometryDetail>(point.geometry);
                     if (!geomDetail)
                         return;
@@ -502,11 +517,18 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
                         }
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
+                        bool useTransform = !(renderDomain == RenderDomain_OverlayBake && reg.any_of<AutoOverlayTransform>(entity));
                         if (transformDetail)
                         {
-                            if (transformDetail->views[rs.viewID].passingCull)
+                            bool passes = (renderDomain == RenderDomain_OverlayBake) || transformDetail->views[rs.viewID].passingCull;
+                            if (useTransform && passes)
                             {
                                 styleDetail->drawList.emplace_back(geomView.root, transformDetail);
+                                ++count;
+                            }
+                            else if (!useTransform)
+                            {
+                                styleDetail->drawList.emplace_back(geomView.root, nullptr);
                                 ++count;
                             }
                         }
@@ -516,7 +538,18 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
                             ++count;
                         }
                     }
-                });
+                };
+
+            if (renderDomain == RenderDomain_OverlayBake)
+            {
+                auto iter = reg.view<Point, ActiveState, Visibility>();
+                iter.each(renderEntity);
+            }
+            else
+            {
+                auto iter = reg.view<Point, ActiveState, Visibility>(entt::exclude<Overlay>);
+                iter.each(renderEntity);
+            }
 
             // Render collected data.
             // TODO: swap vectors into unprotected space to free up the readlock?

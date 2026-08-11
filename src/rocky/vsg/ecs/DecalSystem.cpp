@@ -1,9 +1,11 @@
 /**
+/**
  * rocky c++
  * Copyright 2026 Pelican Mapping
  * MIT License
  */
 #include "DecalSystem.h"
+#include "OverlayBakeSystem.h"
 #include "OpticsSystem.h"
 #include "ECSVisitors.h"
 #include "../ViewDependentState.h"
@@ -11,6 +13,8 @@
 #include "../ShaderDefines.h"
 #include <rocky/ecs/Optics.h>
 #include <rocky/vsg/VSGUtils.h>
+#include <algorithm>
+#include <cmath>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -31,15 +35,19 @@ namespace
         std::int32_t ssboIndex = -1;
     };
 
+    struct OverlayDetail
+    {
+        // where is this overlay in the SSBO?
+        std::int32_t ssboIndex = -1;
+    };
+
     struct DecalStyleDetail
     {
         vsg::ref_ptr<vsg::ImageInfo> texture;
-
         // where is this texture in the descriptorimage?
         std::int32_t descriptorImageIndex = -1;
     };
 }
-
 
 void DecalSystemNode::on_construct_Decal(entt::registry& r, entt::entity e)
 {
@@ -47,6 +55,16 @@ void DecalSystemNode::on_construct_Decal(entt::registry& r, entt::entity e)
     (void)r.get_or_emplace<Visibility>(e);
     r.emplace<DecalDetail>(e);
     Decal::dirty(r, e);
+    ++_totalNumDecals;
+}
+
+void DecalSystemNode::on_construct_Overlay(entt::registry& r, entt::entity e)
+{
+    (void)r.get_or_emplace<ActiveState>(e);
+    (void)r.get_or_emplace<Visibility>(e);
+    (void)r.get_or_emplace<DecalStyleDetail>(e);
+    r.emplace<OverlayDetail>(e);
+    Overlay::dirty(r, e);
     ++_totalNumDecals;
 }
 
@@ -65,10 +83,21 @@ void DecalSystemNode::on_destroy_Decal(entt::registry& r, entt::entity e)
         --_totalNumDecals;
 }
 
+void DecalSystemNode::on_destroy_Overlay(entt::registry& r, entt::entity e)
+{
+    r.remove<DecalStyleDetail>(e);
+    r.remove<OverlayDetail>(e);
+
+    ROCKY_SOFT_ASSERT(_totalNumDecals > 0, "DecalSystemNode: decal count mismatch");
+    if (_totalNumDecals > 0)
+        --_totalNumDecals;
+}
+
 void DecalSystemNode::on_destroy_DecalStyle(entt::registry& r, entt::entity e)
 {
     r.remove<DecalStyleDetail>(e);
 }
+
 void DecalSystemNode::on_destroy_DecalStyleDetail(entt::registry& r, entt::entity e)
 {
     // nop
@@ -79,14 +108,15 @@ void DecalSystemNode::on_update_Decal(entt::registry& r, entt::entity e)
     Decal::dirty(r, e);
 }
 
+void DecalSystemNode::on_update_Overlay(entt::registry& r, entt::entity e)
+{
+    Overlay::dirty(r, e);
+}
+
 void DecalSystemNode::on_update_DecalStyle(entt::registry& r, entt::entity e)
 {
     DecalStyle::dirty(r, e);
 }
-
-
-
-
 
 DecalSystemNode::DecalSystemNode(Registry& registry) :
     Inherit(registry)
@@ -96,21 +126,27 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
             // install the ecs callbacks for Decals
             r.on_construct<Decal>().connect<&DecalSystemNode::on_construct_Decal>(*this);
             r.on_construct<DecalStyle>().connect<&DecalSystemNode::on_construct_DecalStyle>(*this);
+            r.on_construct<Overlay>().connect<&DecalSystemNode::on_construct_Overlay>(*this);
             r.on_update<Decal>().connect<&DecalSystemNode::on_update_Decal>(*this);
             r.on_update<DecalStyle>().connect<&DecalSystemNode::on_update_DecalStyle>(*this);
+            r.on_update<Overlay>().connect<&DecalSystemNode::on_update_Overlay>(*this);
             r.on_destroy<Decal>().connect<&DecalSystemNode::on_destroy_Decal>(*this);
             r.on_destroy<DecalStyle>().connect<&DecalSystemNode::on_destroy_DecalStyle>(*this);
+            r.on_destroy<Overlay>().connect<&DecalSystemNode::on_destroy_Overlay>(*this);
             r.on_destroy<DecalStyleDetail>().connect<&DecalSystemNode::on_destroy_DecalStyleDetail>(*this);
 
             // Set up the dirty tracking
             auto e = r.create();
             r.emplace<Decal::Dirty>(e);
             r.emplace<DecalStyle::Dirty>(e);
+            r.emplace<Overlay::Dirty>(e);
 
             // Seed the running decal count in case decals already exist.
             _totalNumDecals = 0u;
             auto existing = r.view<Decal>();
             existing.each([&](auto) { ++_totalNumDecals; });
+            auto existingOverlays = r.view<Overlay>();
+            existingOverlays.each([&](auto) { ++_totalNumDecals; });
         });
 }
 
@@ -118,13 +154,13 @@ void
 DecalSystemNode::updateStyles(VSGContext vsgcontext)
 {
     // process any objects marked dirty
-    auto&& [_, reg] = _registry.read();
+    auto reader = _registry.read();
+    auto& reg = reader.registry;
 
     bool sharedDescriptorsDirty = false;
 
-    DecalStyle::eachDirty(reg, [&](entt::entity e)
+    auto processDecalStyle = [&](const DecalStyle& style, DecalStyleDetail& styleDetail)
     {
-        const auto& [style, styleDetail] = reg.get<DecalStyle, DecalStyleDetail>(e);
         auto textures = vsgcontext->sharedRenderData->decalTextures;
         if (!textures || textures->imageInfoList.empty())
             return;
@@ -145,53 +181,56 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
             styleDetail.texture = {};
         };
 
-        if (style.image)
+        auto assignImageInfo = [&](vsg::ref_ptr<vsg::ImageInfo> info)
         {
             int slot = styleDetail.descriptorImageIndex;
 
-            // replacing existing style texture
-            if (slot > 0 && slot < static_cast<int>(textures->imageInfoList.size()))
+            if (slot < 0)
             {
-                dispose(textures->imageInfoList[slot]);
-                textures->imageInfoList[slot] = fallback;
-                styleDetail.texture = {};
-                sharedDescriptorsDirty = true;
+                for (std::size_t i = 1; i < textures->imageInfoList.size(); ++i)
+                {
+                    if (textures->imageInfoList[i] == fallback)
+                    {
+                        slot = static_cast<int>(i);
+                        break;
+                    }
+                }
+            }
+
+            if (slot < 0)
+            {
+                Log()->warn("DecalSystemNode: out of decal texture slots (MAX_NUM_DECAL_TEXTURES={})", MAX_NUM_DECAL_TEXTURES);
+                releaseSlot();
+                return;
+            }
+
+            textures->imageInfoList[slot] = info;
+            styleDetail.descriptorImageIndex = slot;
+            styleDetail.texture = info;
+
+            requestCompile(info);
+            requestCompile(textures);
+            sharedDescriptorsDirty = true;
+        };
+
+        if (style.image)
+        {
+            // replacing existing style texture
+            if (styleDetail.descriptorImageIndex > 0 && styleDetail.descriptorImageIndex < static_cast<int>(textures->imageInfoList.size()))
+            {
+                dispose(textures->imageInfoList[styleDetail.descriptorImageIndex]);
+                textures->imageInfoList[styleDetail.descriptorImageIndex] = fallback;
             }
 
             // make a new texture from the image:
             auto image = wrapImageInVSG(style.image);
             if (image)
             {
-                if (slot < 0)
-                {
-                    // find a free slot; skip slot 0 (fallback)
-                    for (std::size_t i = 1; i < textures->imageInfoList.size(); ++i)
-                    {
-                        if (textures->imageInfoList[i] == fallback)
-                        {
-                            slot = static_cast<int>(i);
-                            break;
-                        }
-                    }
-                }
-
-                if (slot < 0)
-                {
-                    Log()->warn("DecalSystemNode: out of decal texture slots (MAX_NUM_DECAL_TEXTURES={})", MAX_NUM_DECAL_TEXTURES);
-                    releaseSlot();
-                    return;
-                }
-
                 auto sampler = vsg::Sampler::create();
                 // TODO: set up sampler..
                 image->properties.dataVariance = vsg::DYNAMIC_DATA;
-                styleDetail.texture = vsg::ImageInfo::create(sampler, image);
-                textures->imageInfoList[slot] = styleDetail.texture;
-                styleDetail.descriptorImageIndex = slot;
-
-                requestCompile(styleDetail.texture);
-                requestCompile(textures);
-                sharedDescriptorsDirty = true;
+                auto info = vsg::ImageInfo::create(sampler, image);
+                assignImageInfo(info);
             }
             else
             {
@@ -199,11 +238,96 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
                 releaseSlot();
             }
         }
+        else if (styleDetail.texture)
+        {
+            assignImageInfo(styleDetail.texture);
+        }
         else
         {
             // style lost image; release any previous slot
             releaseSlot();
         }
+    };
+
+    auto processOverlayStyle = [&](entt::entity e_overlay, DecalStyleDetail& styleDetail)
+    {
+        auto textures = vsgcontext->sharedRenderData->decalTextures;
+        if (!textures || textures->imageInfoList.empty())
+            return;
+
+        auto fallback = textures->imageInfoList[0]; // slot 0 reserved fallback
+
+        auto releaseSlot = [&]()
+        {
+            if (styleDetail.descriptorImageIndex > 0 &&
+                styleDetail.descriptorImageIndex < (std::int32_t)textures->imageInfoList.size())
+            {
+                dispose(textures->imageInfoList[styleDetail.descriptorImageIndex]);
+                textures->imageInfoList[styleDetail.descriptorImageIndex] = fallback;
+                requestCompile(textures);
+                sharedDescriptorsDirty = true;
+            }
+            styleDetail.descriptorImageIndex = -1;
+            styleDetail.texture = {};
+        };
+
+        auto assignImageInfo = [&](vsg::ref_ptr<vsg::ImageInfo> info)
+        {
+            int slot = styleDetail.descriptorImageIndex;
+
+            if (slot < 0)
+            {
+                for (std::size_t i = 1; i < textures->imageInfoList.size(); ++i)
+                {
+                    if (textures->imageInfoList[i] == fallback)
+                    {
+                        slot = static_cast<int>(i);
+                        break;
+                    }
+                }
+            }
+
+            if (slot < 0)
+            {
+                Log()->warn("DecalSystemNode: out of decal texture slots (MAX_NUM_DECAL_TEXTURES={})", MAX_NUM_DECAL_TEXTURES);
+                releaseSlot();
+                return;
+            }
+
+            textures->imageInfoList[slot] = info;
+            styleDetail.descriptorImageIndex = slot;
+            styleDetail.texture = info;
+
+            requestCompile(info);
+            requestCompile(textures);
+            sharedDescriptorsDirty = true;
+        };
+
+        auto* baked = reg.try_get<OverlayBakeTexture>(e_overlay);
+
+        if (baked && baked->texture)
+        {
+            assignImageInfo(baked->texture);
+        }
+        else
+        {
+            releaseSlot();
+        }
+    };
+
+    DecalStyle::eachDirty(reg, [&](entt::entity e)
+    {
+        auto* style = reg.try_get<DecalStyle>(e);
+        auto* styleDetail = reg.try_get<DecalStyleDetail>(e);
+        if (style && styleDetail)
+            processDecalStyle(*style, *styleDetail);
+    });
+
+    Overlay::eachDirty(reg, [&](entt::entity e)
+    {
+        auto* styleDetail = reg.try_get<DecalStyleDetail>(e);
+        if (reg.any_of<Overlay>(e) && styleDetail)
+            processOverlayStyle(e, *styleDetail);
     });
 
     if (sharedDescriptorsDirty)
@@ -215,6 +339,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
     {
         // nop
     });
+
 }
 
 void
@@ -228,6 +353,11 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
         _totalNumDecals = 0u;
         auto decals = reg.view<Decal, ActiveState, Visibility, TransformDetail>();
         decals.each([&](auto, auto&, auto&, auto&, auto&) { ++_totalNumDecals; });
+        auto overlays = reg.view<Overlay, ActiveState, Visibility, TransformDetail>();
+        overlays.each([&](auto e, auto&, auto&, auto&, auto&) {
+            if (!reg.any_of<Decal>(e))
+                ++_totalNumDecals;
+        });
     });
 
     for (auto& vds : _sharedRenderData->viewDependentState)
@@ -385,54 +515,63 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
             _registry.read([&](entt::registry& reg)
             {
-                auto updateDecal = [&](auto entity, auto& decal, auto& decalDetail, auto& active, auto& visibility, auto& transformDetail)
+                auto applyStyle = [&](entt::entity e_style, DecalGPU& out) -> bool
                 {
-                    ROCKY_HARD_ASSERT(decalIndex + 1u < gpuCapacity, "DecalSystemNode: decal SSBO overflow");
-
-                    if (!visible(visibility, rs))
-                    {
-                        return;
-                    }
-
-                    auto e_optics = decal.optics != entt::null ? decal.optics : decal.owner;
-
-                    auto [optics, opticsDetails] = reg.try_get<Optics, OpticsDetail>(e_optics);
-                    if (!optics)
-                        return;
-
-                    auto* opticsDetail = &opticsDetails->views[viewID];
-
-                    // first decal just holds the count, so advance first:
-                    ++gpudecal;
-                    ++decalIndex;
-
-                    // update the detail record with the index of this decal in the SSBO,
-                    // so we can find it later if we need to change the style
-                    decalDetail.ssboIndex = decalIndex;
-                    
-                    
                     // store the texture arena index if we have a texture; else -1 to indicate no texture.
-                    gpudecal->color = StockColor::White;
-                    gpudecal->textureIndex = -1;
+                    out.color = StockColor::White;
+                    out.textureIndex = -1;
 
-                    auto e_style = decal.style != entt::null ? decal.style : decal.owner;
-                    auto [style, styleDetail] = reg.try_get<DecalStyle, DecalStyleDetail>(e_style);
-                    if (style)
+                    if (reg.all_of<DecalStyle, DecalStyleDetail>(e_style))
                     {
-                        gpudecal->color = style->color;
-                        gpudecal->textureIndex = styleDetail->descriptorImageIndex;
+                        auto& styleDecal = reg.get<DecalStyle>(e_style);
+                        auto& styleDecalDetail = reg.get<DecalStyleDetail>(e_style);
+                        out.color = styleDecal.color;
+                        out.textureIndex = styleDecalDetail.descriptorImageIndex;
+                        return true;
                     }
 
-                    auto mvm = vm * to_glm(transformDetail.views[viewID].model);
+                    if (reg.all_of<Overlay, DecalStyleDetail>(e_style))
+                    {
+                        auto& styleOverlay = reg.get<Overlay>(e_style);
+                        auto& styleOverlayDetail = reg.get<DecalStyleDetail>(e_style);
+                        out.color = styleOverlay.color;
+                        out.textureIndex = styleOverlayDetail.descriptorImageIndex;
+                        return true;
+                    }
 
-                    if (optics->projection == Optics::Projection::Perspective)
+                    return false;
+                };
+
+                auto applyProjection = [&](entt::entity e_optics, const glm::dmat4& mvm, bool requireOptics, DecalGPU& out) -> bool
+                {
+                    if (!reg.all_of<Optics, OpticsDetail>(e_optics))
+                    {
+                        if (requireOptics)
+                            return false;
+
+                        out.mvm = glm::fmat4(mvm);
+                        out.distance = 0.0f;
+                        out.zMin = 1.0f;
+                        out.zMax = 10.0f;
+                        out.cullingRadius = 1.0f;
+                        out.tanHalfFovY = 0.0f;
+                        out.aspect = 1.0f;
+                        return true;
+                    }
+
+                    auto& optics = reg.get<Optics>(e_optics);
+                    auto& opticsDetails = reg.get<OpticsDetail>(e_optics);
+
+                    auto* opticsDetail = &opticsDetails.views[viewID];
+
+                    if (optics.projection == Optics::Projection::Perspective)
                     {
                         auto* opticsTransformDetail = reg.try_get<TransformDetail>(e_optics);
                         if (!opticsTransformDetail)
-                            return;
+                            return false;
 
                         // Build projector world matrix from optics owner transform + optics local pose.
-                        glm::dmat4 opticsModel = to_glm(opticsTransformDetail->views[viewID].model) * optics->pose;
+                        glm::dmat4 opticsModel = to_glm(opticsTransformDetail->views[viewID].model) * optics.pose;
 
                         // Strip scale from projector basis so metric near/far/focal values remain valid.
                         glm::dvec3 x(opticsModel[0]);
@@ -443,7 +582,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         double ly = glm::length(y);
                         double lz = glm::length(z);
                         if (lx <= 0.0 || ly <= 0.0 || lz <= 0.0)
-                            return;
+                            return false;
 
                         x /= lx;
                         y /= ly;
@@ -454,36 +593,95 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         opticsModel[2] = glm::dvec4(z, 0.0);
 
                         auto opticsMvm = vm * opticsModel;
-                        gpudecal->mvm = glm::fmat4(opticsMvm);
+                        out.mvm = glm::fmat4(opticsMvm);
                         // NB: gpudecal->mvmInverse is computed in the culling shader.
 
-                        float tanH = tanf(glm::radians((float)optics->fovY * 0.5f));
+                        float tanH = tanf(glm::radians((float)optics.fovY * 0.5f));
                         float nearClip = std::max(1.0f, (float)opticsDetail->nearDistance);
                         float farClip = std::max(nearClip + 1.0f, (float)opticsDetail->farDistance);
 
                         float halfDepth = 0.5f * (farClip - nearClip);
-                        float farHalfW = farClip * tanH * (float)optics->aspectRatio;
+                        float farHalfW = farClip * tanH * (float)optics.aspectRatio;
                         float farHalfH = farClip * tanH;
                         float bsRadius = sqrtf(farHalfW * farHalfW + farHalfH * farHalfH + halfDepth * halfDepth);
 
                         // Projector looks down local -Z; visible range is [-far, -near].
-                        gpudecal->zMin = -farClip;
-                        gpudecal->zMax = -nearClip;
-                        gpudecal->cullingRadius = bsRadius;
-                        gpudecal->distance = 1.0f; // perspective flag (>0)
-                        gpudecal->tanHalfFovY = tanH;
-                        gpudecal->aspect = (float)optics->aspectRatio;
+                        out.zMin = -farClip;
+                        out.zMax = -nearClip;
+                        out.cullingRadius = bsRadius;
+                        out.distance = 1.0f; // perspective flag (>0)
+                        out.tanHalfFovY = tanH;
+                        out.aspect = (float)optics.aspectRatio;
                     }
                     else
                     {
                         // Orthographic remains decal-transform-based (includes scale as box extents).
-                        gpudecal->mvm = glm::fmat4(mvm * optics->pose);
+                        out.mvm = glm::fmat4(mvm * optics.pose);
                         // NB: gpudecal->mvmInverse is computed in the culling shader.
-                        gpudecal->distance = 0.0f; // zero means orthographic
+                        out.distance = 0.0f; // zero means orthographic
                     }
+
+                    return true;
                 };
 
-                reg.view<Decal, DecalDetail, ActiveState, Visibility, TransformDetail>().each(updateDecal);
+                auto updateProjected = [&](auto entity, auto& projectedDetail, auto& active, auto& visibility, auto& transformDetail, entt::entity e_optics, entt::entity e_style, bool requireOptics, bool flipOverlayY, bool* outStyleApplied = nullptr)
+                {
+                    ROCKY_HARD_ASSERT(decalIndex + 1u < gpuCapacity, "DecalSystemNode: decal SSBO overflow");
+
+                    if (!visible(visibility, rs))
+                    {
+                        return;
+                    }
+
+                    auto mvm = vm * to_glm(transformDetail.views[viewID].model);
+
+                    DecalGPU pending{};
+
+                    if (!applyProjection(e_optics, mvm, requireOptics, pending))
+                        return;
+
+                    bool styleApplied = applyStyle(e_style, pending);
+
+                    // first decal just holds the count, so advance first:
+                    ++gpudecal;
+                    ++decalIndex;
+
+                    // update the detail record with the index of this decal in the SSBO,
+                    // so we can find it later if we need to change the style
+                    projectedDetail.ssboIndex = decalIndex;
+
+                    gpudecal->mvm = pending.mvm;
+                    gpudecal->mvmInverse = pending.mvmInverse;
+                    gpudecal->color = pending.color;
+                    gpudecal->textureIndex = pending.textureIndex;
+                    gpudecal->distance = pending.distance;
+                    gpudecal->zMin = pending.zMin;
+                    gpudecal->zMax = pending.zMax;
+                    gpudecal->cullingRadius = pending.cullingRadius;
+                    gpudecal->tanHalfFovY = pending.tanHalfFovY;
+                    gpudecal->aspect = pending.aspect;
+                    gpudecal->_padding[0] = flipOverlayY ? 1 : 0;
+
+                    if (outStyleApplied)
+                        *outStyleApplied = styleApplied;
+                };
+
+                reg.view<Decal, DecalDetail, ActiveState, Visibility, TransformDetail>().each(
+                    [&](auto entity, auto& decal, auto& detail, auto& active, auto& visibility, auto& transformDetail)
+                    {
+                        auto e_optics = decal.optics != entt::null ? decal.optics : decal.owner;
+                        auto e_style = decal.style != entt::null ? decal.style : decal.owner;
+                        updateProjected(entity, detail, active, visibility, transformDetail, e_optics, e_style, true, false);
+                    });
+
+                reg.view<Overlay, OverlayDetail, ActiveState, Visibility, TransformDetail>().each(
+                    [&](auto entity, auto& overlay, auto& detail, auto& active, auto& visibility, auto& transformDetail)
+                    {
+                        if (reg.any_of<Decal>(entity))
+                            return;
+
+                        updateProjected(entity, detail, active, visibility, transformDetail, entity, entity, false, true);
+                    });
             });
 
             // Update the decal count (kept in record #0):

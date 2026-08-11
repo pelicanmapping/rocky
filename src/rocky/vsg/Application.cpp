@@ -12,6 +12,11 @@
 
 #include <rocky/vsg/FrustumGridSystem.h>
 #include <rocky/vsg/ecs/DecalSystem.h>
+#include <rocky/vsg/ecs/OverlayBakeSystem.h>
+#include <rocky/vsg/ecs/MeshSystem.h>
+#include <rocky/vsg/ecs/LineSystem.h>
+#include <rocky/vsg/ecs/PointSystem.h>
+#include <rocky/vsg/ecs/ModelSystem.h>
 #include <rocky/vsg/ecs/OpticsSystem.h>
 
 #ifdef ROCKY_HAS_IMGUI
@@ -296,6 +301,19 @@ Application::ctor(int& argc, char** argv)
 #endif
 
 #ifdef ROCKY_HAS_DECALS
+    auto overlayBakeSystem = OverlayBakeSystemNode::create(registry);
+    overlayBakeSystem->worldSRS = mapNode->srs();
+    {
+        auto bakeScene = vsg::Group::create();
+        if (auto* xform = systemsNode->get<TransformSystemNode>()) bakeScene->addChild(vsg::ref_ptr<vsg::Node>(xform));
+        if (auto* mesh = systemsNode->get<MeshSystemNode>()) bakeScene->addChild(vsg::ref_ptr<vsg::Node>(mesh));
+        if (auto* line = systemsNode->get<LineSystemNode>()) bakeScene->addChild(vsg::ref_ptr<vsg::Node>(line));
+        if (auto* point = systemsNode->get<PointSystemNode>()) bakeScene->addChild(vsg::ref_ptr<vsg::Node>(point));
+        if (auto* model = systemsNode->get<ModelSystemNode>()) bakeScene->addChild(vsg::ref_ptr<vsg::Node>(model));
+        overlayBakeSystem->bakeScene = bakeScene;
+    }
+    computeSystemsNode->add(overlayBakeSystem);
+
     auto decalSystem = DecalSystemNode::create(registry);
     computeSystemsNode->add(decalSystem);
     vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_DECAL_SYSTEM");

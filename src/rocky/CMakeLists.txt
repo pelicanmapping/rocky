@@ -198,6 +198,11 @@ if(ROCKY_RENDERER_VSG)
     
     rocky_glob(HEADERS_VSG_ECS vsg/ecs/*.h)
     rocky_glob(SOURCES_VSG_ECS vsg/ecs/*.cpp)
+    list(APPEND HEADERS_VSG_ECS
+        ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/OverlayBakeSystem.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/OverlayRenderContext.h)
+    list(APPEND SOURCES_VSG_ECS
+        ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/OverlayBakeSystem.cpp)
 
     if(ImGui_FOUND)
         rocky_glob(HEADERS_VSG_IMGUI vsg/imgui/*.h)
