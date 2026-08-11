@@ -4,6 +4,7 @@
  * MIT License
  */
 #include <rocky/vsg/Application.h>
+#include <rocky/vsg/ShaderDefines.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;

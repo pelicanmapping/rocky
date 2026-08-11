@@ -7,6 +7,8 @@
 
 #include <random>
 #include "helpers.h"
+#include <rocky/vsg/ShaderDefines.h>
+
 using namespace ROCKY_NAMESPACE;
 
 auto Demo_Views = [](Application& app)
