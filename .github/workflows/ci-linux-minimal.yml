@@ -34,6 +34,10 @@ jobs:
       with:
         submodules: recursive
 
+    - name: Lint ShaderDefines includes
+      shell: bash
+      run: cmake -DROCKY_SOURCE_DIR=$GITHUB_WORKSPACE -P $GITHUB_WORKSPACE/cmake/check-shaderdefines-includes.cmake
+
     - name: Install system dependencies
       run: |
         sudo apt-get update

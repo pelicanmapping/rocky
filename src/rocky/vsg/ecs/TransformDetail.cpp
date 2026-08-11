@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "TransformDetail.h"
+#include <rocky/vsg/ShaderDefines.h>
 #include <rocky/vsg/VSGUtils.h>
 #include <rocky/vsg/ViewDependentState.h>
 

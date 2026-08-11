@@ -5,6 +5,7 @@
  */
 #include "Application.h"
 #include "MapManipulator.h"
+#include "ShaderDefines.h"
 #include "SkyNode.h"
 #include "ecs/TransformSystem.h"
 #include "imgui/ImGuiIntegration.h"

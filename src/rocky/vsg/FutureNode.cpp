@@ -26,7 +26,14 @@ FutureNode::traverse(vsg::RecordTraversal& record) const
         if (_child && _vsgcontext)
             _vsgcontext->compile(_child);
 
+        // Defer first draw until a subsequent frame so viewer update can
+        // integrate compile results (descriptor/image transitions, etc.).
+        if (_vsgcontext)
+            _vsgcontext->requestFrame();
+
         _future = {};
+
+        return;
     }
 
     if (_child)
