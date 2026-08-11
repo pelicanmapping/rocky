@@ -228,17 +228,9 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
             {
                 auto sampler = vsg::Sampler::create();
                 // TODO: set up sampler..
-                styleDetail.texture = vsg::ImageInfo::create(
-                    sampler,
-                    image,
-                    VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-                textures->imageInfoList[slot] = styleDetail.texture;
-                styleDetail.descriptorImageIndex = slot;
-
-                requestCompile(styleDetail.texture);
-                requestUpload(styleDetail.texture);
-                requestCompile(textures);
-                sharedDescriptorsDirty = true;
+                image->properties.dataVariance = vsg::DYNAMIC_DATA;
+                auto info = vsg::ImageInfo::create(sampler, image);
+                assignImageInfo(info);
             }
             else
             {

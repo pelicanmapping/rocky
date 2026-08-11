@@ -41,7 +41,9 @@ void main()
 
         // sample the stippling pattern (16-bits repeating)
         int cx = int(coord_proj.x);
-        int ci = (cx % (16 * vary.stippleFactor)) / vary.stippleFactor;
+        int period = 16 * max(1, vary.stippleFactor);
+        int wrapped = ((cx % period) + period) % period;
+        int ci = wrapped / max(1, vary.stippleFactor);
         int pattern16 = 0xffff & (vary.stipplePattern & (1 << ci));
         if (pattern16 == 0)
             discard;
