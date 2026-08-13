@@ -70,7 +70,7 @@ void DecalSystemNode::on_construct_Overlay(entt::registry& r, entt::entity e)
 
 void DecalSystemNode::on_construct_DecalStyle(entt::registry& r, entt::entity e)
 {
-    r.emplace<DecalStyleDetail>(e);
+    (void)r.get_or_emplace<DecalStyleDetail>(e);
     DecalStyle::dirty(r, e);
 }
 
@@ -85,7 +85,8 @@ void DecalSystemNode::on_destroy_Decal(entt::registry& r, entt::entity e)
 
 void DecalSystemNode::on_destroy_Overlay(entt::registry& r, entt::entity e)
 {
-    r.remove<DecalStyleDetail>(e);
+    if (!r.any_of<DecalStyle>(e))
+        r.remove<DecalStyleDetail>(e);
     r.remove<OverlayDetail>(e);
 
     ROCKY_SOFT_ASSERT(_totalNumDecals > 0, "DecalSystemNode: decal count mismatch");
@@ -95,12 +96,18 @@ void DecalSystemNode::on_destroy_Overlay(entt::registry& r, entt::entity e)
 
 void DecalSystemNode::on_destroy_DecalStyle(entt::registry& r, entt::entity e)
 {
-    r.remove<DecalStyleDetail>(e);
+    if (!r.any_of<Overlay>(e))
+        r.remove<DecalStyleDetail>(e);
 }
 
 void DecalSystemNode::on_destroy_DecalStyleDetail(entt::registry& r, entt::entity e)
 {
-    // nop
+    auto& detail = r.get<DecalStyleDetail>(e);
+    if (detail.descriptorImageIndex > 0)
+    {
+        std::scoped_lock lock(_pendingTextureSlotsMutex);
+        _pendingTextureSlots.push_back(detail.descriptorImageIndex);
+    }
 }
 
 void DecalSystemNode::on_update_Decal(entt::registry& r, entt::entity e)
@@ -159,6 +166,38 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
 
     bool sharedDescriptorsDirty = false;
 
+    // Component destruction cannot safely edit the shared descriptor arena, so
+    // return any slots queued by on_destroy_DecalStyleDetail now.
+    {
+        std::vector<std::int32_t> pendingSlots;
+        {
+            std::scoped_lock lock(_pendingTextureSlotsMutex);
+            pendingSlots.swap(_pendingTextureSlots);
+        }
+
+        auto textures = vsgcontext->sharedRenderData->decalTextures;
+        if (textures && !textures->imageInfoList.empty() && !pendingSlots.empty())
+        {
+            auto fallback = textures->imageInfoList[0];
+            std::sort(pendingSlots.begin(), pendingSlots.end());
+            pendingSlots.erase(std::unique(pendingSlots.begin(), pendingSlots.end()), pendingSlots.end());
+
+            for (auto slot : pendingSlots)
+            {
+                if (slot > 0 && slot < static_cast<std::int32_t>(textures->imageInfoList.size()))
+                {
+                    auto old = textures->imageInfoList[slot];
+                    if (old && old != fallback)
+                        dispose(old);
+                    textures->imageInfoList[slot] = fallback;
+                }
+            }
+
+            requestCompile(textures);
+            sharedDescriptorsDirty = true;
+        }
+    }
+
     auto processDecalStyle = [&](const DecalStyle& style, DecalStyleDetail& styleDetail)
     {
         auto textures = vsgcontext->sharedRenderData->decalTextures;
@@ -204,6 +243,9 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
                 return;
             }
 
+            auto old = textures->imageInfoList[slot];
+            if (old && old != fallback && old != info)
+                dispose(old);
             textures->imageInfoList[slot] = info;
             styleDetail.descriptorImageIndex = slot;
             styleDetail.texture = info;
@@ -294,6 +336,9 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
                 return;
             }
 
+            auto old = textures->imageInfoList[slot];
+            if (old && old != fallback && old != info)
+                dispose(old);
             textures->imageInfoList[slot] = info;
             styleDetail.descriptorImageIndex = slot;
             styleDetail.texture = info;
@@ -544,7 +589,8 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
                 auto applyProjection = [&](entt::entity e_optics, const glm::dmat4& mvm, bool requireOptics, DecalGPU& out) -> bool
                 {
-                    if (!reg.all_of<Optics, OpticsDetail>(e_optics))
+                    auto* optics = reg.try_get<Optics>(e_optics);
+                    if (!optics)
                     {
                         if (requireOptics)
                             return false;
@@ -559,20 +605,23 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         return true;
                     }
 
-                    auto& optics = reg.get<Optics>(e_optics);
-                    auto& opticsDetails = reg.get<OpticsDetail>(e_optics);
+                    auto* opticsDetails = reg.try_get<OpticsDetail>(e_optics);
+                    auto* opticsTransformDetail = reg.try_get<TransformDetail>(e_optics);
+                    if (!opticsDetails || !opticsTransformDetail)
+                        return false;
 
-                    auto* opticsDetail = &opticsDetails.views[viewID];
+                    auto* opticsDetail = &opticsDetails->views[viewID];
+                    auto& opticsTransformView = opticsTransformDetail->views[viewID];
+                    if (opticsTransformView.revision < 0)
+                        return false;
 
-                    if (optics.projection == Optics::Projection::Perspective)
+                    // Optics always project relative to the Transform on the Optics
+                    // entity. This also makes an explicitly referenced Optics entity
+                    // behave consistently for perspective and orthographic decals.
+                    glm::dmat4 opticsModel = to_glm(opticsTransformView.model) * optics->pose;
+
+                    if (optics->projection == Optics::Projection::Perspective)
                     {
-                        auto* opticsTransformDetail = reg.try_get<TransformDetail>(e_optics);
-                        if (!opticsTransformDetail)
-                            return false;
-
-                        // Build projector world matrix from optics owner transform + optics local pose.
-                        glm::dmat4 opticsModel = to_glm(opticsTransformDetail->views[viewID].model) * optics.pose;
-
                         // Strip scale from projector basis so metric near/far/focal values remain valid.
                         glm::dvec3 x(opticsModel[0]);
                         glm::dvec3 y(opticsModel[1]);
@@ -596,12 +645,12 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         out.mvm = glm::fmat4(opticsMvm);
                         // NB: gpudecal->mvmInverse is computed in the culling shader.
 
-                        float tanH = tanf(glm::radians((float)optics.fovY * 0.5f));
+                        float tanH = tanf(glm::radians((float)optics->fovY * 0.5f));
                         float nearClip = std::max(1.0f, (float)opticsDetail->nearDistance);
                         float farClip = std::max(nearClip + 1.0f, (float)opticsDetail->farDistance);
 
                         float halfDepth = 0.5f * (farClip - nearClip);
-                        float farHalfW = farClip * tanH * (float)optics.aspectRatio;
+                        float farHalfW = farClip * tanH * (float)optics->aspectRatio;
                         float farHalfH = farClip * tanH;
                         float bsRadius = sqrtf(farHalfW * farHalfW + farHalfH * farHalfH + halfDepth * halfDepth);
 
@@ -611,12 +660,17 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         out.cullingRadius = bsRadius;
                         out.distance = 1.0f; // perspective flag (>0)
                         out.tanHalfFovY = tanH;
-                        out.aspect = (float)optics.aspectRatio;
+                        out.aspect = (float)optics->aspectRatio;
                     }
                     else
                     {
-                        // Orthographic remains decal-transform-based (includes scale as box extents).
-                        out.mvm = glm::fmat4(mvm * optics.pose);
+                        // Orthographic projection uses the posed unit cube, including
+                        // scale. Auto-clamping only replaces its world-space center.
+                        if (optics->autoComputeFocalDistance && opticsDetail->focalPointValid)
+                        {
+                            opticsModel[3] = glm::dvec4(opticsDetail->focalPoint, 1.0);
+                        }
+                        out.mvm = glm::fmat4(vm * opticsModel);
                         // NB: gpudecal->mvmInverse is computed in the culling shader.
                         out.distance = 0.0f; // zero means orthographic
                     }
@@ -633,7 +687,12 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         return;
                     }
 
-                    auto mvm = vm * to_glm(transformDetail.views[viewID].model);
+                    auto& transformView = transformDetail.views[viewID];
+                    if (transformView.revision < 0)
+                        return;
+
+                    auto modelWorld = to_glm(transformView.model);
+                    auto mvm = vm * modelWorld;
 
                     DecalGPU pending{};
 
@@ -671,7 +730,8 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     {
                         auto e_optics = decal.optics != entt::null ? decal.optics : decal.owner;
                         auto e_style = decal.style != entt::null ? decal.style : decal.owner;
-                        updateProjected(entity, detail, active, visibility, transformDetail, e_optics, e_style, true, false);
+                        bool requireOptics = decal.optics != entt::null;
+                        updateProjected(entity, detail, active, visibility, transformDetail, e_optics, e_style, requireOptics, false);
                     });
 
                 reg.view<Overlay, OverlayDetail, ActiveState, Visibility, TransformDetail>().each(

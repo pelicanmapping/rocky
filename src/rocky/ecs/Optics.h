@@ -24,9 +24,9 @@ namespace ROCKY_NAMESPACE
 
         Projection projection = Projection::Orthographic;
 
-        //! Matrix that transforms the rotation or positional offset
-        //! of the optics. Typically Optics is used in conjunction with a Transform
-        //! component that will position it in the world.
+        //! Matrix that transforms the rotation, scale, or positional offset of the
+        //! optics relative to its owning Transform. For an orthographic projection,
+        //! the transformed unit cube is the projection volume.
         glm::dmat4 pose = glm::dmat4(1.0);
 
         //! Distance from the lens to the focal plane in meters.
@@ -44,12 +44,13 @@ namespace ROCKY_NAMESPACE
         double nearBias = 0.0;
         double farBias = 0.0;
 
-        //! Whether to attempt to automatically compute
-        //! a focal distance based on the scene geometry.
+        //! Whether to attempt to automatically compute a focal distance based on
+        //! scene geometry. For an orthographic projection, a successful terrain
+        //! intersection also recenters the projection volume on the focal point.
         bool autoComputeFocalDistance = true;
 
-        //! When true, attemp to automatically compute near/far scale/bias values based on
-        //! the scene geometry and the focal distance.
+        //! For a perspective projection, whether to automatically compute near/far
+        //! distances based on scene geometry and the focal distance.
         bool autoComputeNearFar = true;
     };
 
@@ -59,6 +60,10 @@ namespace ROCKY_NAMESPACE
         double focalDistance = 1.0;
         double nearDistance = 1.0;
         double farDistance = 1.0;
+        bool focalPointValid = false;
+        bool autoComputeCacheValid = false;
+        std::uint64_t lastTerrainRevision = 0u;
+        glm::dmat4 lastAutoComputeWorld = glm::dmat4(1.0);
     };
 
     struct OpticsDetail

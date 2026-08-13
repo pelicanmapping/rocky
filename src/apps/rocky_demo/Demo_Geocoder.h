@@ -21,11 +21,10 @@ auto Demo_Geocoder = [](Application& app)
         {
             // configure a line that will display the outline of the selected place:
             outline = reg.create();
-            auto& geom = reg.emplace<LineGeometry>(outline);
-            auto& style = reg.emplace<LineStyle>(outline);
-            style.color = StockColor::Yellow;
-            style.depthOffset = 9000.0f; //meters
-            reg.emplace<Line>(outline, geom, style);
+            //auto& geom = reg.emplace<MeshGeometry>(outline);
+            //auto& style = reg.emplace<MeshStyle>(outline);
+            auto& mesh = reg.emplace<Mesh>(outline);//, geom, style);
+            auto& line = reg.emplace<Line>(outline);
 
             reg.emplace<Overlay>(outline);
 
@@ -126,26 +125,33 @@ auto Demo_Geocoder = [](Application& app)
                                     manip->setViewpoint(vp, std::chrono::seconds(2));
                                 }
 
-                                // update the mesh:
-                                myfeature.geometry.convertToType(Geometry::Type::LineString);
-
                                 if (myfeature.geometry.type != Geometry::Type::Points)
                                 {
                                     // Outline for location boundary:
                                     FeatureBuilder builder;
                                     
-                                    LineStyle workingStyle;
-                                    workingStyle.color = StockColor::Yellow;
-                                    workingStyle.depthOffset = 9000.0f; // meters
+                                    MeshStyle workingMeshStyle;
+                                    workingMeshStyle.color = Color(StockColor::White, 0.35f);
 
-                                    LineGeometry workingGeom;
-                                    builder.buildLineGeometry({ myfeature }, workingStyle, workingGeom);
+                                    LineStyle workingLineStyle;
+                                    workingLineStyle.color = Color(StockColor::White, 1.0f);
+                                    workingLineStyle.width = 2.0f;
+
+                                    MeshGeometry workingMeshGeom;
+                                    builder.buildMeshGeometry({ myfeature }, workingMeshStyle, workingMeshGeom);
+
+                                    LineGeometry workingLineGeom;
+                                    builder.buildLineGeometry({ myfeature }, workingLineStyle, workingLineGeom);
 
                                     app.registry.write([&](entt::registry& r)
                                         {
-                                            auto& style = r.emplace_or_replace<LineStyle>(placemark.outline, std::move(workingStyle));
-                                            auto& geom = r.emplace_or_replace<LineGeometry>(placemark.outline, std::move(workingGeom));
-                                            r.emplace_or_replace<Line>(placemark.outline, geom, style);
+                                            auto& meshGeom = r.emplace_or_replace<MeshGeometry>(placemark.outline, std::move(workingMeshGeom));
+                                            auto& meshStyle = r.emplace_or_replace<MeshStyle>(placemark.outline, std::move(workingMeshStyle));
+                                            r.emplace_or_replace<Mesh>(placemark.outline, meshGeom, meshStyle);
+
+                                            auto& lineGeom = r.emplace_or_replace<LineGeometry>(placemark.outline, std::move(workingLineGeom));
+                                            auto& lineStyle = r.emplace_or_replace<LineStyle>(placemark.outline, std::move(workingLineStyle));
+                                            r.emplace_or_replace<Line>(placemark.outline, lineGeom, lineStyle);
 
                                             placemark.show(r, true);
 
@@ -161,7 +167,7 @@ auto Demo_Geocoder = [](Application& app)
                                         });
                                 }
                             });
-                    }                                    
+                    }
                     ImGui::PopID();
                 }
                 ImGui::Separator();

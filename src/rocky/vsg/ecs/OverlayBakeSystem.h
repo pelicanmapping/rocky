@@ -7,6 +7,7 @@
 #include <rocky/ecs/Overlay.h>
 #include <rocky/SRS.h>
 #include <rocky/vsg/ecs/ECSNode.h>
+#include <array>
 
 namespace ROCKY_NAMESPACE
 {
@@ -28,11 +29,21 @@ namespace ROCKY_NAMESPACE
         SRS worldSRS;
         unsigned textureSize = 512u;
 
+        // Advanced tuning factor for auto-computed overlay depth thickness.
+        // 1.0 = default behavior; >1.0 = safer/thicker; <1.0 = tighter/faster.
+        float depthSafetyFactor = 1.0f;
+
     public: // SimpleSystemNodeBase
         void initialize(VSGContext) override;
         void update(VSGContext) override;
 
     private:
+        // A newly created absolute overlay needs one frame to initialize its
+        // generated Transform, one to initialize/build the bake view geometry,
+        // and a final update to publish the projector after those view-local
+        // details are valid.
+        static constexpr unsigned INITIAL_BAKE_FRAMES = 3u;
+
         struct OverlayBakeDetail : public Component<OverlayBakeDetail>
         {
             vsg::ref_ptr<vsg::ImageInfo> texture;
@@ -40,11 +51,21 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Node> viewNode;
             vsg::ref_ptr<vsg::CommandGraph> hostCommandGraph;
             glm::uvec2 textureSize = { 0u, 0u };
+            bool useDepthBuffer = false;
             entt::entity styleEntity = entt::null;
+            std::size_t geometryStamp = 0u;
+            std::size_t contentStamp = 0u;
+            bool geometryStampValid = false;
+            bool contentStampValid = false;
+            bool autoTransformDirty = true;
+            unsigned bakeFramesRemaining = INITIAL_BAKE_FRAMES;
         };
 
-        vsg::ref_ptr<vsg::Camera> _sharedCamera;
-        vsg::ref_ptr<vsg::View> _sharedView;
+        // Color-only and depth-enabled bakes need separate view IDs so VSG can
+        // compile compatible graphics-pipeline implementations for each render pass.
+        std::array<vsg::ref_ptr<vsg::Camera>, 2> _sharedCameras;
+        std::array<vsg::ref_ptr<vsg::View>, 2> _sharedViews;
+        mutable float _lastDepthSafetyFactor = -1.0f;
 
         void on_construct_Overlay(entt::registry& r, entt::entity e);
         void on_destroy_Overlay(entt::registry& r, entt::entity e);
@@ -54,11 +75,12 @@ namespace ROCKY_NAMESPACE
         bool createBakeResources(
             VSGContext vsgcontext,
             const glm::uvec2& textureSize,
+            bool useDepthBuffer,
             vsg::ref_ptr<vsg::ImageInfo>& outTexture,
             vsg::ref_ptr<vsg::RenderGraph>& outRenderGraph,
             vsg::ref_ptr<vsg::Node>& outViewNode,
             vsg::ref_ptr<vsg::CommandGraph>& outHostCommandGraph);
-        bool updateBakeCamera(entt::registry& r, entt::entity e_overlay, OverlayBakeDetail& detail) const;
+        bool updateBakeCamera(entt::registry& r, entt::entity e_overlay, OverlayBakeDetail& detail, bool recomputeAutoTransform) const;
     };
 }
 

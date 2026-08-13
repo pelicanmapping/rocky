@@ -11,24 +11,94 @@ using namespace ROCKY_NAMESPACE;
 
 
 
-struct PerspectiveFrustumView
+struct FrustumView
 {
     entt::entity e = entt::null;
 
-    void update(entt::registry& r, const Transform& hostTransform, const Optics& optics, const OpticsViewDetail& opticsDetail)
+    void initialize(entt::registry& r)
     {
-        if (e == entt::null)
-        {
-            e = r.create();
-            auto& frustum_transform = r.emplace<Transform>(e);
-            frustum_transform.frustumCulled = false;
-            auto& lineStyle = r.emplace<LineStyle>(e);
-            lineStyle.color = StockColor::White;
-            auto& lineGeom = r.emplace<LineGeometry>(e);
-            lineGeom.topology = LineTopology::Segments;
-            lineGeom.points.resize(24);
-            auto& line = r.emplace<Line>(e, lineGeom, lineStyle);
-        }
+        if (e != entt::null && r.valid(e))
+            return;
+
+        e = r.create();
+        auto& frustum_transform = r.emplace<Transform>(e);
+        frustum_transform.frustumCulled = false;
+        auto& lineStyle = r.emplace<LineStyle>(e);
+        lineStyle.color = StockColor::White;
+        auto& lineGeom = r.emplace<LineGeometry>(e);
+        lineGeom.topology = LineTopology::Segments;
+        lineGeom.points.resize(24);
+        r.emplace<Line>(e, lineGeom, lineStyle);
+    }
+
+    void update(entt::registry& r, const Transform& hostTransform)
+    {
+        initialize(r);
+
+        auto& frustum_xform = r.get<Transform>(e);
+
+        frustum_xform.position = hostTransform.position;
+        frustum_xform.topocentric = hostTransform.topocentric;
+        frustum_xform.localMatrix = hostTransform.localMatrix;
+        frustum_xform.dirty(r);
+
+        updateOrthographicGeometry(r);
+        setVisible(r, true);
+    }
+
+    void updateOrthographic(
+        entt::registry& r,
+        const TransformDetail& hostTransformDetail,
+        const Optics& optics,
+        const OpticsViewDetail& opticsDetail,
+        ViewIDType viewID = 0)
+    {
+        initialize(r);
+
+        auto& hostView = hostTransformDetail.views[viewID];
+        if (hostView.revision < 0 || !hostView.cache.world_srs.valid())
+            return;
+
+        glm::dmat4 modelWorld = to_glm(hostView.model) * optics.pose;
+        if (optics.autoComputeFocalDistance && opticsDetail.focalPointValid)
+            modelWorld[3] = glm::dvec4(opticsDetail.focalPoint, 1.0);
+
+        auto& frustum_xform = r.get<Transform>(e);
+        frustum_xform.position = GeoPoint(hostView.cache.world_srs, glm::dvec3(modelWorld[3]));
+        frustum_xform.topocentric = false;
+        modelWorld[3] = glm::dvec4(0.0, 0.0, 0.0, 1.0);
+        frustum_xform.localMatrix = modelWorld;
+        frustum_xform.dirty(r);
+
+        updateOrthographicGeometry(r);
+        setVisible(r, true);
+    }
+
+    void updateOrthographicGeometry(entt::registry& r)
+    {
+        auto& lineGeom = r.get<LineGeometry>(e);
+
+        constexpr double halfExtent = 0.5;
+        glm::dvec3 ntl(-halfExtent, halfExtent, -halfExtent);
+        glm::dvec3 ntr(halfExtent, halfExtent, -halfExtent);
+        glm::dvec3 nbl(-halfExtent, -halfExtent, -halfExtent);
+        glm::dvec3 nbr(halfExtent, -halfExtent, -halfExtent);
+        glm::dvec3 ftl(-halfExtent, halfExtent, halfExtent);
+        glm::dvec3 ftr(halfExtent, halfExtent, halfExtent);
+        glm::dvec3 fbl(-halfExtent, -halfExtent, halfExtent);
+        glm::dvec3 fbr(halfExtent, -halfExtent, halfExtent);
+
+        lineGeom.points = {
+            ntl, ftl, ntr, ftr, nbl, fbl, nbr, fbr, // sides
+            ntl, ntr, ntr, nbr, nbr, nbl, nbl, ntl, // near clip
+            ftl, ftr, ftr, fbr, fbr, fbl, fbl, ftl  // far clip
+        };
+        lineGeom.dirty(r);
+    }
+
+    void updatePerspective(entt::registry& r, const Transform& hostTransform, const Optics& optics, const OpticsViewDetail& opticsDetail)
+    {
+        initialize(r);
 
         auto& frustum_xform = r.get<Transform>(e);
         auto& lineGeom = r.get<LineGeometry>(e);
@@ -37,9 +107,6 @@ struct PerspectiveFrustumView
         frustum_xform.topocentric = hostTransform.topocentric;
         frustum_xform.localMatrix = hostTransform.localMatrix * optics.pose;
         frustum_xform.dirty(r);
-
-        double nearDistance = optics.focalDistance * optics.nearScale + optics.nearBias;
-        double farDistance = optics.focalDistance * optics.farScale + optics.farBias;
 
         double nearClip = std::max(0.01, opticsDetail.nearDistance);
         double farClip = std::max(nearClip + 0.01, opticsDetail.farDistance);
@@ -66,6 +133,20 @@ struct PerspectiveFrustumView
             ftl, ftr, ftr, fbr, fbr, fbl, fbl, ftl  // far clip
         };
         lineGeom.dirty(r);
+        setVisible(r, true);
+    }
+
+    void setVisible(entt::registry& r, bool value)
+    {
+        if (e != entt::null && r.valid(e))
+            r.get<Visibility>(e).visible = value;
+    }
+
+    void destroy(entt::registry& r)
+    {
+        if (e != entt::null && r.valid(e))
+            r.destroy(e);
+        e = entt::null;
     }
 };
 
@@ -74,7 +155,9 @@ struct PerspectiveFrustumView
 auto Demo_Decal_Orthographic = [](Application& app)
 {
     static entt::entity e_decal = entt::null;
+    static FrustumView frustumView;
     static double scale = 10000.0;
+    static bool showFrustum = false;
 
     if (e_decal == entt::null)
     {
@@ -85,13 +168,12 @@ auto Demo_Decal_Orthographic = [](Application& app)
         auto& xform = reg.emplace<Transform>(e_decal);
         xform.position = GeoPoint(SRS::WGS84, 0.0, 51.50, 0.0); // London, UK
         xform.topocentric = true;
-
-        auto& optics = reg.emplace<Optics>(e_decal);
-        optics.projection = Optics::Projection::Orthographic;
-        optics.pose = glm::scale(glm::dmat4(1), glm::dvec3(scale));
+        xform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale));
 
         auto& decal = reg.emplace<Decal>(e_decal);
-        decal.optics = e_decal;
+
+        frustumView.initialize(reg);
+        frustumView.setVisible(reg, showFrustum);
 
         if (auto manip = MapManipulator::get(app.display.window(0).view(0).vsgView))
         {
@@ -102,12 +184,66 @@ auto Demo_Decal_Orthographic = [](Application& app)
         }
     }
 
-    auto&& [_, reg] = app.registry.read();
+    auto&& [_, reg] = app.registry.write();
+    bool useOptics = reg.any_of<Optics>(e_decal);
+
     if (ImGuiLTable::Begin("decal-ortho"))
     {
         ImGuiLTable::Checkbox("Show", &reg.get<Visibility>(e_decal).visible[0]);
+        ImGuiLTable::Checkbox("Show frustum", &showFrustum);
+
+        if (ImGuiLTable::Checkbox("Use optics", &useOptics))
+        {
+            if (useOptics)
+                reg.emplace<Optics>(e_decal);
+            else
+                reg.remove<Optics>(e_decal);
+
+            app.vsgcontext->requestFrame();
+        }
+
+        if (useOptics)
+        {
+            auto& optics = reg.get<Optics>(e_decal);
+
+            if (ImGuiLTable::Checkbox("Auto-clamp to terrain", &optics.autoComputeFocalDistance))
+                app.vsgcontext->requestFrame();
+
+            auto quat = quaternion_from_unscaled_matrix<glm::dquat>(optics.pose);
+            auto [pitch, roll, heading] = euler_degrees_from_quaternion(quat);
+
+            if (ImGuiLTable::SliderDouble("Optics heading", &heading, -180.0, 180.0, "%.1lf"))
+            {
+                optics.pose = glm::mat4_cast(quaternion_from_euler_degrees(pitch, roll, heading));
+                app.vsgcontext->requestFrame();
+            }
+
+            if (ImGuiLTable::SliderDouble("Optics pitch", &pitch, -90.0, 90.0, "%.1lf"))
+            {
+                optics.pose = glm::mat4_cast(quaternion_from_euler_degrees(pitch, roll, heading));
+                app.vsgcontext->requestFrame();
+            }
+        }
 
         ImGuiLTable::End();
+    }
+
+    if (showFrustum)
+    {
+        if (useOptics)
+        {
+            auto&& [transformDetail, optics, opticsDetail] =
+                reg.get<TransformDetail, Optics, OpticsDetail>(e_decal);
+            frustumView.updateOrthographic(reg, transformDetail, optics, opticsDetail.views[0]);
+        }
+        else
+        {
+            frustumView.update(reg, reg.get<Transform>(e_decal));
+        }
+    }
+    else
+    {
+        frustumView.setVisible(reg, false);
     }
 };
 
@@ -115,8 +251,9 @@ auto Demo_Decal_Orthographic = [](Application& app)
 auto Demo_Decal_Perspective = [](Application& app)
 {
     static entt::entity e_decal = entt::null;
-    static PerspectiveFrustumView frustumView;
+    static FrustumView frustumView;
     static double altitude = 10000.0;
+    static bool showFrustum = true;
 
     if (e_decal == entt::null)
     {
@@ -137,6 +274,9 @@ auto Demo_Decal_Perspective = [](Application& app)
         style.color.a = 0.5f;
 
         reg.emplace<Decal>(e_decal);
+
+        frustumView.initialize(reg);
+        frustumView.setVisible(reg, showFrustum);
 
         if (auto manip = MapManipulator::get(app.display.window(0).view(0).vsgView))
         {
@@ -179,10 +319,15 @@ auto Demo_Decal_Perspective = [](Application& app)
         ImGuiLTable::SliderDouble("Near bias", &optics.nearBias, -100000.0, 0.0, "%.1lf", ImGuiSliderFlags_Logarithmic);
         ImGuiLTable::SliderDouble("Far scale", &optics.farScale, 1.0, 2.0, "%.2lf");
         ImGuiLTable::SliderDouble("Far bias", &optics.farBias, 0.0, 100000.0, "%.1lf", ImGuiSliderFlags_Logarithmic);
+
+        ImGuiLTable::Checkbox("Show frustum", &showFrustum);
         
         ImGuiLTable::End();
 
-        frustumView.update(reg, reg.get<Transform>(e_decal), optics, opticsDetail.views[0]);
+        if (showFrustum)
+            frustumView.updatePerspective(reg, reg.get<Transform>(e_decal), optics, opticsDetail.views[0]);
+        else
+            frustumView.setVisible(reg, false);
     }
 };
 
@@ -195,8 +340,9 @@ auto Demo_Decal_Projector = [](Application& app)
     // camera or remote sensing device.
 
     static entt::entity e_platform = entt::null;
-    static PerspectiveFrustumView frustumView;
+    static FrustumView frustumView;
     static CallbackSubs subs;
+    static bool showFrustum = true;
 
     if (e_platform == entt::null)
     {
@@ -251,6 +397,9 @@ auto Demo_Decal_Projector = [](Application& app)
         // and a Transform to project the image onto the terrain.
         reg.emplace<Decal>(e_platform);
 
+        frustumView.initialize(reg);
+        frustumView.setVisible(reg, showFrustum);
+
         // A worker to animate the platform and its projector:
         MotionSystem motionsys(app.registry);
         auto animate = [&app, motionsys](VSGContext) mutable
@@ -267,8 +416,15 @@ auto Demo_Decal_Projector = [](Application& app)
             optics.pose = glm::mat4_cast(quaternion_from_euler_degrees(pitch, 0.0, heading));
 
             // update the frustum geometry to represent a frustum view of the optics:
-            auto& platform_xform = r.get<Transform>(e_platform);
-            frustumView.update(r, platform_xform, optics, opticsDetail.views[0]);
+            if (showFrustum)
+            {
+                auto& platform_xform = r.get<Transform>(e_platform);
+                frustumView.updatePerspective(r, platform_xform, optics, opticsDetail.views[0]);
+            }
+            else
+            {
+                frustumView.setVisible(r, false);
+            }
             
             app.vsgcontext->requestFrame();
         };  
@@ -313,6 +469,8 @@ auto Demo_Decal_Projector = [](Application& app)
             }
         }
 
+        ImGuiLTable::Checkbox("Show frustum", &showFrustum);
+
         ImGuiLTable::End();
     }
 };
@@ -326,10 +484,13 @@ auto Demo_Decal_Stamper = [](Application& app)
     static std::vector<entt::entity> e_stamps;
     static entt::entity e_cursor = entt::null;
     static entt::entity e_style = entt::null;
+    static FrustumView cursorFrustumView;
+    static std::vector<FrustumView> stampFrustumViews;
     static double scale = 10000.0;
     static CallbackSubs subs;
     static bool cursor = true;
     static bool stamping = false;
+    static bool showFrustums = false;
 
     if (e_cursor == entt::null)
     {
@@ -361,6 +522,9 @@ auto Demo_Decal_Stamper = [](Application& app)
         transform.localMatrix = glm::scale(glm::dmat4(1), glm::dvec3(scale));
         transform.topocentric = true;
 
+        cursorFrustumView.initialize(reg);
+        cursorFrustumView.setVisible(reg, showFrustums);
+
         // install mouse callback that will move the cursor with the mouse:
         auto onMouseMove = [&](const TerrainIntersection& i, const View& view)
         {
@@ -382,7 +546,6 @@ auto Demo_Decal_Stamper = [](Application& app)
                 auto&& [_, reg] = app.registry.write();
 
                 auto e = reg.create();
-                auto& optics = reg.emplace<Optics>(e);
                 auto& decal = reg.emplace<Decal>(e, e_style);
                 auto& transform = reg.emplace<Transform>(e);
                 transform.position = i.point;
@@ -390,6 +553,10 @@ auto Demo_Decal_Stamper = [](Application& app)
                 transform.topocentric = true;
 
                 e_stamps.emplace_back(e);
+
+                auto& frustumView = stampFrustumViews.emplace_back();
+                frustumView.update(reg, transform);
+                frustumView.setVisible(reg, showFrustums);
             }
         };
 
@@ -407,6 +574,8 @@ auto Demo_Decal_Stamper = [](Application& app)
             auto& decal = reg.get<Decal>(e_cursor);
 
             auto& transform = reg.get<Transform>(e_cursor);
+            auto& transformDetail = reg.get<TransformDetail>(e_cursor);
+            auto&& [optics, opticsDetail] = reg.get<Optics, OpticsDetail>(e_cursor);
 
             auto rot = quaternion_from_matrix<glm::dquat>(transform.localMatrix);
             auto [pitch, roll, heading] = euler_degrees_from_quaternion(rot);
@@ -417,6 +586,13 @@ auto Demo_Decal_Stamper = [](Application& app)
             }
 
             ImGuiLTable::Checkbox("Click to stamp", &stamping);
+
+            if (ImGuiLTable::Checkbox("Show frustums", &showFrustums))
+            {
+                cursorFrustumView.setVisible(reg, showFrustums);
+                for (auto& frustumView : stampFrustumViews)
+                    frustumView.setVisible(reg, showFrustums);
+            }
 
             static bool useTexture = false;
             if (ImGuiLTable::Checkbox("Texture", &useTexture))
@@ -444,12 +620,19 @@ auto Demo_Decal_Stamper = [](Application& app)
                 transform.localMatrix = glm::mat4_cast(rot) * glm::scale(glm::dmat4(1), glm::dvec3(scale));
                 transform.dirty(reg);
             }
+
+            if (showFrustums)
+                cursorFrustumView.updateOrthographic(reg, transformDetail, optics, opticsDetail.views[0]);
         }
 
         if (ImGuiLTable::Button("Clear stamps"))
         {
             app.registry.write([&](entt::registry& r)
             {
+                for (auto& frustumView : stampFrustumViews)
+                    frustumView.destroy(r);
+                stampFrustumViews.clear();
+
                 r.destroy(e_stamps.begin(), e_stamps.end());
                 e_stamps.clear();
             });

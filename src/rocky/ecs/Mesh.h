@@ -68,6 +68,11 @@ namespace ROCKY_NAMESPACE
         //! this to aid in blending different semi-transparent meshes across the
         //! entire scene.
         bool transparencyBin = false;
+
+        //! Tessellation resolution hint (in meters) when building mesh geometry
+        //! from polygon features. If resolution is 0.0, the system will apply
+        //! automatically derive what it considers to be a reasonable value.
+        float resolution = 0.0f;
     };
 
     //! Mesh comonent

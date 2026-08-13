@@ -11,6 +11,6 @@ layout(set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_RENDER_PARAMS) uniform Re
     mat4 inverseViewMatrix;
     vec2 ellipsoidAxes;
     uint stereographic;
-    float _padding[1];
+    float renderDomain;
 }
 u_renderParams;

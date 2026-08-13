@@ -27,7 +27,9 @@ namespace ROCKY_NAMESPACE
 
     struct Decal : public Component<Decal>
     {
-        // testing!
+        //! Optional entity containing the Optics used to project this decal. When
+        //! unset, Optics on this decal's own entity is used when present; otherwise
+        //! the decal is an orthographic projection of its transformed unit cube.
         entt::entity optics = entt::null;
 
         //! Style entity, if applicable

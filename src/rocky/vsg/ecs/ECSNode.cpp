@@ -106,6 +106,17 @@ SimpleSystemNodeBase::traverse(vsg::ConstVisitor& visitor) const
     Inherit::traverse(visitor);
 }
 
+std::tuple<detail::RenderDomain, entt::entity>
+SimpleSystemNodeBase::getRenderDomainAndOverlayTarget(vsg::RecordTraversal& visitor) const
+{
+    RenderDomain renderDomain = RenderDomain::Main;
+    visitor.getValue(RENDER_DOMAIN_KEY, renderDomain);
+    entt::entity overlayTarget = entt::null;
+    if (renderDomain == RenderDomain::OverlayBake)
+        visitor.getValue(OVERLAY_BAKE_TARGET_KEY, overlayTarget);
+    return {renderDomain, overlayTarget};
+}
+
 
 ECSNode::ECSNode(Registry& reg) :
     registry(reg)

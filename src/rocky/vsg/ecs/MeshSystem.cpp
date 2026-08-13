@@ -299,7 +299,7 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
                 state.attachments = vsg::ColorBlendState::ColorBlendAttachments{
                     { true,
                       VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-                      VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                      VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
                       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
                 };
             }
@@ -590,11 +590,7 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
     _styleDetailBins.clear();
     _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
-    int renderDomain = RenderDomain_Main;
-    record.getValue(RENDER_DOMAIN_KEY, renderDomain);
-    entt::entity overlayTarget = entt::null;
-    if (renderDomain == RenderDomain_OverlayBake)
-        record.getValue(OVERLAY_BAKE_TARGET_KEY, overlayTarget);
+    auto [renderDomain, overlayTarget] = getRenderDomainAndOverlayTarget(record);
 
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
@@ -625,7 +621,7 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 
             auto renderEntity = [&](auto entity, auto& comp, auto& active, auto& visibility)
                 {
-                    if (renderDomain == RenderDomain_OverlayBake)
+                    if (renderDomain == RenderDomain::OverlayBake)
                     {
                         if (!reg.any_of<Overlay>(entity))
                             return;
@@ -646,10 +642,10 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                             styleDetail = &_defaultStyleDetail;
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
-                        bool useTransform = !(renderDomain == RenderDomain_OverlayBake && reg.any_of<AutoOverlayTransform>(entity));
+                        bool useTransform = !(renderDomain == RenderDomain::OverlayBake && reg.any_of<AutoOverlayTransform>(entity));
                         if (transformDetail)
                         {
-                            bool passes = (renderDomain == RenderDomain_OverlayBake) || transformDetail->views[rs.viewID].passingCull;
+                            bool passes = (renderDomain == RenderDomain::OverlayBake) || transformDetail->views[rs.viewID].passingCull;
                             if (useTransform && passes)
                             {
                                 styleDetail->drawList.emplace_back(geomView.root, transformDetail);
@@ -669,10 +665,18 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                     }
                 };
 
-            if (renderDomain == RenderDomain_OverlayBake)
+            if (renderDomain == RenderDomain::OverlayBake)
             {
-                auto iter = reg.view<Mesh, ActiveState, Visibility>();
-                iter.each(renderEntity);
+                if (overlayTarget != entt::null && reg.all_of<Mesh, ActiveState, Visibility>(overlayTarget))
+                {
+                    auto&& [mesh, active, visibility] = reg.get<Mesh, ActiveState, Visibility>(overlayTarget);
+                    renderEntity(overlayTarget, mesh, active, visibility);
+                }
+                else if (overlayTarget == entt::null)
+                {
+                    auto iter = reg.view<Mesh, ActiveState, Visibility>();
+                    iter.each(renderEntity);
+                }
             }
             else
             {

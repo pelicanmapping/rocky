@@ -250,7 +250,7 @@ int main(int argc, char** argv)
     }
 
     // Create the main window:
-    auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
+    auto traits = vsg::WindowTraits::create(10, 10, 1920, 1080, "Main Window");
     auto& window = app.display.addWindow(traits);
 
     // Attach our GUI in the main view:

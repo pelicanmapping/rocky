@@ -7,6 +7,7 @@
 #include "ViewDependentState.h"
 #include "ShaderDefines.h"
 #include "MapNode.h"
+#include "ecs/OverlayRenderContext.h"
 
 using namespace ROCKY_NAMESPACE;
 
@@ -80,8 +81,12 @@ ViewDependentStateEx::traverse(vsg::RecordTraversal& rt) const
     // todo: update custom descriptors
     BufferAccess<RenderParamsGPU> renderParams(renderParamsBuf);
 
+    auto [renderDomain, overlayTarget] = detail::getRenderDomainAndOverlayTarget(rt);
+    (void)overlayTarget;
+
     renderParams->viewMatrix = to_glm(view->camera->viewMatrix->transform());
     renderParams->inverseViewMatrix = to_glm(view->camera->viewMatrix->inverse());
+    renderParams->renderDomain = (renderDomain == detail::RenderDomain::OverlayBake) ? 1.0f : 0.0f;
 
     // ellipsoid params (TODO: don't need to update these constantly!)
     if (!_mapNode)

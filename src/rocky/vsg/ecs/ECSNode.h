@@ -9,6 +9,7 @@
 #include <rocky/vsg/ecs/System.h>
 #include <rocky/vsg/ecs/TransformDetail.h>
 #include <rocky/vsg/ecs/ECSVisitors.h>
+#include <rocky/vsg/ecs/OverlayRenderContext.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -158,6 +159,9 @@ namespace ROCKY_NAMESPACE
             // (example: compile visitor)
             template<class GEOM_DETAIL_T>
             void handleVisitor(vsg::Visitor& visitor);
+
+            //! Figure out the render domain from the visitor.
+            std::tuple<detail::RenderDomain, entt::entity> getRenderDomainAndOverlayTarget(vsg::RecordTraversal& visitor) const;
 
         private:
             mutable vsg::ref_ptr<vsg::Objects> _toCompile;

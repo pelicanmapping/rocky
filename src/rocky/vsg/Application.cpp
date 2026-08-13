@@ -400,7 +400,7 @@ Application::realize()
         // Make a window if the user didn't.
         if (display.windows().empty() && autoCreateWindow)
         {
-            auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
+            auto traits = vsg::WindowTraits::create(20, 20, 1920, 1080, "Main Window");
             traits->queueFlags |= VK_QUEUE_COMPUTE_BIT;
             traits->synchronizationLayer = true;
 

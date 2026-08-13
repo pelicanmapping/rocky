@@ -45,6 +45,11 @@ namespace ROCKY_NAMESPACE
 
         vsg::ref_ptr<vsg::ShaderStage> _cullingShader;
 
+        // Descriptor slots whose owning style component was removed. They are
+        // released during update(), where the shared descriptor arena is available.
+        std::mutex _pendingTextureSlotsMutex;
+        std::vector<std::int32_t> _pendingTextureSlots;
+
         void rebuildCommands(ViewIDType, VSGContext);
         void updateStyles(VSGContext);
         void resizeGPUBuffersIfNeeded(VSGContext);

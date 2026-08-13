@@ -81,18 +81,14 @@ ModelSystemNode::traverse(vsg::RecordTraversal& record) const
         { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
     };
 
-    int renderDomain = RenderDomain_Main;
-    record.getValue(RENDER_DOMAIN_KEY, renderDomain);
-    entt::entity overlayTarget = entt::null;
-    if (renderDomain == RenderDomain_OverlayBake)
-        record.getValue(OVERLAY_BAKE_TARGET_KEY, overlayTarget);
+    auto [renderDomain, overlayTarget] = getRenderDomainAndOverlayTarget(record);
 
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
             auto renderEntity = [&](auto entity, auto& model, auto& det, auto& active, auto& visibility)
                 {
-                    if (renderDomain == RenderDomain_OverlayBake)
+                    if (renderDomain == RenderDomain::OverlayBake)
                     {
                         if (!reg.any_of<Overlay>(entity))
                             return;
@@ -121,10 +117,10 @@ ModelSystemNode::traverse(vsg::RecordTraversal& record) const
                         if (visible(visibility, rs))
                         {
                             auto* xformDetail = reg.try_get<TransformDetail>(entity);
-                            bool useTransform = !(renderDomain == RenderDomain_OverlayBake && reg.any_of<AutoOverlayTransform>(entity));
+                            bool useTransform = !(renderDomain == RenderDomain::OverlayBake && reg.any_of<AutoOverlayTransform>(entity));
                             if (xformDetail)
                             {
-                                bool passes = (renderDomain == RenderDomain_OverlayBake) || xformDetail->views[rs.viewID].passingCull;
+                                bool passes = (renderDomain == RenderDomain::OverlayBake) || xformDetail->views[rs.viewID].passingCull;
                                 if (useTransform && passes)
                                 {
                                     _drawList.emplace_back(det.node, xformDetail);
@@ -142,10 +138,19 @@ ModelSystemNode::traverse(vsg::RecordTraversal& record) const
                     }
                 };
 
-            if (renderDomain == RenderDomain_OverlayBake)
+            if (renderDomain == RenderDomain::OverlayBake)
             {
-                auto iter = reg.view<Model, ModelDetail, ActiveState, Visibility>();
-                iter.each(renderEntity);
+                if (overlayTarget != entt::null && reg.all_of<Model, ModelDetail, ActiveState, Visibility>(overlayTarget))
+                {
+                    auto&& [model, detail, active, visibility] =
+                        reg.get<Model, ModelDetail, ActiveState, Visibility>(overlayTarget);
+                    renderEntity(overlayTarget, model, detail, active, visibility);
+                }
+                else if (overlayTarget == entt::null)
+                {
+                    auto iter = reg.view<Model, ModelDetail, ActiveState, Visibility>();
+                    iter.each(renderEntity);
+                }
             }
             else
             {

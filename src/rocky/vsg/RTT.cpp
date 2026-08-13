@@ -115,7 +115,9 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
         attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        vsg::AttachmentReference depthReference = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+        vsg::AttachmentReference depthReference = {
+            static_cast<std::uint32_t>(attachments.size() - 1u),
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
         subpassDescription[0].depthStencilAttachments.emplace_back(depthReference);
 
         imageViews.push_back(depthImageInfo->imageView);
@@ -161,9 +163,18 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
     rendergraph->renderArea.extent = extent;
     rendergraph->framebuffer = fbuf;
 
-    rendergraph->clearValues.resize(2);
-    rendergraph->clearValues[0].color = { {clearColor.r, clearColor.g, clearColor.b, clearColor.a} };
-    rendergraph->clearValues[1].depthStencil = VkClearDepthStencilValue{ 0.0f, 0 };
+    if (colorImageInfo)
+    {
+        VkClearValue clearValue{};
+        clearValue.color = { {clearColor.r, clearColor.g, clearColor.b, clearColor.a} };
+        rendergraph->clearValues.push_back(clearValue);
+    }
+    if (depthImageInfo)
+    {
+        VkClearValue clearValue{};
+        clearValue.depthStencil = VkClearDepthStencilValue{ 0.0f, 0 };
+        rendergraph->clearValues.push_back(clearValue);
+    }
 
     return rendergraph;
 }

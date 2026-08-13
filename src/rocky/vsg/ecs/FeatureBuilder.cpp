@@ -579,10 +579,6 @@ namespace
         // weemesh's default epsilon values:
         const double gnomonic_scale = 1e6;
 
-        // Meshed triangles will be at a maximum this many degrees across in size,
-        // to help follow the curvature of the earth.
-        const double resolution_degrees = 0.25;
-
         // apply a fake Z for testing purposes before we attempt depth offsetting
         const double fake_z_offset = 0.0;
 
@@ -591,6 +587,32 @@ namespace
         auto feature_geo = feature.srs.geodeticSRS();
         auto feature_to_geo = feature.srs.to(feature_geo);
         auto geo_to_world = feature_geo.to(output_srs);
+
+        // Meshed triangles will be at a maximum this many degrees across in size,
+        // to help follow the curvature of the earth. Input is in meters and we
+        // convert to angular degrees using the output geodetic ellipsoid.
+        double meters_per_degree = 111319.49079327357; // WGS84-equatorial fallback
+        if (feature_geo.valid())
+        {
+            const double semiMajor = feature_geo.ellipsoid().semiMajorAxis();
+            if (semiMajor > 0.0)
+                meters_per_degree = (3.14159265358979323846 * semiMajor) / 180.0;
+        }
+
+        double resolution_meters = static_cast<double>(style.resolution);
+        if (resolution_meters == 0.0)
+        {
+            double auto_resolution_meters = 27830.0; // fallback ~= 0.25 degrees at equator
+            if (feature.extent.valid())
+            {
+                double horiz = feature.extent.width(Units::METERS);
+                double vert = feature.extent.height(Units::METERS);
+                auto_resolution_meters = std::max(horiz, vert) / 16.0;
+            }
+            resolution_meters = std::min(27830.0, auto_resolution_meters);
+        }
+        resolution_meters = std::max(1.0, resolution_meters);
+        const double resolution_degrees = std::max(1e-9, resolution_meters / meters_per_degree);
 
         // centroid for use with the gnomonic projection:
         glm::dvec3 centroid(0.0);

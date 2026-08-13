@@ -19,7 +19,7 @@ namespace ROCKY_NAMESPACE
         glm::fmat4 inverseViewMatrix;
         glm::fvec2 ellipsoidAxes;
         glm::uint32_t stereographic; // bool
-        glm::float32_t _padding[1];
+        glm::float32_t renderDomain; // 0 = normal, 1 = overlay bake
     };
     //static_assert(sizeof(RenderParams) % 16 == 0, "RenderParams must be 16-byte aligned");
 
