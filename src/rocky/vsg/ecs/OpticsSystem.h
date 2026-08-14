@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/ecs/Optics.h>
+#include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/Callbacks.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <atomic>

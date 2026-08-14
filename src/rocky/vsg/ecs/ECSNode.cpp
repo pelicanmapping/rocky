@@ -109,12 +109,14 @@ SimpleSystemNodeBase::traverse(vsg::ConstVisitor& visitor) const
 std::tuple<detail::RenderDomain, entt::entity>
 SimpleSystemNodeBase::getRenderDomainAndOverlayTarget(vsg::RecordTraversal& visitor) const
 {
-    RenderDomain renderDomain = RenderDomain::Main;
-    visitor.getValue(RENDER_DOMAIN_KEY, renderDomain);
-    entt::entity overlayTarget = entt::null;
-    if (renderDomain == RenderDomain::OverlayBake)
-        visitor.getValue(OVERLAY_BAKE_TARGET_KEY, overlayTarget);
-    return {renderDomain, overlayTarget};
+    auto request = detail::getRenderRequest(visitor);
+    return {request.purpose, request.controller};
+}
+
+detail::RenderRequest
+SimpleSystemNodeBase::getRenderRequest(vsg::RecordTraversal& visitor) const
+{
+    return detail::getRenderRequest(visitor);
 }
 
 

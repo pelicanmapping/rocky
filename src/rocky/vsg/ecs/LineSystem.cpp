@@ -5,9 +5,9 @@
  */
 #include "LineSystem.h"
 #include "OverlayRenderContext.h"
-#include "OverlayBakeSystem.h"
 #include "ECSVisitors.h"
 #include "TransformDetail.h"
+#include <rocky/ecs/ProjectedTexture.h>
 #include "../ViewDependentState.h"
 #include "../ShaderDefines.h"
 
@@ -16,6 +16,42 @@ using namespace ROCKY_NAMESPACE::detail;
 
 #define LINE_VERT_SHADER "shaders/rocky.line.vert"
 #define LINE_FRAG_SHADER "shaders/rocky.line.frag"
+
+void LineSystemNode::expandRenderTextureBounds(
+    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS&)
+{
+    if (auto* line = reg.try_get<Line>(entity))
+    {
+        if (auto* geometry = reg.try_get<LineGeometry>(line->geometry))
+            for (const auto& point : geometry->points)
+                bounds.expand(geometry->srs, point);
+        double width = 2.0;
+        if (auto* style = reg.try_get<LineStyle>(line->style))
+            width = std::abs((double)style->width);
+        bounds.paddingPixels = std::max(bounds.paddingPixels, 0.5 * width + 2.0);
+    }
+}
+
+void LineSystemNode::contributeRenderTextureRevision(
+    entt::registry& reg, entt::entity entity, RenderTextureRevision& revision)
+{
+    auto* line = reg.try_get<Line>(entity);
+    if (!line) return;
+
+    detail::combineRenderTextureComponentBoth(revision, line);
+    detail::combineRenderTextureEntity(revision.bounds, line->geometry);
+    detail::combineRenderTextureEntity(revision.bounds, line->style);
+    detail::combineRenderTextureEntity(revision.content, line->geometry);
+    detail::combineRenderTextureEntity(revision.content, line->style);
+
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<LineGeometry>(line->geometry));
+
+    // Width affects auto-fit padding, so a LineStyle revision conservatively
+    // invalidates both bounds and content.
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<LineStyle>(line->style));
+}
 
 #define LINE_SET 0
 #define LINE_BINDING_UNIFORM  1 // layout(set=0, binding=1) in the shader
@@ -470,7 +506,7 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
     _styleDetailBins.clear();
     _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
-    auto [renderDomain, overlayTarget] = getRenderDomainAndOverlayTarget(record);
+    auto renderRequest = getRenderRequest(record);
 
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
@@ -501,11 +537,13 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
 
             auto renderEntity = [&](auto entity, auto& line, auto& active, auto& visibility)
                 {
-                    if (renderDomain == RenderDomain::OverlayBake)
+                    if (!renderRequest.contains(entity))
+                        return;
+
+                    if (auto* participation = reg.try_get<RenderParticipation>(entity))
                     {
-                        if (!reg.any_of<Overlay>(entity))
-                            return;
-                        if (overlayTarget != entt::null && entity != overlayTarget)
+                        if ((renderRequest.purpose == RenderPurpose::Main && !participation->mainView) ||
+                            (renderRequest.purpose == RenderPurpose::RenderTexture && !participation->renderTexture))
                             return;
                     }
 
@@ -522,10 +560,10 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
                             styleDetail = &_defaultStyleDetail;
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
-                        bool useTransform = !(renderDomain == RenderDomain::OverlayBake && reg.any_of<AutoOverlayTransform>(entity));
+                        bool useTransform = !(renderRequest.purpose == RenderPurpose::RenderTexture && renderRequest.ignoreSourceTransforms);
                         if (transformDetail)
                         {
-                            bool passes = (renderDomain == RenderDomain::OverlayBake) || transformDetail->views[rs.viewID].passingCull;
+                            bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || transformDetail->views[rs.viewID].passingCull;
                             if (useTransform && passes)
                             {
                                 styleDetail->drawList.emplace_back(geomView.root, transformDetail);
@@ -545,22 +583,20 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
                     }
                 };
 
-            if (renderDomain == RenderDomain::OverlayBake)
+            if (renderRequest.purpose == RenderPurpose::RenderTexture && !renderRequest.sources.empty())
             {
-                if (overlayTarget != entt::null && reg.all_of<Line, ActiveState, Visibility>(overlayTarget))
+                for (auto source : renderRequest.sources)
                 {
-                    auto&& [line, active, visibility] = reg.get<Line, ActiveState, Visibility>(overlayTarget);
-                    renderEntity(overlayTarget, line, active, visibility);
-                }
-                else if (overlayTarget == entt::null)
-                {
-                    auto iter = reg.view<Line, ActiveState, Visibility>();
-                    iter.each(renderEntity);
+                    if (reg.all_of<Line, ActiveState, Visibility>(source))
+                    {
+                        auto&& [line, active, visibility] = reg.get<Line, ActiveState, Visibility>(source);
+                        renderEntity(source, line, active, visibility);
+                    }
                 }
             }
             else
             {
-                auto iter = reg.view<Line, ActiveState, Visibility>(entt::exclude<Overlay>);
+                auto iter = reg.view<Line, ActiveState, Visibility>();
                 iter.each(renderEntity);
             }
 

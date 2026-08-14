@@ -11,9 +11,10 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-    * Overlay is a control component that will cause a geometry
-    * component (like Mesh, Line, etc.) attached to the same entity
-    * to drape on the terrain instead of rendering in normal space.
+    * Convenience component that renders same-entity geometry to a texture and
+    * projects it on terrain. Internally this adapts to RenderTexture,
+    * ProjectedTexture, and RenderParticipation. Use those lower-level
+    * components directly when sources, render job, and projector are separate.
     */
     struct Overlay : public Component<Overlay>
     {

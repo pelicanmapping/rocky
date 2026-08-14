@@ -7,7 +7,9 @@
 #pragma once
 #include <rocky/ecs/Decal.h>
 #include <rocky/ecs/Overlay.h>
+#include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/vsg/ecs/ECSNode.h>
+#include <rocky/vsg/ecs/TextureResource.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -58,10 +60,14 @@ namespace ROCKY_NAMESPACE
         void on_construct_Decal(entt::registry& r, entt::entity e);
         void on_construct_DecalStyle(entt::registry& r, entt::entity e);
         void on_construct_Overlay(entt::registry& r, entt::entity e);
+        void on_construct_ProjectedTexture(entt::registry& r, entt::entity e);
+        void on_construct_TextureResource(entt::registry& r, entt::entity e);
         void on_destroy_Decal(entt::registry& r, entt::entity e);
         void on_destroy_DecalStyle(entt::registry& r, entt::entity e);
         void on_destroy_Overlay(entt::registry& r, entt::entity e);
-        void on_destroy_DecalStyleDetail(entt::registry& r, entt::entity e);
+        void on_destroy_ProjectedTexture(entt::registry& r, entt::entity e);
+        void on_destroy_TextureResource(entt::registry& r, entt::entity e);
+        void on_destroy_TextureSlotDetail(entt::registry& r, entt::entity e);
         void on_update_Decal(entt::registry& r, entt::entity e);
         void on_update_DecalStyle(entt::registry& r, entt::entity e);
         void on_update_Overlay(entt::registry& r, entt::entity e);

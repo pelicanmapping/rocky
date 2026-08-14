@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/ecs/Registry.h>
+#include <rocky/ecs/ProjectedTexture.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -30,6 +31,26 @@ namespace ROCKY_NAMESPACE
         {
             //nop
         }
+
+        /**
+         * Return the node that participates in generic render-to-texture passes,
+         * or null when this system has no record traversal for them.
+         *
+         * This capability removes the central list of geometry system types;
+         * an extension opts in without modifying Application or Overlay code.
+         */
+        virtual vsg::Node* renderTextureParticipant()
+        {
+            return nullptr;
+        }
+
+        //! Contribute source bounds used by a RenderTexture auto-fit.
+        virtual void expandRenderTextureBounds(
+            entt::registry&, entt::entity, RenderTextureBounds&, const SRS&) { }
+
+        //! Contribute persistent bounds/content revisions for a source.
+        virtual void contributeRenderTextureRevision(
+            entt::registry&, entt::entity, RenderTextureRevision&) { }
 
     protected:
         System(Registry in_registry) :

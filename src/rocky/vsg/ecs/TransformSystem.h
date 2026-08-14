@@ -26,6 +26,8 @@ namespace ROCKY_NAMESPACE
         //! Called periodically to update the transforms
         void traverse(vsg::RecordTraversal& record) const override;
 
+        vsg::Node* renderTextureParticipant() override { return this; }
+
         //! Callback to invoke if the update/traverse resulted in any changes
         Callback<> onChanges;
 

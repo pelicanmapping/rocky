@@ -74,16 +74,27 @@ OpticsSystemNode::updateOptics(VSGContext vsgcontext)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(target, void());
 
+    auto writer = _registry.write();
+    auto& registry = writer.registry;
+
     const auto terrainRevision = _terrainRevision.load(std::memory_order_relaxed);
     const bool canCache = _targetHasChangeNotifications;
 
     auto update = [&](auto entity, auto& optics, auto& opticsDetails, auto& transformDetail)
     {
+        bool autoComputeFocalDistance = optics.autoComputeFocalDistance;
+        bool autoComputeNearFar = optics.autoComputeNearFar;
+        if (auto* terrainClamp = registry.try_get<TerrainClamp>(entity))
+        {
+            autoComputeFocalDistance = terrainClamp->enabled;
+            autoComputeNearFar = terrainClamp->enabled && terrainClamp->computeClipRange;
+        }
+
         for (ViewIDType viewID : vsgcontext->activeViewIDs)
         {
             auto& opticsDetail = opticsDetails.views[viewID];
 
-            if (!optics.autoComputeFocalDistance)
+            if (!autoComputeFocalDistance)
             {
                 opticsDetail.focalDistance = optics.focalDistance;
                 opticsDetail.nearDistance = optics.focalDistance * optics.nearScale + optics.nearBias;
@@ -164,7 +175,7 @@ OpticsSystemNode::updateOptics(VSGContext vsgcontext)
             opticsDetail.farDistance = opticsDetail.focalDistance * optics.farScale + optics.farBias;
 
             if (optics.projection == Optics::Projection::Perspective &&
-                optics.autoComputeNearFar &&
+                autoComputeNearFar &&
                 opticsDetail.focalPointValid)
             {
                 // TODO: fix this hack and use a real up vector
@@ -218,7 +229,7 @@ OpticsSystemNode::updateOptics(VSGContext vsgcontext)
         }
     };
 
-    _registry.write()->view<Optics, OpticsDetail, TransformDetail>().each(update);
+    registry.view<Optics, OpticsDetail, TransformDetail>().each(update);
 }
 
 void

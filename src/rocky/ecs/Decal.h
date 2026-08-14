@@ -25,6 +25,8 @@ namespace ROCKY_NAMESPACE
     };
 
 
+    //! Convenience facade for a ProjectedTexture using a DecalStyle image.
+    //! ProjectedTexture and ImageTexture are the composable low-level API.
     struct Decal : public Component<Decal>
     {
         //! Optional entity containing the Optics used to project this decal. When

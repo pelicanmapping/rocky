@@ -5,14 +5,54 @@
  */
 #include "PointSystem.h"
 #include "OverlayRenderContext.h"
-#include "OverlayBakeSystem.h"
 #include "TransformDetail.h"
 #include "ECSVisitors.h"
+#include <rocky/ecs/ProjectedTexture.h>
 #include "../ViewDependentState.h"
 #include "../ShaderDefines.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
+
+void PointSystemNode::expandRenderTextureBounds(
+    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS&)
+{
+    if (auto* point = reg.try_get<Point>(entity))
+    {
+        if (auto* geometry = reg.try_get<PointGeometry>(point->geometry))
+        {
+            for (const auto& p : geometry->points)
+                bounds.expand(geometry->srs, p);
+            if (auto* style = reg.try_get<PointStyle>(point->style); style && style->useGeometryWidths)
+                for (auto width : geometry->widths)
+                    bounds.paddingPixels = std::max(bounds.paddingPixels, 0.5 * std::abs((double)width) + 2.0);
+        }
+        double width = 3.0;
+        if (auto* style = reg.try_get<PointStyle>(point->style))
+            width = std::abs((double)style->width);
+        bounds.paddingPixels = std::max(bounds.paddingPixels, 0.5 * width + 2.0);
+    }
+}
+
+void PointSystemNode::contributeRenderTextureRevision(
+    entt::registry& reg, entt::entity entity, RenderTextureRevision& revision)
+{
+    auto* point = reg.try_get<Point>(entity);
+    if (!point) return;
+
+    detail::combineRenderTextureComponentBoth(revision, point);
+    detail::combineRenderTextureEntity(revision.bounds, point->geometry);
+    detail::combineRenderTextureEntity(revision.bounds, point->style);
+    detail::combineRenderTextureEntity(revision.content, point->geometry);
+    detail::combineRenderTextureEntity(revision.content, point->style);
+
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<PointGeometry>(point->geometry));
+
+    // Width and per-vertex-width selection affect auto-fit padding.
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<PointStyle>(point->style));
+}
 
 #define VERT_SHADER "shaders/rocky.point.vert"
 #define FRAG_SHADER "shaders/rocky.point.frag"
@@ -458,7 +498,7 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
     _styleDetailBins.clear();
     _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
-    auto [renderDomain, overlayTarget] = getRenderDomainAndOverlayTarget(record);
+    auto renderRequest = getRenderRequest(record);
 
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
@@ -489,11 +529,13 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
 
             auto renderEntity = [&](auto entity, auto& point, auto& active, auto& visibility)
                 {
-                    if (renderDomain == RenderDomain::OverlayBake)
+                    if (!renderRequest.contains(entity))
+                        return;
+
+                    if (auto* participation = reg.try_get<RenderParticipation>(entity))
                     {
-                        if (!reg.any_of<Overlay>(entity))
-                            return;
-                        if (overlayTarget != entt::null && entity != overlayTarget)
+                        if ((renderRequest.purpose == RenderPurpose::Main && !participation->mainView) ||
+                            (renderRequest.purpose == RenderPurpose::RenderTexture && !participation->renderTexture))
                             return;
                     }
 
@@ -513,10 +555,10 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
                         }
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
-                        bool useTransform = !(renderDomain == RenderDomain::OverlayBake && reg.any_of<AutoOverlayTransform>(entity));
+                        bool useTransform = !(renderRequest.purpose == RenderPurpose::RenderTexture && renderRequest.ignoreSourceTransforms);
                         if (transformDetail)
                         {
-                            bool passes = (renderDomain == RenderDomain::OverlayBake) || transformDetail->views[rs.viewID].passingCull;
+                            bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || transformDetail->views[rs.viewID].passingCull;
                             if (useTransform && passes)
                             {
                                 styleDetail->drawList.emplace_back(geomView.root, transformDetail);
@@ -536,22 +578,20 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
                     }
                 };
 
-            if (renderDomain == RenderDomain::OverlayBake)
+            if (renderRequest.purpose == RenderPurpose::RenderTexture && !renderRequest.sources.empty())
             {
-                if (overlayTarget != entt::null && reg.all_of<Point, ActiveState, Visibility>(overlayTarget))
+                for (auto source : renderRequest.sources)
                 {
-                    auto&& [point, active, visibility] = reg.get<Point, ActiveState, Visibility>(overlayTarget);
-                    renderEntity(overlayTarget, point, active, visibility);
-                }
-                else if (overlayTarget == entt::null)
-                {
-                    auto iter = reg.view<Point, ActiveState, Visibility>();
-                    iter.each(renderEntity);
+                    if (reg.all_of<Point, ActiveState, Visibility>(source))
+                    {
+                        auto&& [point, active, visibility] = reg.get<Point, ActiveState, Visibility>(source);
+                        renderEntity(source, point, active, visibility);
+                    }
                 }
             }
             else
             {
-                auto iter = reg.view<Point, ActiveState, Visibility>(entt::exclude<Overlay>);
+                auto iter = reg.view<Point, ActiveState, Visibility>();
                 iter.each(renderEntity);
             }
 

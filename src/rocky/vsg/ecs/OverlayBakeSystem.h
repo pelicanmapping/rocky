@@ -5,8 +5,10 @@
  */
 #pragma once
 #include <rocky/ecs/Overlay.h>
+#include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/SRS.h>
 #include <rocky/vsg/ecs/ECSNode.h>
+#include <rocky/vsg/ecs/TextureResource.h>
 #include <array>
 
 namespace ROCKY_NAMESPACE
@@ -15,10 +17,9 @@ namespace ROCKY_NAMESPACE
     {
     };
 
-    struct OverlayBakeTexture : public Component<OverlayBakeTexture>
-    {
-        vsg::ref_ptr<vsg::ImageInfo> texture;
-    };
+    //! Compatibility name for the output of an Overlay bake. New code should
+    //! consume TextureResource instead.
+    using OverlayBakeTexture = TextureResource;
 
     class ROCKY_EXPORT OverlayBakeSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, OverlayBakeSystemNode>
     {
@@ -26,6 +27,7 @@ namespace ROCKY_NAMESPACE
         OverlayBakeSystemNode(Registry& registry);
 
         vsg::ref_ptr<vsg::Node> bakeScene;
+        std::vector<System*> renderParticipants;
         SRS worldSRS;
         unsigned textureSize = 512u;
 
@@ -53,11 +55,12 @@ namespace ROCKY_NAMESPACE
             glm::uvec2 textureSize = { 0u, 0u };
             bool useDepthBuffer = false;
             entt::entity styleEntity = entt::null;
-            std::size_t geometryStamp = 0u;
-            std::size_t contentStamp = 0u;
-            bool geometryStampValid = false;
-            bool contentStampValid = false;
+            std::size_t boundsRevision = 0u;
+            std::size_t contentRevision = 0u;
+            bool boundsRevisionValid = false;
+            bool contentRevisionValid = false;
             bool autoTransformDirty = true;
+            bool ownsResource = false;
             unsigned bakeFramesRemaining = INITIAL_BAKE_FRAMES;
         };
 
@@ -70,6 +73,9 @@ namespace ROCKY_NAMESPACE
         void on_construct_Overlay(entt::registry& r, entt::entity e);
         void on_destroy_Overlay(entt::registry& r, entt::entity e);
         void on_update_Overlay(entt::registry& r, entt::entity e);
+        void on_construct_RenderTexture(entt::registry& r, entt::entity e);
+        void on_destroy_RenderTexture(entt::registry& r, entt::entity e);
+        void on_update_RenderTexture(entt::registry& r, entt::entity e);
         void on_destroy_OverlayBakeDetail(entt::registry& r, entt::entity e);
 
         bool createBakeResources(

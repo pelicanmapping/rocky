@@ -72,17 +72,24 @@ TransformSystemNode::traverse(vsg::RecordTraversal& record) const
 
     bool at_least_one_transform_changed = false;
 
-    auto [renderDomain, overlayTarget] = detail::getRenderDomainAndOverlayTarget(record);
+    auto request = detail::getRenderRequest(record);
 
-    if (renderDomain == detail::RenderDomain::OverlayBake && overlayTarget != entt::null)
+    if (request.purpose == detail::RenderPurpose::RenderTexture)
     {
-        if (auto* transformDetail = registry.try_get<TransformDetail>(overlayTarget))
+        if (!request.ignoreSourceTransforms)
         {
-            if (srs_changed)
-                transformDetail->reset(viewID);
+            for (auto source : request.sources)
+            {
+                if (auto* transformDetail = registry.try_get<TransformDetail>(source))
+                {
+                    if (srs_changed)
+                        transformDetail->reset(viewID);
 
-            auto* pixelScale = registry.try_get<PixelScale>(overlayTarget);
-            at_least_one_transform_changed = transformDetail->traverse(record, pixelScale);
+                    auto* pixelScale = registry.try_get<PixelScale>(source);
+                    at_least_one_transform_changed = transformDetail->traverse(record, pixelScale)
+                        || at_least_one_transform_changed;
+                }
+            }
         }
     }
     else

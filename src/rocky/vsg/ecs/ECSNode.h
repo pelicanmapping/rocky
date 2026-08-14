@@ -160,7 +160,10 @@ namespace ROCKY_NAMESPACE
             template<class GEOM_DETAIL_T>
             void handleVisitor(vsg::Visitor& visitor);
 
-            //! Figure out the render domain from the visitor.
+            //! Read the normalized render request from the visitor.
+            detail::RenderRequest getRenderRequest(vsg::RecordTraversal& visitor) const;
+
+            //! Compatibility helper for older system implementations.
             std::tuple<detail::RenderDomain, entt::entity> getRenderDomainAndOverlayTarget(vsg::RecordTraversal& visitor) const;
 
         private:

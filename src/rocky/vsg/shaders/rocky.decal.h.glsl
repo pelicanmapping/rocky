@@ -131,7 +131,9 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec3 normalVs, in vec2 f
 
         if (inside)
         {
-            if (decal._padding[0] != 0)
+            // bit 0: upper-left texture origin
+            // bit 1: premultiplied alpha
+            if ((decal._padding[0] & 1) != 0)
             {
                 uv.y = 1.0 - uv.y;
             }
@@ -140,10 +142,9 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec3 normalVs, in vec2 f
             if (ti >= 0)
             {
                 vec4 tex = texture(u_decalTextures[nonuniformEXT(ti)], uv);
-                if (decal._padding[0] != 0)
+                if ((decal._padding[0] & 2) != 0)
                 {
-                    // Render-to-texture overlays are stored as premultiplied alpha.
-                    // Modulate and composite them without multiplying source alpha twice.
+                    // Modulate premultiplied content without multiplying source alpha twice.
                     float alpha = tex.a * decal.color.a;
                     vec3 premultiplied = tex.rgb * decal.color.rgb * decal.color.a;
                     color.rgb = color.rgb * (1.0 - alpha) + premultiplied;

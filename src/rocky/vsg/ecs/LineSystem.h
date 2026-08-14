@@ -116,6 +116,9 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT LineSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, LineSystemNode>
     {
     public:
+        vsg::Node* renderTextureParticipant() override { return this; }
+        void expandRenderTextureBounds(entt::registry&, entt::entity, RenderTextureBounds&, const SRS&) override;
+        void contributeRenderTextureRevision(entt::registry&, entt::entity, RenderTextureRevision&) override;
         //! Construct the system
         LineSystemNode(Registry& registry);
 

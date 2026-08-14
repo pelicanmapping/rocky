@@ -23,6 +23,9 @@ namespace ROCKY_NAMESPACE
     class ROCKY_EXPORT ModelSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, ModelSystemNode>
     {
     public:
+        vsg::Node* renderTextureParticipant() override { return this; }
+        void expandRenderTextureBounds(entt::registry&, entt::entity, RenderTextureBounds&, const SRS&) override;
+        void contributeRenderTextureRevision(entt::registry&, entt::entity, RenderTextureRevision&) override;
         ModelSystemNode(Registry& registry);
 
         ~ModelSystemNode();

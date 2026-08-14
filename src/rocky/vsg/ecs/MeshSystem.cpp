@@ -6,11 +6,9 @@
  */
 #include "MeshSystem.h"
 #include "OverlayRenderContext.h"
-#include "OverlayBakeSystem.h"
 #include "../ViewDependentState.h"
 #include "../ShaderDefines.h"
-#include <rocky/ecs/Decal.h>
-#include <rocky/ecs/Overlay.h>
+#include <rocky/ecs/ProjectedTexture.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -23,6 +21,41 @@ using namespace ROCKY_NAMESPACE::detail;
 #define MESH_BINDING_TEXTURE   2 // layout(set=0, binding=2) in the shader
 
 #define USE_DYNAMIC_STATE
+
+void MeshSystemNode::expandRenderTextureBounds(
+    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS&)
+{
+    if (auto* mesh = reg.try_get<Mesh>(entity))
+        if (auto* geometry = reg.try_get<MeshGeometry>(mesh->geometry))
+            for (const auto& vertex : geometry->vertices)
+                bounds.expand(geometry->srs, vertex);
+}
+
+void MeshSystemNode::contributeRenderTextureRevision(
+    entt::registry& reg, entt::entity entity, RenderTextureRevision& revision)
+{
+    auto* mesh = reg.try_get<Mesh>(entity);
+    if (!mesh) return;
+
+    // Changing the referenced geometry or style is itself observable even if
+    // the newly referenced component happens to have the same generation.
+    detail::combineRenderTextureComponentBoth(revision, mesh);
+    detail::combineRenderTextureEntity(revision.bounds, mesh->geometry);
+    detail::combineRenderTextureEntity(revision.content, mesh->geometry);
+    detail::combineRenderTextureEntity(revision.content, mesh->style);
+
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<MeshGeometry>(mesh->geometry));
+
+    if (auto* style = reg.try_get<MeshStyle>(mesh->style))
+    {
+        // Mesh styles affect pixels, not the source's geometric bounds.
+        detail::combineRenderTextureComponent(revision.content, style);
+        detail::combineRenderTextureEntity(revision.content, style->texture);
+        detail::combineRenderTextureComponent(
+            revision.content, reg.try_get<MeshTexture>(style->texture));
+    }
+}
 
 namespace
 {
@@ -590,7 +623,7 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
     _styleDetailBins.clear();
     _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
-    auto [renderDomain, overlayTarget] = getRenderDomainAndOverlayTarget(record);
+    auto renderRequest = getRenderRequest(record);
 
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
@@ -621,11 +654,13 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
 
             auto renderEntity = [&](auto entity, auto& comp, auto& active, auto& visibility)
                 {
-                    if (renderDomain == RenderDomain::OverlayBake)
+                    if (!renderRequest.contains(entity))
+                        return;
+
+                    if (auto* participation = reg.try_get<RenderParticipation>(entity))
                     {
-                        if (!reg.any_of<Overlay>(entity))
-                            return;
-                        if (overlayTarget != entt::null && entity != overlayTarget)
+                        if ((renderRequest.purpose == RenderPurpose::Main && !participation->mainView) ||
+                            (renderRequest.purpose == RenderPurpose::RenderTexture && !participation->renderTexture))
                             return;
                     }
 
@@ -642,10 +677,10 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                             styleDetail = &_defaultStyleDetail;
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
-                        bool useTransform = !(renderDomain == RenderDomain::OverlayBake && reg.any_of<AutoOverlayTransform>(entity));
+                        bool useTransform = !(renderRequest.purpose == RenderPurpose::RenderTexture && renderRequest.ignoreSourceTransforms);
                         if (transformDetail)
                         {
-                            bool passes = (renderDomain == RenderDomain::OverlayBake) || transformDetail->views[rs.viewID].passingCull;
+                            bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || transformDetail->views[rs.viewID].passingCull;
                             if (useTransform && passes)
                             {
                                 styleDetail->drawList.emplace_back(geomView.root, transformDetail);
@@ -665,22 +700,20 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                     }
                 };
 
-            if (renderDomain == RenderDomain::OverlayBake)
+            if (renderRequest.purpose == RenderPurpose::RenderTexture && !renderRequest.sources.empty())
             {
-                if (overlayTarget != entt::null && reg.all_of<Mesh, ActiveState, Visibility>(overlayTarget))
+                for (auto source : renderRequest.sources)
                 {
-                    auto&& [mesh, active, visibility] = reg.get<Mesh, ActiveState, Visibility>(overlayTarget);
-                    renderEntity(overlayTarget, mesh, active, visibility);
-                }
-                else if (overlayTarget == entt::null)
-                {
-                    auto iter = reg.view<Mesh, ActiveState, Visibility>();
-                    iter.each(renderEntity);
+                    if (reg.all_of<Mesh, ActiveState, Visibility>(source))
+                    {
+                        auto&& [mesh, active, visibility] = reg.get<Mesh, ActiveState, Visibility>(source);
+                        renderEntity(source, mesh, active, visibility);
+                    }
                 }
             }
             else
             {
-                auto iter = reg.view<Mesh, ActiveState, Visibility>(entt::exclude<Overlay>);
+                auto iter = reg.view<Mesh, ActiveState, Visibility>();
                 iter.each(renderEntity);
             }
 

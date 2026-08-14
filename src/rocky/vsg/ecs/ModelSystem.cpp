@@ -5,15 +5,43 @@
  */
 #include "ModelSystem.h"
 #include "OverlayRenderContext.h"
-#include "OverlayBakeSystem.h"
 #include "ECSVisitors.h"
 #include "TransformDetail.h"
 #include <rocky/ecs/Model.h>
+#include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/vsg/FutureNode.h>
 #include <filesystem>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
+
+void ModelSystemNode::expandRenderTextureBounds(
+    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS& worldSRS)
+{
+    auto* modelDetail = reg.try_get<detail::ModelDetail>(entity);
+    if (!modelDetail || !modelDetail->node || !worldSRS.valid())
+        return;
+
+    vsg::ComputeBounds cb;
+    modelDetail->node->accept(cb);
+    if (!cb.bounds) return;
+    const auto& b = cb.bounds;
+    for (int ix = 0; ix < 2; ++ix)
+        for (int iy = 0; iy < 2; ++iy)
+            for (int iz = 0; iz < 2; ++iz)
+                bounds.expand(worldSRS, glm::dvec3(
+                    ix ? b.max.x : b.min.x,
+                    iy ? b.max.y : b.min.y,
+                    iz ? b.max.z : b.min.z));
+}
+
+void ModelSystemNode::contributeRenderTextureRevision(
+    entt::registry& reg, entt::entity entity, RenderTextureRevision& revision)
+{
+    // URI and local-matrix changes both affect the model's pixels and bounds.
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<Model>(entity));
+}
 
 
 ModelSystemNode::ModelSystemNode(Registry& registry) :
@@ -81,18 +109,20 @@ ModelSystemNode::traverse(vsg::RecordTraversal& record) const
         { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
     };
 
-    auto [renderDomain, overlayTarget] = getRenderDomainAndOverlayTarget(record);
+    auto renderRequest = getRenderRequest(record);
 
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
         {
             auto renderEntity = [&](auto entity, auto& model, auto& det, auto& active, auto& visibility)
                 {
-                    if (renderDomain == RenderDomain::OverlayBake)
+                    if (!renderRequest.contains(entity))
+                        return;
+
+                    if (auto* participation = reg.try_get<RenderParticipation>(entity))
                     {
-                        if (!reg.any_of<Overlay>(entity))
-                            return;
-                        if (overlayTarget != entt::null && entity != overlayTarget)
+                        if ((renderRequest.purpose == RenderPurpose::Main && !participation->mainView) ||
+                            (renderRequest.purpose == RenderPurpose::RenderTexture && !participation->renderTexture))
                             return;
                     }
 
@@ -117,10 +147,10 @@ ModelSystemNode::traverse(vsg::RecordTraversal& record) const
                         if (visible(visibility, rs))
                         {
                             auto* xformDetail = reg.try_get<TransformDetail>(entity);
-                            bool useTransform = !(renderDomain == RenderDomain::OverlayBake && reg.any_of<AutoOverlayTransform>(entity));
+                            bool useTransform = !(renderRequest.purpose == RenderPurpose::RenderTexture && renderRequest.ignoreSourceTransforms);
                             if (xformDetail)
                             {
-                                bool passes = (renderDomain == RenderDomain::OverlayBake) || xformDetail->views[rs.viewID].passingCull;
+                                bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || xformDetail->views[rs.viewID].passingCull;
                                 if (useTransform && passes)
                                 {
                                     _drawList.emplace_back(det.node, xformDetail);
@@ -138,23 +168,21 @@ ModelSystemNode::traverse(vsg::RecordTraversal& record) const
                     }
                 };
 
-            if (renderDomain == RenderDomain::OverlayBake)
+            if (renderRequest.purpose == RenderPurpose::RenderTexture && !renderRequest.sources.empty())
             {
-                if (overlayTarget != entt::null && reg.all_of<Model, ModelDetail, ActiveState, Visibility>(overlayTarget))
+                for (auto source : renderRequest.sources)
                 {
-                    auto&& [model, detail, active, visibility] =
-                        reg.get<Model, ModelDetail, ActiveState, Visibility>(overlayTarget);
-                    renderEntity(overlayTarget, model, detail, active, visibility);
-                }
-                else if (overlayTarget == entt::null)
-                {
-                    auto iter = reg.view<Model, ModelDetail, ActiveState, Visibility>();
-                    iter.each(renderEntity);
+                    if (reg.all_of<Model, ModelDetail, ActiveState, Visibility>(source))
+                    {
+                        auto&& [model, detail, active, visibility] =
+                            reg.get<Model, ModelDetail, ActiveState, Visibility>(source);
+                        renderEntity(source, model, detail, active, visibility);
+                    }
                 }
             }
             else
             {
-                auto iter = reg.view<Model, ModelDetail, ActiveState, Visibility>(entt::exclude<Overlay>);
+                auto iter = reg.view<Model, ModelDetail, ActiveState, Visibility>();
                 iter.each(renderEntity);
             }
 

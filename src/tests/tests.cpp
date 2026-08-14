@@ -2,6 +2,13 @@
 #include "catch.hpp"
 
 #include <rocky/rocky.h>
+#include <rocky/ecs/ProjectedTexture.h>
+#include <rocky/ecs/Overlay.h>
+#include <rocky/ecs/Decal.h>
+#include <rocky/vsg/ecs/OverlayBakeSystem.h>
+#include <rocky/vsg/ecs/DecalSystem.h>
+#include <rocky/vsg/ecs/MeshSystem.h>
+#include <rocky/vsg/ecs/LineSystem.h>
 #include <atomic>
 #include <chrono>
 #include <random>
@@ -40,6 +47,156 @@ TEST_CASE("strings")
     CHECK(s1 == "Hello, Rocky!");
     s1 = "  Hello, Rocky!  ";
     CHECK(detail::trimInPlace(s1) == "Hello, Rocky!");
+}
+
+TEST_CASE("projected texture contracts", "[projection]")
+{
+    RenderTexture renderTexture;
+    CHECK(renderTexture.sources.empty());
+    CHECK(renderTexture.textureSize == glm::uvec2(512u, 512u));
+    CHECK_FALSE(renderTexture.useDepthBuffer);
+
+    ProjectedTexture projected;
+    CHECK((projected.texture == entt::null));
+    CHECK((projected.projector == entt::null));
+
+    RenderTextureBounds bounds;
+    bounds.expand(SRS::WGS84, glm::dvec3(179.9, 10.0, 0.0));
+    bounds.expand(SRS::WGS84, glm::dvec3(-179.9, 11.0, 0.0));
+    REQUIRE(bounds.valid);
+    CHECK(bounds.maxx - bounds.minx < 1.0);
+}
+
+TEST_CASE("render texture revisions", "[projection]")
+{
+    Registry registry = Registry::create();
+    auto meshSystem = MeshSystemNode::create(registry);
+    auto lineSystem = LineSystemNode::create(registry);
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto source = reg.create();
+
+        auto& meshGeometry = reg.emplace<MeshGeometry>(source);
+        meshGeometry.srs = SRS::WGS84;
+        meshGeometry.vertices.emplace_back(0.0, 0.0, 0.0);
+
+        auto& meshStyle = reg.emplace<MeshStyle>(source);
+        reg.emplace<Mesh>(source, meshGeometry, meshStyle);
+
+        RenderTextureRevision meshInitial;
+        meshSystem->contributeRenderTextureRevision(reg, source, meshInitial);
+
+        auto previousComponentRevision = meshStyle.componentRevision();
+        meshStyle.depthOffset = 100.0f;
+        meshStyle.dirty(reg);
+        CHECK(meshStyle.componentRevision() > previousComponentRevision);
+
+        RenderTextureRevision meshStyleChanged;
+        meshSystem->contributeRenderTextureRevision(reg, source, meshStyleChanged);
+        CHECK(meshStyleChanged.bounds == meshInitial.bounds);
+        CHECK(meshStyleChanged.content != meshInitial.content);
+
+        meshGeometry.vertices.emplace_back(1.0, 1.0, 0.0);
+        meshGeometry.dirty(reg);
+
+        RenderTextureRevision meshGeometryChanged;
+        meshSystem->contributeRenderTextureRevision(reg, source, meshGeometryChanged);
+        CHECK(meshGeometryChanged.bounds != meshStyleChanged.bounds);
+        CHECK(meshGeometryChanged.content != meshStyleChanged.content);
+
+        MeshStyle replacement;
+        replacement.depthOffset = 200.0f;
+        auto revisionBeforeReplacement = meshStyle.componentRevision();
+        auto& replacedStyle = reg.emplace_or_replace<MeshStyle>(source, replacement);
+        CHECK(replacedStyle.componentRevision() != revisionBeforeReplacement);
+
+        auto& lineGeometry = reg.emplace<LineGeometry>(source);
+        lineGeometry.srs = SRS::WGS84;
+        lineGeometry.points = { { 0.0, 0.0, 0.0 }, { 1.0, 1.0, 0.0 } };
+        auto& lineStyle = reg.emplace<LineStyle>(source);
+        reg.emplace<Line>(source, lineGeometry, lineStyle);
+
+        RenderTextureRevision lineInitial;
+        lineSystem->contributeRenderTextureRevision(reg, source, lineInitial);
+
+        // Line width affects bounds padding, while depthOffset verifies that
+        // formerly omitted style properties still invalidate baked content.
+        lineStyle.depthOffset = 50.0f;
+        lineStyle.dirty(reg);
+
+        RenderTextureRevision lineStyleChanged;
+        lineSystem->contributeRenderTextureRevision(reg, source, lineStyleChanged);
+        CHECK(lineStyleChanged.bounds != lineInitial.bounds);
+        CHECK(lineStyleChanged.content != lineInitial.content);
+    });
+}
+
+TEST_CASE("legacy overlay adapter", "[projection]")
+{
+    Registry registry = Registry::create();
+    auto bakeSystem = OverlayBakeSystemNode::create(registry);
+    auto decalSystem = DecalSystemNode::create(registry);
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto overlayEntity = reg.create();
+        reg.emplace<Overlay>(overlayEntity);
+        CHECK(reg.any_of<RenderTexture>(overlayEntity));
+        CHECK(reg.any_of<ProjectedTexture>(overlayEntity));
+        REQUIRE(reg.any_of<RenderParticipation>(overlayEntity));
+        CHECK_FALSE(reg.get<RenderParticipation>(overlayEntity).mainView);
+
+        reg.remove<Overlay>(overlayEntity);
+        CHECK_FALSE(reg.any_of<RenderTexture>(overlayEntity));
+        CHECK_FALSE(reg.any_of<ProjectedTexture>(overlayEntity));
+        CHECK_FALSE(reg.any_of<RenderParticipation>(overlayEntity));
+
+        auto explicitEntity = reg.create();
+        reg.emplace<RenderTexture>(explicitEntity);
+        reg.emplace<ProjectedTexture>(explicitEntity);
+        reg.emplace<RenderParticipation>(explicitEntity);
+        reg.emplace<Overlay>(explicitEntity);
+        reg.remove<Overlay>(explicitEntity);
+        CHECK(reg.any_of<RenderTexture>(explicitEntity));
+        CHECK(reg.any_of<ProjectedTexture>(explicitEntity));
+        CHECK(reg.any_of<RenderParticipation>(explicitEntity));
+    });
+}
+
+TEST_CASE("legacy decal adapter", "[projection]")
+{
+    Registry registry = Registry::create();
+    auto decalSystem = DecalSystemNode::create(registry);
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto styleEntity = reg.create();
+        reg.emplace<DecalStyle>(styleEntity);
+        CHECK(reg.any_of<ImageTexture>(styleEntity));
+
+        auto decalEntity = reg.create();
+        reg.emplace<Decal>(decalEntity, styleEntity);
+        REQUIRE(reg.any_of<ProjectedTexture>(decalEntity));
+        CHECK(reg.get<ProjectedTexture>(decalEntity).texture == styleEntity);
+
+        reg.remove<Decal>(decalEntity);
+        CHECK_FALSE(reg.any_of<ProjectedTexture>(decalEntity));
+        reg.remove<DecalStyle>(styleEntity);
+        CHECK_FALSE(reg.any_of<ImageTexture>(styleEntity));
+
+        auto explicitStyle = reg.create();
+        reg.emplace<ImageTexture>(explicitStyle);
+        reg.emplace<DecalStyle>(explicitStyle);
+        reg.remove<DecalStyle>(explicitStyle);
+        CHECK(reg.any_of<ImageTexture>(explicitStyle));
+
+        auto explicitDecal = reg.create();
+        reg.emplace<ProjectedTexture>(explicitDecal);
+        reg.emplace<Decal>(explicitDecal);
+        reg.remove<Decal>(explicitDecal);
+        CHECK(reg.any_of<ProjectedTexture>(explicitDecal));
+    });
 }
 
 TEST_CASE("json")
