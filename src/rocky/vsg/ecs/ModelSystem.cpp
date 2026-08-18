@@ -15,11 +15,28 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
 
+RenderTextureSourceStatus ModelSystemNode::renderTextureSourceStatus(entt::registry& reg, entt::entity entity) const
+{
+    if (!reg.any_of<Model>(entity))
+        return {};
+    const auto& model = reg.get<Model>(entity);
+    if (model.error)
+        return { RenderTextureSourceStatus::State::Failed, model.error->message };
+    auto* detail = reg.try_get<detail::ModelDetail>(entity);
+    if (!detail || !detail->node)
+        return { RenderTextureSourceStatus::State::Waiting, "Waiting for model data", true };
+    if (auto* future = dynamic_cast<FutureNode*>(detail->node.get()))
+        return future->resolve() ? RenderTextureSourceStatus{} :
+            RenderTextureSourceStatus{ RenderTextureSourceStatus::State::Waiting, "Waiting for model load", true };
+    return {};
+}
+
 void ModelSystemNode::expandRenderTextureBounds(
-    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS& worldSRS)
+    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS& worldSRS, bool applySourceTransform)
 {
     auto* modelDetail = reg.try_get<detail::ModelDetail>(entity);
-    if (!modelDetail || !modelDetail->node || !worldSRS.valid())
+    if (!modelDetail || !modelDetail->node || !worldSRS.valid() ||
+        renderTextureSourceStatus(reg, entity).state != RenderTextureSourceStatus::State::Ready)
         return;
 
     vsg::ComputeBounds cb;
@@ -29,10 +46,10 @@ void ModelSystemNode::expandRenderTextureBounds(
     for (int ix = 0; ix < 2; ++ix)
         for (int iy = 0; iy < 2; ++iy)
             for (int iz = 0; iz < 2; ++iz)
-                bounds.expand(worldSRS, glm::dvec3(
+                expandRenderTextureSourcePoint(reg, entity, bounds, worldSRS, glm::dvec3(
                     ix ? b.max.x : b.min.x,
                     iy ? b.max.y : b.min.y,
-                    iz ? b.max.z : b.min.z));
+                    iz ? b.max.z : b.min.z), worldSRS, applySourceTransform);
 }
 
 void ModelSystemNode::contributeRenderTextureRevision(
@@ -51,10 +68,16 @@ ModelSystemNode::ModelSystemNode(Registry& registry) :
         {
             // install the ENTT callbacks for managing internal data:
             r.on_construct<Model>().connect<&ModelSystemNode::on_construct_Model>(*this);
+            r.on_destroy<Model>().connect<&ModelSystemNode::on_destroy_Model>(*this);
             r.on_update<Model>().connect<&ModelSystemNode::on_update_Model>(*this);
 
             auto e = r.create();
             r.emplace<Model::Dirty>(e);
+
+            std::vector<entt::entity> existing;
+            r.view<Model>().each([&](auto entity, auto&) { existing.push_back(entity); });
+            for (auto entity : existing)
+                on_construct_Model(r, entity);
         });
 }
 
@@ -82,7 +105,9 @@ ModelSystemNode::on_construct_Model(entt::registry& r, entt::entity e)
 void
 ModelSystemNode::on_destroy_Model(entt::registry& r, entt::entity e)
 {
-    dispose(r.get<ModelDetail>(e).node);
+    if (auto* detail = r.try_get<ModelDetail>(e))
+        dispose(detail->node);
+    r.remove<ModelDetail>(e);
 }
 
 void
@@ -266,14 +291,17 @@ ModelSystemNode::traverse(vsg::ConstVisitor& visitor) const
 void
 ModelSystemNode::compile(vsg::Context& cc)
 {
-    _registry.read([&](entt::registry& reg)
-        {
-            reg.view<ModelDetail>().each([&](auto& m)
+    if (firstCompileForView(cc))
+    {
+        _registry.read([&](entt::registry& reg)
+            {
+                reg.view<ModelDetail>().each([&](auto& m)
                 {
                     if (m.node)
                         requestCompile(m.node);
                 });
-        });
+            });
+    }
     Inherit::compile(cc);
 }
 
@@ -288,9 +316,11 @@ ModelSystemNode::update(VSGContext vsgcontext)
             Model::eachDirty(reg, [&](entt::entity entity)
                 {
                     auto&& [model, det] = reg.get<Model, ModelDetail>(entity);
+                    model.error.reset();
 
                     if (det.node)
                         dispose(det.node);
+                    det.node = {};
 
                     auto loadModel = [model(model), io(vsgcontext->io), options(vsgcontext->readerWriterOptions)](Cancelable& c)
                         -> Result<vsg::ref_ptr<vsg::Node>>
@@ -331,6 +361,7 @@ ModelSystemNode::update(VSGContext vsgcontext)
                     LoadRecord record;
                     record.promise = j.dispatch(loadModel, context);
                     record.entity = entity;
+                    record.revision = model.componentRevision();
 
                     _loaders.emplace(std::move(record));
 
@@ -343,11 +374,15 @@ ModelSystemNode::update(VSGContext vsgcontext)
     while (!_loaders.empty())
     {
         auto& entry = _loaders.front();
-        if (entry.promise.available() && entry.promise->failed())
+        if (entry.promise.available())
         {
-            auto&& reader = _registry.read();
-            if (auto* model = reader->try_get<Model>(entry.entity))
-                model->error = entry.promise->error();
+            if (entry.promise->failed())
+            {
+                auto&& reader = _registry.read();
+                if (auto* model = reader->try_get<Model>(entry.entity);
+                    model && model->componentRevision() == entry.revision)
+                    model->error = entry.promise->error();
+            }
             _loaders.pop();
         }
         else if (entry.promise.empty())

@@ -26,10 +26,16 @@ namespace ROCKY_NAMESPACE
     public:
         OverlayBakeSystemNode(Registry& registry);
 
-        vsg::ref_ptr<vsg::Node> bakeScene;
-        std::vector<System*> renderParticipants;
+        //! System collection from which render-to-texture capabilities are discovered.
+        //! This is rescanned during update so extensions can register live.
+        ECSNode* renderSourceSystems = nullptr;
+        vsg::ref_ptr<vsg::Group> bakeScene;
         SRS worldSRS;
         unsigned textureSize = 512u;
+
+        //! Maximum number of new offscreen render targets to create and
+        //! synchronously compile in one frame. Zero means unlimited.
+        unsigned maxResourceSetupsPerFrame = 2u;
 
         // Advanced tuning factor for auto-computed overlay depth thickness.
         // 1.0 = default behavior; >1.0 = safer/thicker; <1.0 = tighter/faster.
@@ -40,11 +46,13 @@ namespace ROCKY_NAMESPACE
         void update(VSGContext) override;
 
     private:
-        // A newly created absolute overlay needs one frame to initialize its
-        // generated Transform, one to initialize/build the bake view geometry,
-        // and a final update to publish the projector after those view-local
-        // details are valid.
-        static constexpr unsigned INITIAL_BAKE_FRAMES = 3u;
+        enum class BakePhase
+        {
+            WaitingForSources,
+            Priming,
+            Baking,
+            Ready
+        };
 
         struct OverlayBakeDetail : public Component<OverlayBakeDetail>
         {
@@ -54,21 +62,27 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::CommandGraph> hostCommandGraph;
             glm::uvec2 textureSize = { 0u, 0u };
             bool useDepthBuffer = false;
-            entt::entity styleEntity = entt::null;
             std::size_t boundsRevision = 0u;
             std::size_t contentRevision = 0u;
             bool boundsRevisionValid = false;
             bool contentRevisionValid = false;
             bool autoTransformDirty = true;
-            bool ownsResource = false;
-            unsigned bakeFramesRemaining = INITIAL_BAKE_FRAMES;
+            bool fitToSources = true;
+            bool published = false;
+            bool generationPending = true;
+            BakePhase phase = BakePhase::WaitingForSources;
         };
 
         // Color-only and depth-enabled bakes need separate view IDs so VSG can
         // compile compatible graphics-pipeline implementations for each render pass.
         std::array<vsg::ref_ptr<vsg::Camera>, 2> _sharedCameras;
         std::array<vsg::ref_ptr<vsg::View>, 2> _sharedViews;
+        std::array<vsg::ref_ptr<vsg::RenderPass>, 2> _sharedRenderPasses;
+        vsg::ref_ptr<vsg::Context> _resourceContext;
+        std::vector<RenderTextureParticipant*> _renderParticipants;
         mutable float _lastDepthSafetyFactor = -1.0f;
+        SRS _lastWorldSRS;
+        void refreshRenderParticipants();
 
         void on_construct_Overlay(entt::registry& r, entt::entity e);
         void on_destroy_Overlay(entt::registry& r, entt::entity e);

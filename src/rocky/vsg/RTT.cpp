@@ -1,6 +1,58 @@
 #include "RTT.h"
 
+#include <algorithm>
+
 using namespace ROCKY_NAMESPACE;
+
+namespace
+{
+    // VSG 1.1.15 computes MemoryBufferPools::minimumDeviceMemorySize but
+    // reserveMemory() allocates only the incoming image requirement. Prime a
+    // reusable block explicitly so a large set of small RTT attachments does
+    // not turn into one VkDeviceMemory allocation per image.
+    vsg::ref_ptr<vsg::ImageView> createPooledImageView(
+        vsg::Context& context,
+        vsg::ref_ptr<vsg::Image> image,
+        VkImageAspectFlags aspectFlags)
+    {
+        auto device = context.device;
+        image->compile(device);
+
+        auto requirements = image->getMemoryRequirements(context.deviceID);
+        auto& pools = *context.deviceMemoryBufferPools;
+
+        if (pools.computeMemoryTotalAvailable() < requirements.size)
+        {
+            auto blockRequirements = requirements;
+            blockRequirements.size = std::max(requirements.size, pools.minimumDeviceMemorySize);
+
+            auto [block, blockOffset] = pools.reserveMemory(
+                blockRequirements,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+            if (block)
+            {
+                // Return the priming reservation immediately. The allocation
+                // remains in MemoryBufferPools and subsequent images suballocate it.
+                block->release(blockOffset, blockRequirements.size);
+            }
+        }
+
+        auto [memory, offset] = pools.reserveMemory(
+            requirements,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        if (!memory)
+            throw vsg::Exception{ "Unable to allocate pooled RTT image memory", VK_ERROR_OUT_OF_DEVICE_MEMORY };
+
+        auto result = image->bind(memory, offset);
+        if (result != VK_SUCCESS)
+            throw vsg::Exception{ "Unable to bind pooled RTT image memory", result };
+
+        auto imageView = vsg::ImageView::create(image, aspectFlags);
+        imageView->compile(device);
+        return imageView;
+    }
+}
 
 
 // adapted from vsgExamples/vsgrendertotexture.cpp
@@ -10,7 +62,8 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
     const VkExtent2D& extent,
     vsg::ref_ptr<vsg::ImageInfo> colorImageInfo,
     vsg::ref_ptr<vsg::ImageInfo> depthImageInfo,
-    const vsg::vec4& clearColor)
+    const vsg::vec4& clearColor,
+    vsg::ref_ptr<vsg::RenderPass> compatibleRenderPass)
 {
     auto device = context.device;
 
@@ -41,7 +94,7 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
         colorImage->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         colorImage->flags = 0;
         colorImage->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        auto colorImageView = vsg::createImageView(context, colorImage, VK_IMAGE_ASPECT_COLOR_BIT);
+        auto colorImageView = createPooledImageView(context, colorImage, VK_IMAGE_ASPECT_COLOR_BIT);
 
         // Sampler for accessing attachment as a texture
         auto colorSampler = vsg::Sampler::create();
@@ -100,7 +153,7 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
 
         // XXX Does layout matter?
         depthImageInfo->sampler = nullptr;
-        depthImageInfo->imageView = vsg::createImageView(context, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
+        depthImageInfo->imageView = createPooledImageView(context, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
         depthImageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // VK_IMAGE_LAYOUT_GENERAL;
 
         // Depth attachment
@@ -153,7 +206,11 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
     dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 #endif
 
-    auto renderPass = vsg::RenderPass::create(device, attachments, subpassDescription, dependencies);
+    // Framebuffers with the same attachment formats can share a render pass.
+    // Apart from reducing Vulkan objects, this lets graphics pipelines compiled
+    // for one offscreen target serve all compatible targets.
+    auto renderPass = compatibleRenderPass ? compatibleRenderPass :
+        vsg::RenderPass::create(device, attachments, subpassDescription, dependencies);
 
     // Framebuffer
     auto fbuf = vsg::Framebuffer::create(renderPass, imageViews, extent.width, extent.height, 1);

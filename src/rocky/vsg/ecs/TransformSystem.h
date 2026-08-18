@@ -7,6 +7,7 @@
 
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/ecs/System.h>
+#include <rocky/vsg/ecs/RenderTextureParticipant.h>
 #include <rocky/SRS.h>
 #include <rocky/Callbacks.h>
 
@@ -15,7 +16,10 @@ namespace ROCKY_NAMESPACE
     /**
     * ECS System that processes Transform and TransformDetail components.
     */
-    class ROCKY_EXPORT TransformSystemNode : public vsg::Inherit<vsg::Node, TransformSystemNode>, public System
+    class ROCKY_EXPORT TransformSystemNode :
+        public vsg::Inherit<vsg::Node, TransformSystemNode>,
+        public System,
+        public RenderTextureParticipant
     {
     public:
         //! Construct the system
@@ -26,7 +30,9 @@ namespace ROCKY_NAMESPACE
         //! Called periodically to update the transforms
         void traverse(vsg::RecordTraversal& record) const override;
 
-        vsg::Node* renderTextureParticipant() override { return this; }
+        RenderTextureParticipant* renderTextureParticipant() override { return this; }
+        vsg::Node* renderTextureNode() override { return this; }
+        int renderTextureOrder() const override { return RenderTextureOrder::Transform; }
 
         //! Callback to invoke if the update/traverse resulted in any changes
         Callback<> onChanges;

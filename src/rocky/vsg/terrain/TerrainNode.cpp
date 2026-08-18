@@ -254,6 +254,13 @@ TerrainNode::reset(VSGContext context)
     state->updateProfile(profile);
 }
 
+void
+TerrainNode::rebuildRenderPipeline(VSGContext context)
+{
+    state->rebuildPipeline(context);
+    state->buildTerrainStateGroup(_profileNodes, context);
+}
+
 Result<>
 TerrainNode::createProfiles(VSGContext vsgcontext)
 {

@@ -37,17 +37,39 @@ namespace
 SharedRenderData::SharedRenderData()
 {
 #ifdef ROCKY_HAS_DECALS
+    configureProjectedTextureCapacity(DEFAULT_PROJECTED_TEXTURE_CAPACITY);
+#endif
+}
 
-    // arena to hold all decal textures (shared by all views).
-    // All entries are initialized to a valid fallback image.
+void
+SharedRenderData::configureProjectedTextureCapacity(std::uint32_t capacity)
+{
+#ifdef ROCKY_HAS_DECALS
+    capacity = std::max(1u, capacity);
+    if (decalTextures && decalTextures->imageInfoList.size() == capacity)
+        return;
+
+    // Arena shared by all views. Every entry must contain a valid descriptor,
+    // even when no projected texture currently owns the slot.
     auto fallback = makeDefaultImageInfo();
-    vsg::ImageInfoList arena(MAX_NUM_DECAL_TEXTURES, fallback);
-
+    vsg::ImageInfoList arena(capacity, fallback);
     decalTextures = vsg::DescriptorImage::create(
         arena,
         BINDING_DECAL_TEXTURES,
-        0, // array element
+        0,
         TYPE_DECAL_TEXTURES);
+#else
+    (void)capacity;
+#endif
+}
+
+std::uint32_t
+SharedRenderData::projectedTextureCapacity() const
+{
+#ifdef ROCKY_HAS_DECALS
+    return decalTextures ? static_cast<std::uint32_t>(decalTextures->imageInfoList.size()) : 0u;
+#else
+    return 0u;
 #endif
 }
 

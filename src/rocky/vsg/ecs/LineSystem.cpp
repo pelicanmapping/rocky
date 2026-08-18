@@ -17,14 +17,42 @@ using namespace ROCKY_NAMESPACE::detail;
 #define LINE_VERT_SHADER "shaders/rocky.line.vert"
 #define LINE_FRAG_SHADER "shaders/rocky.line.frag"
 
+RenderTextureSourceStatus LineSystemNode::renderTextureSourceStatus(
+    entt::registry& reg, entt::entity entity) const
+{
+    auto* line = reg.try_get<Line>(entity);
+    if (!line)
+        return {};
+
+    auto* geometry = reg.try_get<LineGeometry>(line->geometry);
+    auto* detail = reg.try_get<LineGeometryDetail>(line->geometry);
+    if (!geometry || !detail)
+        return { RenderTextureSourceStatus::State::Waiting, "Waiting for line geometry", true };
+
+    bool hasViewGeometry = false;
+    for (const auto& view : detail->views)
+    {
+        if (!view.geomNode || !view.root)
+            continue;
+
+        hasViewGeometry = true;
+        const auto& node = view.geomNode;
+        if (!node->ready(_deviceID))
+            return { RenderTextureSourceStatus::State::Waiting, "Waiting for compiled line geometry", true };
+    }
+
+    return hasViewGeometry || geometry->points.empty() ? RenderTextureSourceStatus{} :
+        RenderTextureSourceStatus{ RenderTextureSourceStatus::State::Waiting, "Waiting for line view geometry", true };
+}
+
 void LineSystemNode::expandRenderTextureBounds(
-    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS&)
+    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS& worldSRS, bool applySourceTransform)
 {
     if (auto* line = reg.try_get<Line>(entity))
     {
         if (auto* geometry = reg.try_get<LineGeometry>(line->geometry))
             for (const auto& point : geometry->points)
-                bounds.expand(geometry->srs, point);
+                expandRenderTextureSourcePoint(reg, entity, bounds, geometry->srs, point, worldSRS, applySourceTransform);
         double width = 2.0;
         if (auto* style = reg.try_get<LineStyle>(line->style))
             width = std::abs((double)style->width);
@@ -216,6 +244,8 @@ LineSystemNode::LineSystemNode(Registry& registry) :
 void
 LineSystemNode::initialize(VSGContext vsgcontext)
 {
+    _deviceID = vsgcontext->device()->deviceID;
+
     // Now create the pipeline and stategroup to bind it
     auto shaderSet = createLineShaderSet(vsgcontext);
 
@@ -296,16 +326,19 @@ LineSystemNode::initialize(VSGContext vsgcontext)
 void
 LineSystemNode::compile(vsg::Context& compileContext)
 {
-    // called during a compile traversal .. e.g., then adding a new View/RenderGraph.
-    _registry.read([&](entt::registry& reg)
-        {
-            reg.view<LineStyleDetail>().each([&](auto& styleDetail)
-                {
-                    if (styleDetail.bind)
-                        styleDetail.bind->compile(compileContext);
-                });
+    // Repeated Overlay render graphs share one View. Existing resources only
+    // need the registry-wide compile pass the first time that View is seen.
+    if (firstCompileForView(compileContext))
+    {
+        _registry.read([&](entt::registry& reg)
+            {
+                reg.view<LineStyleDetail>().each([&](auto& styleDetail)
+                    {
+                        if (styleDetail.bind)
+                            styleDetail.bind->compile(compileContext);
+                    });
 
-            reg.view<LineGeometryDetail>().each([&](auto& geomDetail)
+                reg.view<LineGeometryDetail>().each([&](auto& geomDetail)
                 {
                     for (auto& geomView : geomDetail.views)
                     {
@@ -313,7 +346,8 @@ LineSystemNode::compile(vsg::Context& compileContext)
                             geomView.geomNode->compile(compileContext);
                     }
                 });
-        });
+            });
+    }
 
     Inherit::compile(compileContext);
 }
@@ -511,18 +545,15 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
 
-    auto& view = _viewInfo[rs.viewID];
+    auto geometryViewID = prepareGeometryView(
+        rs.viewID,
+        srs,
+        rs.frame,
+        renderRequest.purpose == RenderPurpose::RenderTexture);
 
-    // I'm alive
-    view.lastFrame = rs.frame;
-
-    // Did my SRS change? Because if it did, we need to regenerate
-    if (view.srsDef.empty() || view.srsDef != srs.definition())
-    {
-        view.srsDef = srs.definition();
-        view.dirty = true;
+    // A cache-owning view must wait for update() to generate its geometry.
+    if (geometryViewID == rs.viewID && _viewInfo[rs.viewID].dirty)
         return;
-    }
 
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
@@ -530,7 +561,8 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
             reg.view<LineStyle, LineStyleDetail>().each([&](auto& style, auto& styleDetail)
                 {
                     _styleDetailBins.emplace_back(&styleDetail);
-                    styleDetail.useTransparencyBin = style.transparencyBin;
+                    styleDetail.useTransparencyBin =
+                        style.transparencyBin && renderRequest.purpose == RenderPurpose::Main;
                 });
 
             int count = 0;
@@ -551,7 +583,7 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
                     if (!geomDetail)
                         return;
 
-                    auto& geomView = geomDetail->views[rs.viewID];
+                    auto& geomView = geomDetail->views[geometryViewID];
 
                     if (geomView.root && visible(visibility, rs))
                     {
@@ -676,9 +708,10 @@ LineSystemNode::update(VSGContext vsgcontext)
 
                 // Check for view expiration (no record traversal)
                 auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
-                if (view.lastFrame < frame - 1u)
+                if (!view.persistent && view.lastFrame < frame - 1u)
                 {
                     view.srsDef.clear();
+                    view.geometryViewID = std::numeric_limits<ViewIDType>::max();
                     view.dirty = true;
                     view.lastFrame = std::numeric_limits<FrameCountType>::max();
                 }

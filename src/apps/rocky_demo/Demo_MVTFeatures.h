@@ -64,7 +64,7 @@ auto Demo_MVTFeatures = [](Application& app)
                     {
                         auto n = glm::normalize(bs.center);
                         bs.center += n * p.value().transform(ex.srs().geodeticSRS()).z;
-                        bs.center *= 1.01;
+                        bs.radius *= 1.01;
                     }
                 }
 

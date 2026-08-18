@@ -1,5 +1,4 @@
 /**
-/**
  * rocky c++
  * Copyright 2026 Pelican Mapping
  * MIT License
@@ -39,11 +38,7 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::Commands> commands;
         };
         mutable ViewLocal<ViewDetail> _views;
-        mutable std::uint64_t _lastFrameCount = ~0U;
         std::shared_ptr<SharedRenderData> _sharedRenderData;
-
-        // collection of all decals in the scene
-        mutable unsigned _totalNumDecals = 0u;
 
         vsg::ref_ptr<vsg::ShaderStage> _cullingShader;
 
@@ -51,6 +46,12 @@ namespace ROCKY_NAMESPACE
         // released during update(), where the shared descriptor arena is available.
         std::mutex _pendingTextureSlotsMutex;
         std::vector<std::int32_t> _pendingTextureSlots;
+
+        // Kept outside the descriptor arena so slot zero remains usable.
+        vsg::ref_ptr<vsg::ImageInfo> _fallbackTexture;
+
+        // Prevent descriptor-capacity warnings from flooding the log every frame.
+        bool _textureSlotsExhausted = false;
 
         void rebuildCommands(ViewIDType, VSGContext);
         void updateStyles(VSGContext);

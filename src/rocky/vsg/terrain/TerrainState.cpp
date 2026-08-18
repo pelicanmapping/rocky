@@ -41,6 +41,25 @@
 
 using namespace ROCKY_NAMESPACE;
 
+namespace
+{
+    void defineProjectedTextureCapacity(vsg::ShaderStage* stage, std::uint32_t capacity)
+    {
+        ROCKY_HARD_ASSERT(stage && stage->module);
+        auto& source = stage->module->source;
+        ROCKY_HARD_ASSERT(!source.empty(), "Terrain fragment shader must contain GLSL source");
+
+        // ShaderCompileSettings only imports symbolic defines. Insert this numeric
+        // startup constant immediately after #version so included shader headers
+        // see the same array length as the Vulkan descriptor-set layout.
+        auto version = source.find("#version");
+        auto newline = version == std::string::npos ? 0u : source.find('\n', version);
+        auto insertion = newline == std::string::npos ? 0u : newline + 1u;
+        source.insert(insertion,
+            "#define MAX_NUM_DECAL_TEXTURES " + std::to_string(capacity) + "\n");
+    }
+}
+
 TerrainState::TerrainState(VSGContext context)
 {
     // set up the texture samplers and placeholder images we will use to render terrain.
@@ -59,6 +78,23 @@ TerrainState::TerrainState(VSGContext context)
     // for wireframe mode
     _wireframe = vsg::SetPrimitiveTopology::create();
     _wireframe->topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+}
+
+void
+TerrainState::rebuildPipeline(VSGContext context)
+{
+    pipelineConfig = {};
+    shaderSet = createShaderSet(context);
+    if (!shaderSet)
+    {
+        status = Failure(Failure::ResourceUnavailable,
+            "Terrain shaders are missing or corrupt. "
+            "Did you set ROCKY_FILE_PATH to point at the rocky share folder?");
+    }
+    else
+    {
+        status.clear();
+    }
 }
 
 TerrainState::~TerrainState()
@@ -187,6 +223,12 @@ TerrainState::createShaderSet(VSGContext vsgcontext) const
         return { };
     }
 
+#ifdef ROCKY_HAS_DECALS
+    const auto projectedTextureCapacity =
+        vsgcontext->sharedRenderData->projectedTextureCapacity();
+    defineProjectedTextureCapacity(fragmentShader, projectedTextureCapacity);
+#endif
+
     vsg::ShaderStages shaderStages{ vertexShader, fragmentShader };
 
     shaderSet = vsg::ShaderSet::create(shaderStages);
@@ -221,7 +263,7 @@ TerrainState::createShaderSet(VSGContext vsgcontext) const
 #ifdef ROCKY_HAS_DECALS
     shaderSet->addDescriptorBinding(DECAL_TEXTURES_UBO_NAME, "",
         DESCRIPTOR_SET_GLOBAL,
-        BINDING_DECAL_TEXTURES, TYPE_DECAL_TEXTURES, MAX_NUM_DECAL_TEXTURES,
+        BINDING_DECAL_TEXTURES, TYPE_DECAL_TEXTURES, projectedTextureCapacity,
         VK_SHADER_STAGE_FRAGMENT_BIT, {});
 #endif
 

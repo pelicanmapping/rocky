@@ -61,9 +61,6 @@ void main()
         if (intersects(b_decals.decal[i], frustum))
         {
             b_decalTiles.tile[tile].indices[found++] = i;
-
-            // Calculate the inverse here instead of on the CPU:
-            b_decals.decal[i].mvmInverse = inverse(b_decals.decal[i].mvm);
         }
     }
 

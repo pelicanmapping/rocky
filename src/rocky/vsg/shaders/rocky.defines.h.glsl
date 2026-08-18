@@ -35,7 +35,9 @@
 #define FRUSTUM_GRID_TILE_SIZE_PIXELS       16
 #define FRUSTUM_GRID_TILES_PER_THREAD_GROUP 16
 #define MAX_DECALS_PER_TILE                  7
+#ifndef MAX_NUM_DECAL_TEXTURES
 #define MAX_NUM_DECAL_TEXTURES              64
+#endif
 
 
 #ifdef __cplusplus

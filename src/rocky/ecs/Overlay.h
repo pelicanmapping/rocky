@@ -11,10 +11,8 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-    * Convenience component that renders same-entity geometry to a texture and
-    * projects it on terrain. Internally this adapts to RenderTexture,
-    * ProjectedTexture, and RenderParticipation. Use those lower-level
-    * components directly when sources, render job, and projector are separate.
+    * Control component that renders same-entity geometry to a texture and
+    * projects it on terrain as a decal.
     */
     struct Overlay : public Component<Overlay>
     {
@@ -24,7 +22,7 @@ namespace ROCKY_NAMESPACE
         //! Modulation color.
         Color color = StockColor::White;
 
-        //! Whether the offscreen bake should use depth testing. Leave this
+        //! Whether to use depth testing when rendering the overlay. Leave this
         //! disabled for flat artwork that should composite in draw order; enable
         //! it for 3D or nonplanar geometry that requires self-occlusion.
         bool useDepthBuffer = false;

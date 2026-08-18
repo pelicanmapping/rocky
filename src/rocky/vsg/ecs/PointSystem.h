@@ -6,6 +6,8 @@
 #pragma once
 #include <rocky/ecs/Point.h>
 #include <rocky/vsg/ecs/ECSNode.h>
+#include <rocky/vsg/ecs/RenderTextureParticipant.h>
+#include <algorithm>
 
 namespace ROCKY_NAMESPACE
 {
@@ -31,6 +33,34 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::floatArray> _widths;
 
         void calcBound(vsg::dsphere& out, const vsg::dmat4& matrix) const;
+
+        //! Whether all Vulkan resources needed to record this geometry exist.
+        bool ready(std::uint32_t deviceID) const
+        {
+            if (vertexCount == 0)
+                return true;
+
+            for (const auto& array : arrays)
+            {
+                if (!array || !array->buffer ||
+                    array->buffer->sizeVulkanData() <= deviceID ||
+                    array->buffer->vk(deviceID) == VK_NULL_HANDLE)
+                    return false;
+            }
+
+            const auto& vertexData = _vulkanData[deviceID];
+            if (vertexData.vkBuffers.size() != arrays.size())
+                return false;
+
+            return std::all_of(vertexData.vkBuffers.begin(), vertexData.vkBuffers.end(),
+                [](VkBuffer buffer) { return buffer != VK_NULL_HANDLE; });
+        }
+
+        void record(vsg::CommandBuffer& commandBuffer) const override
+        {
+            if (ready(commandBuffer.deviceID))
+                vsg::VertexDraw::record(commandBuffer);
+        }
     };
 
     namespace detail
@@ -103,11 +133,17 @@ namespace ROCKY_NAMESPACE
     /**
      * ECS system that handles Point components
      */
-    class ROCKY_EXPORT PointSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, PointSystemNode>
+    class ROCKY_EXPORT PointSystemNode :
+        public vsg::Inherit<detail::SimpleSystemNodeBase, PointSystemNode>,
+        public RenderTextureParticipant
     {
     public:
-        vsg::Node* renderTextureParticipant() override { return this; }
-        void expandRenderTextureBounds(entt::registry&, entt::entity, RenderTextureBounds&, const SRS&) override;
+        RenderTextureParticipant* renderTextureParticipant() override { return this; }
+        vsg::Node* renderTextureNode() override { return this; }
+        vsg::ref_ptr<vsg::Node> renderTextureCompileNode() override { return pipelineCompileNode(); }
+        int renderTextureOrder() const override { return RenderTextureOrder::Point; }
+        RenderTextureSourceStatus renderTextureSourceStatus(entt::registry&, entt::entity) const override;
+        void expandRenderTextureBounds(entt::registry&, entt::entity, RenderTextureBounds&, const SRS&, bool) override;
         void contributeRenderTextureRevision(entt::registry&, entt::entity, RenderTextureRevision&) override;
         //! Construct the system
         PointSystemNode(Registry& registry);
@@ -128,6 +164,7 @@ namespace ROCKY_NAMESPACE
         mutable detail::PointStyleDetail _defaultStyleDetail;
         mutable std::vector<detail::PointStyleDetail*> _styleDetailBins;
         mutable float _devicePixelRatio = -1.0;
+        std::uint32_t _deviceID = 0u;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Point&) {
             return _pipelines[0].config->layout;

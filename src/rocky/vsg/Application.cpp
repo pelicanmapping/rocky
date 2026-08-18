@@ -27,6 +27,28 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
+    std::uint32_t clampProjectedTextureCapacity(
+        std::uint32_t requested,
+        const VkPhysicalDeviceLimits& limits)
+    {
+        // Leave room for terrain color/elevation, optional shadow-map resources,
+        // UBOs, and SSBOs in the same pipeline layout/stages.
+        auto available = [](std::uint32_t limit, std::uint32_t reserved)
+        {
+            return limit > reserved ? limit - reserved : 1u;
+        };
+
+        auto supported = std::min({
+            available(limits.maxPerStageDescriptorSamplers, 3u),
+            available(limits.maxPerStageDescriptorSampledImages, 2u),
+            available(limits.maxDescriptorSetSamplers, 4u),
+            available(limits.maxDescriptorSetSampledImages, 3u),
+            available(limits.maxPerStageResources, 16u)
+        });
+
+        return std::clamp(requested, 1u, supported);
+    }
+
     Result<> loadMapFile(const std::string& location, MapNode& mapNode, Context context)
     {
         auto map_file = URI(location).read(context->io);
@@ -164,6 +186,13 @@ Application::ctor(int& argc, char** argv)
     // new display manager
     display.initialize(vsgcontext, commandLine);
 
+    int requestedProjectedTextures = static_cast<int>(projectedTextureCapacity);
+    if (commandLine.read("--projected-textures", requestedProjectedTextures))
+    {
+        projectedTextureCapacity =
+            static_cast<std::uint32_t>(std::max(1, requestedProjectedTextures));
+    }
+
     // intercept the window-close event so we can remove the window from our tracking tables.
     auto& handlers = vsgcontext->viewer()->getEventHandlers();
     handlers.insert(handlers.begin(), CloseWindowEventHandler::create(this));
@@ -198,11 +227,13 @@ Application::ctor(int& argc, char** argv)
             << "    [--earth-file <filename>] // import an osgEarth earth file" << std::endl
             << "    [--no-vsync]              // disable vertical sync" << std::endl
             << "    [--continuous]            // render frames continuously (instead of only when needed)" << std::endl
+            << "    [--projected-textures <n>]// maximum concurrent Overlay/Decal textures" << std::endl
             << "    [--log-level <level>]     // set the log level (debug, info, warn, error, critical, off)" << std::endl
             << "    [--sky]                   // install a rudimentary lighting model" << std::endl
             << "    [--version]               // print the version" << std::endl
             << "    [--version-all]           // print all dependency versions" << std::endl
             << "    [--debug]                 // activate the Vulkan debug validation layer" << std::endl
+            << "    [--debug-brutal]          // like --debug but exit at the first validation error" << std::endl
             << "    [--api]                   // activate the Vulkan API validation layer (mega-verbose)" << std::endl
             ;
 
@@ -304,16 +335,7 @@ Application::ctor(int& argc, char** argv)
 
     auto overlayBakeSystem = OverlayBakeSystemNode::create(registry);
     overlayBakeSystem->worldSRS = mapNode->srs();
-    {
-        auto bakeScene = vsg::Group::create();
-        for (auto* system : systemsNode->systems)
-            if (auto* participant = system->renderTextureParticipant())
-            {
-                bakeScene->addChild(vsg::ref_ptr<vsg::Node>(participant));
-                overlayBakeSystem->renderParticipants.push_back(system);
-            }
-        overlayBakeSystem->bakeScene = bakeScene;
-    }
+    overlayBakeSystem->renderSourceSystems = systemsNode.get();
     computeSystemsNode->add(overlayBakeSystem);
 
     auto decalSystem = DecalSystemNode::create(registry);
@@ -413,6 +435,31 @@ Application::realize()
         Window& mainWindow = display.window(0);
         ROCKY_SOFT_ASSERT_AND_RETURN(mainWindow, void());
 
+#ifdef ROCKY_HAS_DECALS
+        auto device = mainWindow.vsgWindow->getOrCreateDevice();
+        ROCKY_SOFT_ASSERT_AND_RETURN(device && device->getPhysicalDevice(), void());
+
+        const auto requestedCapacity = projectedTextureCapacity;
+        projectedTextureCapacity = clampProjectedTextureCapacity(
+            requestedCapacity,
+            device->getPhysicalDevice()->getProperties().limits);
+
+        if (projectedTextureCapacity != requestedCapacity)
+        {
+            Log()->warn(
+                "Requested projected texture capacity {} exceeds Vulkan device limits; using {}",
+                requestedCapacity,
+                projectedTextureCapacity);
+        }
+
+        if (vsgcontext->sharedRenderData->projectedTextureCapacity() != projectedTextureCapacity)
+        {
+            vsgcontext->sharedRenderData->configureProjectedTextureCapacity(projectedTextureCapacity);
+            if (mapNode && mapNode->terrainNode)
+                mapNode->terrainNode->rebuildRenderPipeline(vsgcontext);
+        }
+#endif
+
         // Initialize the ECS subsystem:
         if (systemsNode)
             systemsNode->initialize(vsgcontext);
@@ -482,6 +529,10 @@ Application::realize()
         // Callback that will update the ECS systems each frame
         _subscriptions += vsgcontext->onUpdate([&](VSGContext vsgcontext)
             {
+                if (mapNode && computeSystemsNode)
+                    if (auto* overlayBake = computeSystemsNode->get<OverlayBakeSystemNode>())
+                        overlayBake->worldSRS = mapNode->srs();
+
                 // ECS updates - rendering or modifying entities
                 if (systemsNode)
                     systemsNode->update(vsgcontext);

@@ -17,7 +17,8 @@ namespace ROCKY_NAMESPACE
         //! Image to use for decal
         Image::Ptr image;
 
-        //! Texture dimensions in world units (meters)
+        //! Optional orthographic projection dimensions in world units. These
+        //! override the X/Y scale from the projector Transform or Optics pose.
         std::optional<glm::dvec2> textureSize;
 
         //! Color to modulate with the texture image (if there is one)

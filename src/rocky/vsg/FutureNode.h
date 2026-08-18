@@ -30,6 +30,11 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::Visitor& visitor) override;
         void traverse(vsg::ConstVisitor& visitor) const override;
 
+        //! Resolve an available future without requiring a record traversal.
+        //! Returns true once a child node is ready.
+        bool resolve() const;
+        bool ready() const { return resolve(); }
+
     private:
         mutable Future<NodeResult> _future;
         mutable vsg::ref_ptr<vsg::Node> _child;

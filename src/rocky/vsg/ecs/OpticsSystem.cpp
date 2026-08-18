@@ -25,7 +25,7 @@ namespace
 
 void OpticsSystemNode::on_construct_Optics(entt::registry& r, entt::entity e)
 {
-    r.emplace<OpticsDetail>(e);
+    (void)r.get_or_emplace<OpticsDetail>(e);
 }
 
 void OpticsSystemNode::on_destroy_Optics(entt::registry& r, entt::entity e)
@@ -41,6 +41,11 @@ OpticsSystemNode::OpticsSystemNode(Registry& registry) :
             // install the ENTT callbacks for managing internal data:
             r.on_construct<Optics>().connect<&OpticsSystemNode::on_construct_Optics>(*this);
             r.on_destroy<Optics>().connect<&OpticsSystemNode::on_destroy_Optics>(*this);
+
+            r.view<Optics>().each([&](auto entity, auto&)
+                {
+                    (void)r.get_or_emplace<OpticsDetail>(entity);
+                });
     });
 }
 
@@ -72,10 +77,14 @@ OpticsSystemNode::updateTargetSubscription()
 void
 OpticsSystemNode::updateOptics(VSGContext vsgcontext)
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(target, void());
-
     auto writer = _registry.write();
     auto& registry = writer.registry;
+    auto terrainTarget = target.ref_ptr();
+
+    registry.view<TerrainClamp>().each([&](auto entity, auto& clamp)
+        {
+            clamp.owner = entity;
+        });
 
     const auto terrainRevision = _terrainRevision.load(std::memory_order_relaxed);
     const bool canCache = _targetHasChangeNotifications;
@@ -96,6 +105,18 @@ OpticsSystemNode::updateOptics(VSGContext vsgcontext)
 
             if (!autoComputeFocalDistance)
             {
+                opticsDetail.focalDistance = optics.focalDistance;
+                opticsDetail.nearDistance = optics.focalDistance * optics.nearScale + optics.nearBias;
+                opticsDetail.farDistance = optics.focalDistance * optics.farScale + optics.farBias;
+                opticsDetail.focalPointValid = false;
+                opticsDetail.autoComputeCacheValid = false;
+                continue;
+            }
+
+            if (!terrainTarget)
+            {
+                // Manual optics remain fully usable without a terrain target.
+                // Auto-clamping falls back to the caller's explicit distances.
                 opticsDetail.focalDistance = optics.focalDistance;
                 opticsDetail.nearDistance = optics.focalDistance * optics.nearScale + optics.nearBias;
                 opticsDetail.farDistance = optics.focalDistance * optics.farScale + optics.farBias;
@@ -150,7 +171,7 @@ OpticsSystemNode::updateOptics(VSGContext vsgcontext)
                 auto end = start + to_vsg(forward * 1e8);
 
                 vsg::LineSegmentIntersector lsi(start, end);
-                target.ref_ptr()->accept(lsi);
+                terrainTarget->accept(lsi);
 
                 const bool intersectionFound = !lsi.intersections.empty();
                 if (intersectionFound)

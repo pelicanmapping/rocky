@@ -7,7 +7,9 @@
 #include <rocky/ecs/Mesh.h>
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/ecs/ECSNode.h>
+#include <rocky/vsg/ecs/RenderTextureParticipant.h>
 #include <rocky/vsg/ecs/ECSTypes.h>
+#include <algorithm>
 
 namespace ROCKY_NAMESPACE
 {
@@ -23,6 +25,40 @@ namespace ROCKY_NAMESPACE
         void reserve(size_t numVerts);
 
         void compile(vsg::Context&) override;
+
+        //! Whether all Vulkan resources needed to record this geometry exist.
+        bool ready(std::uint32_t deviceID) const
+        {
+            if (_verts.empty())
+                return true;
+
+            if (commands.empty() || !_drawCommand || _drawCommand->indexCount == 0 ||
+                !indices || !indices->buffer ||
+                indices->buffer->sizeVulkanData() <= deviceID ||
+                indices->buffer->vk(deviceID) == VK_NULL_HANDLE)
+                return false;
+
+            for (const auto& array : arrays)
+            {
+                if (!array || !array->buffer ||
+                    array->buffer->sizeVulkanData() <= deviceID ||
+                    array->buffer->vk(deviceID) == VK_NULL_HANDLE)
+                    return false;
+            }
+
+            const auto& vertexData = _vulkanData[deviceID];
+            if (vertexData.vkBuffers.size() != arrays.size())
+                return false;
+
+            return std::all_of(vertexData.vkBuffers.begin(), vertexData.vkBuffers.end(),
+                [](VkBuffer buffer) { return buffer != VK_NULL_HANDLE; });
+        }
+
+        void record(vsg::CommandBuffer& commandBuffer) const override
+        {
+            if (ready(commandBuffer.deviceID))
+                vsg::Geometry::record(commandBuffer);
+        }
 
         vsg::vec4 _defaultColor = { 1,1,1,1 };
         std::vector<vsg::vec3> _verts;
@@ -104,11 +140,17 @@ namespace ROCKY_NAMESPACE
     /**
     * VSG node that renders Mesh components.
     */
-    class ROCKY_EXPORT MeshSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, MeshSystemNode>
+    class ROCKY_EXPORT MeshSystemNode :
+        public vsg::Inherit<detail::SimpleSystemNodeBase, MeshSystemNode>,
+        public RenderTextureParticipant
     {
     public:
-        vsg::Node* renderTextureParticipant() override { return this; }
-        void expandRenderTextureBounds(entt::registry&, entt::entity, RenderTextureBounds&, const SRS&) override;
+        RenderTextureParticipant* renderTextureParticipant() override { return this; }
+        vsg::Node* renderTextureNode() override { return this; }
+        vsg::ref_ptr<vsg::Node> renderTextureCompileNode() override { return pipelineCompileNode(); }
+        int renderTextureOrder() const override { return RenderTextureOrder::Mesh; }
+        RenderTextureSourceStatus renderTextureSourceStatus(entt::registry&, entt::entity) const override;
+        void expandRenderTextureBounds(entt::registry&, entt::entity, RenderTextureBounds&, const SRS&, bool) override;
         void contributeRenderTextureRevision(entt::registry&, entt::entity, RenderTextureRevision&) override;
         //! Construct the mesh renderer
         MeshSystemNode(Registry& registry);
@@ -133,6 +175,7 @@ namespace ROCKY_NAMESPACE
         // Default mesh style to use if a Mesh doesn't have one
         mutable detail::MeshStyleDetail _defaultStyleDetail;
         mutable std::vector<detail::MeshStyleDetail*> _styleDetailBins;
+        std::uint32_t _deviceID = 0u;
 
         // Called when a line geometry component is found in the dirty list
         void createOrUpdateGeometry(const MeshGeometry&, detail::MeshGeometryDetail&);

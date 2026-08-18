@@ -599,18 +599,12 @@ namespace
                 meters_per_degree = (3.14159265358979323846 * semiMajor) / 180.0;
         }
 
-        double resolution_meters = static_cast<double>(style.resolution);
-        if (resolution_meters == 0.0)
-        {
-            double auto_resolution_meters = 27830.0; // fallback ~= 0.25 degrees at equator
-            if (feature.extent.valid())
-            {
-                double horiz = feature.extent.width(Units::METERS);
-                double vert = feature.extent.height(Units::METERS);
-                auto_resolution_meters = std::max(horiz, vert) / 16.0;
-            }
-            resolution_meters = std::min(27830.0, auto_resolution_meters);
-        }
+        // The default is a curvature limit, not a request to subdivide every
+        // feature into a fixed grid. Deriving this as feature-size / 16 makes
+        // tiny, numerous polygons (building footprints in particular) produce
+        // hundreds of seed vertices apiece for no visible benefit.
+        double resolution_meters = style.resolution > 0.0f ?
+            static_cast<double>(style.resolution) : 27830.0; // ~= 0.25 degrees at the equator
         resolution_meters = std::max(1.0, resolution_meters);
         const double resolution_degrees = std::max(1e-9, resolution_meters / meters_per_degree);
 

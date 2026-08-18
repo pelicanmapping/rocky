@@ -108,6 +108,9 @@ namespace ROCKY_NAMESPACE
         //! Clear out the terrain and rebuild it from the map model
         void reset(VSGContext context);
 
+        //! Rebuild the terrain pipeline after startup rendering configuration changes.
+        void rebuildRenderPipeline(VSGContext context);
+
         //! Updates the terrain periodically at a safe time.
         //! @return true if any updates were applied
         bool update(VSGContext context);

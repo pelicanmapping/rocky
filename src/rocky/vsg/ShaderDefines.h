@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
     struct DecalGPU
     {
         glm::fmat4 mvm;
-        glm::fmat4 mvmInverse; // GPU only
+        glm::fmat4 mvmInverse;
         glm::fvec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
         union {
             std::int32_t textureIndex = -1; // negative means no texture

@@ -9,6 +9,12 @@
 #include <rocky/vsg/ecs/DecalSystem.h>
 #include <rocky/vsg/ecs/MeshSystem.h>
 #include <rocky/vsg/ecs/LineSystem.h>
+#include <rocky/vsg/ecs/PointSystem.h>
+#include <rocky/vsg/ecs/ModelSystem.h>
+#include <rocky/vsg/ecs/TextureSystem.h>
+#include <rocky/vsg/ecs/OpticsSystem.h>
+#include <rocky/vsg/ecs/TransformDetail.h>
+#include <rocky/vsg/ecs/FeatureBuilder.h>
 #include <atomic>
 #include <chrono>
 #include <random>
@@ -49,6 +55,35 @@ TEST_CASE("strings")
     CHECK(detail::trimInPlace(s1) == "Hello, Rocky!");
 }
 
+TEST_CASE("mesh feature default tessellation is curvature bounded", "[featurebuilder]")
+{
+    Feature building(
+        SRS::WGS84,
+        Geometry::Type::Polygon,
+        {
+            { 139.0, 35.0, 0.0 },
+            { 139.001, 35.0, 0.0 },
+            { 139.001, 35.001, 0.0 },
+            { 139.0, 35.001, 0.0 }
+        });
+
+    FeatureBuilder builder;
+
+    MeshStyle defaultStyle;
+    MeshGeometry defaultGeometry;
+    builder.buildMeshGeometry({ building }, defaultStyle, defaultGeometry);
+
+    REQUIRE_FALSE(defaultGeometry.vertices.empty());
+    CHECK(defaultGeometry.vertices.size() < 100u);
+
+    MeshStyle fineStyle;
+    fineStyle.resolution = 20.0f;
+    MeshGeometry fineGeometry;
+    builder.buildMeshGeometry({ building }, fineStyle, fineGeometry);
+
+    CHECK(fineGeometry.vertices.size() > defaultGeometry.vertices.size());
+}
+
 TEST_CASE("projected texture contracts", "[projection]")
 {
     RenderTexture renderTexture;
@@ -65,6 +100,23 @@ TEST_CASE("projected texture contracts", "[projection]")
     bounds.expand(SRS::WGS84, glm::dvec3(-179.9, 11.0, 0.0));
     REQUIRE(bounds.valid);
     CHECK(bounds.maxx - bounds.minx < 1.0);
+
+    SharedRenderData shared;
+    REQUIRE(shared.decalTextures);
+    CHECK(shared.projectedTextureCapacity() ==
+        SharedRenderData::DEFAULT_PROJECTED_TEXTURE_CAPACITY);
+
+    auto originalDescriptor = shared.decalTextures;
+    shared.configureProjectedTextureCapacity(17u);
+    CHECK(shared.projectedTextureCapacity() == 17u);
+    CHECK(shared.decalTextures != originalDescriptor);
+
+    auto configuredDescriptor = shared.decalTextures;
+    shared.configureProjectedTextureCapacity(17u);
+    CHECK(shared.decalTextures == configuredDescriptor);
+
+    shared.configureProjectedTextureCapacity(0u);
+    CHECK(shared.projectedTextureCapacity() == 1u);
 }
 
 TEST_CASE("render texture revisions", "[projection]")
@@ -129,6 +181,173 @@ TEST_CASE("render texture revisions", "[projection]")
         lineSystem->contributeRenderTextureRevision(reg, source, lineStyleChanged);
         CHECK(lineStyleChanged.bounds != lineInitial.bounds);
         CHECK(lineStyleChanged.content != lineInitial.content);
+    });
+}
+
+TEST_CASE("render texture participant order", "[projection]")
+{
+    Registry registry = Registry::create();
+    auto mesh = MeshSystemNode::create(registry);
+    auto line = LineSystemNode::create(registry);
+    auto point = PointSystemNode::create(registry);
+    auto model = ModelSystemNode::create(registry);
+
+    CHECK(mesh->renderTextureOrder() < line->renderTextureOrder());
+    CHECK(line->renderTextureOrder() < point->renderTextureOrder());
+    CHECK(point->renderTextureOrder() < model->renderTextureOrder());
+}
+
+TEST_CASE("line triangles use the segment start as provoking vertex", "[line]")
+{
+    auto check = [](LineTopology topology, const std::vector<vsg::dvec3>& points,
+        const std::vector<std::uint32_t>& expectedProvokingVertices)
+    {
+        auto node = LineGeometryNode::create();
+        node->set(points, std::vector<vsg::vec4>(), topology);
+
+        REQUIRE(node->_drawCommand->indexCount == expectedProvokingVertices.size() * 6u);
+        for (std::size_t segment = 0; segment < expectedProvokingVertices.size(); ++segment)
+        {
+            const auto firstTriangle = (*node->_indices)[segment * 6u];
+            const auto secondTriangle = (*node->_indices)[segment * 6u + 3u];
+            CHECK(firstTriangle == expectedProvokingVertices[segment]);
+            CHECK(secondTriangle == expectedProvokingVertices[segment]);
+        }
+    };
+
+    check(LineTopology::Strip,
+        { { 0.0, 0.0, 0.0 }, { 1.0, 0.0, 0.0 }, { 1.0, 1.0, 0.0 } },
+        { 2u, 6u });
+
+    check(LineTopology::Segments,
+        { { 0.0, 0.0, 0.0 }, { 1.0, 0.0, 0.0 },
+          { 2.0, 0.0, 0.0 }, { 2.0, 1.0, 0.0 } },
+        { 2u, 10u });
+}
+
+TEST_CASE("render texture bounds include source transform", "[projection]")
+{
+    Registry registry = Registry::create();
+    auto meshSystem = MeshSystemNode::create(registry);
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto source = reg.create();
+        auto& geometry = reg.emplace<MeshGeometry>(source);
+        geometry.vertices.emplace_back(1.0, 2.0, 3.0);
+        auto& style = reg.emplace<MeshStyle>(source);
+        reg.emplace<Mesh>(source, geometry, style);
+
+        auto& transform = reg.emplace<Transform>(source);
+        transform.position = GeoPoint(SRS::SPHERICAL_MERCATOR, 10.0, 20.0, 30.0);
+        transform.localMatrix = glm::scale(glm::dmat4(1.0), glm::dvec3(2.0, 3.0, 4.0));
+
+        RenderTextureBounds transformed;
+        meshSystem->expandRenderTextureBounds(
+            reg, source, transformed, SRS::SPHERICAL_MERCATOR, true);
+        REQUIRE(transformed.valid);
+        CHECK(transformed.minx == Approx(12.0));
+        CHECK(transformed.miny == Approx(26.0));
+        CHECK(transformed.minz == Approx(42.0));
+
+        RenderTextureBounds local;
+        meshSystem->expandRenderTextureBounds(
+            reg, source, local, SRS::SPHERICAL_MERCATOR, false);
+        CHECK_FALSE(local.valid);
+    });
+}
+
+TEST_CASE("texture producer ownership", "[projection]")
+{
+    Registry registry = Registry::create();
+    auto textureSystem = TextureSystemNode::create(registry);
+    auto bakeSystem = OverlayBakeSystemNode::create(registry);
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto externalImage = reg.create();
+        reg.emplace<ImageTexture>(externalImage);
+        reg.emplace<TextureResource>(externalImage);
+        reg.remove<ImageTexture>(externalImage);
+        CHECK(reg.any_of<TextureResource>(externalImage));
+
+        auto producedImage = reg.create();
+        reg.emplace<ImageTexture>(producedImage);
+        auto& imageResource = reg.emplace<TextureResource>(producedImage);
+        imageResource.producer = TextureResourceProducer::ImageTexture;
+        reg.remove<ImageTexture>(producedImage);
+        CHECK_FALSE(reg.any_of<TextureResource>(producedImage));
+
+        auto externalBake = reg.create();
+        reg.emplace<RenderTexture>(externalBake);
+        reg.emplace<TextureResource>(externalBake);
+        reg.remove<RenderTexture>(externalBake);
+        CHECK(reg.any_of<TextureResource>(externalBake));
+
+        auto producedBake = reg.create();
+        reg.emplace<RenderTexture>(producedBake);
+        auto& bakeResource = reg.emplace<TextureResource>(producedBake);
+        bakeResource.producer = TextureResourceProducer::RenderTexture;
+        reg.remove<RenderTexture>(producedBake);
+        CHECK_FALSE(reg.any_of<TextureResource>(producedBake));
+    });
+}
+
+TEST_CASE("null image texture is a ready procedural resource", "[projection]")
+{
+    Registry registry = Registry::create();
+    auto textureSystem = TextureSystemNode::create(registry);
+    auto contextSingleton = VSGContextFactory::create(vsg::Viewer::create());
+
+    entt::entity entity = entt::null;
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        reg.emplace<ImageTexture>(entity);
+    });
+
+    textureSystem->update(contextSingleton.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& resource = reg.get<TextureResource>(entity);
+        CHECK(resource.producer == TextureResourceProducer::ImageTexture);
+        CHECK(resource.ready);
+        CHECK_FALSE(resource.texture);
+    });
+}
+
+TEST_CASE("manual optics work without a terrain target", "[projection]")
+{
+    Registry registry = Registry::create();
+    auto opticsSystem = OpticsSystemNode::create(registry);
+    auto contextSingleton = VSGContextFactory::create(vsg::Viewer::create());
+    auto context = contextSingleton.get();
+
+    entt::entity entity = entt::null;
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& optics = reg.emplace<Optics>(entity);
+        optics.autoComputeFocalDistance = false;
+        optics.autoComputeNearFar = false;
+        optics.focalDistance = 25.0;
+        optics.nearScale = 0.5;
+        optics.nearBias = 1.0;
+        optics.farScale = 2.0;
+        optics.farBias = 3.0;
+        reg.emplace<TransformDetail>(entity);
+    });
+
+    opticsSystem->update(context);
+
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& detail = reg.get<OpticsDetail>(entity).views[0];
+        CHECK(detail.focalDistance == Approx(25.0));
+        CHECK(detail.nearDistance == Approx(13.5));
+        CHECK(detail.farDistance == Approx(53.0));
+        CHECK_FALSE(detail.focalPointValid);
     });
 }
 

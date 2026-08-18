@@ -22,13 +22,40 @@ using namespace ROCKY_NAMESPACE::detail;
 
 #define USE_DYNAMIC_STATE
 
+RenderTextureSourceStatus MeshSystemNode::renderTextureSourceStatus(
+    entt::registry& reg, entt::entity entity) const
+{
+    auto* mesh = reg.try_get<Mesh>(entity);
+    if (!mesh)
+        return {};
+
+    auto* geometry = reg.try_get<MeshGeometry>(mesh->geometry);
+    auto* detail = reg.try_get<MeshGeometryDetail>(mesh->geometry);
+    if (!geometry || !detail)
+        return { RenderTextureSourceStatus::State::Waiting, "Waiting for mesh geometry", true };
+
+    bool hasViewGeometry = false;
+    for (const auto& view : detail->views)
+    {
+        if (!view.geomNode || !view.root)
+            continue;
+
+        hasViewGeometry = true;
+        if (!view.geomNode->ready(_deviceID))
+            return { RenderTextureSourceStatus::State::Waiting, "Waiting for compiled mesh geometry", true };
+    }
+
+    return hasViewGeometry || geometry->vertices.empty() ? RenderTextureSourceStatus{} :
+        RenderTextureSourceStatus{ RenderTextureSourceStatus::State::Waiting, "Waiting for mesh view geometry", true };
+}
+
 void MeshSystemNode::expandRenderTextureBounds(
-    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS&)
+    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS& worldSRS, bool applySourceTransform)
 {
     if (auto* mesh = reg.try_get<Mesh>(entity))
         if (auto* geometry = reg.try_get<MeshGeometry>(mesh->geometry))
             for (const auto& vertex : geometry->vertices)
-                bounds.expand(geometry->srs, vertex);
+                expandRenderTextureSourcePoint(reg, entity, bounds, geometry->srs, vertex, worldSRS, applySourceTransform);
 }
 
 void MeshSystemNode::contributeRenderTextureRevision(
@@ -247,6 +274,8 @@ MeshSystemNode::MeshSystemNode(Registry& registry) :
 void
 MeshSystemNode::initialize(VSGContext vsgcontext)
 {
+    _deviceID = vsgcontext->device()->deviceID;
+
     // make sure all required vulkan features are available:
     bool supported = false;
 
@@ -371,16 +400,17 @@ MeshSystemNode::compile(vsg::Context& compileContext)
 {
     if (status.failed()) return;
 
-    // called during a compile traversal .. e.g., then adding a new View/RenderGraph.
-    _registry.read([&](entt::registry& reg)
-        {
-            reg.view<MeshStyleDetail>().each([&](auto& styleDetail)
-                {
-                    if (styleDetail.bind)
-                        styleDetail.bind->compile(compileContext);
-                });
+    if (firstCompileForView(compileContext))
+    {
+        _registry.read([&](entt::registry& reg)
+            {
+                reg.view<MeshStyleDetail>().each([&](auto& styleDetail)
+                    {
+                        if (styleDetail.bind)
+                            styleDetail.bind->compile(compileContext);
+                    });
 
-            reg.view<MeshGeometryDetail>().each([&](auto& geomDetail)
+                reg.view<MeshGeometryDetail>().each([&](auto& geomDetail)
                 {
                     for (auto& geomView : geomDetail.views)
                     {
@@ -388,7 +418,8 @@ MeshSystemNode::compile(vsg::Context& compileContext)
                             geomView.geomNode->compile(compileContext);
                     }
                 });
-        });
+            });
+    }
 
     Inherit::compile(compileContext);
 }
@@ -628,18 +659,15 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
 
-    auto& view = _viewInfo[rs.viewID];
+    auto geometryViewID = prepareGeometryView(
+        rs.viewID,
+        srs,
+        rs.frame,
+        renderRequest.purpose == RenderPurpose::RenderTexture);
 
-    // I'm alive
-    view.lastFrame = rs.frame;
-
-    // Did my SRS change? Because if it did, we need to regenerate
-    if (view.srsDef.empty() || view.srsDef != srs.definition())
-    {
-        view.srsDef = srs.definition();
-        view.dirty = true;
+    // A cache-owning view must wait for update() to generate its geometry.
+    if (geometryViewID == rs.viewID && _viewInfo[rs.viewID].dirty)
         return;
-    }
 
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
@@ -647,7 +675,8 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
             reg.view<MeshStyle, MeshStyleDetail>().each([&](auto& style, auto& styleDetail)
                 {
                     _styleDetailBins.emplace_back(&styleDetail);
-                    styleDetail.useTransparencyBin = style.transparencyBin;
+                    styleDetail.useTransparencyBin =
+                        style.transparencyBin && renderRequest.purpose == RenderPurpose::Main;
                 });
 
             int count = 0;
@@ -668,7 +697,7 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                     if (!geomDetail)
                         return;
 
-                    auto& geomView = geomDetail->views[rs.viewID];
+                    auto& geomView = geomDetail->views[geometryViewID];
 
                     if (geomView.root && visible(visibility, rs))
                     {
@@ -785,9 +814,10 @@ MeshSystemNode::update(VSGContext vsgcontext)
 
                 // Check for view expiration (no record traversal)
                 auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
-                if (view.lastFrame < frame - 1u)
+                if (!view.persistent && view.lastFrame < frame - 1u)
                 {
                     view.srsDef.clear();
+                    view.geometryViewID = std::numeric_limits<ViewIDType>::max();
                     view.dirty = true;
                     view.lastFrame = std::numeric_limits<FrameCountType>::max();
                 }

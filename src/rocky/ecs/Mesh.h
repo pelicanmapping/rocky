@@ -70,8 +70,8 @@ namespace ROCKY_NAMESPACE
         bool transparencyBin = false;
 
         //! Tessellation resolution hint (in meters) when building mesh geometry
-        //! from polygon features. If resolution is 0.0, the system will apply
-        //! automatically derive what it considers to be a reasonable value.
+        //! from polygon features. A value of 0.0 uses the builder's default
+        //! curvature-following resolution.
         float resolution = 0.0f;
     };
 

@@ -25,7 +25,7 @@ struct DecalTile
 struct Decal
 {
     mat4 mvm;
-    mat4 mvmInverse; // computed in cull shader
+    mat4 mvmInverse;
     vec4 color; // modulation color
     int textureIndex; // used by element 0 as total decal count
     float distance; // > 0 = persp

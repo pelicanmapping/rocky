@@ -60,7 +60,7 @@ namespace
             if (s_debugBrutal)
             {
                 Log()->warn("Brutal mode: exiting due to Vulkan validation error.");
-                exit(-1);
+                ::abort();
             }
         }
         return VK_FALSE;
