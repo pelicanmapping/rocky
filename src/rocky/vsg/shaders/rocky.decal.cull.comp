@@ -12,30 +12,77 @@ layout(local_size_x = FRUSTUM_GRID_TILES_PER_THREAD_GROUP,
     local_size_y = FRUSTUM_GRID_TILES_PER_THREAD_GROUP) in;
 
 
-// test for intersection between decal and frustum
-// by testing the decal's BS against all four frustum boundaries
+float supportRadius(
+    in vec3 normal,
+    in vec3 halfAxisX,
+    in vec3 halfAxisY,
+    in vec3 halfAxisZ)
+{
+    return
+        abs(dot(normal, halfAxisX)) +
+        abs(dot(normal, halfAxisY)) +
+        abs(dot(normal, halfAxisZ));
+}
+
+// Conservatively test a transformed unit cube against the four side planes of
+// a screen-cell frustum. Plane normals need not be normalized because distance
+// and support radius use the same scale.
+bool intersectsOrientedBox(in Decal decal, in Frustum frustum)
+{
+    vec3 center = decal.mvm[3].xyz;
+    vec3 halfAxisX = 0.5 * decal.mvm[0].xyz;
+    vec3 halfAxisY = 0.5 * decal.mvm[1].xyz;
+    vec3 halfAxisZ = 0.5 * decal.mvm[2].xyz;
+
+    if (u_projIsOrtho == 1u)
+    {
+        float radiusX =
+            abs(halfAxisX.x) + abs(halfAxisY.x) + abs(halfAxisZ.x);
+        float radiusY =
+            abs(halfAxisX.y) + abs(halfAxisY.y) + abs(halfAxisZ.y);
+
+        if (center.x < frustum.bounds.x - radiusX) return false;
+        if (center.x > frustum.bounds.y + radiusX) return false;
+        if (center.y < frustum.bounds.z - radiusY) return false;
+        if (center.y > frustum.bounds.w + radiusY) return false;
+        return true;
+    }
+
+    // Perspective bounds are slopes against -Z. These are the same four
+    // unnormalized inward plane normals used by intersectsFrustum().
+    vec3 normal = vec3(1.0, 0.0, frustum.bounds.x);
+    if (dot(normal, center) <
+        -supportRadius(normal, halfAxisX, halfAxisY, halfAxisZ)) return false;
+
+    normal = vec3(-1.0, 0.0, -frustum.bounds.y);
+    if (dot(normal, center) <
+        -supportRadius(normal, halfAxisX, halfAxisY, halfAxisZ)) return false;
+
+    normal = vec3(0.0, 1.0, frustum.bounds.z);
+    if (dot(normal, center) <
+        -supportRadius(normal, halfAxisX, halfAxisY, halfAxisZ)) return false;
+
+    normal = vec3(0.0, -1.0, -frustum.bounds.w);
+    if (dot(normal, center) <
+        -supportRadius(normal, halfAxisX, halfAxisY, halfAxisZ)) return false;
+
+    return true;
+}
+
+// Test for intersection between a decal and a screen-cell frustum. Perspective
+// projector volumes retain their precomputed sphere; orthographic projectors
+// use their exact transformed unit-cube bounds.
 bool intersects(in Decal decal, in Frustum frustum)
 {
-    float radius;
-    vec3 posVS;
-
     if (decal.distance > 0.0) // perspective
     {
-        radius = decal.cullingRadius; // precomputed bounding sphere radius
+        float radius = decal.cullingRadius; // precomputed bounding sphere radius
         float midZ = (decal.zMin + decal.zMax) * 0.5; // center of near..far range
-        posVS = (decal.mvm * vec4(0.0, 0.0, midZ, 1.0)).xyz;
-    }
-    else // orthographic
-    {
-        // extract scale from mvm:
-        float sx = length(decal.mvm[0].xyz);
-        float sy = length(decal.mvm[1].xyz);
-        float sz = length(decal.mvm[2].xyz);
-        radius = 0.5 * length(vec3(sx, sy, sz));
-        posVS = (decal.mvm * vec4(0, 0, 0, 1)).xyz;
+        vec3 posVS = (decal.mvm * vec4(0.0, 0.0, midZ, 1.0)).xyz;
+        return intersectsFrustum(frustum, posVS, radius);
     }
 
-    return intersectsFrustum(frustum, posVS, radius);
+    return intersectsOrientedBox(decal, frustum);
 }
 
 void main()

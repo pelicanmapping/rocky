@@ -76,7 +76,18 @@ void main()
     outColor.rgb = mix(outColor.rgb, frustumTileTestColor(gl_FragCoord.xy, vary.vertexVs), u_debugTiles * 0.35);
 
 #ifdef ROCKY_HAS_DECALS
-    applyDecals(outColor.rgb, vary.vertexVs, normalVs, gl_FragCoord.xy);
+    // Evaluate these in uniform fragment-shader control flow. rocky.decal.h.glsl
+    // is also compiled into the compute culler, so the Slug evaluator accepts
+    // explicit derivatives instead of using dFdx/dFdy/fwidth itself.
+    vec3 vertexVsDx = dFdx(vary.vertexVs);
+    vec3 vertexVsDy = dFdy(vary.vertexVs);
+    applyDecals(
+        outColor.rgb,
+        vary.vertexVs,
+        vertexVsDx,
+        vertexVsDy,
+        normalVs,
+        gl_FragCoord.xy);
 #endif
 
     // show triangle outlines

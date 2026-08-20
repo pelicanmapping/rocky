@@ -27,6 +27,7 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::DescriptorBuffer> frustumsBuf;
         vsg::ref_ptr<vsg::DescriptorBuffer> decalsBuf;
         vsg::ref_ptr<vsg::DescriptorBuffer> decalTilesBuf;
+        vsg::ref_ptr<vsg::DescriptorBuffer> slugLayersBuf;
 
         Revision revision = 0;
 

@@ -85,17 +85,30 @@ namespace ROCKY_NAMESPACE
         struct LineStyleRecord
         {
             Color color;
+            Color outlineColor;
             float width;
+            float outlineWidth;
             std::int32_t stipplePattern;
             std::int32_t stippleFactor;
             float depthOffset;
             std::uint32_t perVertexMask = 0; // 0x01 = colors
             float devicePixelRatio = 1.0f;
-            std::uint32_t padding[2]; // pad to 16 bytes
+            std::uint32_t widthIsPhysical = 0u;
 
             inline void populate(const LineStyle& in) {
                 color = in.color;
-                width = in.width;
+                outlineColor = in.outlineColor;
+                widthIsPhysical = in.widthUnits.isDistance() ? 1u : 0u;
+                if (widthIsPhysical != 0u)
+                {
+                    width = static_cast<float>(Distance(in.width, in.widthUnits).as(Units::METERS));
+                    outlineWidth = static_cast<float>(Distance(in.outlineWidth, in.widthUnits).as(Units::METERS));
+                }
+                else
+                {
+                    width = in.width;
+                    outlineWidth = in.outlineWidth;
+                }
                 stipplePattern = in.stipplePattern;
                 stippleFactor = in.stippleFactor;
                 depthOffset = in.depthOffset;
@@ -103,7 +116,7 @@ namespace ROCKY_NAMESPACE
                     (in.useGeometryColors ? 0x1 : 0x0);
             }
         };
-        static_assert(sizeof(LineStyleRecord) % 16 == 0, "LineStyleRecord must be 16-byte aligned");
+        static_assert(sizeof(LineStyleRecord) == 64, "LineStyleRecord must match its std140 shader layout");
 
 
         // "line" in the shader

@@ -28,9 +28,12 @@ auto Demo_MVTFeatures = [](Application& app)
                 styleEntity = reg.create();
 
                 auto& lineStyle = reg.emplace<LineStyle>(styleEntity);
-                lineStyle.color = StockColor::Red;
-                lineStyle.width = 5.0f;
+                lineStyle.color = Color(0x050505FF);
+                lineStyle.width = 7.0f;
+                lineStyle.widthUnits = Units::METERS;
                 lineStyle.depthOffset = 10; // meters
+                lineStyle.outlineColor = StockColor::White;
+                lineStyle.outlineWidth = 1.0f;
 
                 auto& meshStyle = reg.emplace<MeshStyle>(styleEntity);
                 meshStyle.color = Color(1, 0.75f, 0.2f, 1);
@@ -153,6 +156,9 @@ auto Demo_MVTFeatures = [](Application& app)
                             auto& geom = reg.emplace<LineGeometry>(entity, geomTemp);
                             auto& style = reg.get<LineStyle>(styleEntity);
                             reg.emplace<Line>(entity, geom, style);
+
+                            auto& overlay = reg.emplace<Overlay>(entity);
+                            overlay.technique = OverlayTechnique::Slug;
 
                             entityNode->entities.emplace_back(entity);
                         });

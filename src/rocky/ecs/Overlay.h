@@ -10,24 +10,35 @@
 
 namespace ROCKY_NAMESPACE
 {
+    //! Rendering pathway used for an overlay decal.
+    enum class OverlayTechnique
+    {
+        RTT,  //!< Rasterize the overlay into a render-to-texture image.
+        Slug  //!< Encode vectors in a Slughorn atlas and evaluate them in the decal shader.
+    };
+
     /**
-    * Control component that renders same-entity geometry to a texture and
-    * projects it on terrain as a decal.
+    * Control component that projects same-entity geometry on terrain as a decal.
     */
     struct Overlay : public Component<Overlay>
     {
-        //! Overlay texture dimensions in pixels.
+        //! Decal rendering pathway. RTT preserves the established behavior.
+        OverlayTechnique technique = OverlayTechnique::RTT;
+
+        //! RTT dimensions in pixels. Slug uses this as the nominal scale for
+        //! screen-unit line widths and point sizes; physical line widths are
+        //! independent of this value.
         glm::uvec2 textureSize = { 512u, 512u };
 
         //! Modulation color.
         Color color = StockColor::White;
 
-        //! Whether to use depth testing when rendering the overlay. Leave this
+        //! Whether to use depth testing when rendering an RTT overlay. Leave this
         //! disabled for flat artwork that should composite in draw order; enable
         //! it for 3D or nonplanar geometry that requires self-occlusion.
         bool useDepthBuffer = false;
 
-        //! Re-render the overlay texture every frame. Leave this disabled for
+        //! Re-render an RTT overlay texture every frame. Leave this disabled for
         //! static geometry; enable it for animated models or other content that
         //! changes without dirtying its ECS components.
         bool continuousBake = false;

@@ -317,7 +317,8 @@ auto Demo_Overlay_Absolute = [](Application& app)
 
         auto& lineStyle = reg.emplace<LineStyle>(e);
         lineStyle.color = Color(1.0f, 0.1f, 0.9f, 1.0f);
-        lineStyle.width = 5.0f;
+        lineStyle.width = 150.0f;
+        lineStyle.widthUnits = Units::METERS;
         lineStyle.depthOffset = 200.0f;
         lineStyle.stipplePattern = 0x00FF;
 

@@ -32,6 +32,42 @@ namespace
 
         return vsg::ImageInfo::create(sampler, imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
+
+    vsg::ref_ptr<vsg::Sampler> makeSlugAtlasSampler()
+    {
+        auto sampler = vsg::Sampler::create();
+        sampler->minFilter = VK_FILTER_NEAREST;
+        sampler->magFilter = VK_FILTER_NEAREST;
+        sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->minLod = 0.0f;
+        sampler->maxLod = 0.0f;
+        return sampler;
+    }
+
+    vsg::ref_ptr<vsg::ImageInfo> makeDefaultSlugCurveImageInfo(
+        vsg::ref_ptr<vsg::Sampler> sampler)
+    {
+        auto data = vsg::vec4Array2D::create(
+            1, 1,
+            vsg::vec4(0.0f, 0.0f, 0.0f, 0.0f),
+            vsg::Data::Properties{ VK_FORMAT_R32G32B32A32_SFLOAT });
+        return vsg::ImageInfo::create(
+            sampler, data, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+
+    vsg::ref_ptr<vsg::ImageInfo> makeDefaultSlugBandImageInfo(
+        vsg::ref_ptr<vsg::Sampler> sampler)
+    {
+        auto data = vsg::usvec4Array2D::create(
+            1, 1,
+            vsg::usvec4(0u, 0u, 0u, 0u),
+            vsg::Data::Properties{ VK_FORMAT_R16G16B16A16_UINT });
+        return vsg::ImageInfo::create(
+            sampler, data, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
 }
 
 SharedRenderData::SharedRenderData()
@@ -46,7 +82,9 @@ SharedRenderData::configureProjectedTextureCapacity(std::uint32_t capacity)
 {
 #ifdef ROCKY_HAS_DECALS
     capacity = std::max(1u, capacity);
-    if (decalTextures && decalTextures->imageInfoList.size() == capacity)
+    if (decalTextures && decalTextures->imageInfoList.size() == capacity &&
+        slugCurveTexture && slugCurveTexture->imageInfoList.size() == capacity &&
+        slugBandTexture && slugBandTexture->imageInfoList.size() == capacity)
         return;
 
     // Arena shared by all views. Every entry must contain a valid descriptor,
@@ -58,6 +96,20 @@ SharedRenderData::configureProjectedTextureCapacity(std::uint32_t capacity)
         BINDING_DECAL_TEXTURES,
         0,
         TYPE_DECAL_TEXTURES);
+
+    auto slugSampler = makeSlugAtlasSampler();
+    auto curveFallback = makeDefaultSlugCurveImageInfo(slugSampler);
+    auto bandFallback = makeDefaultSlugBandImageInfo(slugSampler);
+    slugCurveTexture = vsg::DescriptorImage::create(
+        vsg::ImageInfoList(capacity, curveFallback),
+        BINDING_SLUG_CURVE_TEXTURE,
+        0,
+        TYPE_SLUG_CURVE_TEXTURE);
+    slugBandTexture = vsg::DescriptorImage::create(
+        vsg::ImageInfoList(capacity, bandFallback),
+        BINDING_SLUG_BAND_TEXTURE,
+        0,
+        TYPE_SLUG_BAND_TEXTURE);
 #else
     (void)capacity;
 #endif
@@ -89,7 +141,7 @@ SharedRenderData::rebuildVdsDescriptorSet(ViewIDType viewID, ObjectLifecycle* li
 
     auto numRockyDescriptors = 3; // renderParams, frustumParams, frustums
 #ifdef ROCKY_HAS_DECALS
-    numRockyDescriptors += 2; // decals, decalTiles
+    numRockyDescriptors += 3; // decals, decalTiles, slugLayers
 #endif
 
     vsg::Descriptors newDescriptors;
@@ -102,6 +154,7 @@ SharedRenderData::rebuildVdsDescriptorSet(ViewIDType viewID, ObjectLifecycle* li
 #ifdef ROCKY_HAS_DECALS
     newDescriptors.emplace_back(vds->decalsBuf);
     newDescriptors.emplace_back(vds->decalTilesBuf);
+    newDescriptors.emplace_back(vds->slugLayersBuf);
 #endif
 
     vds->descriptorSet = vsg::DescriptorSet::create(old_ds->setLayout, newDescriptors);

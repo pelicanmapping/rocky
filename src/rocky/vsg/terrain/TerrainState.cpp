@@ -30,6 +30,8 @@
 #define TILE_UBO_NAME "u_tile"
 
 #define DECAL_TEXTURES_UBO_NAME "u_decalTextures"
+#define SLUG_CURVE_TEXTURE_UBO_NAME "u_slugCurveTexture"
+#define SLUG_BAND_TEXTURE_UBO_NAME "u_slugBandTexture"
 
 #define ATTR_VERTEX "in_vertexTs"
 #define ATTR_NORMAL "in_upTs"
@@ -265,6 +267,16 @@ TerrainState::createShaderSet(VSGContext vsgcontext) const
         DESCRIPTOR_SET_GLOBAL,
         BINDING_DECAL_TEXTURES, TYPE_DECAL_TEXTURES, projectedTextureCapacity,
         VK_SHADER_STAGE_FRAGMENT_BIT, {});
+
+    shaderSet->addDescriptorBinding(SLUG_CURVE_TEXTURE_UBO_NAME, "",
+        DESCRIPTOR_SET_GLOBAL,
+        BINDING_SLUG_CURVE_TEXTURE, TYPE_SLUG_CURVE_TEXTURE, projectedTextureCapacity,
+        VK_SHADER_STAGE_FRAGMENT_BIT, {});
+
+    shaderSet->addDescriptorBinding(SLUG_BAND_TEXTURE_UBO_NAME, "",
+        DESCRIPTOR_SET_GLOBAL,
+        BINDING_SLUG_BAND_TEXTURE, TYPE_SLUG_BAND_TEXTURE, projectedTextureCapacity,
+        VK_SHADER_STAGE_FRAGMENT_BIT, {});
 #endif
 
     addViewDependentStateToShaderSet(shaderSet);
@@ -304,6 +316,8 @@ TerrainState::createPipelineConfig(VSGContext vsgcontext) const
 
 #ifdef ROCKY_HAS_DECALS
     config->enableDescriptor(DECAL_TEXTURES_UBO_NAME);
+    config->enableDescriptor(SLUG_CURVE_TEXTURE_UBO_NAME);
+    config->enableDescriptor(SLUG_BAND_TEXTURE_UBO_NAME);
 #endif
 
     enableViewDependentStateUniforms(config);
@@ -357,6 +371,8 @@ TerrainState::buildTerrainStateGroup(vsg::ref_ptr<vsg::StateGroup>& stateGroup, 
 
 #ifdef ROCKY_HAS_DECALS
     globals.emplace_back(vsgcontext->sharedRenderData->decalTextures);
+    globals.emplace_back(vsgcontext->sharedRenderData->slugCurveTexture);
+    globals.emplace_back(vsgcontext->sharedRenderData->slugBandTexture);
 #endif
 
     ROCKY_HARD_ASSERT(

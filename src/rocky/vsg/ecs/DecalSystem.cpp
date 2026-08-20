@@ -6,6 +6,7 @@
 #include "DecalSystem.h"
 #include "OpticsSystem.h"
 #include "ECSVisitors.h"
+#include "SlugResource.h"
 #include "../ViewDependentState.h"
 #include "../SharedRenderData.h"
 #include "../ShaderDefines.h"
@@ -22,17 +23,17 @@ using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
-    struct LegacyDecalAdapter
+    struct DecalFacadeAdapter
     {
         bool ownsProjectedTexture = false;
     };
 
-    struct LegacyOverlayProjectionAdapter
+    struct OverlayProjectionFacadeAdapter
     {
         bool ownsProjectedTexture = false;
     };
 
-    struct LegacyDecalStyleAdapter
+    struct DecalStyleFacadeAdapter
     {
         bool ownsImageTexture = false;
     };
@@ -43,11 +44,21 @@ namespace
         // where is this texture in the descriptorimage?
         std::int32_t descriptorImageIndex = -1;
     };
+
+    struct SlugSlotDetail
+    {
+        vsg::ref_ptr<vsg::ImageInfo> curveTexture;
+        vsg::ref_ptr<vsg::ImageInfo> bandTexture;
+        std::int32_t descriptorImageIndex = -1;
+        std::uint64_t resourceRevision = 0u;
+        std::uint64_t descriptorWriteFrame = 0u;
+        bool readyForDraw = false;
+    };
 }
 
 void DecalSystemNode::on_construct_Decal(entt::registry& r, entt::entity e)
 {
-    auto& adapter = r.get_or_emplace<LegacyDecalAdapter>(e);
+    auto& adapter = r.get_or_emplace<DecalFacadeAdapter>(e);
     if (!r.any_of<ProjectedTexture>(e))
     {
         const auto& decal = r.get<Decal>(e);
@@ -62,7 +73,7 @@ void DecalSystemNode::on_construct_Decal(entt::registry& r, entt::entity e)
 
 void DecalSystemNode::on_construct_Overlay(entt::registry& r, entt::entity e)
 {
-    auto& adapter = r.get_or_emplace<LegacyOverlayProjectionAdapter>(e);
+    auto& adapter = r.get_or_emplace<OverlayProjectionFacadeAdapter>(e);
     if (!r.any_of<ProjectedTexture>(e))
     {
         auto& projected = r.emplace<ProjectedTexture>(e);
@@ -76,7 +87,7 @@ void DecalSystemNode::on_construct_Overlay(entt::registry& r, entt::entity e)
 
 void DecalSystemNode::on_construct_DecalStyle(entt::registry& r, entt::entity e)
 {
-    auto& adapter = r.get_or_emplace<LegacyDecalStyleAdapter>(e);
+    auto& adapter = r.get_or_emplace<DecalStyleFacadeAdapter>(e);
     if (!r.any_of<ImageTexture>(e))
     {
         auto& imageTexture = r.emplace<ImageTexture>(e);
@@ -98,33 +109,38 @@ void DecalSystemNode::on_construct_TextureResource(entt::registry& r, entt::enti
     r.get<TextureResource>(e).owner = e;
 }
 
+void DecalSystemNode::on_construct_SlugResource(entt::registry& r, entt::entity e)
+{
+    r.get<SlugResource>(e).owner = e;
+}
+
 void DecalSystemNode::on_destroy_Decal(entt::registry& r, entt::entity e)
 {
-    if (auto* adapter = r.try_get<LegacyDecalAdapter>(e))
+    if (auto* adapter = r.try_get<DecalFacadeAdapter>(e))
     {
         if (adapter->ownsProjectedTexture && r.any_of<ProjectedTexture>(e))
             r.remove<ProjectedTexture>(e);
-        r.remove<LegacyDecalAdapter>(e);
+        r.remove<DecalFacadeAdapter>(e);
     }
 }
 
 void DecalSystemNode::on_destroy_Overlay(entt::registry& r, entt::entity e)
 {
-    if (auto* adapter = r.try_get<LegacyOverlayProjectionAdapter>(e))
+    if (auto* adapter = r.try_get<OverlayProjectionFacadeAdapter>(e))
     {
         if (adapter->ownsProjectedTexture && r.any_of<ProjectedTexture>(e))
             r.remove<ProjectedTexture>(e);
-        r.remove<LegacyOverlayProjectionAdapter>(e);
+        r.remove<OverlayProjectionFacadeAdapter>(e);
     }
 }
 
 void DecalSystemNode::on_destroy_DecalStyle(entt::registry& r, entt::entity e)
 {
-    if (auto* adapter = r.try_get<LegacyDecalStyleAdapter>(e))
+    if (auto* adapter = r.try_get<DecalStyleFacadeAdapter>(e))
     {
         if (adapter->ownsImageTexture && r.any_of<ImageTexture>(e))
             r.remove<ImageTexture>(e);
-        r.remove<LegacyDecalStyleAdapter>(e);
+        r.remove<DecalStyleFacadeAdapter>(e);
     }
 }
 
@@ -137,6 +153,11 @@ void DecalSystemNode::on_destroy_TextureResource(entt::registry& r, entt::entity
     r.remove<TextureSlotDetail>(e);
 }
 
+void DecalSystemNode::on_destroy_SlugResource(entt::registry& r, entt::entity e)
+{
+    r.remove<SlugSlotDetail>(e);
+}
+
 void DecalSystemNode::on_destroy_TextureSlotDetail(entt::registry& r, entt::entity e)
 {
     auto& detail = r.get<TextureSlotDetail>(e);
@@ -144,6 +165,16 @@ void DecalSystemNode::on_destroy_TextureSlotDetail(entt::registry& r, entt::enti
     {
         std::scoped_lock lock(_pendingTextureSlotsMutex);
         _pendingTextureSlots.push_back(detail.descriptorImageIndex);
+    }
+}
+
+void DecalSystemNode::on_destroy_SlugSlotDetail(entt::registry& r, entt::entity e)
+{
+    auto& detail = r.get<SlugSlotDetail>(e);
+    if (detail.descriptorImageIndex >= 0)
+    {
+        std::scoped_lock lock(_pendingTextureSlotsMutex);
+        _pendingSlugSlots.push_back(detail.descriptorImageIndex);
     }
 }
 
@@ -173,6 +204,7 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
             r.on_construct<Overlay>().connect<&DecalSystemNode::on_construct_Overlay>(*this);
             r.on_construct<ProjectedTexture>().connect<&DecalSystemNode::on_construct_ProjectedTexture>(*this);
             r.on_construct<TextureResource>().connect<&DecalSystemNode::on_construct_TextureResource>(*this);
+            r.on_construct<SlugResource>().connect<&DecalSystemNode::on_construct_SlugResource>(*this);
             r.on_update<Decal>().connect<&DecalSystemNode::on_update_Decal>(*this);
             r.on_update<DecalStyle>().connect<&DecalSystemNode::on_update_DecalStyle>(*this);
             r.on_update<Overlay>().connect<&DecalSystemNode::on_update_Overlay>(*this);
@@ -181,7 +213,9 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
             r.on_destroy<Overlay>().connect<&DecalSystemNode::on_destroy_Overlay>(*this);
             r.on_destroy<ProjectedTexture>().connect<&DecalSystemNode::on_destroy_ProjectedTexture>(*this);
             r.on_destroy<TextureResource>().connect<&DecalSystemNode::on_destroy_TextureResource>(*this);
+            r.on_destroy<SlugResource>().connect<&DecalSystemNode::on_destroy_SlugResource>(*this);
             r.on_destroy<TextureSlotDetail>().connect<&DecalSystemNode::on_destroy_TextureSlotDetail>(*this);
+            r.on_destroy<SlugSlotDetail>().connect<&DecalSystemNode::on_destroy_SlugSlotDetail>(*this);
 
             // Set up the dirty tracking
             auto e = r.create();
@@ -218,6 +252,11 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
                 {
                     resource.owner = entity;
                 });
+
+            r.view<SlugResource>().each([&](auto entity, auto& resource)
+                {
+                    resource.owner = entity;
+                });
         });
 }
 
@@ -229,14 +268,23 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
     bool sharedDescriptorsDirty = false;
 
     auto textures = vsgcontext->sharedRenderData->decalTextures;
-    if (!textures || textures->imageInfoList.empty())
+    auto slugCurves = vsgcontext->sharedRenderData->slugCurveTexture;
+    auto slugBands = vsgcontext->sharedRenderData->slugBandTexture;
+    if (!textures || textures->imageInfoList.empty() ||
+        !slugCurves || slugCurves->imageInfoList.empty() ||
+        !slugBands || slugBands->imageInfoList.empty() ||
+        slugCurves->imageInfoList.size() != slugBands->imageInfoList.size())
         return;
     if (!_fallbackTexture)
         _fallbackTexture = textures->imageInfoList[0];
+    if (!_fallbackSlugCurve)
+        _fallbackSlugCurve = slugCurves->imageInfoList[0];
+    if (!_fallbackSlugBand)
+        _fallbackSlugBand = slugBands->imageInfoList[0];
     auto fallback = _fallbackTexture;
 
     // A DecalStyle is now just a legacy ImageTexture facade.
-    reg.view<DecalStyle, LegacyDecalStyleAdapter, ImageTexture>().each(
+    reg.view<DecalStyle, DecalStyleFacadeAdapter, ImageTexture>().each(
         [&](auto, auto& style, auto& adapter, auto& imageTexture)
         {
             if (adapter.ownsImageTexture)
@@ -264,6 +312,25 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         }
     }
 
+    {
+        std::vector<std::int32_t> pendingSlots;
+        {
+            std::scoped_lock lock(_pendingTextureSlotsMutex);
+            pendingSlots.swap(_pendingSlugSlots);
+        }
+        std::sort(pendingSlots.begin(), pendingSlots.end());
+        pendingSlots.erase(std::unique(pendingSlots.begin(), pendingSlots.end()), pendingSlots.end());
+        for (auto slot : pendingSlots)
+        {
+            if (slot >= 0 && slot < static_cast<std::int32_t>(slugCurves->imageInfoList.size()))
+            {
+                slugCurves->imageInfoList[slot] = _fallbackSlugCurve;
+                slugBands->imageInfoList[slot] = _fallbackSlugBand;
+                sharedDescriptorsDirty = true;
+            }
+        }
+    }
+
     auto releaseSlot = [&](TextureSlotDetail& detail)
     {
         if (detail.descriptorImageIndex >= 0 &&
@@ -274,6 +341,18 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         }
         detail.descriptorImageIndex = -1;
         detail.texture = {};
+    };
+
+    auto releaseSlugSlot = [&](SlugSlotDetail& detail)
+    {
+        if (detail.descriptorImageIndex >= 0 &&
+            detail.descriptorImageIndex < static_cast<std::int32_t>(slugCurves->imageInfoList.size()))
+        {
+            slugCurves->imageInfoList[detail.descriptorImageIndex] = _fallbackSlugCurve;
+            slugBands->imageInfoList[detail.descriptorImageIndex] = _fallbackSlugBand;
+            sharedDescriptorsDirty = true;
+        }
+        detail = {};
     };
 
     std::size_t rejectedTextureCount = 0u;
@@ -339,11 +418,19 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
     };
 
     std::unordered_set<entt::entity> demandedTextures;
+    std::unordered_set<entt::entity> demandedSlugAtlases;
     reg.view<ProjectedTexture, ActiveState, Visibility>().each(
         [&](auto entity, auto& projected, auto&, auto& visibility)
         {
-            if (visibleInAnyActiveView(visibility))
-                demandedTextures.insert(projected.texture != entt::null ? projected.texture : entity);
+            if (!visibleInAnyActiveView(visibility))
+                return;
+
+            const auto payload = projected.texture != entt::null ? projected.texture : entity;
+            const auto* overlay = reg.try_get<Overlay>(payload);
+            if (overlay && overlay->technique == OverlayTechnique::Slug)
+                demandedSlugAtlases.insert(payload);
+            else
+                demandedTextures.insert(payload);
         });
 
     reg.view<TextureSlotDetail>().each([&](auto entity, auto& detail)
@@ -363,6 +450,82 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         }
     }
 
+    reg.view<SlugSlotDetail>().each([&](auto entity, auto& detail)
+        {
+            if (demandedSlugAtlases.find(entity) == demandedSlugAtlases.end())
+                releaseSlugSlot(detail);
+        });
+
+    std::size_t rejectedSlugCount = 0u;
+    for (auto entity : demandedSlugAtlases)
+    {
+        if (!reg.valid(entity))
+            continue;
+
+        const auto* resource = reg.try_get<SlugResource>(entity);
+        auto* existing = reg.try_get<SlugSlotDetail>(entity);
+        if (!resource || !resource->ready ||
+            !resource->curveTexture || !resource->bandTexture)
+        {
+            if (existing)
+                releaseSlugSlot(*existing);
+            continue;
+        }
+
+        auto& detail = reg.get_or_emplace<SlugSlotDetail>(entity);
+        const bool matches =
+            detail.descriptorImageIndex >= 0 &&
+            detail.descriptorImageIndex < static_cast<std::int32_t>(slugCurves->imageInfoList.size()) &&
+            detail.curveTexture == resource->curveTexture &&
+            detail.bandTexture == resource->bandTexture &&
+            detail.resourceRevision == resource->revision &&
+            slugCurves->imageInfoList[detail.descriptorImageIndex] == resource->curveTexture &&
+            slugBands->imageInfoList[detail.descriptorImageIndex] == resource->bandTexture;
+
+        if (matches)
+        {
+            // TerrainNode rebuilds the global descriptor set before ECS systems
+            // run. One later frame therefore proves this slot's image pair is
+            // installed before its shape metadata is allowed into the SSBO.
+            if (!detail.readyForDraw && frame > detail.descriptorWriteFrame)
+                detail.readyForDraw = true;
+            continue;
+        }
+
+        int slot = detail.descriptorImageIndex;
+        if (slot < 0)
+        {
+            for (std::size_t i = 0; i < slugCurves->imageInfoList.size(); ++i)
+            {
+                if (slugCurves->imageInfoList[i] == _fallbackSlugCurve &&
+                    slugBands->imageInfoList[i] == _fallbackSlugBand)
+                {
+                    slot = static_cast<int>(i);
+                    break;
+                }
+            }
+        }
+
+        if (slot < 0)
+        {
+            ++rejectedSlugCount;
+            releaseSlugSlot(detail);
+            continue;
+        }
+
+        slugCurves->imageInfoList[slot] = resource->curveTexture;
+        slugBands->imageInfoList[slot] = resource->bandTexture;
+        detail.curveTexture = resource->curveTexture;
+        detail.bandTexture = resource->bandTexture;
+        detail.descriptorImageIndex = slot;
+        detail.resourceRevision = resource->revision;
+        detail.descriptorWriteFrame = frame;
+        detail.readyForDraw = false;
+        requestCompile(resource->curveTexture);
+        requestCompile(resource->bandTexture);
+        sharedDescriptorsDirty = true;
+    }
+
     if (rejectedTextureCount > 0u)
     {
         if (!_textureSlotsExhausted)
@@ -378,10 +541,28 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         _textureSlotsExhausted = false;
     }
 
+    if (rejectedSlugCount > 0u)
+    {
+        if (!_slugSlotsExhausted)
+        {
+            Log()->warn(
+                "DecalSystemNode: {} visible Slug atlases exceed the {} available descriptor slots; some will not render",
+                demandedSlugAtlases.size(), slugCurves->imageInfoList.size());
+        }
+        _slugSlotsExhausted = true;
+    }
+    else
+    {
+        _slugSlotsExhausted = false;
+    }
+
     if (sharedDescriptorsDirty)
     {
         requestCompile(textures);
+        requestCompile(slugCurves);
+        requestCompile(slugBands);
         vsgcontext->sharedRenderData->dirtySharedDescriptors();
+        vsgcontext->requestFrame();
     }
 
     // Drain legacy dirty queues; normalized contracts are polled by identity and
@@ -396,12 +577,34 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
 {
     bool buffersChanged = false;
     unsigned totalNumDecals = 0u;
+    unsigned totalNumSlugLayers = 0u;
 
     // Recount from registry to keep capacity decisions in sync with actual entities.
     _registry.read([&](entt::registry& reg)
     {
         auto projections = reg.view<ProjectedTexture, ActiveState, Visibility>();
-        projections.each([&](auto, auto&, auto&, auto&) { ++totalNumDecals; });
+        projections.each([&](auto entity, auto& projected, auto&, auto&)
+        {
+            const auto payload = projected.texture != entt::null ? projected.texture : entity;
+            const auto* overlay = reg.try_get<Overlay>(payload);
+            if (overlay && overlay->technique == OverlayTechnique::Slug)
+            {
+                const auto* resource = reg.try_get<SlugResource>(payload);
+                const auto* detail = reg.try_get<SlugSlotDetail>(payload);
+                if (resource && resource->ready && detail && detail->readyForDraw &&
+                    detail->resourceRevision == resource->revision &&
+                    resource->textureWidthLog2 > 0u &&
+                    resource->indirectionSize == SLUG_INDIRECTION_SIZE)
+                {
+                    ++totalNumDecals;
+                    totalNumSlugLayers += static_cast<unsigned>(resource->layers.size());
+                }
+            }
+            else
+            {
+                ++totalNumDecals;
+            }
+        });
     });
 
     for (auto& vds : _sharedRenderData->viewDependentState)
@@ -434,6 +637,29 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
 
             // creates a new descriptor buffer, so we have to notify users to rebuild DSets that use it.
             decals.resize(newDecalCapacity + 1, vsgcontext);
+            buffersChanged = true;
+        }
+
+        if (!vds->slugLayersBuf)
+            buffersChanged = true;
+
+        BufferAccess<SlugLayerGPU> slugLayers(
+            vds->slugLayersBuf,
+            BINDING_VDS_SLUG_LAYERS,
+            TYPE_VDS_SLUG_LAYERS);
+        const auto currentSlugLayerCapacity = slugLayers.capacity();
+        if (totalNumSlugLayers > currentSlugLayerCapacity)
+        {
+            constexpr std::size_t growBy = 16u;
+            const auto newSlugLayerCapacity =
+                std::max<std::size_t>(totalNumSlugLayers, currentSlugLayerCapacity + growBy);
+
+            Log()->debug(
+                "DecalSystemNode: resizing Slug layer buffer to {} at {} bytes",
+                newSlugLayerCapacity,
+                newSlugLayerCapacity * sizeof(SlugLayerGPU));
+
+            slugLayers.resize(newSlugLayerCapacity, vsgcontext);
             buffersChanged = true;
         }
 
@@ -548,6 +774,11 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
             if (gpuCapacity == 0u)
                 continue;
 
+            BufferAccess<SlugLayerGPU> gpuSlugLayer(vds->slugLayersBuf);
+            const auto slugLayerCapacity = gpuSlugLayer.capacity();
+            if (slugLayerCapacity == 0u)
+                continue;
+
             std::uint32_t decalIndex = 0u;
 
             // TODO: why are we reading viewport 0 only?
@@ -557,13 +788,16 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                 { vp[0], vp[1], vp[2], vp[3] }
             };
 
+            std::vector<DecalGPU> decalRecords;
+            std::vector<SlugLayerGPU> slugLayerRecords;
+
             _registry.read([&](entt::registry& reg)
             {
-                auto applyTexture = [&](entt::entity e_texture, const Color& color, DecalGPU& out, std::int32_t& flags) -> bool
+                auto applyTexture = [&](entt::entity e_texture, const Color& color, DecalGPU& out, std::int32_t& payloadFlags) -> bool
                 {
                     out.color = color;
                     out.textureIndex = -1;
-                    flags = 0;
+                    payloadFlags = 0;
 
                     if (auto* resource = reg.try_get<TextureResource>(e_texture))
                     {
@@ -576,9 +810,9 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                                 return false;
                             out.textureIndex = textureDetail->descriptorImageIndex;
                             if (resource->origin == TextureOrigin::UpperLeft)
-                                flags |= 1;
+                                payloadFlags |= DECAL_FLAG_UPPER_LEFT_TEXTURE_ORIGIN;
                             if (resource->alphaMode == TextureAlphaMode::Premultiplied)
-                                flags |= 2;
+                                payloadFlags |= DECAL_FLAG_PREMULTIPLIED_ALPHA;
                         }
                     }
 
@@ -681,8 +915,6 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
                 auto updateProjected = [&](auto entity, auto& projected, auto&, auto& visibility)
                 {
-                    ROCKY_HARD_ASSERT(decalIndex + 1u < gpuCapacity, "DecalSystemNode: decal SSBO overflow");
-
                     if (!visible(visibility, rs))
                     {
                         return;
@@ -708,7 +940,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
                     if (pending.distance == 0.0f)
                     {
-                        auto* adapter = reg.try_get<LegacyDecalAdapter>(entity);
+                        auto* adapter = reg.try_get<DecalFacadeAdapter>(entity);
                         auto* style = reg.try_get<DecalStyle>(e_texture);
                         if (adapter && adapter->ownsProjectedTexture && style && style->textureSize)
                         {
@@ -724,25 +956,72 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
                     pending.mvmInverse = glm::inverse(pending.mvm);
 
-                    std::int32_t textureFlags = 0;
-                    if (!applyTexture(e_texture, projected.color, pending, textureFlags))
+                    const auto* overlay = reg.try_get<Overlay>(e_texture);
+                    if (overlay && overlay->technique == OverlayTechnique::Slug)
+                    {
+                        // Perspective UV derivatives are intentionally deferred from
+                        // this first Slug slice; the shader also guards this case.
+                        if (pending.distance > 0.0f)
+                            return;
+
+                        const auto* resource = reg.try_get<SlugResource>(e_texture);
+                        const auto* slugDetail = reg.try_get<SlugSlotDetail>(e_texture);
+                        if (!resource || !resource->ready || !slugDetail ||
+                            !slugDetail->readyForDraw ||
+                            slugDetail->resourceRevision != resource->revision ||
+                            slugDetail->descriptorImageIndex < 0 ||
+                            resource->textureWidthLog2 == 0u ||
+                            resource->indirectionSize != SLUG_INDIRECTION_SIZE)
+                            return;
+
+                        pending.textureIndex = slugDetail->descriptorImageIndex;
+                        pending.color = projected.color;
+                        pending.payloadFlags =
+                            DECAL_FLAG_SLUG |
+                            ((static_cast<std::int32_t>(resource->textureWidthLog2) &
+                                DECAL_SLUG_TEXTURE_WIDTH_LOG2_MASK) <<
+                                DECAL_SLUG_TEXTURE_WIDTH_LOG2_SHIFT);
+
+                        const auto firstLayer =
+                            static_cast<std::uint32_t>(slugLayerRecords.size());
+                        auto appendLayer = [&](const SlugLayerResource& layer)
+                        {
+                            SlugLayerGPU layerRecord;
+                            layerRecord.color = layer.color;
+                            layerRecord.uvToEmX = layer.uvToEmX;
+                            layerRecord.uvToEmY = layer.uvToEmY;
+                            layerRecord.bandTransform = layer.bandTransform;
+                            layerRecord.shapeData = layer.shapeData;
+                            slugLayerRecords.emplace_back(std::move(layerRecord));
+                        };
+
+                        for (const auto& layer : resource->layers)
+                            if (layer.isOutline)
+                                appendLayer(layer);
+
+                        const auto outlineCount =
+                            static_cast<std::uint32_t>(slugLayerRecords.size()) - firstLayer;
+
+                        for (const auto& layer : resource->layers)
+                            if (!layer.isOutline)
+                                appendLayer(layer);
+
+                        const auto layerCount =
+                            static_cast<std::uint32_t>(slugLayerRecords.size()) - firstLayer;
+                        if (layerCount == 0u)
+                            return;
+
+                        pending.slugLayerRange = {
+                            firstLayer, outlineCount, layerCount, 0u };
+                        decalRecords.emplace_back(std::move(pending));
                         return;
+                    }
 
-                    // first decal just holds the count, so advance first:
-                    ++gpudecal;
-                    ++decalIndex;
-
-                    gpudecal->mvm = pending.mvm;
-                    gpudecal->mvmInverse = pending.mvmInverse;
-                    gpudecal->color = pending.color;
-                    gpudecal->textureIndex = pending.textureIndex;
-                    gpudecal->distance = pending.distance;
-                    gpudecal->zMin = pending.zMin;
-                    gpudecal->zMax = pending.zMax;
-                    gpudecal->cullingRadius = pending.cullingRadius;
-                    gpudecal->tanHalfFovY = pending.tanHalfFovY;
-                    gpudecal->aspect = pending.aspect;
-                    gpudecal->_padding[0] = textureFlags;
+                    std::int32_t texturePayloadFlags = 0;
+                    if (!applyTexture(e_texture, projected.color, pending, texturePayloadFlags))
+                        return;
+                    pending.payloadFlags = texturePayloadFlags;
+                    decalRecords.emplace_back(std::move(pending));
                 };
 
                 reg.view<ProjectedTexture, ActiveState, Visibility>().each(
@@ -751,6 +1030,32 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         updateProjected(entity, projected, active, visibility);
                     });
             });
+
+            auto writePending = [&](const DecalGPU& record)
+            {
+                ROCKY_HARD_ASSERT(
+                    decalIndex + 1u < gpuCapacity,
+                    "DecalSystemNode: decal SSBO overflow");
+
+                // Record zero stores the count, so advance before writing.
+                ++gpudecal;
+                ++decalIndex;
+                *gpudecal.operator->() = record;
+            };
+
+            for (const auto& record : decalRecords)
+                writePending(record);
+
+            ROCKY_HARD_ASSERT(
+                slugLayerRecords.size() <= slugLayerCapacity,
+                "DecalSystemNode: Slug layer SSBO overflow");
+            gpuSlugLayer.reset();
+            for (const auto& record : slugLayerRecords)
+            {
+                *gpuSlugLayer.operator->() = record;
+                ++gpuSlugLayer;
+            }
+            gpuSlugLayer.dirty();
 
             // Update the decal count (kept in record #0):
             gpudecal.reset();
@@ -799,7 +1104,7 @@ DecalSystemNode::update(VSGContext vsgcontext)
         {
             // Normalize legacy public components every frame. This deliberately
             // supports the established pattern of editing fields by reference.
-            r.view<Decal, LegacyDecalAdapter, ProjectedTexture>().each(
+            r.view<Decal, DecalFacadeAdapter, ProjectedTexture>().each(
                 [&](auto entity, auto& decal, auto& adapter, auto& projected)
                 {
                     if (!adapter.ownsProjectedTexture)
@@ -812,7 +1117,7 @@ DecalSystemNode::update(VSGContext vsgcontext)
                         projected.color = style->color;
                 });
 
-            r.view<Overlay, LegacyOverlayProjectionAdapter, ProjectedTexture>().each(
+            r.view<Overlay, OverlayProjectionFacadeAdapter, ProjectedTexture>().each(
                 [&](auto entity, auto& overlay, auto& adapter, auto& projected)
                 {
                     if (!adapter.ownsProjectedTexture)

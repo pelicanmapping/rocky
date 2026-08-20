@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky/Math.h>
+#include <cstddef>
 
  // include the shader header file, which will work from both GLSL and C++
 #include "shaders/rocky.defines.h.glsl"
@@ -55,9 +56,29 @@ namespace ROCKY_NAMESPACE
         glm::float32 cullingRadius = 1.0f;
         glm::float32 tanHalfFovY = 0.0f;
         glm::float32 aspect = 1.0f;
-        glm::int32_t _padding[1] = { 0 };
+        glm::int32_t payloadFlags = 0;
+        // first layer, outline count, total layer count, reserved
+        glm::uvec4 slugLayerRange{ 0u, 0u, 0u, 0u };
     };
-    static_assert(sizeof(DecalGPU) % 16 == 0, "DecalGPU must be 16-byte aligned");
+    static_assert(offsetof(DecalGPU, payloadFlags) == 172,
+        "DecalGPU payloadFlags must match the GLSL std430 layout");
+    static_assert(offsetof(DecalGPU, slugLayerRange) == 176,
+        "DecalGPU slugLayerRange must match the GLSL std430 layout");
+    static_assert(sizeof(DecalGPU) == 192,
+        "DecalGPU must match the GLSL std430 layout");
+
+    struct SlugLayerGPU
+    {
+        glm::fvec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
+        glm::fvec4 uvToEmX{ 1.0f, 0.0f, 0.0f, 0.0f };
+        glm::fvec4 uvToEmY{ 0.0f, 1.0f, 0.0f, 0.0f };
+        glm::fvec4 bandTransform{ 0.0f, 0.0f, 0.0f, 0.0f };
+        glm::uvec4 shapeData{ 0u, 0u, 0u, 0u };
+    };
+    static_assert(offsetof(SlugLayerGPU, shapeData) == 64,
+        "SlugLayerGPU shapeData must match the GLSL std430 layout");
+    static_assert(sizeof(SlugLayerGPU) == 80,
+        "SlugLayerGPU must match the GLSL std430 layout");
 
     struct DecalTileGPU
     {

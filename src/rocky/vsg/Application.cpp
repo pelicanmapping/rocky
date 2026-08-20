@@ -14,6 +14,7 @@
 #include <rocky/vsg/FrustumGridSystem.h>
 #include <rocky/vsg/ecs/DecalSystem.h>
 #include <rocky/vsg/ecs/OverlayBakeSystem.h>
+#include <rocky/vsg/ecs/SlugSystem.h>
 #include <rocky/vsg/ecs/TextureSystem.h>
 #include <rocky/vsg/ecs/OpticsSystem.h>
 
@@ -33,17 +34,22 @@ namespace
     {
         // Leave room for terrain color/elevation, optional shadow-map resources,
         // UBOs, and SSBOs in the same pipeline layout/stages.
-        auto available = [](std::uint32_t limit, std::uint32_t reserved)
+        constexpr std::uint32_t arrayCount = 3u; // RTT + Slug curve + Slug band
+        auto availablePerArray = [arrayCount](std::uint32_t limit, std::uint32_t reserved)
         {
-            return limit > reserved ? limit - reserved : 1u;
+            return limit > reserved ?
+                std::max(1u, (limit - reserved) / arrayCount) : 1u;
         };
 
+        // Each projected payload slot now consumes three fragment samplers: the
+        // RTT image plus a matching Slug curve/band pair. Leave the same room for
+        // non-decal terrain and optional shadow resources as before.
         auto supported = std::min({
-            available(limits.maxPerStageDescriptorSamplers, 3u),
-            available(limits.maxPerStageDescriptorSampledImages, 2u),
-            available(limits.maxDescriptorSetSamplers, 4u),
-            available(limits.maxDescriptorSetSampledImages, 3u),
-            available(limits.maxPerStageResources, 16u)
+            availablePerArray(limits.maxPerStageDescriptorSamplers, 3u),
+            availablePerArray(limits.maxPerStageDescriptorSampledImages, 2u),
+            availablePerArray(limits.maxDescriptorSetSamplers, 4u),
+            availablePerArray(limits.maxDescriptorSetSampledImages, 3u),
+            availablePerArray(limits.maxPerStageResources, 16u)
         });
 
         return std::clamp(requested, 1u, supported);
@@ -338,9 +344,13 @@ Application::ctor(int& argc, char** argv)
     overlayBakeSystem->renderSourceSystems = systemsNode.get();
     computeSystemsNode->add(overlayBakeSystem);
 
+    auto slugSystem = SlugSystemNode::create(registry);
+    slugSystem->worldSRS = mapNode->srs();
+    computeSystemsNode->add(slugSystem);
+
     auto decalSystem = DecalSystemNode::create(registry);
     computeSystemsNode->add(decalSystem);
-    vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_DECAL_SYSTEM");
+    vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_DECALS");
 #endif
 
     auto xformSystem = systemsNode->get<TransformSystemNode>();
@@ -530,8 +540,12 @@ Application::realize()
         _subscriptions += vsgcontext->onUpdate([&](VSGContext vsgcontext)
             {
                 if (mapNode && computeSystemsNode)
+                {
                     if (auto* overlayBake = computeSystemsNode->get<OverlayBakeSystemNode>())
                         overlayBake->worldSRS = mapNode->srs();
+                    if (auto* slug = computeSystemsNode->get<SlugSystemNode>())
+                        slug->worldSRS = mapNode->srs();
+                }
 
                 // ECS updates - rendering or modifying entities
                 if (systemsNode)

@@ -54,9 +54,36 @@ void LineSystemNode::expandRenderTextureBounds(
             for (const auto& point : geometry->points)
                 expandRenderTextureSourcePoint(reg, entity, bounds, geometry->srs, point, worldSRS, applySourceTransform);
         double width = 2.0;
+        double outlineWidth = 0.0;
+        bool physical = false;
         if (auto* style = reg.try_get<LineStyle>(line->style))
-            width = std::abs((double)style->width);
-        bounds.paddingPixels = std::max(bounds.paddingPixels, 0.5 * width + 2.0);
+        {
+            physical = style->widthUnits.isDistance();
+            if (physical)
+            {
+                width = std::abs(Distance(style->width, style->widthUnits).as(Units::METERS));
+                outlineWidth = std::max(
+                    0.0,
+                    Distance(style->outlineWidth, style->widthUnits).as(Units::METERS));
+            }
+            else
+            {
+                width = std::abs((double)style->width);
+                outlineWidth = std::max(0.0, (double)style->outlineWidth);
+            }
+        }
+        if (physical)
+        {
+            bounds.paddingMeters = std::max(
+                bounds.paddingMeters,
+                0.5 * width + outlineWidth);
+        }
+        else
+        {
+            bounds.paddingPixels = std::max(
+                bounds.paddingPixels,
+                0.5 * width + outlineWidth + 2.0);
+        }
     }
 }
 
@@ -75,8 +102,8 @@ void LineSystemNode::contributeRenderTextureRevision(
     detail::combineRenderTextureComponentBoth(
         revision, reg.try_get<LineGeometry>(line->geometry));
 
-    // Width affects auto-fit padding, so a LineStyle revision conservatively
-    // invalidates both bounds and content.
+    // Width, units, and outline width affect auto-fit padding, so a LineStyle
+    // revision conservatively invalidates both bounds and content.
     detail::combineRenderTextureComponentBoth(
         revision, reg.try_get<LineStyle>(line->style));
 }

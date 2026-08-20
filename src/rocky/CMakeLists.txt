@@ -242,6 +242,32 @@ if(ROCKY_RENDERER_VSG)
     if (ROCKY_MAX_NUMBER_OF_VIEWS LESS 1)
         message(FATAL_ERROR "Nice try. ROCKY_MAX_NUMBER_OF_VIEWS must be greater than zero.")
     endif()
+
+    # Slughorn itself requires C++20. Keep it and Rocky's private compatibility
+    # adapter in an object target so Rocky's public C++17 requirement and exported
+    # target remain unchanged.
+    set(ROCKY_SLUGHORN_ROOT "${PROJECT_SOURCE_DIR}/src/third_party/slughorn")
+    add_library(rocky_slughorn_adapter OBJECT
+        "${ROCKY_SLUGHORN_ROOT}/slughorn/slughorn.cpp"
+        "${ROCKY_SLUGHORN_ROOT}/rocky/SlugAdapter.cpp"
+        "${ROCKY_SLUGHORN_ROOT}/rocky/SlugAdapter.h")
+    set_source_files_properties(
+        "${ROCKY_SLUGHORN_ROOT}/slughorn/slughorn.cpp"
+        PROPERTIES COMPILE_DEFINITIONS SLUGHORN_SERIAL_IMPLEMENTATION)
+    target_include_directories(rocky_slughorn_adapter PRIVATE
+        "${ROCKY_SLUGHORN_ROOT}")
+    if(NOT TARGET nlohmann_json::nlohmann_json)
+        find_package(nlohmann_json CONFIG REQUIRED)
+    endif()
+    target_link_libraries(rocky_slughorn_adapter PRIVATE
+        nlohmann_json::nlohmann_json)
+    set_target_properties(rocky_slughorn_adapter PROPERTIES
+        CXX_STANDARD 20
+        CXX_STANDARD_REQUIRED ON
+        CXX_EXTENSIONS OFF
+        POSITION_INDEPENDENT_CODE ON
+        FOLDER "third_party")
+    set(ROCKY_SLUGHORN_OBJECTS $<TARGET_OBJECTS:rocky_slughorn_adapter>)
 endif()
 
 
@@ -269,7 +295,13 @@ add_library(rocky ${BUILD_TYPE}
     ${HEADERS_VSG_ECS} ${SOURCES_VSG_ECS}
     ${HEADERS_VSG_IMGUI} ${SOURCES_VSG_IMGUI}
     ${SHADERS_VSG}
+    ${ROCKY_SLUGHORN_OBJECTS}
 )
+
+if(ROCKY_RENDERER_VSG)
+    target_include_directories(rocky PRIVATE
+        "${ROCKY_SLUGHORN_ROOT}/rocky")
+endif()
 
 # For windows import/export
 if(NOT ROCKY_BUILD_SHARED_LIBS)
@@ -335,4 +367,6 @@ if(ROCKY_RENDERER_VSG)
     install(FILES ${HEADERS_VSG_ECS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/vsg/ecs)
     install(FILES ${HEADERS_VSG_IMGUI} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/vsg/imgui)
     install(FILES ${SHADERS_VSG} ${SPIRV_SHADERS} DESTINATION ${CMAKE_INSTALL_DATADIR}/rocky/shaders)
+    install(FILES ${ROCKY_SLUGHORN_ROOT}/LICENSE
+        DESTINATION ${CMAKE_INSTALL_DATADIR}/rocky/licenses/slughorn)
 endif()

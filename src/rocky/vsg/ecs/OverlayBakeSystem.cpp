@@ -13,17 +13,70 @@
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
+#include <functional>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
-    struct LegacyOverlayBakeAdapter
+    struct OverlayBakeFacadeAdapter
     {
+        // True when this facade is responsible for creating/removing the
+        // same-entity RenderTexture. It remains true while the Slug technique
+        // has that component intentionally suppressed.
         bool ownsRenderTexture = false;
         bool ownsParticipation = false;
     };
+
+    // Tracks the inputs to a Slug overlay's lightweight projector fit. Slug
+    // does not own a RenderTexture, so it cannot use OverlayBakeDetail's RTT
+    // invalidation state.
+    struct SlugOverlayFitDetail
+    {
+        std::size_t boundsRevision = 0u;
+        std::size_t participantSignature = 0u;
+        glm::uvec2 textureSize = { 0u, 0u };
+        SRS worldSRS;
+        float depthSafetyFactor = 1.0f;
+        bool signatureValid = false;
+        bool transformAvailable = false;
+    };
+
+    void synchronizeOverlayFacade(
+        entt::registry& r,
+        entt::entity entity,
+        Overlay& overlay,
+        OverlayBakeFacadeAdapter& adapter)
+    {
+        const bool useRTT = overlay.technique == OverlayTechnique::RTT;
+
+        if (useRTT && r.any_of<SlugOverlayFitDetail>(entity))
+            r.remove<SlugOverlayFitDetail>(entity);
+
+        if (adapter.ownsRenderTexture)
+        {
+            if (useRTT)
+            {
+                auto& renderTexture = r.get_or_emplace<RenderTexture>(entity);
+                renderTexture.sources = { entity };
+                renderTexture.textureSize = overlay.textureSize;
+                renderTexture.useDepthBuffer = overlay.useDepthBuffer;
+                renderTexture.continuous = overlay.continuousBake;
+            }
+            else if (r.any_of<RenderTexture>(entity))
+            {
+                r.remove<RenderTexture>(entity);
+            }
+        }
+
+        if (adapter.ownsParticipation)
+        {
+            auto& participation = r.get_or_emplace<RenderParticipation>(entity);
+            participation.mainView = false;
+            participation.renderTexture = useRTT;
+        }
+    }
 
     inline glm::uvec2 resolveTextureSize(const Overlay& overlay, unsigned fallback)
     {
@@ -52,6 +105,16 @@ namespace
             return false;
         auto* participation = registry.try_get<RenderParticipation>(source);
         return !participation || participation->renderTexture;
+    }
+
+    inline bool participatesInOverlayFit(
+        entt::registry& registry,
+        entt::entity source,
+        bool requireRenderTextureParticipation)
+    {
+        if (!registry.valid(source) || !registry.any_of<ActiveState>(source))
+            return false;
+        return !requireRenderTextureParticipation || participatesInRenderTexture(registry, source);
     }
 
     RenderTextureSourceStatus getRenderTextureSourceStatus(
@@ -179,7 +242,8 @@ namespace
         bool forceRecompute,
         float depthSafetyFactor,
         const SRS& worldSRS,
-        const glm::uvec2& textureSize)
+        const glm::uvec2& textureSize,
+        bool requireRenderTextureParticipation = true)
     {
         auto* existing = reg.try_get<Transform>(e_overlay);
         bool autoManaged = reg.any_of<AutoOverlayTransform>(e_overlay);
@@ -193,7 +257,7 @@ namespace
         const bool sharedFrame = sources.size() == 1u && sources.front() == e_overlay;
         for (auto source : sources)
         {
-            if (!participatesInRenderTexture(reg, source))
+            if (!participatesInOverlayFit(reg, source, requireRenderTextureParticipation))
                 continue;
             for (auto* participant : participants)
                 participant->expandRenderTextureBounds(reg, source, bounds, worldSRS, !sharedFrame);
@@ -246,6 +310,8 @@ namespace
 
             eastMeters = std::max(1.0, eastMeters);
             northMeters = std::max(1.0, northMeters);
+            eastMeters += 2.0 * bounds.paddingMeters;
+            northMeters += 2.0 * bounds.paddingMeters;
             eastMeters += 2.0 * eastMeters * bounds.paddingPixels / std::max(1u, textureSize.x);
             northMeters += 2.0 * northMeters * bounds.paddingPixels / std::max(1u, textureSize.y);
 
@@ -293,6 +359,11 @@ namespace
             xform->topocentric = false;
             double width = std::max(1.0, bounds.maxx - bounds.minx);
             double height = std::max(1.0, bounds.maxy - bounds.miny);
+            const double paddingUnits = bounds.srs.transformDistance(
+                Distance(bounds.paddingMeters, Units::METERS),
+                bounds.srs.units());
+            width += 2.0 * paddingUnits;
+            height += 2.0 * paddingUnits;
             width += 2.0 * width * bounds.paddingPixels / std::max(1u, textureSize.x);
             height += 2.0 * height * bounds.paddingPixels / std::max(1u, textureSize.y);
             const double verticalRange = std::max(1.0, bounds.maxz - bounds.minz);
@@ -319,7 +390,8 @@ namespace
         entt::registry& reg,
         entt::entity controller,
         const std::vector<entt::entity>& sources,
-        const std::vector<RenderTextureParticipant*>& participants)
+        const std::vector<RenderTextureParticipant*>& participants,
+        bool requireRenderTextureParticipation = true)
     {
         RenderTextureRevision revision;
         const bool sharedFrame = sources.size() == 1u && sources.front() == controller;
@@ -337,7 +409,8 @@ namespace
             detail::combineRenderTextureRevision(revision.bounds, active ? 1u : 0u);
             detail::combineRenderTextureRevision(revision.content, active ? 1u : 0u);
 
-            const bool participating = participatesInRenderTexture(reg, source);
+            const bool participating = participatesInOverlayFit(
+                reg, source, requireRenderTextureParticipation);
             detail::combineRenderTextureRevision(revision.bounds, participating ? 1u : 0u);
             detail::combineRenderTextureRevision(revision.content, participating ? 1u : 0u);
 
@@ -359,6 +432,19 @@ namespace
             }
         }
         return revision;
+    }
+
+    std::size_t computeParticipantSignature(
+        const std::vector<RenderTextureParticipant*>& participants)
+    {
+        std::size_t signature = 0u;
+        for (auto* participant : participants)
+        {
+            detail::combineRenderTextureRevision(
+                signature,
+                std::hash<RenderTextureParticipant*>{}(participant));
+        }
+        return signature;
     }
 }
 
@@ -465,51 +551,47 @@ void OverlayBakeSystemNode::refreshRenderParticipants()
 
 void OverlayBakeSystemNode::on_construct_Overlay(entt::registry& r, entt::entity e)
 {
-    auto& adapter = r.get_or_emplace<LegacyOverlayBakeAdapter>(e);
-    const auto& overlay = r.get<Overlay>(e);
+    auto& adapter = r.get_or_emplace<OverlayBakeFacadeAdapter>(e);
+    auto& overlay = r.get<Overlay>(e);
 
     if (!r.any_of<RenderTexture>(e))
-    {
-        auto& renderTexture = r.emplace<RenderTexture>(e);
-        renderTexture.sources = { e };
-        renderTexture.textureSize = overlay.textureSize;
-        renderTexture.useDepthBuffer = overlay.useDepthBuffer;
-        renderTexture.continuous = overlay.continuousBake;
         adapter.ownsRenderTexture = true;
-    }
 
     if (!r.any_of<RenderParticipation>(e))
     {
-        auto& participation = r.emplace<RenderParticipation>(e);
-        participation.mainView = false;
-        participation.renderTexture = true;
         adapter.ownsParticipation = true;
     }
+
+    synchronizeOverlayFacade(r, e, overlay, adapter);
 }
 
 void OverlayBakeSystemNode::on_update_Overlay(entt::registry& r, entt::entity e)
 {
-    auto* adapter = r.try_get<LegacyOverlayBakeAdapter>(e);
-    auto* renderTexture = r.try_get<RenderTexture>(e);
-    if (adapter && adapter->ownsRenderTexture && renderTexture)
-    {
-        const auto& overlay = r.get<Overlay>(e);
-        renderTexture->sources = { e };
-        renderTexture->textureSize = overlay.textureSize;
-        renderTexture->useDepthBuffer = overlay.useDepthBuffer;
-        renderTexture->continuous = overlay.continuousBake;
-    }
+    auto* adapter = r.try_get<OverlayBakeFacadeAdapter>(e);
+    if (adapter)
+        synchronizeOverlayFacade(r, e, r.get<Overlay>(e), *adapter);
 }
 
 void OverlayBakeSystemNode::on_destroy_Overlay(entt::registry& r, entt::entity e)
 {
-    if (auto* adapter = r.try_get<LegacyOverlayBakeAdapter>(e))
+    if (auto* adapter = r.try_get<OverlayBakeFacadeAdapter>(e))
     {
+        const bool ownsSlugFit =
+            adapter->ownsRenderTexture && r.any_of<SlugOverlayFitDetail>(e);
+
         if (adapter->ownsRenderTexture && r.any_of<RenderTexture>(e))
             r.remove<RenderTexture>(e);
+        else if (ownsSlugFit && r.any_of<AutoOverlayTransform>(e))
+        {
+            r.remove<AutoOverlayTransform>(e);
+            if (r.any_of<Transform>(e))
+                r.remove<Transform>(e);
+        }
         if (adapter->ownsParticipation && r.any_of<RenderParticipation>(e))
             r.remove<RenderParticipation>(e);
-        r.remove<LegacyOverlayBakeAdapter>(e);
+        if (r.any_of<SlugOverlayFitDetail>(e))
+            r.remove<SlugOverlayFitDetail>(e);
+        r.remove<OverlayBakeFacadeAdapter>(e);
     }
 }
 
@@ -736,16 +818,10 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
             // Overlay remains a public convenience facade. Keep its generated
             // low-level contract synchronized even when callers edit fields by
             // reference instead of using registry.patch().
-            r.view<Overlay, LegacyOverlayBakeAdapter, RenderTexture>().each(
-                [&](auto e_overlay, auto& overlay, auto& adapter, auto& renderTexture)
+            r.view<Overlay, OverlayBakeFacadeAdapter>().each(
+                [&](auto e_overlay, auto& overlay, auto& adapter)
                 {
-                    if (adapter.ownsRenderTexture)
-                    {
-                        renderTexture.sources = { e_overlay };
-                        renderTexture.textureSize = overlay.textureSize;
-                        renderTexture.useDepthBuffer = overlay.useDepthBuffer;
-                        renderTexture.continuous = overlay.continuousBake;
-                    }
+                    synchronizeOverlayFacade(r, e_overlay, overlay, adapter);
                 });
 
             r.view<RenderTexture>().each([&](auto entity, auto&)
@@ -788,6 +864,94 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                     participation.owner = entity;
                 });
         });
+
+    // Slug uses the same orthographic projector contract as RTT, but it has no
+    // render job from which to inherit auto-fitting. Fit same-entity Slug
+    // overlays directly from participant bounds, without enabling RTT
+    // participation or allocating any offscreen resources.
+    const auto participantSignature = computeParticipantSignature(_renderParticipants);
+    bool slugFitChanged = false;
+    _registry.write([&](entt::registry& r)
+        {
+            r.view<Overlay>().each([&](auto entity, auto& overlay)
+                {
+                    if (overlay.technique != OverlayTechnique::Slug ||
+                        r.any_of<RenderTexture>(entity))
+                    {
+                        if (r.any_of<SlugOverlayFitDetail>(entity))
+                            r.remove<SlugOverlayFitDetail>(entity);
+                        return;
+                    }
+
+                    auto* transform = r.try_get<Transform>(entity);
+                    const bool autoManaged = r.any_of<AutoOverlayTransform>(entity);
+
+                    // A caller-supplied projector is authoritative. In
+                    // particular, never start tracking it as an auto fit merely
+                    // because the Overlay technique changed.
+                    if (transform && !autoManaged)
+                    {
+                        if (r.any_of<SlugOverlayFitDetail>(entity))
+                            r.remove<SlugOverlayFitDetail>(entity);
+                        return;
+                    }
+
+                    auto& detail = r.get_or_emplace<SlugOverlayFitDetail>(entity);
+                    const auto requestedSize = resolveTextureSize(overlay, textureSize);
+                    const std::vector<entt::entity> sources{ entity };
+                    const auto sourceRevision = computeRenderTextureRevision(
+                        r, entity, sources, _renderParticipants, false);
+
+                    const bool signatureChanged =
+                        !detail.signatureValid ||
+                        detail.boundsRevision != sourceRevision.bounds ||
+                        detail.participantSignature != participantSignature ||
+                        detail.textureSize != requestedSize ||
+                        detail.worldSRS != worldSRS ||
+                        std::abs(detail.depthSafetyFactor - depthSafetyFactor) > 1e-6f;
+                    const bool expectedTransformMissing =
+                        detail.transformAvailable && !transform;
+
+                    if (!signatureChanged && !expectedTransformMissing)
+                    {
+                        // Accommodate an auto-managed transform supplied by
+                        // another low-level owner without needlessly dirtying it.
+                        detail.transformAvailable = transform != nullptr;
+                        return;
+                    }
+
+                    const bool hadTransform = transform != nullptr;
+                    const int previousTransformRevision = transform ? transform->revision : -1;
+
+                    auto* fitted = ensureOverlayTransform(
+                        r,
+                        entity,
+                        sources,
+                        _renderParticipants,
+                        true,
+                        depthSafetyFactor,
+                        worldSRS,
+                        requestedSize,
+                        false);
+
+                    detail.boundsRevision = sourceRevision.bounds;
+                    detail.participantSignature = participantSignature;
+                    detail.textureSize = requestedSize;
+                    detail.worldSRS = worldSRS;
+                    detail.depthSafetyFactor = depthSafetyFactor;
+                    detail.signatureValid = true;
+                    detail.transformAvailable = fitted != nullptr;
+
+                    if (fitted &&
+                        (!hadTransform || fitted->revision != previousTransformRevision))
+                    {
+                        slugFitChanged = true;
+                    }
+                });
+        });
+
+    if (slugFitChanged)
+        vsgcontext->requestFrame();
 
     _registry.write([&](entt::registry& r)
         {

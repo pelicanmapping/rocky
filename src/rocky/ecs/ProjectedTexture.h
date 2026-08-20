@@ -121,6 +121,7 @@ namespace ROCKY_NAMESPACE
         double minx = DBL_MAX, miny = DBL_MAX, minz = DBL_MAX;
         double maxx = -DBL_MAX, maxy = -DBL_MAX, maxz = -DBL_MAX;
         double paddingPixels = 2.0;
+        double paddingMeters = 0.0;
 
         void expand(const SRS& inputSRS, const glm::dvec3& input)
         {

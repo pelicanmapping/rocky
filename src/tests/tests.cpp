@@ -6,6 +6,8 @@
 #include <rocky/ecs/Overlay.h>
 #include <rocky/ecs/Decal.h>
 #include <rocky/vsg/ecs/OverlayBakeSystem.h>
+#include <rocky/vsg/ecs/SlugResource.h>
+#include <rocky/vsg/ecs/SlugSystem.h>
 #include <rocky/vsg/ecs/DecalSystem.h>
 #include <rocky/vsg/ecs/MeshSystem.h>
 #include <rocky/vsg/ecs/LineSystem.h>
@@ -17,6 +19,8 @@
 #include <rocky/vsg/ecs/FeatureBuilder.h>
 #include <atomic>
 #include <chrono>
+#include <filesystem>
+#include <fstream>
 #include <random>
 #include <thread>
 #include <unordered_map>
@@ -86,6 +90,23 @@ TEST_CASE("mesh feature default tessellation is curvature bounded", "[featurebui
 
 TEST_CASE("projected texture contracts", "[projection]")
 {
+    LineStyle lineStyle;
+    CHECK(lineStyle.outlineWidth == 0.0f);
+    CHECK(lineStyle.outlineColor == StockColor::Black);
+    CHECK(lineStyle.widthUnits == Units::PIXELS);
+
+    lineStyle.width = 10.0f;
+    lineStyle.outlineWidth = 2.0f;
+    lineStyle.widthUnits = Units::FEET;
+    LineStyleRecord metricRecord;
+    metricRecord.populate(lineStyle);
+    CHECK(metricRecord.widthIsPhysical == 1u);
+    CHECK(metricRecord.width == Approx(3.048f));
+    CHECK(metricRecord.outlineWidth == Approx(0.6096f));
+
+    Overlay overlay;
+    CHECK(overlay.technique == OverlayTechnique::RTT);
+
     RenderTexture renderTexture;
     CHECK(renderTexture.sources.empty());
     CHECK(renderTexture.textureSize == glm::uvec2(512u, 512u));
@@ -168,6 +189,20 @@ TEST_CASE("render texture revisions", "[projection]")
         lineGeometry.points = { { 0.0, 0.0, 0.0 }, { 1.0, 1.0, 0.0 } };
         auto& lineStyle = reg.emplace<LineStyle>(source);
         reg.emplace<Line>(source, lineGeometry, lineStyle);
+
+        lineStyle.width = 6.0f;
+        lineStyle.outlineWidth = 3.0f;
+        RenderTextureBounds outlinedLineBounds;
+        lineSystem->expandRenderTextureBounds(
+            reg, source, outlinedLineBounds, SRS::WGS84, false);
+        CHECK(outlinedLineBounds.paddingPixels == Approx(8.0));
+
+        lineStyle.widthUnits = Units::METERS;
+        RenderTextureBounds metricLineBounds;
+        lineSystem->expandRenderTextureBounds(
+            reg, source, metricLineBounds, SRS::WGS84, false);
+        CHECK(metricLineBounds.paddingPixels == Approx(2.0));
+        CHECK(metricLineBounds.paddingMeters == Approx(6.0));
 
         RenderTextureRevision lineInitial;
         lineSystem->contributeRenderTextureRevision(reg, source, lineInitial);
@@ -366,6 +401,20 @@ TEST_CASE("legacy overlay adapter", "[projection]")
         REQUIRE(reg.any_of<RenderParticipation>(overlayEntity));
         CHECK_FALSE(reg.get<RenderParticipation>(overlayEntity).mainView);
 
+        reg.patch<Overlay>(overlayEntity, [](auto& overlay)
+        {
+            overlay.technique = OverlayTechnique::Slug;
+        });
+        CHECK_FALSE(reg.any_of<RenderTexture>(overlayEntity));
+        CHECK_FALSE(reg.get<RenderParticipation>(overlayEntity).renderTexture);
+
+        reg.patch<Overlay>(overlayEntity, [](auto& overlay)
+        {
+            overlay.technique = OverlayTechnique::RTT;
+        });
+        CHECK(reg.any_of<RenderTexture>(overlayEntity));
+        CHECK(reg.get<RenderParticipation>(overlayEntity).renderTexture);
+
         reg.remove<Overlay>(overlayEntity);
         CHECK_FALSE(reg.any_of<RenderTexture>(overlayEntity));
         CHECK_FALSE(reg.any_of<ProjectedTexture>(overlayEntity));
@@ -380,6 +429,181 @@ TEST_CASE("legacy overlay adapter", "[projection]")
         CHECK(reg.any_of<RenderTexture>(explicitEntity));
         CHECK(reg.any_of<ProjectedTexture>(explicitEntity));
         CHECK(reg.any_of<RenderParticipation>(explicitEntity));
+    });
+}
+
+TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][slug]")
+{
+    Registry registry = Registry::create();
+    auto sourceSystems = ECSNode::create(registry, false);
+    sourceSystems->add(LineSystemNode::create(registry));
+
+    auto bakeSystem = OverlayBakeSystemNode::create(registry);
+    bakeSystem->renderSourceSystems = sourceSystems;
+    bakeSystem->worldSRS = SRS::ECEF;
+    auto slugSystem = SlugSystemNode::create(registry);
+    slugSystem->worldSRS = SRS::ECEF;
+
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+    const std::vector<glm::dvec3> input = {
+        { 24.918, 60.161, 15.0 },
+        { 24.920, 60.163, 25.0 }
+    };
+
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& geometry = reg.emplace<LineGeometry>(entity);
+        geometry.srs = SRS::WGS84;
+        geometry.topology = LineTopology::Strip;
+        geometry.points = input;
+
+        auto& style = reg.emplace<LineStyle>(entity);
+        style.width = 5.0f;
+        style.widthUnits = Units::METERS;
+        style.color = StockColor::Yellow;
+        style.outlineColor = StockColor::Black;
+        style.outlineWidth = 2.0f;
+        reg.emplace<Line>(entity, geometry, style);
+
+        auto& overlay = reg.emplace<Overlay>(entity);
+        overlay.technique = OverlayTechnique::Slug;
+    });
+
+    bakeSystem->update(context.get());
+    slugSystem->update(context.get());
+
+    std::uint64_t outlinedGeneration = 0u;
+
+    registry.read([&](entt::registry& reg)
+    {
+        CHECK_FALSE(reg.any_of<RenderTexture>(entity));
+        REQUIRE((reg.any_of<AutoOverlayTransform, Transform>(entity)));
+
+        const auto& transform = reg.get<Transform>(entity);
+        CHECK(transform.topocentric);
+        CHECK(transform.position.srs == SRS::WGS84);
+
+        const auto& slug = reg.get<SlugResource>(entity);
+        REQUIRE(slug.ready);
+        REQUIRE(slug.layers.size() == 2u);
+        CHECK(slug.layers[0].color == StockColor::Black);
+        CHECK(slug.layers[1].color == StockColor::Yellow);
+        CHECK(slug.layers[0].isOutline);
+        CHECK_FALSE(slug.layers[1].isOutline);
+        const auto& lineLayer = slug.layers[1];
+        const glm::dvec2 authoredXAxis(
+            lineLayer.uvToEmX.x, lineLayer.uvToEmY.x);
+        const glm::dvec2 authoredYAxis(
+            lineLayer.uvToEmX.y, lineLayer.uvToEmY.y);
+        const glm::dvec3 projectorXAxis(transform.localMatrix[0]);
+        const glm::dvec3 projectorYAxis(transform.localMatrix[1]);
+        REQUIRE(glm::length(authoredXAxis) > 0.0);
+        REQUIRE(glm::length(authoredYAxis) > 0.0);
+        CHECK(std::abs(
+            glm::length(authoredXAxis) / glm::length(authoredYAxis) -
+            glm::length(projectorXAxis) / glm::length(projectorYAxis)) < 1e-4);
+        CHECK(std::abs(lineLayer.uvToEmX.x) +
+            std::abs(lineLayer.uvToEmX.y) <= 1.0001f);
+        CHECK(std::abs(lineLayer.uvToEmY.x) +
+            std::abs(lineLayer.uvToEmY.y) <= 1.0001f);
+        outlinedGeneration = slug.atlasGeneration;
+
+        const auto projectorPosition = transform.position.transform(SRS::ECEF);
+        REQUIRE(projectorPosition.valid());
+        const auto projectorToWorld = SRS::ECEF.topocentricToWorldMatrix(
+            glm::dvec3(projectorPosition.x, projectorPosition.y, projectorPosition.z)) *
+            transform.localMatrix;
+        const auto worldToProjector = glm::inverse(projectorToWorld);
+        const auto toWorld = SRS::WGS84.to(SRS::ECEF);
+        REQUIRE(toWorld.valid());
+
+        for (const auto& point : input)
+        {
+            glm::dvec3 world;
+            REQUIRE(toWorld.transform(point, world));
+            const auto local = worldToProjector * glm::dvec4(world, 1.0);
+            CHECK(std::abs(local.x) < 0.5);
+            CHECK(std::abs(local.y) < 0.5);
+
+            // Metric geometry uses a bounded affine map that preserves the
+            // projector plane's physical distances. Verify its projected
+            // endpoints remain inside the stable Slughorn band grid.
+            const glm::fvec3 uv(
+                static_cast<float>(local.x + 0.5),
+                static_cast<float>(local.y + 0.5),
+                1.0f);
+            const auto& layer = slug.layers.back();
+            const glm::fvec2 em(
+                glm::dot(uv, glm::fvec3(layer.uvToEmX)),
+                glm::dot(uv, glm::fvec3(layer.uvToEmY)));
+            const glm::fvec2 band =
+                em * glm::fvec2(layer.bandTransform) +
+                glm::fvec2(layer.bandTransform.z, layer.bandTransform.w);
+            CHECK(band.x >= -0.01f);
+            CHECK(band.y >= -0.01f);
+            CHECK(band.x <= 32.01f);
+            CHECK(band.y <= 32.01f);
+        }
+    });
+
+    const auto exportPath = std::filesystem::temp_directory_path() /
+        ("rocky-slug-test-" + std::to_string(
+            std::chrono::steady_clock::now().time_since_epoch().count()) + ".slug");
+    std::uint64_t generationBeforeExport = 0u;
+    vsg::ref_ptr<vsg::ImageInfo> curveBeforeExport;
+    vsg::ref_ptr<vsg::ImageInfo> bandBeforeExport;
+    registry.write([&](entt::registry& reg)
+    {
+        auto& slug = reg.get<SlugResource>(entity);
+        generationBeforeExport = slug.atlasGeneration;
+        curveBeforeExport = slug.curveTexture;
+        bandBeforeExport = slug.bandTexture;
+        slug.exportPath = exportPath.string();
+    });
+
+    slugSystem->update(context.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& slug = reg.get<SlugResource>(entity);
+        CHECK(slug.exportPath.empty());
+        CHECK(slug.exportSucceeded);
+        CHECK(slug.exportMessage.find(exportPath.string()) != std::string::npos);
+        CHECK(slug.atlasGeneration == generationBeforeExport);
+        CHECK(slug.curveTexture == curveBeforeExport);
+        CHECK(slug.bandTexture == bandBeforeExport);
+    });
+
+    REQUIRE(std::filesystem::exists(exportPath));
+    CHECK(std::filesystem::file_size(exportPath) > 0u);
+    {
+        std::ifstream input(exportPath);
+        char first = '\0';
+        input.get(first);
+        CHECK(first == '{');
+    }
+    std::error_code removeError;
+    CHECK(std::filesystem::remove(exportPath, removeError));
+    CHECK_FALSE(removeError);
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto& style = reg.get<LineStyle>(entity);
+        style.outlineWidth = 0.0f;
+        style.dirty(reg);
+    });
+    slugSystem->update(context.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& slug = reg.get<SlugResource>(entity);
+        REQUIRE(slug.ready);
+        CHECK(slug.layers.size() == 1u);
+        CHECK(slug.layers[0].color == StockColor::Yellow);
+        CHECK_FALSE(slug.layers[0].isOutline);
+        CHECK(slug.atlasGeneration > outlinedGeneration);
     });
 }
 

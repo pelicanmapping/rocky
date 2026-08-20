@@ -25,6 +25,11 @@ namespace ROCKY_NAMESPACE
         // descriptors shared by all views:
         vsg::ref_ptr<vsg::DescriptorImage> decalTextures;
 
+        //! Per-overlay Slug atlas arenas. Matching curve/band entries always use
+        //! the same index, and every unused entry contains a typed fallback.
+        vsg::ref_ptr<vsg::DescriptorImage> slugCurveTexture;
+        vsg::ref_ptr<vsg::DescriptorImage> slugBandTexture;
+
         //! Rebuilds the fixed projected-texture descriptor array. Call this during
         //! application startup, before any graphics pipelines are compiled.
         void configureProjectedTextureCapacity(std::uint32_t capacity);

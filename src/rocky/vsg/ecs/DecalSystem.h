@@ -46,12 +46,16 @@ namespace ROCKY_NAMESPACE
         // released during update(), where the shared descriptor arena is available.
         std::mutex _pendingTextureSlotsMutex;
         std::vector<std::int32_t> _pendingTextureSlots;
+        std::vector<std::int32_t> _pendingSlugSlots;
 
         // Kept outside the descriptor arena so slot zero remains usable.
         vsg::ref_ptr<vsg::ImageInfo> _fallbackTexture;
+        vsg::ref_ptr<vsg::ImageInfo> _fallbackSlugCurve;
+        vsg::ref_ptr<vsg::ImageInfo> _fallbackSlugBand;
 
         // Prevent descriptor-capacity warnings from flooding the log every frame.
         bool _textureSlotsExhausted = false;
+        bool _slugSlotsExhausted = false;
 
         void rebuildCommands(ViewIDType, VSGContext);
         void updateStyles(VSGContext);
@@ -63,12 +67,15 @@ namespace ROCKY_NAMESPACE
         void on_construct_Overlay(entt::registry& r, entt::entity e);
         void on_construct_ProjectedTexture(entt::registry& r, entt::entity e);
         void on_construct_TextureResource(entt::registry& r, entt::entity e);
+        void on_construct_SlugResource(entt::registry& r, entt::entity e);
         void on_destroy_Decal(entt::registry& r, entt::entity e);
         void on_destroy_DecalStyle(entt::registry& r, entt::entity e);
         void on_destroy_Overlay(entt::registry& r, entt::entity e);
         void on_destroy_ProjectedTexture(entt::registry& r, entt::entity e);
         void on_destroy_TextureResource(entt::registry& r, entt::entity e);
+        void on_destroy_SlugResource(entt::registry& r, entt::entity e);
         void on_destroy_TextureSlotDetail(entt::registry& r, entt::entity e);
+        void on_destroy_SlugSlotDetail(entt::registry& r, entt::entity e);
         void on_update_Decal(entt::registry& r, entt::entity e);
         void on_update_DecalStyle(entt::registry& r, entt::entity e);
         void on_update_Overlay(entt::registry& r, entt::entity e);
