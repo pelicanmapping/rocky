@@ -6,7 +6,9 @@
 #include "DecalSystem.h"
 #include "OpticsSystem.h"
 #include "ECSVisitors.h"
+#ifdef ROCKY_HAS_SLUGHORN
 #include "SlugResource.h"
+#endif
 #include "../ViewDependentState.h"
 #include "../SharedRenderData.h"
 #include "../ShaderDefines.h"
@@ -45,6 +47,7 @@ namespace
         std::int32_t descriptorImageIndex = -1;
     };
 
+#ifdef ROCKY_HAS_SLUGHORN
     struct SlugSlotDetail
     {
         vsg::ref_ptr<vsg::ImageInfo> curveTexture;
@@ -54,6 +57,7 @@ namespace
         std::uint64_t descriptorWriteFrame = 0u;
         bool readyForDraw = false;
     };
+#endif
 }
 
 void DecalSystemNode::on_construct_Decal(entt::registry& r, entt::entity e)
@@ -109,10 +113,12 @@ void DecalSystemNode::on_construct_TextureResource(entt::registry& r, entt::enti
     r.get<TextureResource>(e).owner = e;
 }
 
+#ifdef ROCKY_HAS_SLUGHORN
 void DecalSystemNode::on_construct_SlugResource(entt::registry& r, entt::entity e)
 {
     r.get<SlugResource>(e).owner = e;
 }
+#endif
 
 void DecalSystemNode::on_destroy_Decal(entt::registry& r, entt::entity e)
 {
@@ -153,10 +159,12 @@ void DecalSystemNode::on_destroy_TextureResource(entt::registry& r, entt::entity
     r.remove<TextureSlotDetail>(e);
 }
 
+#ifdef ROCKY_HAS_SLUGHORN
 void DecalSystemNode::on_destroy_SlugResource(entt::registry& r, entt::entity e)
 {
     r.remove<SlugSlotDetail>(e);
 }
+#endif
 
 void DecalSystemNode::on_destroy_TextureSlotDetail(entt::registry& r, entt::entity e)
 {
@@ -168,6 +176,7 @@ void DecalSystemNode::on_destroy_TextureSlotDetail(entt::registry& r, entt::enti
     }
 }
 
+#ifdef ROCKY_HAS_SLUGHORN
 void DecalSystemNode::on_destroy_SlugSlotDetail(entt::registry& r, entt::entity e)
 {
     auto& detail = r.get<SlugSlotDetail>(e);
@@ -177,6 +186,7 @@ void DecalSystemNode::on_destroy_SlugSlotDetail(entt::registry& r, entt::entity 
         _pendingSlugSlots.push_back(detail.descriptorImageIndex);
     }
 }
+#endif
 
 void DecalSystemNode::on_update_Decal(entt::registry& r, entt::entity e)
 {
@@ -204,7 +214,9 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
             r.on_construct<Overlay>().connect<&DecalSystemNode::on_construct_Overlay>(*this);
             r.on_construct<ProjectedTexture>().connect<&DecalSystemNode::on_construct_ProjectedTexture>(*this);
             r.on_construct<TextureResource>().connect<&DecalSystemNode::on_construct_TextureResource>(*this);
+#ifdef ROCKY_HAS_SLUGHORN
             r.on_construct<SlugResource>().connect<&DecalSystemNode::on_construct_SlugResource>(*this);
+#endif
             r.on_update<Decal>().connect<&DecalSystemNode::on_update_Decal>(*this);
             r.on_update<DecalStyle>().connect<&DecalSystemNode::on_update_DecalStyle>(*this);
             r.on_update<Overlay>().connect<&DecalSystemNode::on_update_Overlay>(*this);
@@ -213,9 +225,13 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
             r.on_destroy<Overlay>().connect<&DecalSystemNode::on_destroy_Overlay>(*this);
             r.on_destroy<ProjectedTexture>().connect<&DecalSystemNode::on_destroy_ProjectedTexture>(*this);
             r.on_destroy<TextureResource>().connect<&DecalSystemNode::on_destroy_TextureResource>(*this);
+#ifdef ROCKY_HAS_SLUGHORN
             r.on_destroy<SlugResource>().connect<&DecalSystemNode::on_destroy_SlugResource>(*this);
+#endif
             r.on_destroy<TextureSlotDetail>().connect<&DecalSystemNode::on_destroy_TextureSlotDetail>(*this);
+#ifdef ROCKY_HAS_SLUGHORN
             r.on_destroy<SlugSlotDetail>().connect<&DecalSystemNode::on_destroy_SlugSlotDetail>(*this);
+#endif
 
             // Set up the dirty tracking
             auto e = r.create();
@@ -253,10 +269,12 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
                     resource.owner = entity;
                 });
 
+#ifdef ROCKY_HAS_SLUGHORN
             r.view<SlugResource>().each([&](auto entity, auto& resource)
                 {
                     resource.owner = entity;
                 });
+#endif
         });
 }
 
@@ -268,6 +286,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
     bool sharedDescriptorsDirty = false;
 
     auto textures = vsgcontext->sharedRenderData->decalTextures;
+#ifdef ROCKY_HAS_SLUGHORN
     auto slugCurves = vsgcontext->sharedRenderData->slugCurveTexture;
     auto slugBands = vsgcontext->sharedRenderData->slugBandTexture;
     if (!textures || textures->imageInfoList.empty() ||
@@ -275,12 +294,18 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         !slugBands || slugBands->imageInfoList.empty() ||
         slugCurves->imageInfoList.size() != slugBands->imageInfoList.size())
         return;
+#else
+    if (!textures || textures->imageInfoList.empty())
+        return;
+#endif
     if (!_fallbackTexture)
         _fallbackTexture = textures->imageInfoList[0];
+#ifdef ROCKY_HAS_SLUGHORN
     if (!_fallbackSlugCurve)
         _fallbackSlugCurve = slugCurves->imageInfoList[0];
     if (!_fallbackSlugBand)
         _fallbackSlugBand = slugBands->imageInfoList[0];
+#endif
     auto fallback = _fallbackTexture;
 
     // A DecalStyle is now just a legacy ImageTexture facade.
@@ -312,6 +337,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         }
     }
 
+#ifdef ROCKY_HAS_SLUGHORN
     {
         std::vector<std::int32_t> pendingSlots;
         {
@@ -330,6 +356,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
             }
         }
     }
+#endif
 
     auto releaseSlot = [&](TextureSlotDetail& detail)
     {
@@ -343,6 +370,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         detail.texture = {};
     };
 
+#ifdef ROCKY_HAS_SLUGHORN
     auto releaseSlugSlot = [&](SlugSlotDetail& detail)
     {
         if (detail.descriptorImageIndex >= 0 &&
@@ -354,6 +382,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         }
         detail = {};
     };
+#endif
 
     std::size_t rejectedTextureCount = 0u;
 
@@ -418,7 +447,9 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
     };
 
     std::unordered_set<entt::entity> demandedTextures;
+#ifdef ROCKY_HAS_SLUGHORN
     std::unordered_set<entt::entity> demandedSlugAtlases;
+#endif
     reg.view<ProjectedTexture, ActiveState, Visibility>().each(
         [&](auto entity, auto& projected, auto&, auto& visibility)
         {
@@ -426,10 +457,12 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
                 return;
 
             const auto payload = projected.texture != entt::null ? projected.texture : entity;
+#ifdef ROCKY_HAS_SLUGHORN
             const auto* overlay = reg.try_get<Overlay>(payload);
             if (overlay && overlay->technique == OverlayTechnique::Slug)
                 demandedSlugAtlases.insert(payload);
             else
+#endif
                 demandedTextures.insert(payload);
         });
 
@@ -450,6 +483,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         }
     }
 
+#ifdef ROCKY_HAS_SLUGHORN
     reg.view<SlugSlotDetail>().each([&](auto entity, auto& detail)
         {
             if (demandedSlugAtlases.find(entity) == demandedSlugAtlases.end())
@@ -525,6 +559,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         requestCompile(resource->bandTexture);
         sharedDescriptorsDirty = true;
     }
+#endif
 
     if (rejectedTextureCount > 0u)
     {
@@ -541,6 +576,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         _textureSlotsExhausted = false;
     }
 
+#ifdef ROCKY_HAS_SLUGHORN
     if (rejectedSlugCount > 0u)
     {
         if (!_slugSlotsExhausted)
@@ -555,12 +591,15 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
     {
         _slugSlotsExhausted = false;
     }
+#endif
 
     if (sharedDescriptorsDirty)
     {
         requestCompile(textures);
+#ifdef ROCKY_HAS_SLUGHORN
         requestCompile(slugCurves);
         requestCompile(slugBands);
+#endif
         vsgcontext->sharedRenderData->dirtySharedDescriptors();
         vsgcontext->requestFrame();
     }
@@ -577,7 +616,9 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
 {
     bool buffersChanged = false;
     unsigned totalNumDecals = 0u;
+#ifdef ROCKY_HAS_SLUGHORN
     unsigned totalNumSlugLayers = 0u;
+#endif
 
     // Recount from registry to keep capacity decisions in sync with actual entities.
     _registry.read([&](entt::registry& reg)
@@ -586,6 +627,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
         projections.each([&](auto entity, auto& projected, auto&, auto&)
         {
             const auto payload = projected.texture != entt::null ? projected.texture : entity;
+#ifdef ROCKY_HAS_SLUGHORN
             const auto* overlay = reg.try_get<Overlay>(payload);
             if (overlay && overlay->technique == OverlayTechnique::Slug)
             {
@@ -601,6 +643,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
                 }
             }
             else
+#endif
             {
                 ++totalNumDecals;
             }
@@ -640,6 +683,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
             buffersChanged = true;
         }
 
+#ifdef ROCKY_HAS_SLUGHORN
         if (!vds->slugLayersBuf)
             buffersChanged = true;
 
@@ -662,6 +706,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
             slugLayers.resize(newSlugLayerCapacity, vsgcontext);
             buffersChanged = true;
         }
+#endif
 
         // See if the frustum grid has changed size, and if so, resize the decal tiles buffer to match.
         BufferAccess<FrustumGridParamsGPU> params(vds->frustumParamsBuf);
@@ -774,10 +819,12 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
             if (gpuCapacity == 0u)
                 continue;
 
+#ifdef ROCKY_HAS_SLUGHORN
             BufferAccess<SlugLayerGPU> gpuSlugLayer(vds->slugLayersBuf);
             const auto slugLayerCapacity = gpuSlugLayer.capacity();
             if (slugLayerCapacity == 0u)
                 continue;
+#endif
 
             std::uint32_t decalIndex = 0u;
 
@@ -789,7 +836,9 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
             };
 
             std::vector<DecalGPU> decalRecords;
+#ifdef ROCKY_HAS_SLUGHORN
             std::vector<SlugLayerGPU> slugLayerRecords;
+#endif
 
             _registry.read([&](entt::registry& reg)
             {
@@ -956,6 +1005,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
                     pending.mvmInverse = glm::inverse(pending.mvm);
 
+#ifdef ROCKY_HAS_SLUGHORN
                     const auto* overlay = reg.try_get<Overlay>(e_texture);
                     if (overlay && overlay->technique == OverlayTechnique::Slug)
                     {
@@ -1016,6 +1066,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         decalRecords.emplace_back(std::move(pending));
                         return;
                     }
+#endif
 
                     std::int32_t texturePayloadFlags = 0;
                     if (!applyTexture(e_texture, projected.color, pending, texturePayloadFlags))
@@ -1046,6 +1097,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
             for (const auto& record : decalRecords)
                 writePending(record);
 
+#ifdef ROCKY_HAS_SLUGHORN
             ROCKY_HARD_ASSERT(
                 slugLayerRecords.size() <= slugLayerCapacity,
                 "DecalSystemNode: Slug layer SSBO overflow");
@@ -1056,6 +1108,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                 ++gpuSlugLayer;
             }
             gpuSlugLayer.dirty();
+#endif
 
             // Update the decal count (kept in record #0):
             gpudecal.reset();

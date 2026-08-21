@@ -24,7 +24,9 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Widget.h"
 #include "Demo_Decal.h"
 #include "Demo_Overlay.h"
+#ifdef ROCKY_HAS_SLUGHORN
 #include "Demo_SlugOverlay.h"
+#endif
 #include "Demo_LineFeatures.h"
 #include "Demo_PolygonFeatures.h"
 #include "Demo_LabelFeatures.h"
@@ -109,8 +111,11 @@ std::vector<Demo> demos =
         } },
         Demo{ "Overlay", {}, {
             Demo{ "Overlay geometry (absolute)", Demo_Overlay_Absolute },
-            Demo{ "Overlay geometry (relative)", Demo_Overlay_Relative },
+            Demo{ "Overlay geometry (relative)", Demo_Overlay_Relative }
+#ifdef ROCKY_HAS_SLUGHORN
+            ,
             Demo{ "RTT vs Slug", Demo_SlugOverlay }
+#endif
         } }
     } },
     Demo{ "GIS", {},

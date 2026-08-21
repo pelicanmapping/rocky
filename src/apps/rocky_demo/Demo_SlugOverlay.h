@@ -9,7 +9,7 @@
 
 using namespace ROCKY_NAMESPACE;
 
-// Draws the same mesh, line, and points through both overlay pathways. The RTT
+// Draws the same mesh, lines, and points through both overlay pathways. The RTT
 // copy is west of the Slug copy so their output can be compared directly.
 auto Demo_SlugOverlay = [](Application& app)
 {

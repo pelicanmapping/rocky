@@ -41,7 +41,9 @@ int frustumIndex(in vec2 fragCoord)
     if (pixel.x < 0 || pixel.y < 0)
         return -1;
 
-    ivec2 tileCoord = pixel / int(u_pixelsPerTile);
+    // Rocky's grid size is a compile-time constant. Keeping it out of the UBO
+    // division lets the fragment compiler strength-reduce this operation.
+    ivec2 tileCoord = pixel / int(FRUSTUM_GRID_TILE_SIZE_PIXELS);
     if (tileCoord.x < 0 || tileCoord.y < 0 ||
         tileCoord.x >= u_numTiles.x || tileCoord.y >= u_numTiles.y)
         return -1;

@@ -57,10 +57,14 @@ namespace rocky::detail
         // the same bounded authoring coordinate space.
         float strokeWidth = 1.0f;
 
-        // Optional visible outline thickness outside a Stroke shape. The
-        // adapter encodes this as a non-overlapping ring followed by the core.
+        // Optional visible outline thickness outside a Stroke shape.
         float outlineWidth = 0.0f;
         std::array<float, 4> outlineColor = { 0.0f, 0.0f, 0.0f, 1.0f };
+
+        // When the complete composition is known to be opaque, author the
+        // outline as one full-width casing behind the core instead of a
+        // two-boundary ring. This reduces Slughorn curve work.
+        bool useOpaqueOutlineCasing = false;
 
         // Linear RGBA.
         std::array<float, 4> color = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -71,6 +75,12 @@ namespace rocky::detail
         // Initial power-of-two width. The adapter may grow it when a shape's
         // largest band cannot fit in one row; the actual logarithm is returned.
         std::uint32_t textureWidth = 512u;
+
+        // Experimental authoring optimization. This only joins consecutive
+        // stroke contours when the previous endpoint exactly equals the next
+        // starting point.
+        bool mergeConnectedLineSegments = true;
+
         std::vector<SlugShapeInput> shapes;
 
         // Optional diagnostic export. The C++20 adapter writes the exact atlas

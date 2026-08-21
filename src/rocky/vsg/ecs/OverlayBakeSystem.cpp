@@ -865,6 +865,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 });
         });
 
+#ifdef ROCKY_HAS_SLUGHORN
     // Slug uses the same orthographic projector contract as RTT, but it has no
     // render job from which to inherit auto-fitting. Fit same-entity Slug
     // overlays directly from participant bounds, without enabling RTT
@@ -909,10 +910,12 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                         detail.textureSize != requestedSize ||
                         detail.worldSRS != worldSRS ||
                         std::abs(detail.depthSafetyFactor - depthSafetyFactor) > 1e-6f;
-                    const bool expectedTransformMissing =
-                        detail.transformAvailable && !transform;
+                    // A failed first fit must not become sticky. Paged sources
+                    // can acquire usable bounds without changing the component
+                    // revisions captured during their initial publication.
+                    const bool autoTransformMissing = transform == nullptr;
 
-                    if (!signatureChanged && !expectedTransformMissing)
+                    if (!signatureChanged && !autoTransformMissing)
                     {
                         // Accommodate an auto-managed transform supplied by
                         // another low-level owner without needlessly dirtying it.
@@ -952,6 +955,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
 
     if (slugFitChanged)
         vsgcontext->requestFrame();
+#endif
 
     _registry.write([&](entt::registry& r)
         {

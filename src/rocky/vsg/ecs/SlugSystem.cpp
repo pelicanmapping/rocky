@@ -10,6 +10,7 @@
 #include <rocky/ecs/Mesh.h>
 #include <rocky/ecs/Overlay.h>
 #include <rocky/ecs/Point.h>
+#include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/ecs/Transform.h>
 #include <rocky/vsg/SharedRenderData.h>
 
@@ -48,7 +49,9 @@ namespace
         std::string exportPath;
         bool exportAttempted = false;
         bool exportSucceeded = false;
+        bool suppressWarning = false;
         std::string exportMessage;
+        std::string warning;
         std::string error;
     };
 
@@ -155,6 +158,39 @@ namespace
     bool isFiniteXY(const glm::dvec3& point)
     {
         return std::isfinite(point.x) && std::isfinite(point.y);
+    }
+
+    bool isOpaque(const Color& color)
+    {
+        return color[3] == 1.0f;
+    }
+
+    bool useOpaqueOutlineCasing(
+        entt::registry& registry,
+        entt::entity payload,
+        const Overlay& overlay,
+        const LineStyle& style)
+    {
+        if (style.outlineWidth <= 0.0f ||
+            !isOpaque(style.color) ||
+            !isOpaque(style.outlineColor) ||
+            !isOpaque(overlay.color))
+        {
+            return false;
+        }
+
+        // A payload can be projected more than once. The core only hides a
+        // full-width casing when every consumer's modulation remains opaque.
+        bool opaque = true;
+        registry.view<ProjectedTexture>().each(
+            [&](auto entity, const ProjectedTexture& projected)
+            {
+                const auto texture = projected.texture != entt::null ?
+                    projected.texture : entity;
+                if (texture == payload && !isOpaque(projected.color))
+                    opaque = false;
+            });
+        return opaque;
     }
 
     bool makeSlugPointMapper(
@@ -430,6 +466,21 @@ namespace
             build.error = "Slug LineStyle width units must be screen or distance units";
             return false;
         }
+        if (resolvedStyle.useGeometryColors)
+        {
+            build.error = "Slug LineStyle does not support per-vertex colors";
+            return false;
+        }
+        if (resolvedStyle.stipplePattern != 0xFFFFu)
+        {
+            build.error = "Slug LineStyle does not support stippling";
+            return false;
+        }
+
+        // Empty paged feature payloads are valid. They have no bounds from
+        // which to fit a projector, so classify them before asking for one.
+        if (geometry->points.size() < 2u)
+            return true;
 
         SlugPointMapper mapper;
         if (!makeSlugPointMapper(
@@ -492,6 +543,8 @@ namespace
                 overlay, std::max(0.0f, resolvedStyle.outlineWidth), fallbackSize);
         }
         shape.outlineColor = toArray(resolvedStyle.outlineColor);
+        shape.useOpaqueOutlineCasing = useOpaqueOutlineCasing(
+            registry, owner, overlay, resolvedStyle);
 
         if (shape.strokeWidth <= 0.0f || !std::isfinite(shape.strokeWidth))
         {
@@ -603,6 +656,16 @@ namespace
         const auto* style = resolveComponent<PointStyle>(registry, point.style, owner);
         const PointStyle defaultStyle;
         const auto& resolvedStyle = style ? *style : defaultStyle;
+        if (resolvedStyle.useGeometryColors)
+        {
+            build.error = "Slug PointStyle does not support per-vertex colors";
+            return false;
+        }
+        if (resolvedStyle.useGeometryWidths)
+        {
+            build.error = "Slug PointStyle does not support per-vertex widths";
+            return false;
+        }
         if (!isFinite(resolvedStyle.color))
         {
             build.error = "Slug PointStyle color must be finite";
@@ -646,10 +709,12 @@ namespace
     std::size_t computeSourceSignature(
         entt::registry& registry,
         entt::entity entity,
-        const SRS& worldSRS)
+        const SRS& worldSRS,
+        bool mergeConnectedLineSegments)
     {
         std::size_t signature = 0u;
         hashValue(signature, worldSRS.definition());
+        hashValue(signature, mergeConnectedLineSegments);
 
         const auto& overlay = registry.get<Overlay>(entity);
         hashValue(signature, overlay.textureSize.x);
@@ -697,6 +762,14 @@ namespace
             resolveComponent<LineStyle>(registry, line->style, entity) : nullptr;
         const bool metricLine = lineStyle && lineStyle->widthUnits.isDistance();
 
+        const LineStyle defaultLineStyle;
+        const auto& resolvedLineStyle = lineStyle ? *lineStyle : defaultLineStyle;
+        const bool opaqueOutlineCasing = line && useOpaqueOutlineCasing(
+            registry, entity, overlay, resolvedLineStyle);
+        // Overlay/ProjectedTexture color changes normally do not rebuild the
+        // atlas. Only this boolean affects how outline geometry is authored.
+        hashValue(signature, opaqueOutlineCasing);
+
         // Georeferenced mapping depends on the fitted projector. Metric line
         // conversion does too, since localMatrix defines the decal's extent.
         if (georeferenced || metricLine)
@@ -739,13 +812,13 @@ namespace
 
         const auto curveBytes = static_cast<std::uint64_t>(atlas.curveTexture.width) *
             atlas.curveTexture.height * sizeof(vsg::vec4);
-        const auto bandBytes = static_cast<std::uint64_t>(atlas.bandTexture.width) *
+        const auto sourceBandBytes = static_cast<std::uint64_t>(atlas.bandTexture.width) *
             atlas.bandTexture.height * sizeof(vsg::usvec4);
 
         if (atlas.curveTexture.width == 0u || atlas.curveTexture.height == 0u ||
             atlas.bandTexture.width == 0u || atlas.bandTexture.height == 0u ||
             curveBytes != atlas.curveTexture.bytes.size() ||
-            bandBytes != atlas.bandTexture.bytes.size())
+            sourceBandBytes != atlas.bandTexture.bytes.size())
         {
             error = "Slughorn returned invalid atlas texture dimensions";
             return false;
@@ -755,19 +828,30 @@ namespace
             atlas.curveTexture.width,
             atlas.curveTexture.height,
             vsg::Data::Properties{ VK_FORMAT_R32G32B32A32_SFLOAT });
-        auto bandData = vsg::usvec4Array2D::create(
+        auto bandData = vsg::usvec2Array2D::create(
             atlas.bandTexture.width,
             atlas.bandTexture.height,
-            vsg::Data::Properties{ VK_FORMAT_R16G16B16A16_UINT });
+            vsg::Data::Properties{ VK_FORMAT_R16G16_UINT });
 
         std::memcpy(
             curveData->dataPointer(),
             atlas.curveTexture.bytes.data(),
             atlas.curveTexture.bytes.size());
-        std::memcpy(
-            bandData->dataPointer(),
-            atlas.bandTexture.bytes.data(),
-            atlas.bandTexture.bytes.size());
+        // Slughorn serializes RGBA16UI, but its shader contract uses only RG:
+        // band indices read R and headers/curve locations read RG. Compact the
+        // private GPU copy without changing Slughorn's atlas or .slug format.
+        auto* destination = static_cast<vsg::usvec2*>(bandData->dataPointer());
+        const auto bandTexelCount = static_cast<std::size_t>(atlas.bandTexture.width) *
+            atlas.bandTexture.height;
+        for (std::size_t i = 0u; i < bandTexelCount; ++i)
+        {
+            vsg::usvec4 source;
+            std::memcpy(
+                &source,
+                atlas.bandTexture.bytes.data() + i * sizeof(source),
+                sizeof(source));
+            destination[i] = vsg::usvec2(source.r, source.g);
+        }
 
         curveImage = vsg::ImageInfo::create(
             sampler, curveData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -845,7 +929,11 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             const auto& overlay = registry.get<Overlay>(entity);
             OverlayBuild build;
             build.entity = entity;
-            build.sourceSignature = computeSourceSignature(registry, entity, worldSRS);
+            build.sourceSignature = computeSourceSignature(
+                registry,
+                entity,
+                worldSRS,
+                mergeConnectedLineSegments);
 
             if (const auto* resource = registry.try_get<SlugResource>(entity))
             {
@@ -862,6 +950,9 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             if (const auto* mesh = registry.try_get<Mesh>(entity))
             {
                 foundPrimitive = true;
+                build.warning =
+                    "Slug Mesh support treats each input triangle as an independent "
+                    "curve contour; source polygon and hole contours would be more efficient";
                 addMesh(registry, entity, worldSRS, *mesh, build);
             }
             if (build.error.empty())
@@ -886,6 +977,9 @@ void SlugSystemNode::update(VSGContext vsgcontext)
                 build.error = foundPrimitive ?
                     "Slug overlay geometry contains no renderable primitives" :
                     "Slug overlay requires a same-entity Mesh, Line, or Point";
+                // An existing but empty primitive is normal for paged feature
+                // data. Keep its resource non-ready without spamming warnings.
+                build.suppressWarning = foundPrimitive;
             }
 
             builds.emplace_back(std::move(build));
@@ -911,6 +1005,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         // when necessary; restarting here lets a simplified overlay shrink
         // instead of retaining its historical maximum allocation.
         input.textureWidth = textureWidth;
+        input.mergeConnectedLineSegments = mergeConnectedLineSegments;
         input.shapes = std::move(build.shapes);
         input.exportPath = build.exportPath;
 
@@ -1048,7 +1143,10 @@ void SlugSystemNode::update(VSGContext vsgcontext)
 
     for (const auto& build : builds)
     {
-        if (!build.error.empty())
+        if (!build.warning.empty())
+            Log()->warn("SlugSystemNode: {}", build.warning);
+
+        if (!build.error.empty() && !build.suppressWarning)
             Log()->warn("SlugSystemNode: {}", build.error);
         else if (build.exportAttempted)
         {

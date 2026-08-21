@@ -33,7 +33,7 @@ auto Demo_MVTFeatures = [](Application& app)
                 lineStyle.widthUnits = Units::METERS;
                 lineStyle.depthOffset = 10; // meters
                 lineStyle.outlineColor = StockColor::White;
-                lineStyle.outlineWidth = 1.0f;
+                lineStyle.outlineWidth = 0.5f;
 
                 auto& meshStyle = reg.emplace<MeshStyle>(styleEntity);
                 meshStyle.color = Color(1, 0.75f, 0.2f, 1);
@@ -157,8 +157,10 @@ auto Demo_MVTFeatures = [](Application& app)
                             auto& style = reg.get<LineStyle>(styleEntity);
                             reg.emplace<Line>(entity, geom, style);
 
+#ifdef ROCKY_HAS_SLUGHORN
                             auto& overlay = reg.emplace<Overlay>(entity);
                             overlay.technique = OverlayTechnique::Slug;
+#endif
 
                             entityNode->entities.emplace_back(entity);
                         });

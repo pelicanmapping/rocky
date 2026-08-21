@@ -39,6 +39,11 @@
 #define DECAL_FLAG_PREMULTIPLIED_ALPHA       2
 #define DECAL_FLAG_SLUG                      4
 
+// The culler packs this bit into a tile-list index so the outline pass can
+// reject ordinary/core-only decals without first loading their Decal record.
+#define DECAL_TILE_HAS_OUTLINE_BIT   0x80000000u
+#define DECAL_TILE_INDEX_MASK        0x7fffffffu
+
 // Slug atlas width metadata is packed into the decal flags word so the shared
 // atlas can grow without changing the Decal SSBO layout.
 #define DECAL_SLUG_TEXTURE_WIDTH_LOG2_SHIFT   8

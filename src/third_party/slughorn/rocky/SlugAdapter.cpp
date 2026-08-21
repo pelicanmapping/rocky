@@ -3,6 +3,7 @@
 #include <slughorn/canvas.hpp>
 #include <slughorn/serial.hpp>
 
+#include <algorithm>
 #include <cmath>
 #include <exception>
 #include <string>
@@ -46,10 +47,21 @@ namespace rocky::detail
             return Color{ value[0], value[1], value[2], value[3] };
         }
 
+        bool equal(const SlugPointInput& lhs, const SlugPointInput& rhs)
+        {
+            return lhs.x == rhs.x && lhs.y == rhs.y;
+        }
+
         template<typename PathType>
-        bool addContours(PathType& path, const SlugShapeInput& input, bool closeForFill)
+        bool addContours(
+            PathType& path,
+            const SlugShapeInput& input,
+            bool closeForFill,
+            bool mergeConnectedSegments)
         {
             bool added = false;
+            bool chainOpen = false;
+            SlugPointInput chainEnd;
 
             for (const auto& contour : input.contours)
             {
@@ -63,12 +75,31 @@ namespace rocky::detail
                         return false;
                 }
 
-                path.moveTo(contour.points.front().x, contour.points.front().y);
+                const bool append =
+                    mergeConnectedSegments &&
+                    !closeForFill &&
+                    !contour.closed &&
+                    chainOpen &&
+                    equal(chainEnd, contour.points.front());
+
+                if (!append)
+                {
+                    path.moveTo(contour.points.front().x, contour.points.front().y);
+                }
+
                 for (std::size_t i = 1u; i < contour.points.size(); ++i)
                     path.lineTo(contour.points[i].x, contour.points[i].y);
 
                 if (closeForFill || contour.closed)
+                {
                     path.closePath();
+                    chainOpen = false;
+                }
+                else if (mergeConnectedSegments)
+                {
+                    chainEnd = contour.points.back();
+                    chainOpen = true;
+                }
 
                 added = true;
             }
@@ -96,6 +127,27 @@ namespace rocky::detail
                 ++result;
             }
             return result;
+        }
+
+        int bandCountForCurveCount(std::size_t curveCount)
+        {
+            // Match Slughorn's existing one-band-per-two-curves policy for
+            // small shapes. Once that policy reaches its old 16-band ceiling,
+            // jump directly to all 32 indirection cells. Exact 1/32 bands are
+            // nested inside the old 1/16 bands, guaranteeing that a selected
+            // band's per-fragment curve list cannot grow.
+            const auto automaticCount =
+                std::max<std::size_t>(1u, curveCount / 2u);
+            const auto count = automaticCount > 16u ?
+                std::size_t{ Atlas::INDIRECTION_SIZE } : automaticCount;
+            return static_cast<int>(count);
+        }
+
+        std::pair<std::vector<slughorn::slug_t>, std::vector<slughorn::slug_t>>
+        complexityAwareBandSplits(const Atlas::Curves& curves)
+        {
+            const int bandCount = bandCountForCurveCount(curves.size());
+            return Atlas::computeUniformSplits(curves, bandCount, bandCount);
         }
     }
 
@@ -133,6 +185,7 @@ namespace rocky::detail
                 // tight-fitting each shape across the projector.
                 canvas.setAutoMetrics(false);
                 canvas.setTolerance(slughorn::TOLERANCE_FINE);
+                canvas.setSplitStrategy(complexityAwareBandSplits);
 
             std::vector<PendingLayer> pending;
             pending.reserve(input.shapes.size() * 2u);
@@ -179,7 +232,7 @@ namespace rocky::detail
                 switch (shape.kind)
                 {
                 case SlugShapeKind::Fill:
-                    if (addContours(canvas, shape, true))
+                    if (addContours(canvas, shape, true, false))
                     {
                         layer = canvas.fill(color, 1.0f, key);
                         committed = layer.key == key;
@@ -231,7 +284,11 @@ namespace rocky::detail
 
                     {
                         Path centerline;
-                        if (!addContours(centerline, shape, false))
+                        if (!addContours(
+                            centerline,
+                            shape,
+                            false,
+                            input.mergeConnectedLineSegments))
                         {
                             for (const auto& contour : shape.contours)
                             {
@@ -252,27 +309,49 @@ namespace rocky::detail
                         {
                             const float outerWidth =
                                 shape.strokeWidth + 2.0f * shape.outlineWidth;
-                            Path ring = centerline;
-                            Path hole = centerline;
-                            if (!ring.strokePath(
-                                    outerWidth, false,
-                                    LineJoin::Round, LineCap::Round, 4.0f) ||
-                                !hole.strokePath(
-                                    shape.strokeWidth, true,
-                                    LineJoin::Round, LineCap::Round, 4.0f))
+                            const Key outlineKey{ keyStem + "-outline" };
+                            Layer outlineLayer;
+
+                            if (shape.useOpaqueOutlineCasing)
                             {
-                                error = "Slug stroke shape " + std::to_string(index) +
-                                    " could not construct its outline";
-                                return false;
+                                // Opaque cores completely cover the casing's
+                                // interior, so do not author the redundant
+                                // reversed inner boundary used by a ring.
+                                outlineLayer = canvas.stroke(
+                                    centerline,
+                                    outerWidth,
+                                    makeColor(shape.outlineColor),
+                                    1.0f,
+                                    outlineKey,
+                                    {},
+                                    LineJoin::Round,
+                                    LineCap::Round,
+                                    4.0f);
+                            }
+                            else
+                            {
+                                Path ring = centerline;
+                                Path hole = centerline;
+                                if (!ring.strokePath(
+                                        outerWidth, false,
+                                        LineJoin::Round, LineCap::Round, 4.0f) ||
+                                    !hole.strokePath(
+                                        shape.strokeWidth, true,
+                                        LineJoin::Round, LineCap::Round, 4.0f))
+                                {
+                                    error = "Slug stroke shape " + std::to_string(index) +
+                                        " could not construct its outline";
+                                    return false;
+                                }
+
+                                ring.addPath(hole);
+                                outlineLayer = canvas.fill(
+                                    ring,
+                                    makeColor(shape.outlineColor),
+                                    1.0f,
+                                    outlineKey);
                             }
 
-                            ring.addPath(hole);
-                            const Key outlineKey{ keyStem + "-outline" };
-                            auto outlineLayer = canvas.fill(
-                                ring,
-                                makeColor(shape.outlineColor),
-                                1.0f,
-                                outlineKey);
                             if (outlineLayer.key != outlineKey)
                             {
                                 error = "Slug stroke shape " + std::to_string(index) +

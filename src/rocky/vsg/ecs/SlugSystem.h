@@ -13,7 +13,10 @@
 
 namespace ROCKY_NAMESPACE
 {
-    /** Builds the independently owned atlas payload used by each Slug overlay. */
+    /**
+     * Experimental vector-only overlay encoder. Each supported Line/Point
+     * payload receives an independently owned Slughorn atlas pair.
+     */
     class ROCKY_EXPORT SlugSystemNode :
         public vsg::Inherit<detail::SimpleSystemNodeBase, SlugSystemNode>
     {
@@ -26,6 +29,10 @@ namespace ROCKY_NAMESPACE
 
         //! Initial per-overlay atlas width. The adapter grows it when necessary.
         static constexpr std::uint32_t textureWidth = 512u;
+
+        //! Experimental: merge consecutive segment contours whose mapped
+        //! endpoints match exactly before asking Slughorn to stroke them.
+        bool mergeConnectedLineSegments = true;
 
     private:
         // SlugResource components can disappear outside this system's update

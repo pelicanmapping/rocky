@@ -63,6 +63,7 @@ option(ROCKY_SUPPORTS_AZURE "Support Azure Maps (subscription required)" ON)
 option(ROCKY_SUPPORTS_BING "Support Bing Maps (subscription required)" OFF)
 option(ROCKY_SUPPORTS_IMGUI "Support Dear ImGui and build ImGui-based demos" ON)
 option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
+option(ROCKY_SUPPORTS_SLUGHORN "Experimental: support analytic Slughorn vector decals" OFF)
 
 # whether to copy dependency DLLs (under windows, usually) to the installation destination
 option(ROCKY_INSTALL_VCPKG_DEPENDENCY_DLLS "Copy dependency DLLs from vcpkg to the install destination" OFF)

@@ -14,7 +14,9 @@
 #include <rocky/vsg/FrustumGridSystem.h>
 #include <rocky/vsg/ecs/DecalSystem.h>
 #include <rocky/vsg/ecs/OverlayBakeSystem.h>
+#ifdef ROCKY_HAS_SLUGHORN
 #include <rocky/vsg/ecs/SlugSystem.h>
+#endif
 #include <rocky/vsg/ecs/TextureSystem.h>
 #include <rocky/vsg/ecs/OpticsSystem.h>
 
@@ -34,16 +36,19 @@ namespace
     {
         // Leave room for terrain color/elevation, optional shadow-map resources,
         // UBOs, and SSBOs in the same pipeline layout/stages.
+#ifdef ROCKY_HAS_SLUGHORN
         constexpr std::uint32_t arrayCount = 3u; // RTT + Slug curve + Slug band
+#else
+        constexpr std::uint32_t arrayCount = 1u; // RTT only
+#endif
         auto availablePerArray = [arrayCount](std::uint32_t limit, std::uint32_t reserved)
         {
             return limit > reserved ?
                 std::max(1u, (limit - reserved) / arrayCount) : 1u;
         };
 
-        // Each projected payload slot now consumes three fragment samplers: the
-        // RTT image plus a matching Slug curve/band pair. Leave the same room for
-        // non-decal terrain and optional shadow resources as before.
+        // Divide the available descriptors among the projected image arrays
+        // compiled into this build, leaving room for terrain and shadows.
         auto supported = std::min({
             availablePerArray(limits.maxPerStageDescriptorSamplers, 3u),
             availablePerArray(limits.maxPerStageDescriptorSampledImages, 2u),
@@ -344,9 +349,12 @@ Application::ctor(int& argc, char** argv)
     overlayBakeSystem->renderSourceSystems = systemsNode.get();
     computeSystemsNode->add(overlayBakeSystem);
 
+#ifdef ROCKY_HAS_SLUGHORN
     auto slugSystem = SlugSystemNode::create(registry);
     slugSystem->worldSRS = mapNode->srs();
     computeSystemsNode->add(slugSystem);
+    vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_SLUGHORN");
+#endif
 
     auto decalSystem = DecalSystemNode::create(registry);
     computeSystemsNode->add(decalSystem);
@@ -543,8 +551,10 @@ Application::realize()
                 {
                     if (auto* overlayBake = computeSystemsNode->get<OverlayBakeSystemNode>())
                         overlayBake->worldSRS = mapNode->srs();
+#ifdef ROCKY_HAS_SLUGHORN
                     if (auto* slug = computeSystemsNode->get<SlugSystemNode>())
                         slug->worldSRS = mapNode->srs();
+#endif
                 }
 
                 // ECS updates - rendering or modifying entities

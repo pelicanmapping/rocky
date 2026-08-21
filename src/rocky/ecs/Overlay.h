@@ -14,7 +14,11 @@ namespace ROCKY_NAMESPACE
     enum class OverlayTechnique
     {
         RTT,  //!< Rasterize the overlay into a render-to-texture image.
+#ifdef ROCKY_HAS_SLUGHORN
+        //! Experimental, vector-only analytic decal pathway. This supports a
+        //! deliberately restricted subset of Rocky geometry and style semantics.
         Slug  //!< Encode vectors in a Slughorn atlas and evaluate them in the decal shader.
+#endif
     };
 
     /**

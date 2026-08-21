@@ -73,6 +73,7 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
     this->descriptorSetLayout->addBinding(BINDING_VDS_DECAL_TILES,
         TYPE_VDS_DECAL_TILES, 1, VK_SHADER_STAGE_ALL);
 
+#ifdef ROCKY_HAS_SLUGHORN
     BufferAccess<SlugLayerGPU> slugLayers(slugLayersBuf,
         BINDING_VDS_SLUG_LAYERS, TYPE_VDS_SLUG_LAYERS);
 
@@ -80,6 +81,7 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 
     this->descriptorSetLayout->addBinding(BINDING_VDS_SLUG_LAYERS,
         TYPE_VDS_SLUG_LAYERS, 1, VK_SHADER_STAGE_ALL);
+#endif
 #endif // ROCKY_HAS_DECALS
 }
 
@@ -172,12 +174,14 @@ ROCKY_NAMESPACE::addViewDependentStateToShaderSet(vsg::ShaderSet* shaderSet, VkS
         TYPE_VDS_DECAL_TILES, 1,
         stageFlags, {});
 
+#ifdef ROCKY_HAS_SLUGHORN
     shaderSet->addDescriptorBinding(
         "rockyvds_slug_layers", "",
         DESCRIPTOR_SET_VDS,
         BINDING_VDS_SLUG_LAYERS,
         TYPE_VDS_SLUG_LAYERS, 1,
         stageFlags, {});
+#endif
 #endif
 }
 
@@ -194,6 +198,8 @@ ROCKY_NAMESPACE::enableViewDependentStateUniforms(vsg::GraphicsPipelineConfigura
 #ifdef ROCKY_HAS_DECALS
     gpc->enableDescriptor("rockyvds_decals");
     gpc->enableDescriptor("rockyvds_decal_tiles");
+#ifdef ROCKY_HAS_SLUGHORN
     gpc->enableDescriptor("rockyvds_slug_layers");
+#endif
 #endif
 }

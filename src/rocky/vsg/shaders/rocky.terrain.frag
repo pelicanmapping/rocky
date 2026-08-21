@@ -4,7 +4,7 @@
  * Copyright 2026 Pelican Mapping
  * MIT License
  */
-#pragma import_defines(ROCKY_HAS_ATMOSPHERE)
+#pragma import_defines(ROCKY_HAS_ATMOSPHERE, ROCKY_HAS_SLUGHORN)
 
 #pragma include "rocky.defines.h.glsl"
 #pragma include "rocky.viewdependentstate.glsl"
@@ -76,16 +76,20 @@ void main()
     outColor.rgb = mix(outColor.rgb, frustumTileTestColor(gl_FragCoord.xy, vary.vertexVs), u_debugTiles * 0.35);
 
 #ifdef ROCKY_HAS_DECALS
+#ifdef ROCKY_HAS_SLUGHORN
     // Evaluate these in uniform fragment-shader control flow. rocky.decal.h.glsl
     // is also compiled into the compute culler, so the Slug evaluator accepts
     // explicit derivatives instead of using dFdx/dFdy/fwidth itself.
     vec3 vertexVsDx = dFdx(vary.vertexVs);
     vec3 vertexVsDy = dFdy(vary.vertexVs);
+#endif
     applyDecals(
         outColor.rgb,
         vary.vertexVs,
+#ifdef ROCKY_HAS_SLUGHORN
         vertexVsDx,
         vertexVsDy,
+#endif
         normalVs,
         gl_FragCoord.xy);
 #endif

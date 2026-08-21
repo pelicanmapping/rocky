@@ -4,6 +4,7 @@
  * MIT License
  */
 #define SSBOS_ARE_WRITABLE
+#pragma import_defines(ROCKY_HAS_SLUGHORN)
 
 #pragma include "rocky.frustumgrid.h.glsl"
 #pragma include "rocky.decal.h.glsl"
@@ -27,12 +28,15 @@ float supportRadius(
 // Conservatively test a transformed unit cube against the four side planes of
 // a screen-cell frustum. Plane normals need not be normalized because distance
 // and support radius use the same scale.
-bool intersectsOrientedBox(in Decal decal, in Frustum frustum)
+bool intersectsOrientedBox(in uint decalIndex, in Frustum frustum)
 {
-    vec3 center = decal.mvm[3].xyz;
-    vec3 halfAxisX = 0.5 * decal.mvm[0].xyz;
-    vec3 halfAxisY = 0.5 * decal.mvm[1].xyz;
-    vec3 halfAxisZ = 0.5 * decal.mvm[2].xyz;
+    // The culler only needs the forward matrix. Loading it directly avoids
+    // pulling the inverse, colors, and payload metadata into every invocation.
+    mat4 mvm = b_decals.decal[decalIndex].mvm;
+    vec3 center = mvm[3].xyz;
+    vec3 halfAxisX = 0.5 * mvm[0].xyz;
+    vec3 halfAxisY = 0.5 * mvm[1].xyz;
+    vec3 halfAxisZ = 0.5 * mvm[2].xyz;
 
     if (u_projIsOrtho == 1u)
     {
@@ -72,17 +76,19 @@ bool intersectsOrientedBox(in Decal decal, in Frustum frustum)
 // Test for intersection between a decal and a screen-cell frustum. Perspective
 // projector volumes retain their precomputed sphere; orthographic projectors
 // use their exact transformed unit-cube bounds.
-bool intersects(in Decal decal, in Frustum frustum)
+bool intersects(in uint decalIndex, in Frustum frustum)
 {
-    if (decal.distance > 0.0) // perspective
+    if (b_decals.decal[decalIndex].distance > 0.0) // perspective
     {
-        float radius = decal.cullingRadius; // precomputed bounding sphere radius
-        float midZ = (decal.zMin + decal.zMax) * 0.5; // center of near..far range
-        vec3 posVS = (decal.mvm * vec4(0.0, 0.0, midZ, 1.0)).xyz;
+        float radius = b_decals.decal[decalIndex].cullingRadius;
+        float midZ = (b_decals.decal[decalIndex].zMin +
+            b_decals.decal[decalIndex].zMax) * 0.5;
+        mat4 mvm = b_decals.decal[decalIndex].mvm;
+        vec3 posVS = (mvm * vec4(0.0, 0.0, midZ, 1.0)).xyz;
         return intersectsFrustum(frustum, posVS, radius);
     }
 
-    return intersectsOrientedBox(decal, frustum);
+    return intersectsOrientedBox(decalIndex, frustum);
 }
 
 void main()
@@ -105,9 +111,15 @@ void main()
 
     for (uint i = 1; i < total + 1 && found < MAX_DECALS_PER_TILE; ++i)
     {
-        if (intersects(b_decals.decal[i], frustum))
+        if (intersects(i, frustum))
         {
-            b_decalTiles.tile[tile].indices[found++] = i;
+            uint packedIndex = i;
+#ifdef ROCKY_HAS_SLUGHORN
+            if ((b_decals.decal[i].payloadFlags & DECAL_FLAG_SLUG) != 0 &&
+                b_decals.decal[i].slugLayerRange.y > 0u)
+                packedIndex |= DECAL_TILE_HAS_OUTLINE_BIT;
+#endif
+            b_decalTiles.tile[tile].indices[found++] = packedIndex;
         }
     }
 

@@ -47,12 +47,21 @@ vec2 slug_SolveHorizPoly(vec4 p12, vec2 p3)
 {
     vec2 a = p12.xy - p12.zw * 2.0 + p3;
     vec2 b = p12.xy - p12.zw;
-    float ra = 1.0 / a.y;
-    float rb = 0.5 / b.y;
-    float d = sqrt(max(b.y * b.y - a.y * p12.y, 0.0));
-    float t1 = (b.y - d) * ra;
-    float t2 = (b.y + d) * ra;
-    if (abs(a.y) < 1.0 / 65536.0) { t1 = p12.y * rb; t2 = t1; }
+    float t1, t2;
+    if (abs(a.y) < 1.0 / 65536.0)
+    {
+        // Straight and axis-degenerate curves dominate stroked line work. Take
+        // the linear root before issuing the quadratic reciprocal and sqrt.
+        t1 = p12.y * (0.5 / b.y);
+        t2 = t1;
+    }
+    else
+    {
+        float ra = 1.0 / a.y;
+        float d = sqrt(max(b.y * b.y - a.y * p12.y, 0.0));
+        t1 = (b.y - d) * ra;
+        t2 = (b.y + d) * ra;
+    }
     return vec2(
         (a.x * t1 - b.x * 2.0) * t1 + p12.x,
         (a.x * t2 - b.x * 2.0) * t2 + p12.x);
@@ -62,12 +71,19 @@ vec2 slug_SolveVertPoly(vec4 p12, vec2 p3)
 {
     vec2 a = p12.xy - p12.zw * 2.0 + p3;
     vec2 b = p12.xy - p12.zw;
-    float ra = 1.0 / a.x;
-    float rb = 0.5 / b.x;
-    float d = sqrt(max(b.x * b.x - a.x * p12.x, 0.0));
-    float t1 = (b.x - d) * ra;
-    float t2 = (b.x + d) * ra;
-    if (abs(a.x) < 1.0 / 65536.0) { t1 = p12.x * rb; t2 = t1; }
+    float t1, t2;
+    if (abs(a.x) < 1.0 / 65536.0)
+    {
+        t1 = p12.x * (0.5 / b.x);
+        t2 = t1;
+    }
+    else
+    {
+        float ra = 1.0 / a.x;
+        float d = sqrt(max(b.x * b.x - a.x * p12.x, 0.0));
+        t1 = (b.x - d) * ra;
+        t2 = (b.x + d) * ra;
+    }
     return vec2(
         (a.y * t1 - b.y * 2.0) * t1 + p12.y,
         (a.y * t2 - b.y * 2.0) * t2 + p12.y);
@@ -95,11 +111,11 @@ float slug_Render(
     vec4 bandTransform,
     ivec2 glyphLoc,
     ivec2 bandMax,
-    int atlasIndex,
-    int textureWidthLog2)
+    sampler2D curveTexture,
+    usampler2D bandTexture,
+    int textureWidthLog2
+    )
 {
-    vec2 pixelsPerEm = 1.0 / emsPerPixel;
-
     // Slughorn normally rasterizes only the shape's computed quad. Rocky uses
     // the decal projector itself as the carrier, so reject fragments outside
     // that quad before the indirection lookup clamps them to an edge band.
@@ -114,25 +130,28 @@ float slug_Render(
         return 0.0;
     }
 
+    // Keep the reciprocal behind the inexpensive carrier rejection above.
+    vec2 pixelsPerEm = 1.0 / emsPerPixel;
+
     // O(1) band index via indirection tables (2 fetches per axis).
     int qY = clamp(int(bandCoord.y), 0, SLUG_INDIRECTION_SIZE - 1);
     int qX = clamp(int(bandCoord.x), 0, SLUG_INDIRECTION_SIZE - 1);
-    int bandY = int(texelFetch(u_slugBandTexture[nonuniformEXT(atlasIndex)], ivec2(glyphLoc.x + qY, glyphLoc.y), 0).r);
-    int bandX = int(texelFetch(u_slugBandTexture[nonuniformEXT(atlasIndex)], ivec2(glyphLoc.x + SLUG_INDIRECTION_SIZE + qX, glyphLoc.y), 0).r);
+    int bandY = int(texelFetch(bandTexture, ivec2(glyphLoc.x + qY, glyphLoc.y), 0).r);
+    int bandX = int(texelFetch(bandTexture, ivec2(glyphLoc.x + SLUG_INDIRECTION_SIZE + qX, glyphLoc.y), 0).r);
 
     // Horizontal bands -- headers at glyphLoc + 2*IS + bandY.
     float xcov = 0.0, xwgt = 0.0;
     uvec2 hbandData = texelFetch(
-        u_slugBandTexture[nonuniformEXT(atlasIndex)],
+        bandTexture,
         ivec2(glyphLoc.x + 2 * SLUG_INDIRECTION_SIZE + bandY, glyphLoc.y), 0).xy;
     ivec2 hbandLoc = slug_CalcBandLoc(glyphLoc, hbandData.y, textureWidthLog2);
 
     for (int ci = 0; ci < int(hbandData.x); ++ci)
     {
         ivec2 curveLoc = ivec2(texelFetch(
-            u_slugBandTexture[nonuniformEXT(atlasIndex)], ivec2(hbandLoc.x + ci, hbandLoc.y), 0).xy);
-        vec4 p12 = texelFetch(u_slugCurveTexture[nonuniformEXT(atlasIndex)], curveLoc, 0) - vec4(renderCoord, renderCoord);
-        vec2 p3 = texelFetch(u_slugCurveTexture[nonuniformEXT(atlasIndex)], ivec2(curveLoc.x + 1, curveLoc.y), 0).xy - renderCoord;
+            bandTexture, ivec2(hbandLoc.x + ci, hbandLoc.y), 0).xy);
+        vec4 p12 = texelFetch(curveTexture, curveLoc, 0) - vec4(renderCoord, renderCoord);
+        vec2 p3 = texelFetch(curveTexture, ivec2(curveLoc.x + 1, curveLoc.y), 0).xy - renderCoord;
 
         if (max(max(p12.x, p12.z), p3.x) * pixelsPerEm.x < -0.5) break;
 
@@ -156,16 +175,16 @@ float slug_Render(
     // Vertical bands -- headers at glyphLoc + 2*IS + numHBands + bandX.
     float ycov = 0.0, ywgt = 0.0;
     uvec2 vbandData = texelFetch(
-        u_slugBandTexture[nonuniformEXT(atlasIndex)],
+        bandTexture,
         ivec2(glyphLoc.x + 2 * SLUG_INDIRECTION_SIZE + bandMax.y + 1 + bandX, glyphLoc.y), 0).xy;
     ivec2 vbandLoc = slug_CalcBandLoc(glyphLoc, vbandData.y, textureWidthLog2);
 
     for (int ci = 0; ci < int(vbandData.x); ++ci)
     {
         ivec2 curveLoc = ivec2(texelFetch(
-            u_slugBandTexture[nonuniformEXT(atlasIndex)], ivec2(vbandLoc.x + ci, vbandLoc.y), 0).xy);
-        vec4 p12 = texelFetch(u_slugCurveTexture[nonuniformEXT(atlasIndex)], curveLoc, 0) - vec4(renderCoord, renderCoord);
-        vec2 p3 = texelFetch(u_slugCurveTexture[nonuniformEXT(atlasIndex)], ivec2(curveLoc.x + 1, curveLoc.y), 0).xy - renderCoord;
+            bandTexture, ivec2(vbandLoc.x + ci, vbandLoc.y), 0).xy);
+        vec4 p12 = texelFetch(curveTexture, curveLoc, 0) - vec4(renderCoord, renderCoord);
+        vec2 p3 = texelFetch(curveTexture, ivec2(curveLoc.x + 1, curveLoc.y), 0).xy - renderCoord;
 
         if (max(max(p12.y, p12.w), p3.y) * pixelsPerEm.y < -0.5) break;
 

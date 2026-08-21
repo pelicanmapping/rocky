@@ -6,8 +6,10 @@
 #include <rocky/ecs/Overlay.h>
 #include <rocky/ecs/Decal.h>
 #include <rocky/vsg/ecs/OverlayBakeSystem.h>
+#ifdef ROCKY_HAS_SLUGHORN
 #include <rocky/vsg/ecs/SlugResource.h>
 #include <rocky/vsg/ecs/SlugSystem.h>
+#endif
 #include <rocky/vsg/ecs/DecalSystem.h>
 #include <rocky/vsg/ecs/MeshSystem.h>
 #include <rocky/vsg/ecs/LineSystem.h>
@@ -401,6 +403,7 @@ TEST_CASE("legacy overlay adapter", "[projection]")
         REQUIRE(reg.any_of<RenderParticipation>(overlayEntity));
         CHECK_FALSE(reg.get<RenderParticipation>(overlayEntity).mainView);
 
+#ifdef ROCKY_HAS_SLUGHORN
         reg.patch<Overlay>(overlayEntity, [](auto& overlay)
         {
             overlay.technique = OverlayTechnique::Slug;
@@ -414,6 +417,7 @@ TEST_CASE("legacy overlay adapter", "[projection]")
         });
         CHECK(reg.any_of<RenderTexture>(overlayEntity));
         CHECK(reg.get<RenderParticipation>(overlayEntity).renderTexture);
+#endif
 
         reg.remove<Overlay>(overlayEntity);
         CHECK_FALSE(reg.any_of<RenderTexture>(overlayEntity));
@@ -432,6 +436,7 @@ TEST_CASE("legacy overlay adapter", "[projection]")
     });
 }
 
+#ifdef ROCKY_HAS_SLUGHORN
 TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][slug]")
 {
     Registry registry = Registry::create();
@@ -487,6 +492,19 @@ TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][sl
 
         const auto& slug = reg.get<SlugResource>(entity);
         REQUIRE(slug.ready);
+        REQUIRE(slug.bandTexture);
+        REQUIRE(slug.bandTexture->imageView);
+        REQUIRE(slug.bandTexture->imageView->image);
+        REQUIRE(slug.bandTexture->imageView->image->data);
+        CHECK(slug.bandTexture->imageView->image->format == VK_FORMAT_R16G16_UINT);
+        CHECK(slug.bandTexture->imageView->image->data->properties.format ==
+            VK_FORMAT_R16G16_UINT);
+        auto* bandData = dynamic_cast<vsg::usvec2Array2D*>(
+            slug.bandTexture->imageView->image->data.get());
+        REQUIRE(bandData);
+        CHECK(bandData->dataSize() ==
+            slug.bandTexture->imageView->image->extent.width *
+            slug.bandTexture->imageView->image->extent.height * sizeof(vsg::usvec2));
         REQUIRE(slug.layers.size() == 2u);
         CHECK(slug.layers[0].color == StockColor::Black);
         CHECK(slug.layers[1].color == StockColor::Yellow);
@@ -548,9 +566,12 @@ TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][sl
         }
     });
 
+    const auto exportStamp = std::to_string(
+        std::chrono::steady_clock::now().time_since_epoch().count());
     const auto exportPath = std::filesystem::temp_directory_path() /
-        ("rocky-slug-test-" + std::to_string(
-            std::chrono::steady_clock::now().time_since_epoch().count()) + ".slug");
+        ("rocky-slug-test-" + exportStamp + ".slug");
+    const auto translucentExportPath = std::filesystem::temp_directory_path() /
+        ("rocky-slug-ring-test-" + exportStamp + ".slug");
     std::uint64_t generationBeforeExport = 0u;
     vsg::ref_ptr<vsg::ImageInfo> curveBeforeExport;
     vsg::ref_ptr<vsg::ImageInfo> bandBeforeExport;
@@ -584,9 +605,43 @@ TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][sl
         input.get(first);
         CHECK(first == '{');
     }
+
+    auto curveTexelsUsed = [](const std::filesystem::path& path)
+    {
+        std::ifstream input(path);
+        const auto document = json::parse(input);
+        return document["packing_stats"]["curve_texels_used"].get<std::uint64_t>();
+    };
+    const auto opaqueCasingCurveTexels = curveTexelsUsed(exportPath);
+
     std::error_code removeError;
     CHECK(std::filesystem::remove(exportPath, removeError));
     CHECK_FALSE(removeError);
+
+    // Translucent modulation must rebuild with the non-overlapping ring, which
+    // carries an additional inner boundary compared with the opaque casing.
+    registry.write([&](entt::registry& reg)
+    {
+        reg.get<Overlay>(entity).color = Color(StockColor::White, 0.5f);
+    });
+    slugSystem->update(context.get());
+    registry.write([&](entt::registry& reg)
+    {
+        reg.get<SlugResource>(entity).exportPath = translucentExportPath.string();
+    });
+    slugSystem->update(context.get());
+
+    REQUIRE(std::filesystem::exists(translucentExportPath));
+    CHECK(opaqueCasingCurveTexels < curveTexelsUsed(translucentExportPath));
+    removeError.clear();
+    CHECK(std::filesystem::remove(translucentExportPath, removeError));
+    CHECK_FALSE(removeError);
+
+    registry.write([&](entt::registry& reg)
+    {
+        reg.get<Overlay>(entity).color = StockColor::White;
+    });
+    slugSystem->update(context.get());
 
     registry.write([&](entt::registry& reg)
     {
@@ -607,6 +662,280 @@ TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][sl
     });
 }
 
+TEST_CASE("slug overlay retries an initially empty georeferenced line", "[projection][slug]")
+{
+    Registry registry = Registry::create();
+    auto sourceSystems = ECSNode::create(registry, false);
+    sourceSystems->add(LineSystemNode::create(registry));
+
+    auto bakeSystem = OverlayBakeSystemNode::create(registry);
+    bakeSystem->renderSourceSystems = sourceSystems;
+    bakeSystem->worldSRS = SRS::ECEF;
+    auto slugSystem = SlugSystemNode::create(registry);
+    slugSystem->worldSRS = SRS::ECEF;
+
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& geometry = reg.emplace<LineGeometry>(entity);
+        geometry.srs = SRS::WGS84;
+        geometry.topology = LineTopology::Segments;
+
+        auto& style = reg.emplace<LineStyle>(entity);
+        style.width = 5.0f;
+        style.widthUnits = Units::METERS;
+        reg.emplace<Line>(entity, geometry, style);
+
+        auto& overlay = reg.emplace<Overlay>(entity);
+        overlay.technique = OverlayTechnique::Slug;
+    });
+
+    bakeSystem->update(context.get());
+    slugSystem->update(context.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        CHECK_FALSE(reg.any_of<Transform>(entity));
+        const auto& slug = reg.get<SlugResource>(entity);
+        CHECK_FALSE(slug.ready);
+        CHECK(slug.message == "Slug overlay geometry contains no renderable primitives");
+    });
+
+    // Model a paged producer that publishes its coordinates after constructing
+    // the component but does not bump its revision. The auto-fit cache must
+    // still retry solely because its generated Transform remains absent.
+    registry.write([&](entt::registry& reg)
+    {
+        auto& geometry = reg.get<LineGeometry>(entity);
+        geometry.points = {
+            { 139.750, 35.680, 0.0 },
+            { 139.751, 35.681, 0.0 }
+        };
+    });
+
+    bakeSystem->update(context.get());
+    slugSystem->update(context.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        REQUIRE((reg.any_of<AutoOverlayTransform, Transform>(entity)));
+        const auto& slug = reg.get<SlugResource>(entity);
+        CHECK(slug.ready);
+        CHECK_FALSE(slug.layers.empty());
+    });
+}
+
+TEST_CASE("complex slug geometry uses the full indirection grid", "[projection][slug]")
+{
+    Registry registry = Registry::create();
+    auto sourceSystems = ECSNode::create(registry, false);
+    sourceSystems->add(LineSystemNode::create(registry));
+
+    auto bakeSystem = OverlayBakeSystemNode::create(registry);
+    bakeSystem->renderSourceSystems = sourceSystems;
+    bakeSystem->worldSRS = SRS::ECEF;
+    auto slugSystem = SlugSystemNode::create(registry);
+    slugSystem->worldSRS = SRS::ECEF;
+    slugSystem->mergeConnectedLineSegments = true;
+
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& geometry = reg.emplace<LineGeometry>(entity);
+        geometry.srs = SRS::WGS84;
+        geometry.topology = LineTopology::Segments;
+
+        // Forty independent MVT-like segments expand to enough stroke curves
+        // to exercise Rocky's 32-band complex-shape policy.
+        for (unsigned i = 0u; i < 40u; ++i)
+        {
+            const double x = 24.918 + double(i % 8u) * 0.0002;
+            const double y = 60.161 + double(i / 8u) * 0.0002;
+            geometry.points.emplace_back(x, y, 0.0);
+            geometry.points.emplace_back(x + 0.0001, y + 0.00005, 0.0);
+        }
+
+        auto& style = reg.emplace<LineStyle>(entity);
+        style.width = 3.0f;
+        style.widthUnits = Units::METERS;
+        style.color = StockColor::Yellow;
+        reg.emplace<Line>(entity, geometry, style);
+
+        auto& overlay = reg.emplace<Overlay>(entity);
+        overlay.technique = OverlayTechnique::Slug;
+    });
+
+    bakeSystem->update(context.get());
+    slugSystem->update(context.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& slug = reg.get<SlugResource>(entity);
+        REQUIRE(slug.ready);
+        REQUIRE(slug.layers.size() == 1u);
+        CHECK(slug.layers.front().shapeData.z == 31u);
+        CHECK(slug.layers.front().shapeData.w == 31u);
+    });
+
+    // Replace the independent segments with one exact endpoint-to-endpoint
+    // chain, then compare Slughorn's serialized curve usage with the
+    // experiment enabled and disabled.
+    registry.write([&](entt::registry& reg)
+    {
+        auto& geometry = reg.get<LineGeometry>(entity);
+        geometry.points.clear();
+        for (unsigned i = 0u; i < 40u; ++i)
+        {
+            const double x0 = 24.918 + double(i) * 0.00003;
+            const double x1 = 24.918 + double(i + 1u) * 0.00003;
+            geometry.points.emplace_back(x0, 60.161, 0.0);
+            geometry.points.emplace_back(x1, 60.161, 0.0);
+        }
+        geometry.dirty(reg);
+    });
+    bakeSystem->update(context.get());
+    slugSystem->update(context.get());
+
+    const auto stamp = std::to_string(
+        std::chrono::steady_clock::now().time_since_epoch().count());
+    const auto mergedPath = std::filesystem::temp_directory_path() /
+        ("rocky-slug-merged-" + stamp + ".slug");
+    const auto unmergedPath = std::filesystem::temp_directory_path() /
+        ("rocky-slug-unmerged-" + stamp + ".slug");
+
+    std::uint64_t mergedGeneration = 0u;
+    registry.write([&](entt::registry& reg)
+    {
+        auto& slug = reg.get<SlugResource>(entity);
+        mergedGeneration = slug.atlasGeneration;
+        slug.exportPath = mergedPath.string();
+    });
+    slugSystem->update(context.get());
+
+    slugSystem->mergeConnectedLineSegments = false;
+    registry.write([&](entt::registry& reg)
+    {
+        reg.get<SlugResource>(entity).exportPath = unmergedPath.string();
+    });
+    slugSystem->update(context.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& slug = reg.get<SlugResource>(entity);
+        REQUIRE(slug.ready);
+        CHECK(slug.atlasGeneration > mergedGeneration);
+        CHECK(slug.exportSucceeded);
+    });
+
+    auto curveTexelsUsed = [](const std::filesystem::path& path)
+    {
+        std::ifstream input(path);
+        const auto document = json::parse(input);
+        return document["packing_stats"]["curve_texels_used"].get<std::uint64_t>();
+    };
+    REQUIRE(std::filesystem::exists(mergedPath));
+    REQUIRE(std::filesystem::exists(unmergedPath));
+    CHECK(curveTexelsUsed(mergedPath) < curveTexelsUsed(unmergedPath));
+
+    std::error_code removeError;
+    CHECK(std::filesystem::remove(mergedPath, removeError));
+    CHECK_FALSE(removeError);
+    removeError.clear();
+    CHECK(std::filesystem::remove(unmergedPath, removeError));
+    CHECK_FALSE(removeError);
+}
+
+TEST_CASE("slug overlays approximate meshes and reject unsupported styles", "[projection][slug]")
+{
+    Registry registry = Registry::create();
+    auto slugSystem = SlugSystemNode::create(registry);
+    slugSystem->worldSRS = SRS::ECEF;
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+
+    SECTION("triangulated meshes remain available")
+    {
+        registry.write([&](entt::registry& reg)
+        {
+            entity = reg.create();
+            auto& geometry = reg.emplace<MeshGeometry>(entity);
+            geometry.vertices = {
+                { -0.25, -0.25, 0.0 },
+                {  0.25, -0.25, 0.0 },
+                {  0.00,  0.25, 0.0 }
+            };
+            reg.emplace<Mesh>(entity, geometry);
+            auto& overlay = reg.emplace<Overlay>(entity);
+            overlay.technique = OverlayTechnique::Slug;
+        });
+
+        slugSystem->update(context.get());
+        registry.read([&](entt::registry& reg)
+        {
+            const auto& resource = reg.get<SlugResource>(entity);
+            REQUIRE(resource.ready);
+            REQUIRE(resource.layers.size() == 1u);
+            CHECK_FALSE(resource.layers.front().isOutline);
+            CHECK(resource.message.empty());
+        });
+    }
+
+    SECTION("stippled lines")
+    {
+        registry.write([&](entt::registry& reg)
+        {
+            entity = reg.create();
+            auto& geometry = reg.emplace<LineGeometry>(entity);
+            geometry.points = { { -0.25, 0.0, 0.0 }, { 0.25, 0.0, 0.0 } };
+            auto& style = reg.emplace<LineStyle>(entity);
+            style.stipplePattern = 0x00FFu;
+            reg.emplace<Line>(entity, geometry, style);
+            auto& overlay = reg.emplace<Overlay>(entity);
+            overlay.technique = OverlayTechnique::Slug;
+        });
+
+        slugSystem->update(context.get());
+        registry.read([&](entt::registry& reg)
+        {
+            const auto& resource = reg.get<SlugResource>(entity);
+            CHECK_FALSE(resource.ready);
+            CHECK(resource.message == "Slug LineStyle does not support stippling");
+        });
+    }
+
+    SECTION("per-point widths")
+    {
+        registry.write([&](entt::registry& reg)
+        {
+            entity = reg.create();
+            auto& geometry = reg.emplace<PointGeometry>(entity);
+            geometry.points = { { 0.0, 0.0, 0.0 } };
+            geometry.widths = { 4.0f };
+            auto& style = reg.emplace<PointStyle>(entity);
+            style.useGeometryWidths = true;
+            reg.emplace<Point>(entity, geometry, style);
+            auto& overlay = reg.emplace<Overlay>(entity);
+            overlay.technique = OverlayTechnique::Slug;
+        });
+
+        slugSystem->update(context.get());
+        registry.read([&](entt::registry& reg)
+        {
+            const auto& resource = reg.get<SlugResource>(entity);
+            CHECK_FALSE(resource.ready);
+            CHECK(resource.message ==
+                "Slug PointStyle does not support per-vertex widths");
+        });
+    }
+}
+
+#endif
 TEST_CASE("legacy decal adapter", "[projection]")
 {
     Registry registry = Registry::create();
