@@ -455,7 +455,7 @@ GDAL_detail::Driver::open(
         _srcDS = (GDALDataset*)GDALOpen(input.c_str(), GA_ReadOnly);
         if (_srcDS)
         {
-            char **subDatasets = _srcDS->GetMetadata("SUBDATASETS");
+            auto subDatasets = _srcDS->GetMetadata("SUBDATASETS");
             int numSubDatasets = CSLCount(subDatasets);
 
             if (numSubDatasets > 0)
