@@ -15,6 +15,7 @@
 #include <rocky/vsg/ecs/OpticsSystem.h>
 #include <rocky/vsg/ecs/TransformDetail.h>
 #include <rocky/vsg/ecs/FeatureBuilder.h>
+#include <rocky/vsg/terrain/TerrainNode.h>
 #include <atomic>
 #include <chrono>
 #include <random>
@@ -348,6 +349,67 @@ TEST_CASE("manual optics work without a terrain target", "[projection]")
         CHECK(detail.nearDistance == Approx(13.5));
         CHECK(detail.farDistance == Approx(53.0));
         CHECK_FALSE(detail.focalPointValid);
+    });
+}
+
+TEST_CASE("terrain optics are shared across mixed-SRS views", "[projection]")
+{
+    Registry registry = Registry::create();
+    auto opticsSystem = OpticsSystemNode::create(registry);
+    auto contextSingleton = VSGContextFactory::create(vsg::Viewer::create());
+    auto context = contextSingleton.get();
+    context->activeViewIDs = { 0u, 1u };
+
+    const SRS terrainSRS("spherical-mercator");
+    REQUIRE(terrainSRS.valid());
+
+    auto terrain = TerrainNode::create(context);
+    terrain->renderingSRS = terrainSRS;
+
+    // Add a simple, loaded terrain surface at Z=0. OpticsSystem only needs
+    // TerrainNode's rendering SRS and its currently resident geometry.
+    vsg::Builder builder;
+    vsg::GeometryInfo geometry(vsg::box(
+        vsg::vec3(-1000.0f, -1000.0f, -1.0f),
+        vsg::vec3(1000.0f, 1000.0f, 0.0f)));
+    terrain->addChild(vsg::MASK_ALL, builder.createBox(geometry));
+    opticsSystem->target = terrain;
+
+    entt::entity entity = entt::null;
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& optics = reg.emplace<Optics>(entity);
+        optics.projection = Optics::Projection::Perspective;
+        optics.autoComputeFocalDistance = true;
+        optics.autoComputeNearFar = false;
+
+        auto& transform = reg.emplace<TransformDetail>(entity);
+        transform.sync.position = GeoPoint(terrainSRS, 0.0, 0.0, 100.0);
+        transform.sync.topocentric = false;
+        transform.views[0].cache.world_srs = terrainSRS;
+        transform.views[1].cache.world_srs = SRS::WGS84;
+    });
+
+    opticsSystem->update(context);
+
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& details = reg.get<OpticsDetail>(entity);
+        const auto& projected = details.views[0];
+        const auto& geodetic = details.views[1];
+
+        CHECK(projected.focalPointValid);
+        CHECK(std::abs(projected.focalDistance - 100.0) < 0.01);
+        CHECK(std::abs(projected.focalPoint.x) < 0.01);
+        CHECK(std::abs(projected.focalPoint.y) < 0.01);
+        CHECK(std::abs(projected.focalPoint.z) < 0.01);
+
+        CHECK(geodetic.focalPointValid);
+        CHECK(geodetic.focalDistance == Approx(projected.focalDistance));
+        CHECK(std::abs(geodetic.focalPoint.x) < 1e-8);
+        CHECK(std::abs(geodetic.focalPoint.y) < 1e-8);
+        CHECK(std::abs(geodetic.focalPoint.z) < 0.01);
     });
 }
 

@@ -13,6 +13,16 @@ using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
+    struct TerrainOpticsCache
+    {
+        SRS terrainSRS;
+        glm::dmat4 lastOpticsWorld = glm::dmat4(1.0);
+        glm::dvec3 focalPoint = glm::dvec3(0.0);
+        double focalDistance = 1.0;
+        std::uint64_t lastTerrainRevision = 0u;
+        bool valid = false;
+    };
+
     bool matricesEqual(const glm::dmat4& lhs, const glm::dmat4& rhs)
     {
         for (int column = 0; column < 4; ++column)
@@ -20,6 +30,73 @@ namespace
                 if (lhs[column][row] != rhs[column][row])
                     return false;
         return true;
+    }
+
+    bool makeWorldMatrix(const Transform& transform, const SRS& worldSRS, glm::dmat4& output)
+    {
+        auto position = transform.position.transform(worldSRS);
+        if (!position.valid())
+            return false;
+
+        output = transform.topocentric && worldSRS.isGeocentric() ?
+            worldSRS.topocentricToWorldMatrix({ position.x, position.y, position.z }) :
+            glm::translate(glm::dmat4(1.0), glm::dvec3(position.x, position.y, position.z));
+        output *= transform.localMatrix;
+        return true;
+    }
+
+    void updateClipDistances(
+        const Optics& optics,
+        bool autoComputeNearFar,
+        const glm::dvec3& forward,
+        const glm::dvec3& terrainNormal,
+        OpticsViewDetail& detail)
+    {
+        detail.nearDistance = detail.focalDistance * optics.nearScale + optics.nearBias;
+        detail.farDistance = detail.focalDistance * optics.farScale + optics.farBias;
+
+        if (optics.projection != Optics::Projection::Perspective ||
+            !autoComputeNearFar || !detail.focalPointValid)
+            return;
+
+        auto clamp01 = [](double value)
+            { return std::clamp(value, 0.0, 1.0); };
+
+        // alpha: center-ray angle from terrain normal (0=head-on, pi/2=grazing)
+        double cosAlpha = clamp01(glm::abs(glm::dot(forward, terrainNormal)));
+        cosAlpha = std::max(1e-6, cosAlpha);
+        double alpha = acos(cosAlpha);
+
+        // Frustum diagonal half-angle from center ray to a corner ray.
+        double tanHalfY = tan(glm::radians(optics.fovY * 0.5));
+        double tanHalfX = tanHalfY * optics.aspectRatio;
+        double coneHalfAngle = atan(std::sqrt(tanHalfX * tanHalfX + tanHalfY * tanHalfY));
+
+        // Eye-to-plane distance along terrain normal.
+        double h = detail.focalDistance * cosAlpha;
+
+        // Corner-ray incidence limits.
+        double nearAngle = alpha - coneHalfAngle;
+        double farAngle = alpha + coneHalfAngle;
+
+        // Keep far angle away from 90 deg singularity.
+        const double maxAngle = glm::radians(89.0);
+        if (farAngle > maxAngle) farAngle = maxAngle;
+
+        // Distance along ray to hit flat tangent plane.
+        // If nearAngle < 0, center ray is the closest valid hit.
+        double nearRaw =
+            (nearAngle <= 0.0) ? detail.focalDistance : (h / std::max(cos(nearAngle), 1e-6));
+        double farRaw = h / std::max(cos(farAngle), 1e-6);
+
+        // Padding and hard floors for stable clipping.
+        double nearPad = std::max(1.0, detail.focalDistance * 0.05);
+        double farPad = std::max(1.0, detail.focalDistance * 0.01);
+        double nearClip = std::max(1.0, nearRaw - nearPad);
+        double farClip = std::max(nearClip + 1.0, farRaw + farPad);
+
+        detail.nearDistance = nearClip * optics.nearScale + optics.nearBias;
+        detail.farDistance = farClip * optics.farScale + optics.farBias;
     }
 }
 
@@ -31,6 +108,7 @@ void OpticsSystemNode::on_construct_Optics(entt::registry& r, entt::entity e)
 void OpticsSystemNode::on_destroy_Optics(entt::registry& r, entt::entity e)
 {
     r.remove<OpticsDetail>(e);
+    r.remove<TerrainOpticsCache>(e);
 }
 
 OpticsSystemNode::OpticsSystemNode(Registry& registry) :
@@ -80,6 +158,8 @@ OpticsSystemNode::updateOptics(VSGContext vsgcontext)
     auto writer = _registry.write();
     auto& registry = writer.registry;
     auto terrainTarget = target.ref_ptr();
+    auto terrainNode = terrainTarget.cast<TerrainNode>();
+    const SRS terrainSRS = terrainNode ? terrainNode->renderingSRS : SRS{};
 
     registry.view<TerrainClamp>().each([&](auto entity, auto& clamp)
         {
@@ -98,6 +178,124 @@ OpticsSystemNode::updateOptics(VSGContext vsgcontext)
             autoComputeFocalDistance = terrainClamp->enabled;
             autoComputeNearFar = terrainClamp->enabled && terrainClamp->computeClipRange;
         }
+
+        // A TerrainNode's intersection coordinates are expressed in its own
+        // rendering SRS. Compute the physical lens-to-terrain result there,
+        // independently of the SRS used by any particular render view, and
+        // transform only the resulting focal point into each view.
+        if (autoComputeFocalDistance && terrainNode && terrainSRS.valid())
+        {
+            auto& cache = registry.get_or_emplace<TerrainOpticsCache>(entity);
+            glm::dmat4 entityWorld;
+            if (!makeWorldMatrix(transformDetail.sync, terrainSRS, entityWorld))
+            {
+                cache.valid = false;
+                for (ViewIDType viewID : vsgcontext->activeViewIDs)
+                {
+                    auto& detail = opticsDetails.views[viewID];
+                    detail.focalDistance = optics.focalDistance;
+                    detail.focalPointValid = false;
+                    detail.autoComputeCacheValid = false;
+                    updateClipDistances(
+                        optics, false, glm::dvec3(0.0, 0.0, -1.0),
+                        glm::dvec3(0.0, 0.0, 1.0), detail);
+                }
+                return;
+            }
+
+            glm::dmat4 opticsWorld = entityWorld * optics.pose;
+            glm::dvec3 forward = -glm::dvec3(opticsWorld[2]);
+            const double forwardLength = glm::length(forward);
+            if (forwardLength <= 0.0)
+            {
+                cache.valid = false;
+                for (ViewIDType viewID : vsgcontext->activeViewIDs)
+                {
+                    auto& detail = opticsDetails.views[viewID];
+                    detail.focalDistance = optics.focalDistance;
+                    detail.focalPointValid = false;
+                    detail.autoComputeCacheValid = false;
+                    updateClipDistances(
+                        optics, false, glm::dvec3(0.0, 0.0, -1.0),
+                        glm::dvec3(0.0, 0.0, 1.0), detail);
+                }
+                return;
+            }
+            forward /= forwardLength;
+
+            const bool useCachedIntersection =
+                canCache && cache.valid &&
+                cache.terrainSRS == terrainSRS &&
+                cache.lastTerrainRevision == terrainRevision &&
+                matricesEqual(cache.lastOpticsWorld, opticsWorld);
+
+            if (!useCachedIntersection)
+            {
+                cache.valid = false;
+                cache.terrainSRS = terrainSRS;
+                cache.lastOpticsWorld = opticsWorld;
+                cache.lastTerrainRevision = terrainRevision;
+
+                const glm::dvec3 origin(opticsWorld[3]);
+                auto start = origin;
+                if (optics.projection == Optics::Projection::Orthographic)
+                    start -= forward * 1e6;
+                const auto end = start + forward * 1e8;
+
+                vsg::LineSegmentIntersector intersector(to_vsg(start), to_vsg(end));
+                terrainNode->accept(intersector);
+                if (!intersector.intersections.empty())
+                {
+                    auto closest = std::min_element(
+                        intersector.intersections.begin(), intersector.intersections.end(),
+                        [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
+
+                    cache.focalPoint = to_glm(closest->get()->worldIntersection);
+                    cache.focalDistance = glm::length(cache.focalPoint - origin);
+                    cache.valid = true;
+                }
+            }
+
+            glm::dvec3 terrainNormal(0.0, 0.0, 1.0);
+            if (cache.valid && terrainSRS.isGeocentric())
+            {
+                terrainNormal = cache.focalPoint;
+                const double normalLength = glm::length(terrainNormal);
+                terrainNormal = normalLength > 0.0 ?
+                    terrainNormal / normalLength : glm::dvec3(0.0, 0.0, 1.0);
+            }
+
+            for (ViewIDType viewID : vsgcontext->activeViewIDs)
+            {
+                auto& detail = opticsDetails.views[viewID];
+                detail.focalDistance = cache.valid ? cache.focalDistance : optics.focalDistance;
+                detail.focalPointValid = false;
+
+                const auto& viewSRS = transformDetail.views[viewID].cache.world_srs;
+                if (cache.valid && viewSRS.valid())
+                {
+                    auto focalPoint = GeoPoint(terrainSRS, cache.focalPoint).transform(viewSRS);
+                    if (focalPoint.valid())
+                    {
+                        detail.focalPoint = { focalPoint.x, focalPoint.y, focalPoint.z };
+                        detail.focalPointValid = true;
+                    }
+                }
+
+                detail.autoComputeCacheValid = canCache && cache.valid;
+                detail.lastTerrainRevision = terrainRevision;
+                detail.lastAutoComputeWorld = opticsWorld;
+                updateClipDistances(
+                    optics, autoComputeNearFar, forward, terrainNormal, detail);
+            }
+
+            if (!canCache)
+                cache.valid = false;
+            return;
+        }
+
+        if (registry.any_of<TerrainOpticsCache>(entity))
+            registry.remove<TerrainOpticsCache>(entity);
 
         for (ViewIDType viewID : vsgcontext->activeViewIDs)
         {
@@ -192,61 +390,14 @@ OpticsSystemNode::updateOptics(VSGContext vsgcontext)
 
             // Clip distances depend on user-adjustable optics parameters, so derive
             // them every update even when the terrain intersection remains cached.
-            opticsDetail.nearDistance = opticsDetail.focalDistance * optics.nearScale + optics.nearBias;
-            opticsDetail.farDistance = opticsDetail.focalDistance * optics.farScale + optics.farBias;
-
-            if (optics.projection == Optics::Projection::Perspective &&
-                autoComputeNearFar &&
-                opticsDetail.focalPointValid)
-            {
-                // TODO: fix this hack and use a real up vector
-                // Terrain normal = local geocentric UP at the focal point.
-                glm::dvec3 terrainNormal = opticsDetail.focalPoint;
-                double nlen = glm::length(terrainNormal);
-                if (nlen > 0.0)
-                    terrainNormal /= nlen;
-                else
-                    terrainNormal = glm::dvec3(0.0, 0.0, 1.0);
-
-                auto clamp01 = [](double v) { return v < 0.0 ? 0.0 : (v > 1.0 ? 1.0 : v); };
-
-                // alpha: center-ray angle from terrain normal (0=head-on, pi/2=grazing)
-                double cosAlpha = clamp01(glm::abs(glm::dot(forward, terrainNormal)));
-                cosAlpha = std::max(1e-6, cosAlpha);
-                double alpha = acos(cosAlpha);
-
-                // Frustum diagonal half-angle from center ray to a corner ray.
-                double tanHalfY = tan(glm::radians(optics.fovY * 0.5));
-                double tanHalfX = tanHalfY * optics.aspectRatio;
-                double coneHalfAngle = atan(std::sqrt(tanHalfX * tanHalfX + tanHalfY * tanHalfY));
-
-                // Eye-to-plane distance along terrain normal.
-                double h = opticsDetail.focalDistance * cosAlpha;
-
-                // Corner-ray incidence limits.
-                double nearAngle = alpha - coneHalfAngle;
-                double farAngle = alpha + coneHalfAngle;
-
-                // Keep far angle away from 90 deg singularity.
-                const double maxAngle = glm::radians(89.0);
-                if (farAngle > maxAngle) farAngle = maxAngle;
-
-                // Distance along ray to hit flat tangent plane.
-                // If nearAngle < 0, center ray is the closest valid hit.
-                double nearRaw =
-                    (nearAngle <= 0.0) ? opticsDetail.focalDistance : (h / std::max(cos(nearAngle), 1e-6));
-                double farRaw = h / std::max(cos(farAngle), 1e-6);
-
-                // Padding and hard floors for stable clipping.
-                double nearPad = std::max(1.0, opticsDetail.focalDistance * 0.05);
-                double farPad = std::max(1.0, opticsDetail.focalDistance * 0.01);
-                double nearClip = std::max(1.0, nearRaw - nearPad);
-                double farClip = std::max(nearClip + 1.0, farRaw + farPad);
-
-                // Store ABSOLUTE distances (not offsets).
-                opticsDetail.nearDistance = nearClip * optics.nearScale + optics.nearBias;
-                opticsDetail.farDistance = farClip * optics.farScale + optics.farBias;
-            }
+            // A generic non-TerrainNode target has no SRS metadata, so retain the
+            // original geocentric-normal assumption for this fallback path.
+            glm::dvec3 terrainNormal = opticsDetail.focalPoint;
+            const double normalLength = glm::length(terrainNormal);
+            terrainNormal = normalLength > 0.0 ?
+                terrainNormal / normalLength : glm::dvec3(0.0, 0.0, 1.0);
+            updateClipDistances(
+                optics, autoComputeNearFar, forward, terrainNormal, opticsDetail);
         }
     };
 
