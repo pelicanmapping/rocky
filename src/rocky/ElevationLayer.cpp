@@ -215,6 +215,14 @@ ElevationLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                     return lhs.extent().width() < rhs.extent().width();
                 });
 
+            // A resident source can be either a writable heightfield or the
+            // GPU-encoded form returned by createTile(). Keep heightfield-aware
+            // views so both representations sample as real elevation values.
+            std::vector<GeoHeightfield> sourceHeightfields;
+            sourceHeightfields.reserve(sources.size());
+            for (auto& source : sources)
+                sourceHeightfields.emplace_back(source);
+
             // new output HF:
             output = Mosaic::create(HF_WRITABLE_FORMAT, cols, rows);
             Heightfield hf(output);
@@ -273,9 +281,9 @@ ElevationLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                     {
                         unsigned j = useIndirectIndexing ? indexes[i] : i;
 
-                        auto r = sources[j].read(point.x, point.y);
+                        auto r = sourceHeightfields[j].read(point.x, point.y);
 
-                        height = r.ok() ? r.value().r : NO_DATA_VALUE;
+                        height = r.ok() ? r.value() : NO_DATA_VALUE;
 
                         if (height != NO_DATA_VALUE)
                         {

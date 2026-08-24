@@ -437,7 +437,11 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io,
             // update the surface proxy witth new elevation data:
             tile->surface->setElevation(
                 tile->renderModel.elevation.image,
-                tile->renderModel.elevation.matrix);            
+                tile->renderModel.elevation.matrix);
+
+            // Keep the tile's LOD/culling sphere synchronized with the
+            // elevation-aware bounds recomputed by SurfaceNode::setElevation().
+            tile->bound = tile->surface->recomputeBound();
 
             // notify the activity interface
             tileFactory->host->activity().onTileLoaded.fire(key);

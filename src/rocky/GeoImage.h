@@ -111,9 +111,14 @@ namespace ROCKY_NAMESPACE
             if (!image.valid()) return ResultFail;
             double u = (x - image.extent().xmin()) / image.extent().width();
             double v = (y - image.extent().ymin()) / image.extent().height();
-            if (u < 0.0 || u > 1.0 || v < 0.0 || v > 1.0)
+            // Tolerate transformation noise at exact tile boundaries, matching
+            // GeoImage::read's cross-profile sampling behavior.
+            constexpr double eps = 1e-6;
+            if (u < -eps || u > 1.0 + eps || v < -eps || v > 1.0 + eps)
                 return ResultFail;
-            return hf.heightAtUV((float)u, (float)v);
+            return hf.heightAtUV(
+                (float)std::clamp(u, 0.0, 1.0),
+                (float)std::clamp(v, 0.0, 1.0));
         }
     };
 }
