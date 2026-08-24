@@ -9,6 +9,7 @@
 #include <rocky/Utils.h>
 #include <mutex>
 #include <shared_mutex>
+#include <atomic>
 #include <list>
 #include <optional>
 #include <unordered_map>
@@ -47,8 +48,8 @@ namespace ROCKY_NAMESPACE
             using entry_t = std::pair<std::weak_ptr<V>, METADATA>;
             mutable std::unordered_map<K, entry_t> _lut;
             mutable std::shared_mutex _mutex;
-            std::uint32_t _hits = 0;
-            std::uint32_t _misses = 0;
+            std::atomic<std::uint32_t> _hits = 0;
+            std::atomic<std::uint32_t> _misses = 0;
             std::uint32_t _puts = 0;
 
             using data_t = std::pair<std::shared_ptr<V>, METADATA>;
@@ -90,7 +91,7 @@ namespace ROCKY_NAMESPACE
 
             void clear()
             {
-                std::shared_lock lock(_mutex);
+                std::unique_lock lock(_mutex);
                 _lut.clear();
                 _hits = 0;
                 _misses = 0;
@@ -110,12 +111,12 @@ namespace ROCKY_NAMESPACE
 
             std::uint32_t hits() const
             {
-                return _hits;
+                return _hits.load(std::memory_order_relaxed);
             }
 
             std::uint32_t misses() const
             {
-                return _misses;
+                return _misses.load(std::memory_order_relaxed);
             }
         };
 
