@@ -407,7 +407,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
     for (auto& vds : _sharedRenderData->viewDependentState)
     {
         if (!vds || !vds->frustumParamsBuf)
-            break;
+            continue;
 
         auto& view = _views[vds->view->viewID];
 
@@ -481,9 +481,6 @@ DecalSystemNode::rebuildCommands(ViewIDType viewID, VSGContext vsgcontext)
     vsgcontext->dispose(view.commands);
 
     view.commands = vsg::Commands::create();
-
-    // use the ds layout from the first view-dependent state, which is shared by all views:
-    auto vdsDescriptorSetLayout = _sharedRenderData->viewDependentState[0]->descriptorSetLayout;
 
     auto pipelineLayout = vsg::PipelineLayout::create(
         vsg::DescriptorSetLayouts{
@@ -846,8 +843,6 @@ DecalSystemNode::traverse(vsg::RecordTraversal& record) const
     {
         if (view.commands)
             view.commands->accept(record);
-        else
-            break;
     }    
 }
 

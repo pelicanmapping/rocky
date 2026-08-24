@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <cfloat>
 #include <cmath>
+#include <exception>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -25,19 +26,11 @@ namespace
         bool ownsParticipation = false;
     };
 
-    inline glm::uvec2 resolveTextureSize(const Overlay& overlay, unsigned fallback)
-    {
-        glm::uvec2 size = overlay.textureSize;
-        if (size.x == 0u) size.x = fallback;
-        if (size.y == 0u) size.y = fallback;
-        return size;
-    }
-
     inline glm::uvec2 resolveTextureSize(const RenderTexture& renderTexture, unsigned fallback)
     {
         glm::uvec2 size = renderTexture.textureSize;
-        if (size.x == 0u) size.x = fallback;
-        if (size.y == 0u) size.y = fallback;
+        if (size.x == 0u) size.x = std::max(1u, fallback);
+        if (size.y == 0u) size.y = std::max(1u, fallback);
         return size;
     }
 
@@ -398,7 +391,9 @@ void OverlayBakeSystemNode::initialize(VSGContext vsgcontext)
     {
         if (!_sharedCameras[i])
         {
-            auto extent = VkExtent2D{ textureSize, textureSize };
+            auto extent = VkExtent2D{
+                std::max(1u, textureSize),
+                std::max(1u, textureSize) };
             _sharedCameras[i] = vsg::Camera::create(
                 vsg::Orthographic::create(-1.0, 1.0, -1.0, 1.0, 0.01, 1000.0),
                 vsg::LookAt::create(vsg::dvec3(0.0, 0.0, 1.0), vsg::dvec3(0.0, 0.0, 0.0), vsg::dvec3(0.0, 1.0, 0.0)),
@@ -524,6 +519,13 @@ void OverlayBakeSystemNode::on_construct_RenderTexture(entt::registry& r, entt::
 void OverlayBakeSystemNode::on_update_RenderTexture(entt::registry& r, entt::entity e)
 {
     r.get<RenderTexture>(e).owner = e;
+    if (auto* detail = r.try_get<OverlayBakeDetail>(e))
+    {
+        // An explicit component update is also the caller's way to retry a
+        // resource allocation that previously failed for this configuration.
+        detail->setupFailed = false;
+        detail->setupFailure.clear();
+    }
 }
 
 void OverlayBakeSystemNode::on_destroy_RenderTexture(entt::registry& r, entt::entity e)
@@ -564,16 +566,80 @@ bool OverlayBakeSystemNode::createBakeResources(
     vsg::ref_ptr<vsg::ImageInfo>& outTexture,
     vsg::ref_ptr<vsg::RenderGraph>& outRenderGraph,
     vsg::ref_ptr<vsg::Node>& outViewNode,
-    vsg::ref_ptr<vsg::CommandGraph>& outHostCommandGraph)
+    vsg::ref_ptr<vsg::CommandGraph>& outHostCommandGraph,
+    std::string& outFailure)
 {
+    outTexture = {};
+    outRenderGraph = {};
+    outViewNode = {};
+    outHostCommandGraph = {};
+    outFailure.clear();
+
+    try
+    {
     if (!bakeScene)
+    {
+        outFailure = "RenderTexture bake scene is unavailable";
         return false;
+    }
+
+    auto device = vsgcontext ? vsgcontext->device() : nullptr;
+    auto physicalDevice = device ? device->getPhysicalDevice() : nullptr;
+    if (!physicalDevice)
+    {
+        outFailure = "RenderTexture Vulkan device is unavailable";
+        return false;
+    }
+
+    const auto& limits = physicalDevice->getProperties().limits;
+    const auto maxWidth = std::min(limits.maxImageDimension2D, limits.maxFramebufferWidth);
+    const auto maxHeight = std::min(limits.maxImageDimension2D, limits.maxFramebufferHeight);
+    if (textureSize.x == 0u || textureSize.y == 0u ||
+        textureSize.x > maxWidth || textureSize.y > maxHeight)
+    {
+        outFailure =
+            "Requested RenderTexture size " + std::to_string(textureSize.x) + "x" +
+            std::to_string(textureSize.y) + " exceeds the device limit of " +
+            std::to_string(maxWidth) + "x" + std::to_string(maxHeight);
+        return false;
+    }
 
     const std::size_t mode = useDepthBuffer ? 1u : 0u;
     if (!_sharedCameras[mode] || !_sharedViews[mode])
         initialize(vsgcontext);
 
     if (!_sharedCameras[mode] || !_sharedViews[mode])
+    {
+        outFailure = "RenderTexture bake view could not be initialized";
+        return false;
+    }
+
+    auto viewer = vsgcontext->viewer();
+    if (!viewer)
+    {
+        outFailure = "RenderTexture viewer is unavailable";
+        return false;
+    }
+
+    bool installed = false;
+    for (auto& task : viewer->recordAndSubmitTasks)
+    {
+        for (auto& cg : task->commandGraphs)
+        {
+            if (!cg || !cg->window)
+                continue;
+
+            outHostCommandGraph = cg;
+            installed = true;
+            break;
+        }
+        if (installed)
+            break;
+    }
+
+    // A viewer can briefly have no host graph while it is being realized.
+    // Report an empty failure string so the caller treats this as retryable.
+    if (!installed)
         return false;
 
     auto bakeNode = OverlayBakeViewNode::create();
@@ -605,33 +671,7 @@ bool OverlayBakeSystemNode::createBakeResources(
         vsg::vec4(0.0f, 0.0f, 0.0f, 0.0f),
         _sharedRenderPasses[mode]);
 
-    if (!_sharedRenderPasses[mode])
-        _sharedRenderPasses[mode] = vsg::ref_ptr<vsg::RenderPass>(rg->getRenderPass());
-
     rg->addChild(bakeNode);
-
-    auto viewer = vsgcontext->viewer();
-    if (!viewer)
-        return false;
-
-    bool installed = false;
-    for (auto& task : viewer->recordAndSubmitTasks)
-    {
-        for (auto& cg : task->commandGraphs)
-        {
-            if (!cg || !cg->window)
-                continue;
-
-            outHostCommandGraph = cg;
-            installed = true;
-            break;
-        }
-        if (installed)
-            break;
-    }
-
-    if (!installed)
-        return false;
 
     // Compile the shared View/pipelines only for the first compatible target.
     // Substitute a pipeline-only scene while compiling so registry-backed
@@ -648,9 +688,20 @@ bool OverlayBakeSystemNode::createBakeResources(
         auto runtimeChildren = std::move(viewChildren);
         viewChildren.clear();
         viewChildren.emplace_back(compileScene);
-        vsgcontext->compileRenderGraph(rg, outHostCommandGraph->window);
+        try
+        {
+            vsgcontext->compileRenderGraph(rg, outHostCommandGraph->window);
+        }
+        catch (...)
+        {
+            viewChildren = std::move(runtimeChildren);
+            throw;
+        }
         viewChildren = std::move(runtimeChildren);
     }
+
+    if (!_sharedRenderPasses[mode])
+        _sharedRenderPasses[mode] = vsg::ref_ptr<vsg::RenderPass>(rg->getRenderPass());
 
     outTexture = color;
     outRenderGraph = rg;
@@ -658,6 +709,26 @@ bool OverlayBakeSystemNode::createBakeResources(
 
     vsgcontext->requestFrame();
     return true;
+    }
+    catch (const vsg::Exception& e)
+    {
+        outFailure = e.message.empty() ?
+            "Vulkan failed while allocating RenderTexture resources" : e.message;
+    }
+    catch (const std::exception& e)
+    {
+        outFailure = std::string("Failed to allocate RenderTexture resources: ") + e.what();
+    }
+    catch (...)
+    {
+        outFailure = "Failed to allocate RenderTexture resources";
+    }
+
+    outTexture = {};
+    outRenderGraph = {};
+    outViewNode = {};
+    outHostCommandGraph = {};
+    return false;
 }
 
 bool OverlayBakeSystemNode::updateBakeCamera(entt::registry& r, entt::entity e_overlay, OverlayBakeDetail& detail, bool recomputeAutoTransform) const
@@ -811,10 +882,33 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                     detail.phase = BakePhase::Priming;
                     detail.generationPending = true;
                 }
-                if (!(detail.renderGraph && detail.texture && detail.viewNode && detail.hostCommandGraph) ||
+                const bool setupRequired =
+                    !(detail.renderGraph && detail.texture && detail.viewNode && detail.hostCommandGraph) ||
                     detail.textureSize != requestedSize ||
-                    detail.useDepthBuffer != renderTexture.useDepthBuffer)
+                    detail.useDepthBuffer != renderTexture.useDepthBuffer;
+                if (setupRequired)
+                {
+                    auto& resource = r.get<TextureResource>(renderJob);
+                    if (resource.ready)
+                    {
+                        resource.ready = false;
+                        ++resource.revision;
+                    }
+
+                    auto& jobStatus = r.get<RenderTextureStatus>(renderJob);
+                    if (detail.setupFailed &&
+                        detail.failedTextureSize == requestedSize &&
+                        detail.failedUseDepthBuffer == renderTexture.useDepthBuffer)
+                    {
+                        jobStatus.state = RenderTextureState::Failed;
+                        jobStatus.message = detail.setupFailure;
+                        continue;
+                    }
+
+                    detail.setupFailed = false;
+                    detail.setupFailure.clear();
                     needsSetup.push_back(renderJob);
+                }
             }
         });
 
@@ -827,9 +921,12 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
         vsg::ref_ptr<vsg::RenderGraph> renderGraph;
         vsg::ref_ptr<vsg::Node> viewNode;
         vsg::ref_ptr<vsg::CommandGraph> hostCommandGraph;
+        std::string failure;
     };
 
     std::vector<PendingSetup> pending;
+    std::vector<PendingSetup> failed;
+    bool retryResourceSetup = false;
     const auto setupLimit = maxResourceSetupsPerFrame == 0u ?
         needsSetup.size() : std::min(needsSetup.size(), static_cast<std::size_t>(maxResourceSetupsPerFrame));
     pending.reserve(setupLimit);
@@ -853,14 +950,73 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
         p.e_overlay = e_overlay;
         p.textureSize = requestedSize;
         p.useDepthBuffer = useDepthBuffer;
-        if (createBakeResources(vsgcontext, requestedSize, useDepthBuffer, p.texture, p.renderGraph, p.viewNode, p.hostCommandGraph))
+        if (createBakeResources(
+            vsgcontext,
+            requestedSize,
+            useDepthBuffer,
+            p.texture,
+            p.renderGraph,
+            p.viewNode,
+            p.hostCommandGraph,
+            p.failure))
         {
             pending.emplace_back(std::move(p));
+        }
+        else if (!p.failure.empty())
+        {
+            failed.emplace_back(std::move(p));
+        }
+        else
+        {
+            // The viewer can briefly have no host command graph while it is
+            // being realized. Keep this as a retryable resource wait.
+            retryResourceSetup = true;
         }
     }
 
     _registry.write([&](entt::registry& r)
         {
+            for (auto& p : failed)
+            {
+                if (!r.valid(p.e_overlay) || !r.any_of<RenderTexture>(p.e_overlay) ||
+                    resolveTextureSize(r.get<RenderTexture>(p.e_overlay), textureSize) != p.textureSize ||
+                    r.get<RenderTexture>(p.e_overlay).useDepthBuffer != p.useDepthBuffer)
+                    continue;
+
+                auto& detail = r.get_or_emplace<OverlayBakeDetail>(p.e_overlay);
+                if (detail.hostCommandGraph && detail.renderGraph)
+                {
+                    auto& children = detail.hostCommandGraph->children;
+                    children.erase(std::remove(children.begin(), children.end(), detail.renderGraph), children.end());
+                }
+
+                dispose(detail.renderGraph);
+                dispose(detail.texture);
+                detail.renderGraph = {};
+                detail.texture = {};
+                detail.viewNode = {};
+                detail.hostCommandGraph = {};
+                detail.textureSize = p.textureSize;
+                detail.useDepthBuffer = p.useDepthBuffer;
+                detail.setupFailed = true;
+                detail.failedTextureSize = p.textureSize;
+                detail.failedUseDepthBuffer = p.useDepthBuffer;
+                detail.setupFailure = p.failure;
+                detail.published = false;
+                detail.generationPending = true;
+
+                auto& resource = r.get<TextureResource>(p.e_overlay);
+                const bool resourceChanged = resource.ready || resource.texture;
+                resource.ready = false;
+                resource.texture = {};
+                if (resourceChanged)
+                    ++resource.revision;
+
+                auto& jobStatus = r.get<RenderTextureStatus>(p.e_overlay);
+                jobStatus.state = RenderTextureState::Failed;
+                jobStatus.message = p.failure;
+            }
+
             for (auto& p : pending)
             {
                 if (!r.valid(p.e_overlay) || !r.any_of<RenderTexture>(p.e_overlay) ||
@@ -895,6 +1051,8 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 detail.fitToSources = r.get<RenderTexture>(p.e_overlay).fitToSources;
                 detail.published = false;
                 detail.generationPending = true;
+                detail.setupFailed = false;
+                detail.setupFailure.clear();
                 detail.phase = BakePhase::Priming;
 
                 auto& resource = r.get<TextureResource>(p.e_overlay);
@@ -905,7 +1063,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 ++resource.revision;
             }
 
-            bool requestAnotherFrame = setupLimit < needsSetup.size();
+            bool requestAnotherFrame = setupLimit < needsSetup.size() || retryResourceSetup;
 
             for (auto e_overlay : renderJobs)
             {
@@ -916,6 +1074,13 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 const auto& renderTexture = r.get<RenderTexture>(e_overlay);
                 auto& jobStatus = r.get_or_emplace<RenderTextureStatus>(e_overlay);
                 auto sources = resolveSources(renderTexture, e_overlay);
+
+                // Do not keep rendering or republish an old target while a
+                // changed texture configuration is queued for setup.
+                if (detail.setupFailed ||
+                    detail.textureSize != resolveTextureSize(renderTexture, textureSize) ||
+                    detail.useDepthBuffer != renderTexture.useDepthBuffer)
+                    continue;
 
                 if (!(detail.renderGraph && detail.texture && detail.viewNode && detail.hostCommandGraph))
                     continue;
@@ -930,6 +1095,17 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                             children.erase(existing);
                     };
 
+                auto invalidatePublishedTexture = [&]()
+                    {
+                        if (resource.ready)
+                        {
+                            resource.ready = false;
+                            ++resource.revision;
+                        }
+                        detail.published = false;
+                        detail.generationPending = true;
+                    };
+
                 auto sourceStatus = getRenderTextureSourceStatus(r, sources, _renderParticipants);
                 if (sourceStatus.state != RenderTextureSourceStatus::State::Ready)
                 {
@@ -938,6 +1114,11 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                         RenderTextureState::Failed : RenderTextureState::WaitingForSources;
                     jobStatus.message = sourceStatus.message;
                     detachRenderGraph();
+                    if (sourceStatus.state == RenderTextureSourceStatus::State::Failed ||
+                        !sourceStatus.retry)
+                    {
+                        invalidatePublishedTexture();
+                    }
                     requestAnotherFrame = requestAnotherFrame ||
                         (sourceStatus.state == RenderTextureSourceStatus::State::Waiting && sourceStatus.retry);
                     continue;
@@ -977,6 +1158,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                     jobStatus.state = RenderTextureState::WaitingForSources;
                     jobStatus.message = "Waiting for valid source bounds and projector transform";
                     detachRenderGraph();
+                    invalidatePublishedTexture();
                     continue;
                 }
 

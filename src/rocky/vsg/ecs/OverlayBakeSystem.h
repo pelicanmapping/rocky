@@ -10,6 +10,7 @@
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/ecs/TextureResource.h>
 #include <array>
+#include <string>
 
 namespace ROCKY_NAMESPACE
 {
@@ -70,6 +71,10 @@ namespace ROCKY_NAMESPACE
             bool fitToSources = true;
             bool published = false;
             bool generationPending = true;
+            bool setupFailed = false;
+            glm::uvec2 failedTextureSize = { 0u, 0u };
+            bool failedUseDepthBuffer = false;
+            std::string setupFailure;
             BakePhase phase = BakePhase::WaitingForSources;
         };
 
@@ -99,7 +104,8 @@ namespace ROCKY_NAMESPACE
             vsg::ref_ptr<vsg::ImageInfo>& outTexture,
             vsg::ref_ptr<vsg::RenderGraph>& outRenderGraph,
             vsg::ref_ptr<vsg::Node>& outViewNode,
-            vsg::ref_ptr<vsg::CommandGraph>& outHostCommandGraph);
+            vsg::ref_ptr<vsg::CommandGraph>& outHostCommandGraph,
+            std::string& outFailure);
         bool updateBakeCamera(entt::registry& r, entt::entity e_overlay, OverlayBakeDetail& detail, bool recomputeAutoTransform) const;
     };
 }

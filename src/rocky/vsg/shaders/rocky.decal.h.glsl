@@ -62,9 +62,17 @@ void applyDecals(inout vec3 color, in vec3 vertexVs, in vec3 normalVs, in vec2 f
 
     DecalTile tile = b_decalTiles.tile[index];
 
-    for (int i = 0; i < tile.count; ++i)
+    // Most tiles use the compact culling result. If more decals intersected
+    // than fit in the fixed tile record, fall back to the complete list instead
+    // of silently dropping projections. Projection-volume tests below reject
+    // the decals that do not actually cover this fragment.
+    bool overflow = tile.count > MAX_DECALS_PER_TILE;
+    int candidateCount = overflow ? b_decals.decal[0].textureIndex : int(tile.count);
+
+    for (int i = 0; i < candidateCount; ++i)
     {
-        Decal decal = b_decals.decal[tile.indices[i]];
+        uint decalIndex = overflow ? uint(i + 1) : tile.indices[i];
+        Decal decal = b_decals.decal[decalIndex];
 
         // tranform the view-space vertex into unit-decal-space
         vec3 local = (decal.mvmInverse * vec4(vertexVs, 1.0)).xyz;

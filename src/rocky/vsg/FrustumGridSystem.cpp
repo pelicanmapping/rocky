@@ -92,13 +92,10 @@ FrustumGridSystemNode::update(VSGContext vsgcontext)
                 // rebuild the commands to incorporate any new buffers we created
                 dispose(view.commands);
 
-                // use the ds layout from the first view-dependent state, which is shared by all views:
-                auto descriptorSetLayout = _sharedRenderData->viewDependentState[0]->descriptorSetLayout;
-
                 auto pipelineLayout = vsg::PipelineLayout::create(
                     vsg::DescriptorSetLayouts{
                         vsg::DescriptorSetLayout::create(), // note: layout 0 is empty
-                        descriptorSetLayout },
+                        vds->descriptorSet->setLayout },
                         vsg::PushConstantRanges{});
 
                 auto pipeline = vsg::ComputePipeline::create(pipelineLayout, _shader);
