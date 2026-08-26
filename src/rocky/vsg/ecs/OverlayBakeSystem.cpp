@@ -20,6 +20,22 @@ using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
+    /*
+     * Overlay is a convenience facade shared by two producers. RTT overlays
+     * are expanded into a same-entity RenderTexture job; Slug overlays skip the
+     * image bake but still reuse this system's source-bound collection and
+     * projector fitting. DecalSystem independently expands the same Overlay
+     * into the ProjectedTexture that consumes either producer's result.
+     */
+
+    /**
+     * Ownership record for components synthesized from an Overlay facade.
+     *
+     * These flags remain false when the caller supplied the corresponding
+     * low-level component. That distinction lets technique changes and Overlay
+     * destruction clean up generated state without disturbing an independently
+     * managed RenderTexture or RenderParticipation policy.
+     */
     struct OverlayBakeFacadeAdapter
     {
         // True when this facade is responsible for creating/removing the
@@ -29,20 +45,35 @@ namespace
         bool ownsParticipation = false;
     };
 
-    // Tracks the inputs to a Slug overlay's lightweight projector fit. Slug
-    // does not own a RenderTexture, so it cannot use OverlayBakeDetail's RTT
-    // invalidation state.
+    /**
+     * Cache for a Slug overlay's lightweight projector fit.
+     *
+     * A Slug overlay has no RenderTexture and therefore no OverlayBakeDetail.
+     * This record mirrors only the invalidation inputs needed to fit or refit
+     * an AutoOverlayTransform. transformAvailable is cached separately so an
+     * initially empty paged feature keeps retrying after geometry arrives even
+     * when its producer did not explicitly dirty a component revision.
+     */
     struct SlugOverlayFitDetail
     {
+        //! Combined bounds generations reported by render participants.
         std::size_t boundsRevision = 0u;
+        //! Identity/order signature for the participants used by the fit.
         std::size_t participantSignature = 0u;
+        //! Pixel dimensions used when converting padding pixels into world size.
         glm::uvec2 textureSize = { 0u, 0u };
+        //! World coordinate system in which the fitted projector was built.
         SRS worldSRS;
+        //! Z-thickness multiplier used while fitting the projector volume.
         float depthSafetyFactor = 1.0f;
         bool signatureValid = false;
+        //! Whether the preceding fit produced or found a usable Transform.
         bool transformAvailable = false;
     };
 
+    //! Keeps facade-owned low-level components synchronized with technique and
+    //! Overlay settings. Slug intentionally suppresses the RenderTexture while
+    //! retaining ownership so switching back to RTT can recreate it safely.
     void synchronizeOverlayFacade(
         entt::registry& r,
         entt::entity entity,
@@ -139,6 +170,14 @@ namespace
             RenderTextureSourceStatus{ RenderTextureSourceStatus::State::Waiting, "No active render-to-texture source" };
     }
 
+    /**
+     * Record-time wrapper for one offscreen overlay view.
+     *
+     * Each bake job supplies camera bounds and a RenderRequest. traverse()
+     * temporarily installs the overlay render purpose, target entity, and world
+     * SRS in the VSG traversal state, records the shared bake view, and restores
+     * the caller's state afterward.
+     */
     struct OverlayBakeViewNode : public vsg::Inherit<vsg::Node, OverlayBakeViewNode>
     {
         vsg::ref_ptr<vsg::View> view;
@@ -986,6 +1025,12 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
             }
         });
 
+    /**
+     * Resources created outside the registry write section for one pending RTT
+     * job. The second write phase revalidates the entity and requested settings
+     * before publishing them; stale work is disposed instead of attaching it to
+     * a changed or deleted job.
+     */
     struct PendingSetup
     {
         entt::entity e_overlay = entt::null;

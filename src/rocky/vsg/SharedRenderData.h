@@ -22,12 +22,15 @@ namespace ROCKY_NAMESPACE
 
         ViewLocal<vsg::ref_ptr<ViewDependentStateEx>> viewDependentState;
 
-        // descriptors shared by all views:
+        // Fixed-capacity descriptor arenas shared by all views. DecalSystem
+        // populates only slots demanded by recently visible projections and
+        // restores unused slots to valid typed fallback images.
         vsg::ref_ptr<vsg::DescriptorImage> decalTextures;
 
 #ifdef ROCKY_HAS_SLUGHORN
         //! Per-overlay Slug atlas arenas. Matching curve/band entries always use
         //! the same index, and every unused entry contains a typed fallback.
+        //! SlugLayerGPU records refer to this shared index through DecalGPU.
         vsg::ref_ptr<vsg::DescriptorImage> slugCurveTexture;
         vsg::ref_ptr<vsg::DescriptorImage> slugBandTexture;
 #endif

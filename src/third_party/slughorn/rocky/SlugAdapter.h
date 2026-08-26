@@ -11,18 +11,30 @@
 // target, whose public language requirement remains C++17.
 namespace rocky::detail
 {
+    /*
+     * This is a producer boundary, not Rocky's public Slug API. SlugSystem
+     * fills the input records below; the C++20 implementation translates them
+     * into Slughorn Canvas calls and returns renderer-neutral atlas bytes and
+     * placement metadata. Keeping the header free of SDK types prevents the
+     * private dependency's C++20 requirement from propagating into Rocky.
+     */
+
+    //! One point in the bounded coordinate space used to author a shape.
     struct SlugPointInput
     {
         float x = 0.0f;
         float y = 0.0f;
     };
 
+    //! One path contour. Stroke contours may be open; fill contours are closed
+    //! by the adapter even when closed is false.
     struct SlugContourInput
     {
         std::vector<SlugPointInput> points;
         bool closed = false;
     };
 
+    //! Compact circle primitive used for PointGeometry batches.
     struct SlugCircleInput
     {
         float x = 0.0f;
@@ -30,6 +42,7 @@ namespace rocky::detail
         float radius = 0.0f;
     };
 
+    //! Canvas operation used to commit a SlugShapeInput.
     enum class SlugShapeKind : std::uint8_t
     {
         Fill,
@@ -49,7 +62,7 @@ namespace rocky::detail
 
         // Affine mapping from projector UV to the coordinates used to author
         // this shape. Each row stores {u coefficient, v coefficient, offset,
-        // unused}. Identity preserves the legacy normalized coordinate space.
+        // unused}. Identity preserves the default normalized coordinate space.
         std::array<float, 4> uvToEmX = { 1.0f, 0.0f, 0.0f, 0.0f };
         std::array<float, 4> uvToEmY = { 0.0f, 1.0f, 0.0f, 0.0f };
 
@@ -94,6 +107,7 @@ namespace rocky::detail
         RGBA16UI
     };
 
+    //! Owned byte copy of one texture emitted by Atlas::build().
     struct SlugTextureOutput
     {
         std::uint32_t width = 0u;

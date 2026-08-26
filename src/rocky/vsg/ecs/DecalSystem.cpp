@@ -25,29 +25,70 @@ using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
+    /*
+     * The decal renderer consumes a small, composable component model:
+     *
+     *   ImageTexture/RenderTexture -> TextureResource -> ProjectedTexture
+     *   Slug Overlay              -> SlugResource    -> ProjectedTexture
+     *
+     * Decal, DecalStyle, and Overlay are convenience facades over that model.
+     * The private FacadeAdapter components below record which low-level
+     * components this system synthesized for a facade. "Adapter" is not a
+     * deprecation marker; it is ownership bookkeeping that prevents facade
+     * destruction from removing a caller-supplied low-level component.
+     */
+
+    //! Records that DecalSystem materialized a ProjectedTexture for a Decal.
+    //! The generated projection references Decal::style as its payload and
+    //! Decal::optics as its projector.
     struct DecalFacadeAdapter
     {
         bool ownsProjectedTexture = false;
     };
 
+    //! Records that DecalSystem materialized a self-projecting
+    //! ProjectedTexture for an Overlay. OverlayBakeSystem or SlugSystem then
+    //! supplies the payload resource selected by Overlay::technique.
     struct OverlayProjectionFacadeAdapter
     {
         bool ownsProjectedTexture = false;
     };
 
+    //! Records that DecalSystem materialized an ImageTexture for a DecalStyle.
+    //! TextureSystem subsequently turns that normalized source into a
+    //! TextureResource.
     struct DecalStyleFacadeAdapter
     {
         bool ownsImageTexture = false;
     };
 
+    /**
+     * Consumer-side binding state for one TextureResource.
+     *
+     * The retained ImageInfo identifies the resource currently installed in
+     * descriptorImageIndex and keeps it alive while the descriptor references
+     * it. This component does not own or dispose the producer's image. Removing
+     * it queues the descriptor slot to be restored to the typed fallback during
+     * updateStyles().
+     */
     struct TextureSlotDetail
     {
         vsg::ref_ptr<vsg::ImageInfo> texture;
-        // where is this texture in the descriptorimage?
+        //! Index in SharedRenderData::decalTextures; -1 means unbound.
         std::int32_t descriptorImageIndex = -1;
     };
 
 #ifdef ROCKY_HAS_SLUGHORN
+    /**
+     * Consumer-side binding and publication state for one SlugResource.
+     *
+     * A Slug atlas is a matched curve/band texture pair, so both arrays always
+     * use descriptorImageIndex. resourceRevision says which published atlas is
+     * installed. descriptorWriteFrame/readyForDraw impose a one-frame barrier:
+     * TerrainNode rebuilds the global descriptor set before ECS updates, so
+     * DecalSystem must not expose new shape metadata until a later frame can
+     * prove the matching descriptors have been installed.
+     */
     struct SlugSlotDetail
     {
         vsg::ref_ptr<vsg::ImageInfo> curveTexture;
@@ -60,6 +101,10 @@ namespace
 #endif
 }
 
+// Facade construction is deliberately non-destructive. If the normalized
+// component already exists, it belongs to the caller and the adapter leaves
+// its ownership flag false. The matching destruction callbacks remove only
+// components that were synthesized here.
 void DecalSystemNode::on_construct_Decal(entt::registry& r, entt::entity e)
 {
     auto& adapter = r.get_or_emplace<DecalFacadeAdapter>(e);
@@ -208,7 +253,8 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
 {
     _registry.write([&](entt::registry& r)
         {
-            // install the ecs callbacks for Decals
+            // Install normalization, ownership, and descriptor-release hooks
+            // for both facade and low-level decal components.
             r.on_construct<Decal>().connect<&DecalSystemNode::on_construct_Decal>(*this);
             r.on_construct<DecalStyle>().connect<&DecalSystemNode::on_construct_DecalStyle>(*this);
             r.on_construct<Overlay>().connect<&DecalSystemNode::on_construct_Overlay>(*this);
@@ -308,7 +354,8 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
 #endif
     auto fallback = _fallbackTexture;
 
-    // A DecalStyle is now just a legacy ImageTexture facade.
+    // Keep the facade-owned ImageTexture synchronized with DecalStyle. A
+    // caller-owned ImageTexture is intentionally left alone.
     reg.view<DecalStyle, DecalStyleFacadeAdapter, ImageTexture>().each(
         [&](auto, auto& style, auto& adapter, auto& imageTexture)
         {
@@ -604,8 +651,8 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         vsgcontext->requestFrame();
     }
 
-    // Drain legacy dirty queues; normalized contracts are polled by identity and
-    // revision and therefore support multiple independent consumers.
+    // Drain facade dirty queues; normalized contracts are polled by identity
+    // and revision and therefore support multiple independent consumers.
     DecalStyle::eachDirty(reg, [](entt::entity) {});
     Overlay::eachDirty(reg, [](entt::entity) {});
     Decal::eachDirty(reg, [](entt::entity) {});
@@ -837,6 +884,11 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
             std::vector<DecalGPU> decalRecords;
 #ifdef ROCKY_HAS_SLUGHORN
+            // A Slug payload still creates one DecalGPU projection. Its atlas
+            // shapes are flattened here into a second buffer, with outlines
+            // first, and the logical decal stores their range. This keeps
+            // culling/order capacity proportional to overlays rather than to
+            // the number of shapes inside each overlay.
             std::vector<SlugLayerGPU> slugLayerRecords;
 #endif
 
@@ -1032,6 +1084,9 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                                 DECAL_SLUG_TEXTURE_WIDTH_LOG2_MASK) <<
                                 DECAL_SLUG_TEXTURE_WIDTH_LOG2_SHIFT);
 
+                        // Reorder only the per-view metadata, not the atlas.
+                        // The shader uses outlineCount to run a global casing
+                        // pass followed by the ordinary/core pass.
                         const auto firstLayer =
                             static_cast<std::uint32_t>(slugLayerRecords.size());
                         auto appendLayer = [&](const SlugLayerResource& layer)
@@ -1155,8 +1210,9 @@ DecalSystemNode::update(VSGContext vsgcontext)
 
     _registry.write([&](entt::registry& r)
         {
-            // Normalize legacy public components every frame. This deliberately
-            // supports the established pattern of editing fields by reference.
+            // Synchronize facade-owned projections every frame. This
+            // deliberately supports the established pattern of editing public
+            // component fields by reference instead of registry.patch().
             r.view<Decal, DecalFacadeAdapter, ProjectedTexture>().each(
                 [&](auto entity, auto& decal, auto& adapter, auto& projected)
                 {

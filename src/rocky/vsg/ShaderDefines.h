@@ -41,6 +41,16 @@ namespace ROCKY_NAMESPACE
     };
     static_assert(sizeof(FrustumGPU) % 16 == 0, "FrustumGPU must be 16-byte aligned");
 
+    /**
+     * One logical projected decal, mirrored by struct Decal in
+     * rocky.decal.h.glsl using std430 layout.
+     *
+     * The compute culler tests the projector volume and writes this record's
+     * index into intersecting DecalTileGPU entries. The terrain fragment shader
+     * later transforms the terrain point with mvmInverse and either samples a
+     * raster texture or evaluates the Slug layers selected by slugLayerRange.
+     * Element zero is a header whose count union member stores record count.
+     */
     struct DecalGPU
     {
         glm::fmat4 mvm;
@@ -56,8 +66,11 @@ namespace ROCKY_NAMESPACE
         glm::float32 cullingRadius = 1.0f;
         glm::float32 tanHalfFovY = 0.0f;
         glm::float32 aspect = 1.0f;
+        //! DECAL_FLAG_* bits plus packed Slug atlas-width metadata.
         glm::int32_t payloadFlags = 0;
-        // first layer, outline count, total layer count, reserved
+
+        //! Range into the per-view SlugLayerGPU buffer:
+        //! { first layer, outline-layer count, total-layer count, reserved }.
         glm::uvec4 slugLayerRange{ 0u, 0u, 0u, 0u };
     };
     static_assert(offsetof(DecalGPU, payloadFlags) == 172,
@@ -67,6 +80,12 @@ namespace ROCKY_NAMESPACE
     static_assert(sizeof(DecalGPU) == 192,
         "DecalGPU must match the GLSL std430 layout");
 
+    /**
+     * Per-shape Slug evaluation metadata, mirrored by struct SlugLayer in
+     * rocky.decal.h.glsl. Keeping it separate lets one logical decal contain
+     * multiple shapes (for example outline and core) while consuming only one
+     * culling/tile-list entry.
+     */
     struct SlugLayerGPU
     {
         glm::fvec4 color{ 1.0f, 1.0f, 1.0f, 1.0f };
@@ -80,6 +99,11 @@ namespace ROCKY_NAMESPACE
     static_assert(sizeof(SlugLayerGPU) == 80,
         "SlugLayerGPU must match the GLSL std430 layout");
 
+    /**
+     * Compute-generated list of logical decals intersecting one 16x16 screen
+     * tile. An index may carry DECAL_TILE_HAS_OUTLINE_BIT so the fragment
+     * shader's outline pass can reject unrelated decals before loading them.
+     */
     struct DecalTileGPU
     {
         glm::uint32_t count = 0;

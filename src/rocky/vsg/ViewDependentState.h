@@ -25,9 +25,15 @@ namespace ROCKY_NAMESPACE
         mutable vsg::ref_ptr<vsg::DescriptorBuffer> renderParamsBuf;
         vsg::ref_ptr<vsg::DescriptorBuffer> frustumParamsBuf;
         vsg::ref_ptr<vsg::DescriptorBuffer> frustumsBuf;
+
+        // DecalSystem writes logical projection records to decalsBuf. Its
+        // compute pass fills decalTilesBuf with the small list relevant to each
+        // screen tile, avoiding an all-decals loop in every terrain fragment.
         vsg::ref_ptr<vsg::DescriptorBuffer> decalsBuf;
         vsg::ref_ptr<vsg::DescriptorBuffer> decalTilesBuf;
 #ifdef ROCKY_HAS_SLUGHORN
+        // Flattened metadata for the Slug shapes referenced by this view's
+        // DecalGPU ranges. Atlas textures themselves live in SharedRenderData.
         vsg::ref_ptr<vsg::DescriptorBuffer> slugLayersBuf;
 #endif
 

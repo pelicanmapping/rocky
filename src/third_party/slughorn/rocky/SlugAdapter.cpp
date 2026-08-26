@@ -23,6 +23,12 @@ namespace rocky::detail
         using slughorn::canvas::LineJoin;
         using slughorn::canvas::Path;
 
+        /**
+         * Associates a Canvas result with Rocky metadata until Atlas::build()
+         * assigns final band-table locations. A Layer identifies the Slughorn
+         * key/color/placement, while owner and the UV rows are Rocky data that
+         * must survive the private SDK boundary.
+         */
         struct PendingLayer
         {
             std::uint32_t owner = 0u;
@@ -129,6 +135,9 @@ namespace rocky::detail
             return result;
         }
 
+        //! Selects more spatial bands for complex shapes so the fragment shader
+        //! examines shorter curve lists. Small shapes retain Slughorn's normal
+        //! curveCount/2 behavior; complex shapes use every indirection cell.
         int bandCountForCurveCount(std::size_t curveCount)
         {
             // Match Slughorn's existing one-band-per-two-curves policy for
@@ -156,6 +165,10 @@ namespace rocky::detail
         SlugAtlasOutput& output,
         std::string& error)
     {
+        // This function is a transactional C++20 island. It authors every
+        // requested Rocky shape into a fresh SDK Atlas, builds and optionally
+        // serializes it, then copies only POD texture/layer data across the
+        // C++17 boundary. Exceptions and partial atlas state never escape.
         output = {};
         error.clear();
 

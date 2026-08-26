@@ -13,13 +13,19 @@
 
 namespace ROCKY_NAMESPACE
 {
-    /** GPU-facing metadata for one vector shape in an overlay's Slug atlas. */
+    /**
+     * GPU-facing metadata for one vector layer in an overlay's Slug atlas.
+     *
+     * Atlas texels alone are insufficient to evaluate a shape: the shader also
+     * needs the projector-UV-to-authoring transform and the location of that
+     * shape's band tables. DecalSystem copies these fields into SlugLayerGPU.
+     */
     struct SlugLayerResource
     {
         //! Shape color before Overlay/ProjectedTexture modulation.
         Color color = StockColor::White;
 
-        //! Outer stroke ring; emitted before non-outline layers across payloads.
+        //! Outer stroke/casing; emitted before non-outline layers across payloads.
         bool isOutline = false;
 
         //! Affine rows converting projector UV into Slughorn em coordinates.
@@ -43,10 +49,19 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::ImageInfo> curveTexture;
         vsg::ref_ptr<vsg::ImageInfo> bandTexture;
 
+        //! Ordered layers stored in the atlas. DecalSystem groups outlines
+        //! ahead of cores when it writes the per-view layer buffer.
         std::vector<SlugLayerResource> layers;
+
+        //! Runtime atlas width and indirection-table contract consumed by the
+        //! shader. Width is logarithmic because band offsets wrap by bit shift.
         std::uint32_t textureWidthLog2 = 0u;
         std::uint32_t indirectionSize = 0u;
+
+        //! Ready means the atlas pair and layer metadata form a valid producer
+        //! result. Descriptor residency is tracked separately by DecalSystem.
         bool ready = false;
+        //! Producer failure/status text when ready is false.
         std::string message;
 
         //! Changes whenever this entity's published layer set changes.

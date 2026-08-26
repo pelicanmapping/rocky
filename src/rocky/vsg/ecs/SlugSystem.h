@@ -14,8 +14,13 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Experimental vector-only overlay encoder. Each supported Line/Point
-     * payload receives an independently owned Slughorn atlas pair.
+     * Experimental vector overlay encoder.
+     *
+     * Each supported Mesh/Line/Point Overlay receives an independently owned
+     * Slughorn curve/band atlas pair. The system publishes that pair and its
+     * per-layer mapping metadata as a SlugResource; DecalSystem owns descriptor
+     * residency and rendering. Mesh input is accepted as a compatibility path
+     * but logs a warning because each triangle becomes an independent contour.
      */
     class ROCKY_EXPORT SlugSystemNode :
         public vsg::Inherit<detail::SimpleSystemNodeBase, SlugSystemNode>

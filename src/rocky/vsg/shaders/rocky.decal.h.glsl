@@ -9,6 +9,21 @@
 #include "rocky.defines.h.glsl"
 #ifdef ROCKY_HAS_DECALS
 
+/*
+ * Decal rendering is split between a compute and fragment stage:
+ *
+ *  1. rocky.decal.cull.comp intersects each logical Decal with the view's
+ *     16x16 screen-cell frustums and writes compact DecalTile index lists.
+ *  2. The terrain fragment shader reads only its cell's list, applies the
+ *     projector transform, and dispatches to an RTT texture sample or Slug's
+ *     analytic coverage evaluator.
+ *
+ * A Slug decal still occupies one logical Decal entry. Its individual atlas
+ * shapes live in SlugLayer and are addressed by Decal::slugLayerRange. This
+ * preserves the common culling/order path and prevents an outline/core pair
+ * from consuming multiple entries in the bounded tile list.
+ */
+
 #extension GL_EXT_nonuniform_qualifier : enable
 
 #ifdef SSBOS_ARE_WRITABLE
@@ -145,7 +160,8 @@ void applyDecals(
         return;
 
 #ifdef ROCKY_HAS_SLUGHORN
-    // Slug outlines from every logical decal must composite before any cores.
+    // Slug outlines from every logical decal must composite before any cores;
+    // otherwise adjoining road cores can cover a neighboring road's casing.
     // Non-Slug decals participate only in the regular (second) pass.
     for (int pass = 0; pass < 2; ++pass)
 #else

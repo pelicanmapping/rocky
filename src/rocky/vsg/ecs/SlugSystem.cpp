@@ -24,6 +24,21 @@
 
 using namespace ROCKY_NAMESPACE;
 
+/*
+ * Slug overlay data flow
+ * ----------------------
+ *
+ *   Overlay + same-entity Mesh/Line/Point
+ *       -> projector-local authoring inputs
+ *       -> private C++17 SlugAdapter boundary
+ *       -> one independently owned atlas pair per Overlay
+ *       -> SlugResource + SlugLayerResource metadata
+ *       -> DecalSystem descriptor slot + per-view SlugLayerGPU records
+ *       -> terrain fragment shader analytic coverage
+ *
+ * Slughorn types are confined to the private C++20 adapter. This translation
+ * unit remains part of Rocky's C++17 target and deals only in adapter PODs.
+ */
 namespace
 {
     using rocky::detail::SlugAtlasInput;
@@ -35,16 +50,30 @@ namespace
     using rocky::detail::SlugShapeKind;
     using rocky::detail::SlugTextureFormat;
 
+    /**
+     * Transactional scratch state for rebuilding one overlay payload.
+     *
+     * Registry data is first captured as adapter inputs under a read lock. The
+     * CPU atlas and VSG images are then built without mutating the registry.
+     * Finally, a write phase atomically publishes this result as SlugResource.
+     * Until that final phase, an older ready resource remains untouched.
+     */
     struct OverlayBuild
     {
         entt::entity entity = entt::null;
+
+        // CPU-side adapter input and converted GPU-facing output.
         std::vector<SlugShapeInput> shapes;
         std::vector<SlugLayerResource> layers;
         vsg::ref_ptr<vsg::ImageInfo> curveTexture;
         vsg::ref_ptr<vsg::ImageInfo> bandTexture;
+
+        // Rebuild key and shader/atlas contract.
         std::size_t sourceSignature = 0u;
         std::uint32_t textureWidthLog2 = 0u;
         std::uint32_t indirectionSize = 0u;
+
+        // Diagnostic export and nonfatal/fatal reporting state.
         bool exportOnly = false;
         std::string exportPath;
         bool exportAttempted = false;
@@ -55,6 +84,15 @@ namespace
         std::string error;
     };
 
+    /**
+     * Converts source geometry into the projector's normalized authoring UV.
+     *
+     * Geometry without an SRS is already projector-local: local [-.5,+.5]
+     * becomes UV [0,1]. Georeferenced geometry first goes to world coordinates
+     * and then through the inverse fitted projector frame before the same +.5
+     * shift. The affine rows are forwarded to Slughorn layer metadata so the
+     * fragment shader can reproduce the authoring coordinate system.
+     */
     struct SlugPointMapper
     {
         bool useSRSOperation = false;
@@ -96,6 +134,14 @@ namespace
         }
     };
 
+    /**
+     * Metric authoring transform used by distance-unit line widths.
+     *
+     * Slughorn expects path coordinates and stroke width in one coordinate
+     * system. This converts normalized projector UV into an orthonormal metric
+     * plane, factors out referenceMeters to keep coordinates near [0,1], and
+     * lets addLine express a requested meter width in that same scaled space.
+     */
     struct SlugMetricSpace
     {
         double referenceMeters = 1.0;

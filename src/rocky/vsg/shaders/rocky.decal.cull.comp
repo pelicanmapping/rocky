@@ -9,6 +9,12 @@
 #pragma include "rocky.frustumgrid.h.glsl"
 #pragma include "rocky.decal.h.glsl"
 
+// One invocation owns one screen cell. It scans the small global logical-decal
+// list, writes intersecting indices into that cell's bounded DecalTile, and
+// tags indices that need the fragment shader's outline pass. Slug shapes do not
+// participate individually here; their parent Decal carries their common
+// projector volume and a range into the SlugLayer buffer.
+
 layout(local_size_x = FRUSTUM_GRID_TILES_PER_THREAD_GROUP,
     local_size_y = FRUSTUM_GRID_TILES_PER_THREAD_GROUP) in;
 

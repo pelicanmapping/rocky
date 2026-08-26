@@ -10,23 +10,23 @@
 
 namespace ROCKY_NAMESPACE
 {
-    //! Rendering pathway used for an overlay decal.
+    //! Rendering technique used to draw an overlay on terrain.
     enum class OverlayTechnique
     {
-        RTT,  //!< Rasterize the overlay into a render-to-texture image.
+        RTT,  //!< Rasterize the overlay into an intermediate image.
 #ifdef ROCKY_HAS_SLUGHORN
-        //! Experimental, vector-only analytic decal pathway. This supports a
-        //! deliberately restricted subset of Rocky geometry and style semantics.
-        Slug  //!< Encode vectors in a Slughorn atlas and evaluate them in the decal shader.
+        //! Experimental analytic rendering for vector geometry. This supports
+        //! a deliberately restricted subset of geometry and style semantics.
+        Slug
 #endif
     };
 
     /**
-    * Control component that projects same-entity geometry on terrain as a decal.
-    */
+     * Draws geometry on this entity as an overlay on the terrain.
+     */
     struct Overlay : public Component<Overlay>
     {
-        //! Decal rendering pathway. RTT preserves the established behavior.
+        //! Technique used to render this overlay.
         OverlayTechnique technique = OverlayTechnique::RTT;
 
         //! RTT dimensions in pixels. Slug uses this as the nominal scale for

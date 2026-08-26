@@ -30,7 +30,7 @@ namespace ROCKY_NAMESPACE
         Premultiplied
     };
 
-    //! A CPU image that a renderer can publish as a TextureResource.
+    //! A CPU image used as projected texture content.
     struct ImageTexture : public Component<ImageTexture>
     {
         Image::Ptr image;

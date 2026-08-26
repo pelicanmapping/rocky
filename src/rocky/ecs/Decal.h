@@ -12,6 +12,7 @@
 
 namespace ROCKY_NAMESPACE
 {
+    //! Image and appearance settings for a Decal.
     struct DecalStyle : public Component<DecalStyle>
     {
         //! Image to use for decal
@@ -25,9 +26,13 @@ namespace ROCKY_NAMESPACE
         Color color = StockColor::White;
     };
 
-
-    //! Convenience facade for a ProjectedTexture using a DecalStyle image.
-    //! ProjectedTexture and ImageTexture are the composable low-level API.
+    /**
+     * Projects an image onto terrain from an entity's Transform or Optics.
+     *
+     * A null style or optics reference resolves to this Decal's own entity.
+     * Without Optics, the transformed unit cube defines an orthographic
+     * projection volume.
+     */
     struct Decal : public Component<Decal>
     {
         //! Optional entity containing the Optics used to project this decal. When
@@ -35,7 +40,7 @@ namespace ROCKY_NAMESPACE
         //! the decal is an orthographic projection of its transformed unit cube.
         entt::entity optics = entt::null;
 
-        //! Style entity, if applicable
+        //! Entity containing the DecalStyle. Null uses this Decal's entity.
         entt::entity style = entt::null;
 
         //! Construct a default decal

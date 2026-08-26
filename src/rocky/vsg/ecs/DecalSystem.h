@@ -13,7 +13,13 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * ECS system that handles Decal components
+     * Normalizes decal facades and publishes projected payloads to the GPU.
+     *
+     * Decal, DecalStyle, and Overlay are adapted into the lower-level
+     * ProjectedTexture and texture-source components. The system then assigns
+     * visible TextureResource or SlugResource payloads to bounded global
+     * descriptor arrays, writes per-view DecalGPU/SlugLayerGPU records, and
+     * dispatches the compute shader that builds each screen tile's decal list.
      */
     class ROCKY_EXPORT DecalSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, DecalSystemNode>
     {
@@ -32,7 +38,8 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        // Per-view data, calculated during the record traversal
+        //! Per-view compute commands. The commands cull logical decals into
+        //! that view's screen-tile lists before terrain fragments consume them.
         struct ViewDetail
         {
             vsg::ref_ptr<vsg::Commands> commands;
