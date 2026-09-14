@@ -6,6 +6,7 @@
 #include "DecalSystem.h"
 #include "OpticsSystem.h"
 #include "ECSVisitors.h"
+#include "OverlayRenderContext.h"
 #ifdef ROCKY_HAS_SLUGHORN
 #include "SlugResource.h"
 #endif
@@ -48,7 +49,7 @@ namespace
 
     //! Records that DecalSystem materialized a self-projecting
     //! ProjectedTexture for an Overlay. OverlayBakeSystem or SlugSystem then
-    //! supplies the payload resource selected by Overlay::technique.
+    //! supplies the payload resource selected by Overlay::mode.
     struct OverlayProjectionFacadeAdapter
     {
         bool ownsProjectedTexture = false;
@@ -506,7 +507,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
             const auto payload = projected.texture != entt::null ? projected.texture : entity;
 #ifdef ROCKY_HAS_SLUGHORN
             const auto* overlay = reg.try_get<Overlay>(payload);
-            if (overlay && overlay->technique == OverlayTechnique::Slug)
+            if (overlay && resolveOverlayMode(overlay->mode) == OverlayMode::Vector)
                 demandedSlugAtlases.insert(payload);
             else
 #endif
@@ -676,7 +677,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
             const auto payload = projected.texture != entt::null ? projected.texture : entity;
 #ifdef ROCKY_HAS_SLUGHORN
             const auto* overlay = reg.try_get<Overlay>(payload);
-            if (overlay && overlay->technique == OverlayTechnique::Slug)
+            if (overlay && resolveOverlayMode(overlay->mode) == OverlayMode::Vector)
             {
                 const auto* resource = reg.try_get<SlugResource>(payload);
                 const auto* detail = reg.try_get<SlugSlotDetail>(payload);
@@ -1059,7 +1060,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
 #ifdef ROCKY_HAS_SLUGHORN
                     const auto* overlay = reg.try_get<Overlay>(e_texture);
-                    if (overlay && overlay->technique == OverlayTechnique::Slug)
+                    if (overlay && resolveOverlayMode(overlay->mode) == OverlayMode::Vector)
                     {
                         // Perspective UV derivatives are intentionally deferred from
                         // this first Slug slice; the shader also guards this case.

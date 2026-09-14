@@ -6,6 +6,7 @@
 #include "ECSNode.h"
 
 #include "MeshSystem.h"
+#include "PolygonSystem.h"
 #include "LineSystem.h"
 #include "PointSystem.h"
 #include "LabelSystem.h"
@@ -218,6 +219,7 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
         add(OpticsSystemNode::create(registry));
         add(NodeSystemNode::create(registry));
         add(ModelSystemNode::create(registry));
+        add(PolygonSystemNode::create(registry));
         add(MeshSystemNode::create(registry));
         add(LineSystemNode::create(registry));
         add(PointSystemNode::create(registry));

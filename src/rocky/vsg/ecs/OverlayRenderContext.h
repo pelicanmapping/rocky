@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/Common.h>
+#include <rocky/ecs/Overlay.h>
 #include <rocky/ecs/ProjectedTexture.h>
 #include <entt/entt.hpp>
 #include <utility>
@@ -14,6 +15,19 @@ namespace ROCKY_NAMESPACE
 {
     namespace detail
     {
+        // Resolve backend availability without modifying the requested mode.
+        // All overlay producers and consumers must agree on this decision;
+        // in particular, Raster fallback still needs Polygon's derived mesh.
+        // The facade adapter reports fallback once per Overlay instance.
+        inline OverlayMode resolveOverlayMode(OverlayMode requested)
+        {
+#ifndef ROCKY_HAS_SLUGHORN
+            if (requested == OverlayMode::Vector)
+                return OverlayMode::Raster;
+#endif
+            return requested;
+        }
+
         static constexpr const char* RENDER_PURPOSE_KEY = "rocky.render_purpose";
         static constexpr const char* RENDER_REQUEST_KEY = "rocky.render_request";
 

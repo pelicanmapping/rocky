@@ -667,12 +667,26 @@ namespace
         Box local_ex;
 
         // transform the geometry to gnomonic coordinates, and establish the extent.
+        double source_z_sum = 0.0;
+        std::size_t source_z_count = 0u;
         local_geom.eachPart([&](Geometry& part)
             {
                 feature_to_geo.transformArray(part.points.data(), part.points.size());
                 geo_to_gnomonic(part.points.begin(), part.points.end(), centroid, gnomonic_scale);
                 local_ex.expandBy(part.points.begin(), part.points.end());
+                for (const auto& point : part.points)
+                {
+                    source_z_sum += point.z;
+                    ++source_z_count;
+                }
             });
+
+        // PolygonGeometry may already contain sampled elevations even though
+        // this deferred triangulation has no ElevationSession. Seed new mesh
+        // vertices near the source surface instead of silently putting them at
+        // ellipsoid height. A live clamper, when present, still replaces these.
+        const double seed_z = source_z_count > 0u ?
+            source_z_sum / static_cast<double>(source_z_count) : 0.0;
 
         // start with a tessellated weemesh covering the feature extent.
         // The amount of tessellation is determined by the resolution_degrees to account
@@ -713,7 +727,8 @@ namespace
                 double u = (double)col / (double)(cols - 1);
                 double x = local_ex.xmin + u * local_ex.width();
 
-                grid_indices.emplace_back(m.get_or_create_vertex_from_vec3(glm::dvec3{ x, y, 0.0 }, marker));
+                grid_indices.emplace_back(
+                    m.get_or_create_vertex_from_vec3(glm::dvec3{ x, y, seed_z }, marker));
             }
         }
 
@@ -901,6 +916,121 @@ namespace
             compile_polygon_feature(b, style, origin, clamper, output_srs, meshGeom, depth + 1);
         }
     }
+
+    //! Copies a ring into the implicit-closure representation used by PolygonGeometry.
+    PolygonPart::Ring copy_open_ring(const std::vector<glm::dvec3>& input)
+    {
+        auto size = input.size();
+        if (size > 1u && input.front() == input.back())
+            --size;
+        return PolygonPart::Ring(input.begin(), input.begin() + size);
+    }
+
+    //! Converts a strongly typed polygon part back to Feature's polygon layout.
+    Geometry make_feature_polygon(const PolygonPart& input)
+    {
+        Geometry output(Geometry::Type::Polygon);
+        output.points = input.outer;
+        output.parts.reserve(input.holes.size());
+        for (const auto& ring : input.holes)
+            output.parts.emplace_back(Geometry::Type::LineString, ring);
+        return output;
+    }
+
+    //! Emits one planar PolygonPart as triangles. This is the local-coordinate
+    //! counterpart to the georeferenced gnomonic compiler above.
+    void compile_planar_polygon(
+        const PolygonPart& polygon,
+        const Color& color,
+        MeshGeometry& meshGeom)
+    {
+        if (polygon.outer.size() < 3u)
+            return;
+
+        Geometry local_geom = make_feature_polygon(polygon);
+        Box bounds;
+        double average_z = 0.0;
+        std::size_t point_count = 0u;
+        local_geom.eachPart([&](const Geometry& ring)
+        {
+            bounds.expandBy(ring.points.begin(), ring.points.end());
+            for (const auto& point : ring.points)
+            {
+                average_z += point.z;
+                ++point_count;
+            }
+        });
+
+        if (!bounds.valid() || bounds.width() <= 0.0 || bounds.height() <= 0.0)
+            return;
+
+        average_z = point_count > 0u ? average_z / static_cast<double>(point_count) : 0.0;
+
+        // Keep the seed vertices just outside the polygon bounds. If a polygon
+        // vertex is itself a bounding-box corner, seeding at the exact corner
+        // would cause weemesh to retain the seed's averaged Z instead of the
+        // source ring vertex's Z when the boundary is inserted.
+        const double padding = std::max(bounds.width(), bounds.height()) * 1e-6;
+
+        weemesh::mesh_t mesh;
+        const int marker = 0;
+        const glm::dvec3 corners[] = {
+            { bounds.xmin - padding, bounds.ymin - padding, average_z },
+            { bounds.xmax + padding, bounds.ymin - padding, average_z },
+            { bounds.xmin - padding, bounds.ymax + padding, average_z },
+            { bounds.xmax + padding, bounds.ymax + padding, average_z }
+        };
+        int indices[4];
+        for (unsigned i = 0u; i < 4u; ++i)
+            indices[i] = mesh.get_or_create_vertex_from_vec3(corners[i], marker);
+
+        mesh.add_triangle(indices[0], indices[1], indices[2]);
+        mesh.add_triangle(indices[1], indices[3], indices[2]);
+
+        local_geom.eachPart([&](const Geometry& ring)
+        {
+            for (std::size_t i = 0u; i < ring.points.size(); ++i)
+            {
+                const auto j = (i + 1u) % ring.points.size();
+                mesh.insert(weemesh::segment_t{ ring.points[i], ring.points[j] },
+                    marker | mesh._has_elevation_marker);
+            }
+        });
+
+        std::vector<weemesh::triangle_t*> outside;
+        outside.reserve(mesh.triangles.size());
+        for (auto& entry : mesh.triangles)
+        {
+            auto& triangle = entry.second;
+            const auto center = (triangle.p0 + triangle.p1 + triangle.p2) * (1.0 / 3.0);
+            if (!local_geom.contains(center.x, center.y))
+                outside.emplace_back(&triangle);
+        }
+        for (auto* triangle : outside)
+            mesh.remove_triangle(*triangle);
+
+        for (const auto& entry : mesh.triangles)
+        {
+            const auto& triangle = entry.second;
+            const glm::dvec3 p0 = mesh.verts[triangle.i0];
+            const glm::dvec3 p1 = mesh.verts[triangle.i1];
+            const glm::dvec3 p2 = mesh.verts[triangle.i2];
+            auto normal = glm::cross(p1 - p0, p2 - p0);
+            if (glm::length(normal) > 0.0)
+                normal = glm::normalize(normal);
+            else
+                normal = glm::dvec3(0.0, 0.0, 1.0);
+
+            const auto base = static_cast<std::uint32_t>(meshGeom.vertices.size());
+            meshGeom.vertices.insert(meshGeom.vertices.end(), { p0, p1, p2 });
+            meshGeom.colors.insert(meshGeom.colors.end(), { color, color, color });
+            meshGeom.normals.insert(meshGeom.normals.end(), {
+                glm::fvec3(normal), glm::fvec3(normal), glm::fvec3(normal) });
+            meshGeom.uvs.insert(meshGeom.uvs.end(), {
+                glm::fvec2(0.0f), glm::fvec2(0.0f), glm::fvec2(0.0f) });
+            meshGeom.indices.insert(meshGeom.indices.end(), { base, base + 1u, base + 2u });
+        }
+    }
 }
 
 #if 0
@@ -1042,5 +1172,114 @@ FeatureBuilder::buildMeshGeometry(const std::vector<Feature>& features, const Me
                 clamper.srs = feature.srs;
             compile_polygon_feature(feature, style, origin, clamper, outputSRS, meshGeom);
         }
+    }
+}
+
+//! Builds an ECS PolygonGeometry object while retaining each polygon's exterior
+//! and hole rings for consumers that do not require triangulation.
+void
+FeatureBuilder::buildPolygonGeometry(const std::vector<Feature>& features,
+    const PolygonStyle& style, PolygonGeometry& polygonGeom)
+{
+    polygonGeom.srs = outputSRS;
+
+    // Match MeshStyle's zero-value convention while retaining the boundary
+    // curvature limit used by PolygonGeometry before this hint lived in style.
+    const float boundaryResolution =
+        style.resolution > 0.0f ? style.resolution : 100000.0f;
+
+    for (const auto& feature : features)
+    {
+        if (feature.geometry.type != Geometry::Type::Polygon &&
+            feature.geometry.type != Geometry::Type::MultiPolygon)
+        {
+            continue;
+        }
+
+        Geometry prepared = feature.geometry;
+        tessellate_polygon_edges(
+            prepared, feature.srs, feature.interpolation, boundaryResolution);
+
+        if (clamper.srs)
+            clamper.srs = feature.srs;
+
+        prepared.eachPart([&](Geometry& ring)
+        {
+            if (clamper && !ring.points.empty())
+                clamper.clampRange(ring.points.begin(), ring.points.end());
+        });
+
+        const auto feature_to_output = feature.srs.to(outputSRS);
+        prepared.eachPart([&](Geometry& ring)
+        {
+            if (!ring.points.empty() && feature_to_output.valid())
+                feature_to_output.transformArray(ring.points.data(), ring.points.size());
+        });
+
+        if (origin.valid())
+        {
+            const auto reference = origin.transform(outputSRS);
+            if (reference.valid())
+            {
+                prepared.eachPart([&](Geometry& ring)
+                {
+                    for (auto& point : ring.points)
+                        point -= glm::dvec3(reference.x, reference.y, reference.z);
+                });
+            }
+        }
+
+        const auto feature_color = colorFunction ? colorFunction(feature) : StockColor::White;
+        Geometry::const_iterator(prepared, false).eachPart([&](const Geometry& polygon)
+        {
+            PolygonPart output;
+            output.outer = copy_open_ring(polygon.points);
+            if (output.outer.size() < 3u)
+                return;
+
+            output.holes.reserve(polygon.parts.size());
+            for (const auto& hole : polygon.parts)
+            {
+                auto ring = copy_open_ring(hole.points);
+                if (ring.size() >= 3u)
+                    output.holes.emplace_back(std::move(ring));
+            }
+
+            polygonGeom.polygons.emplace_back(std::move(output));
+            polygonGeom.colors.emplace_back(feature_color);
+        });
+    }
+}
+
+//! Triangulates PolygonGeometry for the ordinary mesh rendering pathway.
+void
+FeatureBuilder::buildMeshGeometry(const PolygonGeometry& polygons,
+    const PolygonStyle& style, MeshGeometry& meshGeom)
+{
+    meshGeom.srs = polygons.srs;
+
+    for (std::size_t i = 0u; i < polygons.polygons.size(); ++i)
+    {
+        const auto& polygon = polygons.polygons[i];
+        const auto color = style.useGeometryColors && i < polygons.colors.size() ?
+            polygons.colors[i] : style.color;
+
+        if (!polygons.srs.valid())
+        {
+            compile_planar_polygon(polygon, color, meshGeom);
+            continue;
+        }
+
+        Feature feature;
+        feature.srs = polygons.srs;
+        feature.geometry = make_feature_polygon(polygon);
+        feature.dirtyExtent();
+
+        MeshStyle meshStyle;
+        meshStyle.color = color;
+        meshStyle.resolution = style.resolution;
+        ElevationSession no_clamper;
+        compile_polygon_feature(
+            feature, meshStyle, {}, no_clamper, polygons.srs, meshGeom);
     }
 }

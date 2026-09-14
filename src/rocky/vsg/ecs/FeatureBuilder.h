@@ -8,6 +8,7 @@
 #include <rocky/Feature.h>
 #include <rocky/ecs/Line.h>
 #include <rocky/ecs/Mesh.h>
+#include <rocky/ecs/Polygon.h>
 #include <vector>
 
 namespace ROCKY_NAMESPACE
@@ -53,5 +54,13 @@ namespace ROCKY_NAMESPACE
         //! Append mesh geometry for a collection of features.
         void buildMeshGeometry(const std::vector<Feature>& features, const MeshStyle& style,
             MeshGeometry& meshGeom);
+
+        //! Append polygon geometry while preserving exterior rings and holes.
+        void buildPolygonGeometry(const std::vector<Feature>& features,
+            const PolygonStyle& style, PolygonGeometry& polygonGeom);
+
+        //! Append a triangulated mesh derived from polygon geometry.
+        void buildMeshGeometry(const PolygonGeometry& polygons,
+            const PolygonStyle& style, MeshGeometry& meshGeom);
     };
 }

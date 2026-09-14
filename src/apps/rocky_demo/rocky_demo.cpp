@@ -18,6 +18,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Map.h"
 #include "Demo_Line.h"
 #include "Demo_Mesh.h"
+#include "Demo_Polygon.h"
 #include "Demo_Point.h"
 #include "Demo_Model.h"
 #include "Demo_Label.h"
@@ -98,6 +99,7 @@ std::vector<Demo> demos =
             Demo{ "Mesh - Blending", Demo_Mesh_Blending },
             Demo{ "Mesh - Lighting", Demo_Mesh_Lighting }
         } },
+        Demo{ "Polygon", Demo_Polygon },
         Demo{ "Point", Demo_Point },
         //Demo{ "Icon", Demo_Icon },
         Demo{ "Label", Demo_Label },
@@ -114,7 +116,7 @@ std::vector<Demo> demos =
             Demo{ "Overlay geometry (relative)", Demo_Overlay_Relative }
 #ifdef ROCKY_HAS_SLUGHORN
             ,
-            Demo{ "RTT vs Slug", Demo_SlugOverlay }
+            Demo{ "Raster vs Vector", Demo_SlugOverlay }
 #endif
         } }
     } },

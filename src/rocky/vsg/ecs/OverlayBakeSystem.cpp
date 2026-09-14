@@ -9,6 +9,7 @@
 #include "../RTT.h"
 #include "../ViewDependentState.h"
 #include <rocky/vsg/VSGUtils.h>
+#include <rocky/Log.h>
 #include "ECSTypes.h"
 #include <algorithm>
 #include <cfloat>
@@ -32,17 +33,21 @@ namespace
      * Ownership record for components synthesized from an Overlay facade.
      *
      * These flags remain false when the caller supplied the corresponding
-     * low-level component. That distinction lets technique changes and Overlay
+     * low-level component. That distinction lets mode changes and Overlay
      * destruction clean up generated state without disturbing an independently
      * managed RenderTexture or RenderParticipation policy.
      */
     struct OverlayBakeFacadeAdapter
     {
         // True when this facade is responsible for creating/removing the
-        // same-entity RenderTexture. It remains true while the Slug technique
+        // same-entity RenderTexture. It remains true while Vector mode
         // has that component intentionally suppressed.
         bool ownsRenderTexture = false;
         bool ownsParticipation = false;
+
+        // Facade synchronization runs every frame. Remember this warning for
+        // the Overlay's lifetime so fallback never floods the log on updates.
+        bool warnedAboutVectorFallback = false;
     };
 
     /**
@@ -71,7 +76,7 @@ namespace
         bool transformAvailable = false;
     };
 
-    //! Keeps facade-owned low-level components synchronized with technique and
+    //! Keeps facade-owned low-level components synchronized with mode and
     //! Overlay settings. Slug intentionally suppresses the RenderTexture while
     //! retaining ownership so switching back to RTT can recreate it safely.
     void synchronizeOverlayFacade(
@@ -80,7 +85,16 @@ namespace
         Overlay& overlay,
         OverlayBakeFacadeAdapter& adapter)
     {
-        const bool useRTT = overlay.technique == OverlayTechnique::RTT;
+        const auto mode = resolveOverlayMode(overlay.mode);
+        if (mode != overlay.mode && !adapter.warnedAboutVectorFallback)
+        {
+            Log()->warn(
+                "Overlay: Vector mode requested for entity {}, but Slughorn support "
+                "is not available; falling back to Raster.",
+                entt::to_integral(entity));
+            adapter.warnedAboutVectorFallback = true;
+        }
+        const bool useRTT = mode == OverlayMode::Raster;
 
         if (useRTT && r.any_of<SlugOverlayFitDetail>(entity))
             r.remove<SlugOverlayFitDetail>(entity);
@@ -91,7 +105,7 @@ namespace
             {
                 auto& renderTexture = r.get_or_emplace<RenderTexture>(entity);
                 renderTexture.sources = { entity };
-                renderTexture.textureSize = overlay.textureSize;
+                renderTexture.textureSize = overlay.resolution;
                 renderTexture.useDepthBuffer = overlay.useDepthBuffer;
                 renderTexture.continuous = overlay.continuousBake;
             }
@@ -111,7 +125,7 @@ namespace
 
     inline glm::uvec2 resolveTextureSize(const Overlay& overlay, unsigned fallback)
     {
-        glm::uvec2 size = overlay.textureSize;
+        glm::uvec2 size = overlay.resolution;
         if (size.x == 0u) size.x = fallback;
         if (size.y == 0u) size.y = fallback;
         return size;
@@ -915,7 +929,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
         {
             r.view<Overlay>().each([&](auto entity, auto& overlay)
                 {
-                    if (overlay.technique != OverlayTechnique::Slug ||
+                    if (resolveOverlayMode(overlay.mode) != OverlayMode::Vector ||
                         r.any_of<RenderTexture>(entity))
                     {
                         if (r.any_of<SlugOverlayFitDetail>(entity))
@@ -928,7 +942,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
 
                     // A caller-supplied projector is authoritative. In
                     // particular, never start tracking it as an auto fit merely
-                    // because the Overlay technique changed.
+                    // because the Overlay mode changed.
                     if (transform && !autoManaged)
                     {
                         if (r.any_of<SlugOverlayFitDetail>(entity))

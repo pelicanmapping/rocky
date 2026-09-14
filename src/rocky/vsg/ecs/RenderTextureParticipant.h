@@ -21,6 +21,7 @@ namespace ROCKY_NAMESPACE
     namespace RenderTextureOrder
     {
         constexpr int Transform = 0;
+        constexpr int Polygon = 90;
         constexpr int Mesh = 100;
         constexpr int Line = 200;
         constexpr int Point = 300;

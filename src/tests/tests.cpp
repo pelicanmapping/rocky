@@ -2,6 +2,10 @@
 #include "catch.hpp"
 
 #include <rocky/rocky.h>
+#include <rocky/Log.h>
+#ifndef ROCKY_HAS_SLUGHORN
+#include <spdlog/sinks/ostream_sink.h>
+#endif
 #include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/ecs/Overlay.h>
 #include <rocky/ecs/Decal.h>
@@ -12,6 +16,7 @@
 #endif
 #include <rocky/vsg/ecs/DecalSystem.h>
 #include <rocky/vsg/ecs/MeshSystem.h>
+#include <rocky/vsg/ecs/PolygonSystem.h>
 #include <rocky/vsg/ecs/LineSystem.h>
 #include <rocky/vsg/ecs/PointSystem.h>
 #include <rocky/vsg/ecs/ModelSystem.h>
@@ -24,6 +29,7 @@
 #include <filesystem>
 #include <fstream>
 #include <random>
+#include <sstream>
 #include <thread>
 #include <unordered_map>
 
@@ -90,6 +96,237 @@ TEST_CASE("mesh feature default tessellation is curvature bounded", "[featurebui
     CHECK(fineGeometry.vertices.size() > defaultGeometry.vertices.size());
 }
 
+TEST_CASE("polygon geometry preserves rings and triangulates holes", "[featurebuilder][polygon]")
+{
+    Feature feature;
+    feature.srs = SRS::WGS84;
+    feature.geometry.type = Geometry::Type::Polygon;
+    feature.geometry.points = {
+        { -2.0, -2.0, 0.0 },
+        {  2.0, -2.0, 0.0 },
+        {  2.0,  2.0, 0.0 },
+        { -2.0,  2.0, 0.0 },
+        { -2.0, -2.0, 0.0 }
+    };
+    feature.geometry.parts.emplace_back(Geometry::Type::LineString,
+        std::vector<glm::dvec3>{
+            { -1.0, -1.0, 0.0 },
+            { -1.0,  1.0, 0.0 },
+            {  1.0,  1.0, 0.0 },
+            {  1.0, -1.0, 0.0 },
+            { -1.0, -1.0, 0.0 }
+        });
+    feature.dirtyExtent();
+
+    FeatureBuilder builder;
+    builder.colorFunction = [](const Feature&) { return StockColor::Red; };
+    PolygonStyle buildStyle;
+    buildStyle.resolution = 1000000000.0f;
+
+    PolygonGeometry built;
+    builder.buildPolygonGeometry({ feature }, buildStyle, built);
+    REQUIRE(built.polygons.size() == 1u);
+    CHECK(built.polygons.front().outer.size() == 4u);
+    REQUIRE(built.polygons.front().holes.size() == 1u);
+    CHECK(built.polygons.front().holes.front().size() == 4u);
+    REQUIRE(built.colors.size() == 1u);
+    CHECK(built.colors.front() == StockColor::Red);
+
+    PolygonStyle finerBuildStyle;
+    finerBuildStyle.resolution = 50000.0f;
+    PolygonGeometry finerBuilt;
+    builder.buildPolygonGeometry({ feature }, finerBuildStyle, finerBuilt);
+    REQUIRE(finerBuilt.polygons.size() == 1u);
+    CHECK(finerBuilt.polygons.front().outer.size() >
+        built.polygons.front().outer.size());
+
+    // Deferred georeferenced triangulation has no ElevationSession, so any
+    // seed vertices it introduces must inherit the source surface elevation.
+    PolygonGeometry elevated;
+    elevated.srs = SRS::WGS84;
+    elevated.polygons.emplace_back(PolygonPart{
+        {
+            { -0.01, -0.01, 250.0 },
+            {  0.01, -0.01, 250.0 },
+            {  0.01,  0.01, 250.0 },
+            { -0.01,  0.01, 250.0 }
+        },
+        {}
+    });
+    PolygonStyle elevatedStyle;
+    elevatedStyle.color = StockColor::White;
+    MeshGeometry elevatedMesh;
+    builder.buildMeshGeometry(elevated, elevatedStyle, elevatedMesh);
+    REQUIRE_FALSE(elevatedMesh.vertices.empty());
+    for (const auto& vertex : elevatedMesh.vertices)
+        CHECK(vertex.z == Approx(250.0).epsilon(1e-9));
+
+    // Exercise the local-coordinate converter independently from projection.
+    built.srs = {};
+    PolygonStyle style;
+    style.useGeometryColors = true;
+    MeshGeometry mesh;
+    builder.buildMeshGeometry(built, style, mesh);
+
+    REQUIRE_FALSE(mesh.indices.empty());
+    REQUIRE((mesh.indices.size() % 3u) == 0u);
+    double area = 0.0;
+    for (std::size_t i = 0u; i < mesh.indices.size(); i += 3u)
+    {
+        const auto& a = mesh.vertices[mesh.indices[i]];
+        const auto& b = mesh.vertices[mesh.indices[i + 1u]];
+        const auto& c = mesh.vertices[mesh.indices[i + 2u]];
+        const auto center = (a + b + c) / 3.0;
+        const bool centerIsInHole =
+            std::abs(center.x) < 1.0 && std::abs(center.y) < 1.0;
+        CHECK_FALSE(centerIsInHole);
+        area += std::abs(glm::cross(b - a, c - a).z) * 0.5;
+    }
+    CHECK(area == Approx(12.0).epsilon(1e-6));
+}
+
+TEST_CASE("polygon system owns only its derived mesh", "[polygon][projection]")
+{
+    Registry registry = Registry::create();
+    auto polygonSystem = PolygonSystemNode::create(registry);
+    auto meshSystem = MeshSystemNode::create(registry);
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& geometry = reg.emplace<PolygonGeometry>(entity);
+        geometry.polygons.emplace_back(PolygonPart{
+            {
+                { -1.0, -1.0, 0.0 },
+                {  1.0, -1.0, 0.0 },
+                {  1.0,  1.0, 0.0 },
+                { -1.0,  1.0, 0.0 }
+            },
+            {}
+        });
+        auto& style = reg.emplace<PolygonStyle>(entity);
+        style.color = StockColor::Yellow;
+        style.depthOffset = 12.0f;
+        reg.emplace<rocky::Polygon>(entity, geometry, style);
+    });
+
+    polygonSystem->update(context.get());
+
+    entt::entity firstGeometry = entt::null;
+    entt::entity firstStyle = entt::null;
+    std::uint64_t firstGeometryRevision = 0u;
+    registry.read([&](entt::registry& reg)
+    {
+        REQUIRE(reg.any_of<Mesh>(entity));
+        const auto& mesh = reg.get<Mesh>(entity);
+        firstGeometry = mesh.geometry;
+        firstStyle = mesh.style;
+        REQUIRE(reg.valid(firstGeometry));
+        REQUIRE(reg.valid(firstStyle));
+        CHECK_FALSE(reg.get<MeshGeometry>(firstGeometry).vertices.empty());
+        firstGeometryRevision = reg.get<MeshGeometry>(firstGeometry).componentRevision();
+        CHECK(reg.get<MeshStyle>(firstStyle).color == StockColor::Yellow);
+        CHECK(reg.get<MeshStyle>(firstStyle).depthOffset == Approx(12.0f));
+    });
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto& style = reg.get<PolygonStyle>(entity);
+        style.color = StockColor::Red;
+        style.depthOffset = 37.0f;
+        style.dirty(reg);
+    });
+    polygonSystem->update(context.get());
+    registry.read([&](entt::registry& reg)
+    {
+        CHECK(reg.get<MeshGeometry>(firstGeometry).componentRevision() ==
+            firstGeometryRevision);
+        CHECK(reg.get<MeshStyle>(firstStyle).color == StockColor::Red);
+        CHECK(reg.get<MeshStyle>(firstStyle).depthOffset == Approx(37.0f));
+    });
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto& style = reg.get<PolygonStyle>(entity);
+        style.resolution = 5000.0f;
+        style.dirty(reg);
+    });
+    polygonSystem->update(context.get());
+    registry.read([&](entt::registry& reg)
+    {
+        CHECK(reg.get<MeshGeometry>(firstGeometry).componentRevision() !=
+            firstGeometryRevision);
+        CHECK(reg.get<MeshStyle>(firstStyle).resolution == Approx(5000.0f));
+    });
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto& overlay = reg.emplace<Overlay>(entity);
+        overlay.mode = OverlayMode::Raster;
+    });
+    polygonSystem->update(context.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        REQUIRE(reg.any_of<Mesh>(entity));
+        const auto& mesh = reg.get<Mesh>(entity);
+        CHECK(mesh.geometry == firstGeometry);
+        CHECK(mesh.style == firstStyle);
+        CHECK(reg.get<MeshStyle>(firstStyle).depthOffset == Approx(0.0f));
+    });
+
+    registry.write([&](entt::registry& reg)
+    {
+        reg.patch<Overlay>(entity, [](Overlay& overlay)
+        {
+            overlay.mode = OverlayMode::Vector;
+        });
+    });
+    polygonSystem->update(context.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        CHECK(reg.get<Overlay>(entity).mode == OverlayMode::Vector);
+#ifdef ROCKY_HAS_SLUGHORN
+        CHECK_FALSE(reg.any_of<Mesh>(entity));
+        CHECK_FALSE(reg.valid(firstGeometry));
+        CHECK_FALSE(reg.valid(firstStyle));
+#else
+        // Vector fallback keeps the mesh and its caches ready for Raster.
+        REQUIRE(reg.any_of<Mesh>(entity));
+        const auto& mesh = reg.get<Mesh>(entity);
+        CHECK(mesh.geometry == firstGeometry);
+        CHECK(mesh.style == firstStyle);
+        CHECK(reg.get<MeshStyle>(firstStyle).depthOffset == Approx(0.0f));
+#endif
+    });
+
+    registry.write([&](entt::registry& reg)
+    {
+        reg.patch<Overlay>(entity, [](Overlay& overlay)
+        {
+            overlay.mode = OverlayMode::Raster;
+        });
+    });
+    polygonSystem->update(context.get());
+
+    entt::entity secondGeometry = entt::null;
+    entt::entity secondStyle = entt::null;
+    registry.write([&](entt::registry& reg)
+    {
+        REQUIRE(reg.any_of<Mesh>(entity));
+        const auto& mesh = reg.get<Mesh>(entity);
+        secondGeometry = mesh.geometry;
+        secondStyle = mesh.style;
+        reg.remove<rocky::Polygon>(entity);
+        CHECK_FALSE(reg.any_of<Mesh>(entity));
+        CHECK_FALSE(reg.valid(secondGeometry));
+        CHECK_FALSE(reg.valid(secondStyle));
+    });
+}
+
 TEST_CASE("projected texture contracts", "[projection]")
 {
     LineStyle lineStyle;
@@ -107,7 +344,7 @@ TEST_CASE("projected texture contracts", "[projection]")
     CHECK(metricRecord.outlineWidth == Approx(0.6096f));
 
     Overlay overlay;
-    CHECK(overlay.technique == OverlayTechnique::RTT);
+    CHECK(overlay.mode == OverlayMode::Raster);
 
     RenderTexture renderTexture;
     CHECK(renderTexture.sources.empty());
@@ -403,21 +640,25 @@ TEST_CASE("legacy overlay adapter", "[projection]")
         REQUIRE(reg.any_of<RenderParticipation>(overlayEntity));
         CHECK_FALSE(reg.get<RenderParticipation>(overlayEntity).mainView);
 
-#ifdef ROCKY_HAS_SLUGHORN
         reg.patch<Overlay>(overlayEntity, [](auto& overlay)
         {
-            overlay.technique = OverlayTechnique::Slug;
+            overlay.mode = OverlayMode::Vector;
         });
+        CHECK(reg.get<Overlay>(overlayEntity).mode == OverlayMode::Vector);
+#ifdef ROCKY_HAS_SLUGHORN
         CHECK_FALSE(reg.any_of<RenderTexture>(overlayEntity));
         CHECK_FALSE(reg.get<RenderParticipation>(overlayEntity).renderTexture);
-
-        reg.patch<Overlay>(overlayEntity, [](auto& overlay)
-        {
-            overlay.technique = OverlayTechnique::RTT;
-        });
+#else
         CHECK(reg.any_of<RenderTexture>(overlayEntity));
         CHECK(reg.get<RenderParticipation>(overlayEntity).renderTexture);
 #endif
+
+        reg.patch<Overlay>(overlayEntity, [](auto& overlay)
+        {
+            overlay.mode = OverlayMode::Raster;
+        });
+        CHECK(reg.any_of<RenderTexture>(overlayEntity));
+        CHECK(reg.get<RenderParticipation>(overlayEntity).renderTexture);
 
         reg.remove<Overlay>(overlayEntity);
         CHECK_FALSE(reg.any_of<RenderTexture>(overlayEntity));
@@ -436,7 +677,234 @@ TEST_CASE("legacy overlay adapter", "[projection]")
     });
 }
 
+#ifndef ROCKY_HAS_SLUGHORN
+TEST_CASE("vector overlays fall back to raster without repeated warnings", "[projection][overlay-fallback]")
+{
+    std::ostringstream warnings;
+    auto logger = Log();
+    auto sink = std::make_shared<log::sinks::ostream_sink_mt>(warnings);
+    sink->set_pattern("%l: %v");
+
+    // Restore the shared logger even if a REQUIRE exits this test early.
+    struct RestoreLogger
+    {
+        Logger logger;
+        std::vector<log::sink_ptr> sinks;
+        log::level::level_enum level;
+        ~RestoreLogger()
+        {
+            logger->sinks() = std::move(sinks);
+            logger->set_level(level);
+        }
+    } restore{ logger, logger->sinks(), logger->level() };
+    logger->sinks() = { sink };
+    logger->set_level(log::level::warn);
+
+    Registry registry = Registry::create();
+    auto bakeSystem = OverlayBakeSystemNode::create(registry);
+    // Exercise facade synchronization without allocating Vulkan render targets.
+    bakeSystem->bakeScene = {};
+    auto decalSystem = DecalSystemNode::create(registry);
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        Overlay requested;
+        requested.mode = OverlayMode::Vector;
+        requested.resolution = { 256u, 128u };
+        requested.useDepthBuffer = true;
+        requested.continuousBake = true;
+        reg.emplace<Overlay>(entity, requested);
+
+        CHECK(reg.get<Overlay>(entity).mode == OverlayMode::Vector);
+        REQUIRE(reg.any_of<RenderTexture>(entity));
+        const auto& raster = reg.get<RenderTexture>(entity);
+        CHECK(raster.textureSize == requested.resolution);
+        CHECK(raster.useDepthBuffer);
+        CHECK(raster.continuous);
+        CHECK(reg.any_of<ProjectedTexture>(entity));
+        REQUIRE(reg.any_of<RenderParticipation>(entity));
+        CHECK(reg.get<RenderParticipation>(entity).renderTexture);
+        CHECK_FALSE(reg.get<RenderParticipation>(entity).mainView);
+    });
+
+    const auto firstWarning = warnings.str();
+    CHECK(firstWarning.find("warning:") != std::string::npos);
+    CHECK(firstWarning.find("falling back to Raster") != std::string::npos);
+
+    // Exercise the per-frame synchronization and ordinary dirty-field edits.
+    for (int i = 0; i < 3; ++i)
+        bakeSystem->update(context.get());
+    registry.write([&](entt::registry& reg)
+    {
+        auto& overlay = reg.get<Overlay>(entity);
+        overlay.resolution = { 1024u, 512u };
+        overlay.dirty(reg);
+    });
+    bakeSystem->update(context.get());
+    registry.write([&](entt::registry& reg)
+    {
+        CHECK(reg.get<Overlay>(entity).mode == OverlayMode::Vector);
+        CHECK(reg.get<RenderTexture>(entity).textureSize == glm::uvec2(1024u, 512u));
+        reg.patch<Overlay>(entity, [](auto& overlay) { overlay.mode = OverlayMode::Raster; });
+        reg.patch<Overlay>(entity, [](auto& overlay) { overlay.mode = OverlayMode::Vector; });
+        CHECK(reg.any_of<RenderTexture>(entity));
+        CHECK(warnings.str() == firstWarning);
+
+        reg.remove<Overlay>(entity);
+        CHECK_FALSE(reg.any_of<RenderTexture>(entity));
+        CHECK_FALSE(reg.any_of<ProjectedTexture>(entity));
+        CHECK_FALSE(reg.any_of<RenderParticipation>(entity));
+    });
+}
+#endif
+
 #ifdef ROCKY_HAS_SLUGHORN
+TEST_CASE("slug polygon auto-fits from ring bounds", "[projection][slug][polygon]")
+{
+    Registry registry = Registry::create();
+    auto sourceSystems = ECSNode::create(registry, false);
+    auto polygonSystem = PolygonSystemNode::create(registry);
+    sourceSystems->add(polygonSystem);
+
+    auto bakeSystem = OverlayBakeSystemNode::create(registry);
+    bakeSystem->renderSourceSystems = sourceSystems;
+    bakeSystem->worldSRS = SRS::ECEF;
+    auto slugSystem = SlugSystemNode::create(registry);
+    slugSystem->worldSRS = SRS::ECEF;
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& geometry = reg.emplace<PolygonGeometry>(entity);
+        geometry.srs = SRS::WGS84;
+        geometry.polygons.emplace_back(PolygonPart{
+            {
+                { 24.918, 60.161, 10.0 },
+                { 24.920, 60.161, 10.0 },
+                { 24.920, 60.163, 10.0 },
+                { 24.918, 60.163, 10.0 }
+            },
+            {}
+        });
+        auto& style = reg.emplace<PolygonStyle>(entity);
+        style.color = StockColor::Cyan;
+        reg.emplace<rocky::Polygon>(entity, geometry, style);
+        auto& overlay = reg.emplace<Overlay>(entity);
+        overlay.mode = OverlayMode::Vector;
+    });
+
+    polygonSystem->update(context.get());
+    bakeSystem->update(context.get());
+    slugSystem->update(context.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        CHECK_FALSE(reg.any_of<Mesh>(entity));
+        REQUIRE((reg.any_of<AutoOverlayTransform, Transform>(entity)));
+        const auto& resource = reg.get<SlugResource>(entity);
+        REQUIRE(resource.ready);
+        REQUIRE(resource.layers.size() == 1u);
+        CHECK(resource.layers.front().color == StockColor::Cyan);
+    });
+}
+
+TEST_CASE("slug polygon preserves a hole without a triangle mesh", "[projection][slug][polygon]")
+{
+    Registry registry = Registry::create();
+    auto polygonSystem = PolygonSystemNode::create(registry);
+    auto meshSystem = MeshSystemNode::create(registry);
+    auto slugSystem = SlugSystemNode::create(registry);
+    slugSystem->worldSRS = SRS::ECEF;
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& geometry = reg.emplace<PolygonGeometry>(entity);
+        geometry.polygons.emplace_back(PolygonPart{
+            {
+                { -0.4, -0.4, 0.0 },
+                {  0.4, -0.4, 0.0 },
+                {  0.4,  0.4, 0.0 },
+                { -0.4,  0.4, 0.0 }
+            },
+            {{
+                { -0.15, -0.15, 0.0 },
+                { -0.15,  0.15, 0.0 },
+                {  0.15,  0.15, 0.0 },
+                {  0.15, -0.15, 0.0 }
+            }}
+        });
+        auto& style = reg.emplace<PolygonStyle>(entity);
+        style.color = StockColor::Yellow;
+        reg.emplace<rocky::Polygon>(entity, geometry, style);
+        auto& overlay = reg.emplace<Overlay>(entity);
+        overlay.mode = OverlayMode::Vector;
+    });
+
+    polygonSystem->update(context.get());
+    slugSystem->update(context.get());
+
+    registry.read([&](entt::registry& reg)
+    {
+        CHECK_FALSE(reg.any_of<Mesh>(entity));
+        const auto& resource = reg.get<SlugResource>(entity);
+        REQUIRE(resource.ready);
+        REQUIRE(resource.layers.size() == 1u);
+        CHECK(resource.layers.front().color == StockColor::Yellow);
+    });
+
+    const auto stamp = std::to_string(
+        std::chrono::steady_clock::now().time_since_epoch().count());
+    const auto withHolePath = std::filesystem::temp_directory_path() /
+        ("rocky-slug-polygon-hole-" + stamp + ".slug");
+    const auto withoutHolePath = std::filesystem::temp_directory_path() /
+        ("rocky-slug-polygon-solid-" + stamp + ".slug");
+
+    registry.write([&](entt::registry& reg)
+    {
+        reg.get<SlugResource>(entity).exportPath = withHolePath.string();
+    });
+    slugSystem->update(context.get());
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto& geometry = reg.get<PolygonGeometry>(entity);
+        geometry.polygons.front().holes.clear();
+        geometry.dirty(reg);
+    });
+    polygonSystem->update(context.get());
+    slugSystem->update(context.get());
+    registry.write([&](entt::registry& reg)
+    {
+        reg.get<SlugResource>(entity).exportPath = withoutHolePath.string();
+    });
+    slugSystem->update(context.get());
+
+    auto curveTexelsUsed = [](const std::filesystem::path& path)
+    {
+        std::ifstream input(path);
+        const auto document = json::parse(input);
+        return document["packing_stats"]["curve_texels_used"].get<std::uint64_t>();
+    };
+    REQUIRE(std::filesystem::exists(withHolePath));
+    REQUIRE(std::filesystem::exists(withoutHolePath));
+    CHECK(curveTexelsUsed(withHolePath) > curveTexelsUsed(withoutHolePath));
+
+    std::error_code removeError;
+    CHECK(std::filesystem::remove(withHolePath, removeError));
+    CHECK_FALSE(removeError);
+    removeError.clear();
+    CHECK(std::filesystem::remove(withoutHolePath, removeError));
+    CHECK_FALSE(removeError);
+}
+
 TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][slug]")
 {
     Registry registry = Registry::create();
@@ -473,7 +941,7 @@ TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][sl
         reg.emplace<Line>(entity, geometry, style);
 
         auto& overlay = reg.emplace<Overlay>(entity);
-        overlay.technique = OverlayTechnique::Slug;
+        overlay.mode = OverlayMode::Vector;
     });
 
     bakeSystem->update(context.get());
@@ -690,7 +1158,7 @@ TEST_CASE("slug overlay retries an initially empty georeferenced line", "[projec
         reg.emplace<Line>(entity, geometry, style);
 
         auto& overlay = reg.emplace<Overlay>(entity);
-        overlay.technique = OverlayTechnique::Slug;
+        overlay.mode = OverlayMode::Vector;
     });
 
     bakeSystem->update(context.get());
@@ -768,7 +1236,7 @@ TEST_CASE("complex slug geometry uses the full indirection grid", "[projection][
         reg.emplace<Line>(entity, geometry, style);
 
         auto& overlay = reg.emplace<Overlay>(entity);
-        overlay.technique = OverlayTechnique::Slug;
+        overlay.mode = OverlayMode::Vector;
     });
 
     bakeSystem->update(context.get());
@@ -872,7 +1340,7 @@ TEST_CASE("slug overlays approximate meshes and reject unsupported styles", "[pr
             };
             reg.emplace<Mesh>(entity, geometry);
             auto& overlay = reg.emplace<Overlay>(entity);
-            overlay.technique = OverlayTechnique::Slug;
+            overlay.mode = OverlayMode::Vector;
         });
 
         slugSystem->update(context.get());
@@ -897,7 +1365,7 @@ TEST_CASE("slug overlays approximate meshes and reject unsupported styles", "[pr
             style.stipplePattern = 0x00FFu;
             reg.emplace<Line>(entity, geometry, style);
             auto& overlay = reg.emplace<Overlay>(entity);
-            overlay.technique = OverlayTechnique::Slug;
+            overlay.mode = OverlayMode::Vector;
         });
 
         slugSystem->update(context.get());
@@ -921,7 +1389,7 @@ TEST_CASE("slug overlays approximate meshes and reject unsupported styles", "[pr
             style.useGeometryWidths = true;
             reg.emplace<Point>(entity, geometry, style);
             auto& overlay = reg.emplace<Overlay>(entity);
-            overlay.technique = OverlayTechnique::Slug;
+            overlay.mode = OverlayMode::Vector;
         });
 
         slugSystem->update(context.get());

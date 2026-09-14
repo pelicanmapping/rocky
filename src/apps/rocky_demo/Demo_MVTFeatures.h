@@ -35,9 +35,9 @@ auto Demo_MVTFeatures = [](Application& app)
                 lineStyle.outlineColor = StockColor::White;
                 lineStyle.outlineWidth = 0.5f;
 
-                auto& meshStyle = reg.emplace<MeshStyle>(styleEntity);
-                meshStyle.color = Color(1, 0.75f, 0.2f, 1);
-                meshStyle.depthOffset = 12; // meters
+                auto& polygonStyle = reg.emplace<PolygonStyle>(styleEntity);
+                polygonStyle.color = Color(1, 0.75f, 0.2f, 1);
+                polygonStyle.depthOffset = 12; // meters
             });
 
         // Set up our elevation clamper.
@@ -125,16 +125,22 @@ auto Demo_MVTFeatures = [](Application& app)
                         entityNode = EntityNode::create(app.registry); 
 
                     // copy the style so we don't need a write lock during build:
-                    MeshStyle style = app.registry.read().registry.get<MeshStyle>(styleEntity);
-                    MeshGeometry geomTemp;
-                    builder.buildMeshGeometry(buildings, style, geomTemp);
+                    PolygonStyle style =
+                        app.registry.read().registry.get<PolygonStyle>(styleEntity);
+                    PolygonGeometry geomTemp;
+                    builder.buildPolygonGeometry(buildings, style, geomTemp);
 
                     app.registry.write([&](entt::registry& reg)
                         {
                             auto entity = reg.create();
-                            auto& geom = reg.emplace<MeshGeometry>(entity, geomTemp);
-                            auto& style = reg.get<MeshStyle>(styleEntity);
-                            reg.emplace<Mesh>(entity, geom, style);
+                            auto& geom = reg.emplace<PolygonGeometry>(entity, std::move(geomTemp));
+                            auto& style = reg.get<PolygonStyle>(styleEntity);
+                            reg.emplace<rocky::Polygon>(entity, geom, style);
+
+#ifdef ROCKY_HAS_SLUGHORN
+                            auto& overlay = reg.emplace<Overlay>(entity);
+                            overlay.mode = OverlayMode::Vector;
+#endif
 
                             entityNode->entities.emplace_back(entity);
                         });
@@ -159,7 +165,7 @@ auto Demo_MVTFeatures = [](Application& app)
 
 #ifdef ROCKY_HAS_SLUGHORN
                             auto& overlay = reg.emplace<Overlay>(entity);
-                            overlay.technique = OverlayTechnique::Slug;
+                            overlay.mode = OverlayMode::Vector;
 #endif
 
                             entityNode->entities.emplace_back(entity);

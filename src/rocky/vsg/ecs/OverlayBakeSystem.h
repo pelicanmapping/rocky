@@ -30,12 +30,12 @@ namespace ROCKY_NAMESPACE
     /**
      * Produces RTT payloads and shared auto-fit projectors for Overlay.
      *
-     * RTT technique:
+     * Raster mode:
      *   sources -> offscreen RenderGraph -> TextureResource
-     * Slug technique:
+     * Vector mode:
      *   sources -> fitted AutoOverlayTransform (SlugSystem builds the atlas)
      *
-     * Keeping source fitting here makes both techniques use the same bounds,
+     * Keeping source fitting here makes both modes use the same bounds,
      * padding, antimeridian handling, and ownership rules.
      */
     class ROCKY_EXPORT OverlayBakeSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, OverlayBakeSystemNode>

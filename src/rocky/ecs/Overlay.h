@@ -10,15 +10,15 @@
 
 namespace ROCKY_NAMESPACE
 {
-    //! Rendering technique used to draw an overlay on terrain.
-    enum class OverlayTechnique
-    {
-        RTT,  //!< Rasterize the overlay into an intermediate image.
-#ifdef ROCKY_HAS_SLUGHORN
-        //! Experimental analytic rendering for vector geometry. This supports
-        //! a deliberately restricted subset of geometry and style semantics.
-        Slug
-#endif
+    //! Rendering mode used to draw an overlay on terrain.
+    enum class OverlayMode
+    { 
+        //! Render content at a specified image resolution
+        Raster,
+
+        //! Experimental resolution-independent rendering for vector geometry.
+        //! Falls back to Raster with a warning if vector rendering is unavailable.
+        Vector
     };
 
     /**
@@ -26,23 +26,21 @@ namespace ROCKY_NAMESPACE
      */
     struct Overlay : public Component<Overlay>
     {
-        //! Technique used to render this overlay.
-        OverlayTechnique technique = OverlayTechnique::RTT;
+        //! Requested rendering mode for this overlay.
+        OverlayMode mode = OverlayMode::Raster;
 
-        //! RTT dimensions in pixels. Slug uses this as the nominal scale for
-        //! screen-unit line widths and point sizes; physical line widths are
-        //! independent of this value.
-        glm::uvec2 textureSize = { 512u, 512u };
+        //! Image resolution (X,Y) for raster rendering, in pixels.
+        glm::uvec2 resolution = { 512u, 512u };
 
         //! Modulation color.
         Color color = StockColor::White;
 
-        //! Whether to use depth testing when rendering an RTT overlay. Leave this
+        //! Whether to use depth testing when rendering a raster overlay. Leave this
         //! disabled for flat artwork that should composite in draw order; enable
         //! it for 3D or nonplanar geometry that requires self-occlusion.
         bool useDepthBuffer = false;
 
-        //! Re-render an RTT overlay texture every frame. Leave this disabled for
+        //! Re-render a raster overlay every frame. Leave this disabled for
         //! static geometry; enable it for animated models or other content that
         //! changes without dirtying its ECS components.
         bool continuousBake = false;

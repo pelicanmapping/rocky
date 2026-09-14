@@ -5,10 +5,12 @@
  */
 #include "SlugSystem.h"
 #include "SlugResource.h"
+#include "OverlayRenderContext.h"
 
 #include <rocky/ecs/Line.h>
 #include <rocky/ecs/Mesh.h>
 #include <rocky/ecs/Overlay.h>
+#include <rocky/ecs/Polygon.h>
 #include <rocky/ecs/Point.h>
 #include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/ecs/Transform.h>
@@ -28,7 +30,7 @@ using namespace ROCKY_NAMESPACE;
  * Slug overlay data flow
  * ----------------------
  *
- *   Overlay + same-entity Mesh/Line/Point
+ *   Overlay + same-entity Polygon/Mesh/Line/Point
  *       -> projector-local authoring inputs
  *       -> private C++17 SlugAdapter boundary
  *       -> one independently owned atlas pair per Overlay
@@ -297,8 +299,8 @@ namespace
 
     float normalizedPixelWidth(const Overlay& overlay, float pixels, std::uint32_t fallback)
     {
-        const auto width = overlay.textureSize.x != 0u ? overlay.textureSize.x : fallback;
-        const auto height = overlay.textureSize.y != 0u ? overlay.textureSize.y : fallback;
+        const auto width = overlay.resolution.x != 0u ? overlay.resolution.x : fallback;
+        const auto height = overlay.resolution.y != 0u ? overlay.resolution.y : fallback;
         const auto reference = static_cast<float>(std::max(1u, std::min(width, height)));
         return pixels / reference;
     }
@@ -484,6 +486,145 @@ namespace
 
         if (!shape.contours.empty())
             build.shapes.emplace_back(std::move(shape));
+        return true;
+    }
+
+    double signedArea(const SlugContourInput& contour)
+    {
+        double area = 0.0;
+        for (std::size_t i = 0u; i < contour.points.size(); ++i)
+        {
+            const auto& a = contour.points[i];
+            const auto& b = contour.points[(i + 1u) % contour.points.size()];
+            area += static_cast<double>(a.x) * b.y - static_cast<double>(b.x) * a.y;
+        }
+        return area * 0.5;
+    }
+
+    bool addPolygon(
+        entt::registry& registry,
+        entt::entity owner,
+        const SRS& worldSRS,
+        const Polygon& polygon,
+        OverlayBuild& build)
+    {
+        const auto* geometry = resolveComponent<PolygonGeometry>(
+            registry, polygon.geometry, owner);
+        if (!geometry)
+        {
+            build.error = "Slug Polygon has no PolygonGeometry";
+            return false;
+        }
+
+        SlugPointMapper mapper;
+        if (!makeSlugPointMapper(
+            geometry->srs,
+            registry.try_get<Transform>(owner),
+            worldSRS,
+            mapper,
+            build.error))
+        {
+            return false;
+        }
+
+        const auto* style = resolveComponent<PolygonStyle>(registry, polygon.style, owner);
+        const PolygonStyle defaultStyle;
+        const auto& resolvedStyle = style ? *style : defaultStyle;
+
+        auto mapRing = [&](const PolygonPart::Ring& input, SlugContourInput& output)
+        {
+            std::size_t count = input.size();
+            if (count > 1u && input.front() == input.back())
+                --count;
+            if (count < 3u)
+                return true;
+
+            output.closed = true;
+            output.points.reserve(count);
+            for (std::size_t i = 0u; i < count; ++i)
+            {
+                if (!isFiniteXY(input[i]))
+                {
+                    build.error = "Slug PolygonGeometry contains a non-finite XY coordinate";
+                    return false;
+                }
+
+                SlugPointInput point;
+                if (!mapper.map(input[i], point))
+                {
+                    build.error = "Slug PolygonGeometry coordinate transformation failed";
+                    return false;
+                }
+                output.points.emplace_back(point);
+            }
+            return true;
+        };
+
+        // A Slug shape has one color. Group same-colored polygons into one
+        // shape so a tile full of same-style features remains one layer.
+        std::vector<SlugShapeInput> groups;
+        for (std::size_t index = 0u; index < geometry->polygons.size(); ++index)
+        {
+            const auto& part = geometry->polygons[index];
+            SlugContourInput outer;
+            if (!mapRing(part.outer, outer))
+                return false;
+            if (outer.points.size() < 3u)
+                continue;
+
+            const double outerArea = signedArea(outer);
+            if (std::abs(outerArea) <= 1e-12)
+                continue;
+
+            const Color color = resolvedStyle.useGeometryColors && index < geometry->colors.size() ?
+                geometry->colors[index] : resolvedStyle.color;
+            if (!isFinite(color))
+            {
+                build.error = "Slug PolygonStyle color must be finite";
+                return false;
+            }
+            const auto colorArray = toArray(color);
+
+            auto group = std::find_if(groups.begin(), groups.end(), [&](const auto& candidate)
+            {
+                return candidate.color == colorArray;
+            });
+            if (group == groups.end())
+            {
+                SlugShapeInput shape;
+                shape.owner = static_cast<std::uint32_t>(entt::to_integral(owner));
+                shape.kind = SlugShapeKind::Fill;
+                shape.color = colorArray;
+                groups.emplace_back(std::move(shape));
+                group = std::prev(groups.end());
+            }
+
+            group->contours.emplace_back(std::move(outer));
+            for (const auto& inputHole : part.holes)
+            {
+                SlugContourInput hole;
+                if (!mapRing(inputHole, hole))
+                    return false;
+                if (hole.points.size() < 3u)
+                    continue;
+
+                const double holeArea = signedArea(hole);
+                if (std::abs(holeArea) <= 1e-12)
+                    continue;
+
+                // Normalize after projector mapping because that mapping may
+                // reverse the source coordinate system's handedness.
+                if ((outerArea < 0.0) == (holeArea < 0.0))
+                    std::reverse(hole.points.begin(), hole.points.end());
+                group->contours.emplace_back(std::move(hole));
+            }
+        }
+
+        for (auto& group : groups)
+        {
+            if (!group.contours.empty())
+                build.shapes.emplace_back(std::move(group));
+        }
         return true;
     }
 
@@ -763,10 +904,24 @@ namespace
         hashValue(signature, mergeConnectedLineSegments);
 
         const auto& overlay = registry.get<Overlay>(entity);
-        hashValue(signature, overlay.textureSize.x);
-        hashValue(signature, overlay.textureSize.y);
+        hashValue(signature, overlay.resolution.x);
+        hashValue(signature, overlay.resolution.y);
 
-        const auto* mesh = registry.try_get<Mesh>(entity);
+        const auto* polygon = registry.try_get<Polygon>(entity);
+        hashComponent(signature, polygon);
+        if (polygon)
+        {
+            hashValue(signature, entt::to_integral(polygon->geometry));
+            hashValue(signature, entt::to_integral(polygon->style));
+            hashComponent(signature, resolveComponent<PolygonGeometry>(
+                registry, polygon->geometry, entity));
+            hashComponent(signature, resolveComponent<PolygonStyle>(
+                registry, polygon->style, entity));
+        }
+
+        // Polygon is authoritative for filled-area rendering when both are
+        // present, so a derived or redundant Mesh must not enter the atlas.
+        const auto* mesh = polygon ? nullptr : registry.try_get<Mesh>(entity);
         hashComponent(signature, mesh);
         if (mesh)
         {
@@ -797,6 +952,8 @@ namespace
         }
 
         const bool georeferenced =
+            (polygon && resolveComponent<PolygonGeometry>(registry, polygon->geometry, entity) &&
+                resolveComponent<PolygonGeometry>(registry, polygon->geometry, entity)->srs.valid()) ||
             (mesh && resolveComponent<MeshGeometry>(registry, mesh->geometry, entity) &&
                 resolveComponent<MeshGeometry>(registry, mesh->geometry, entity)->srs.valid()) ||
             (line && resolveComponent<LineGeometry>(registry, line->geometry, entity) &&
@@ -961,7 +1118,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         std::vector<entt::entity> entities;
         registry.view<Overlay>().each([&](auto entity, const auto& overlay)
         {
-            if (overlay.technique == OverlayTechnique::Slug)
+            if (detail::resolveOverlayMode(overlay.mode) == OverlayMode::Vector)
                 entities.emplace_back(entity);
         });
         std::sort(entities.begin(), entities.end(), [](auto lhs, auto rhs)
@@ -993,7 +1150,13 @@ void SlugSystemNode::update(VSGContext vsgcontext)
                 }
             }
             bool foundPrimitive = false;
-            if (const auto* mesh = registry.try_get<Mesh>(entity))
+            const auto* polygon = registry.try_get<Polygon>(entity);
+            if (polygon)
+            {
+                foundPrimitive = true;
+                addPolygon(registry, entity, worldSRS, *polygon, build);
+            }
+            else if (const auto* mesh = registry.try_get<Mesh>(entity))
             {
                 foundPrimitive = true;
                 build.warning =
@@ -1022,7 +1185,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             {
                 build.error = foundPrimitive ?
                     "Slug overlay geometry contains no renderable primitives" :
-                    "Slug overlay requires a same-entity Mesh, Line, or Point";
+                    "Slug overlay requires a same-entity Polygon, Mesh, Line, or Point";
                 // An existing but empty primitive is normal for paged feature
                 // data. Keep its resource non-ready without spamming warnings.
                 build.suppressWarning = foundPrimitive;
@@ -1124,7 +1287,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         registry.view<SlugResource>().each([&](auto entity, auto& resource)
         {
             const auto* overlay = registry.try_get<Overlay>(entity);
-            if (!overlay || overlay->technique != OverlayTechnique::Slug)
+            if (!overlay || detail::resolveOverlayMode(overlay->mode) != OverlayMode::Vector)
             {
                 stale.emplace_back(entity);
             }

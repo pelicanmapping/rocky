@@ -61,6 +61,7 @@ namespace ROCKY_NAMESPACE
         //! Ready means the atlas pair and layer metadata form a valid producer
         //! result. Descriptor residency is tracked separately by DecalSystem.
         bool ready = false;
+
         //! Producer failure/status text when ready is false.
         std::string message;
 

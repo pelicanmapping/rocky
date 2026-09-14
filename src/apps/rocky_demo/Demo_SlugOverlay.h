@@ -9,8 +9,8 @@
 
 using namespace ROCKY_NAMESPACE;
 
-// Draws the same mesh, lines, and points through both overlay pathways. The RTT
-// copy is west of the Slug copy so their output can be compared directly.
+// Draws the same polygon, lines, and points in both overlay modes. The Raster
+// copy is west of the Vector copy so their output can be compared directly.
 auto Demo_SlugOverlay = [](Application& app)
 {
     static entt::entity e_rtt = entt::null;
@@ -32,30 +32,32 @@ auto Demo_SlugOverlay = [](Application& app)
         auto writer = app.registry.write();
         auto& reg = writer.registry;
 
-        auto e_meshGeometry = reg.create();
-        auto& meshGeometry = reg.emplace<MeshGeometry>(e_meshGeometry);
-        meshGeometry.vertices = {
-            {  0.00,  0.44, 0.0 },
-            {  0.14,  0.14, 0.0 },
-            {  0.44,  0.10, 0.0 },
-            {  0.20, -0.10, 0.0 },
-            {  0.28, -0.42, 0.0 },
-            {  0.00, -0.24, 0.0 },
-            { -0.28, -0.42, 0.0 },
-            { -0.20, -0.10, 0.0 },
-            { -0.44,  0.10, 0.0 },
-            { -0.14,  0.14, 0.0 },
-            {  0.00,  0.00, 0.0 }
-        };
-        meshGeometry.indices = {
-            10, 1, 0, 10, 2, 1, 10, 3, 2, 10, 4, 3, 10, 5, 4,
-            10, 6, 5, 10, 7, 6, 10, 8, 7, 10, 9, 8, 10, 0, 9
-        };
+        auto e_polygonGeometry = reg.create();
+        auto& polygonGeometry = reg.emplace<PolygonGeometry>(e_polygonGeometry);
+        polygonGeometry.polygons.emplace_back(PolygonPart{
+            {
+                { -0.14,  0.14, 0.0 },
+                { -0.44,  0.10, 0.0 },
+                { -0.20, -0.10, 0.0 },
+                { -0.28, -0.42, 0.0 },
+                {  0.00, -0.24, 0.0 },
+                {  0.28, -0.42, 0.0 },
+                {  0.20, -0.10, 0.0 },
+                {  0.44,  0.10, 0.0 },
+                {  0.14,  0.14, 0.0 },
+                {  0.00,  0.44, 0.0 }
+            },
+            {{
+                {  0.00,  0.08, 0.0 },
+                {  0.08,  0.00, 0.0 },
+                {  0.00, -0.08, 0.0 },
+                { -0.08,  0.00, 0.0 }
+            }}
+        });
 
-        auto e_meshStyle = reg.create();
-        auto& meshStyle = reg.emplace<MeshStyle>(e_meshStyle);
-        meshStyle.color = Color(0.05f, 0.65f, 0.95f, 0.85f);
-        meshStyle.writeDepth = false;
+        auto e_polygonStyle = reg.create();
+        auto& polygonStyle = reg.emplace<PolygonStyle>(e_polygonStyle);
+        polygonStyle.color = Color(0.05f, 0.65f, 0.95f, 0.85f);
 
         auto e_lineGeometry = reg.create();
         auto& lineGeometry = reg.emplace<LineGeometry>(e_lineGeometry);
@@ -95,10 +97,10 @@ auto Demo_SlugOverlay = [](Application& app)
         pointStyle.color = Color(1.0f, 0.9f, 0.05f, 1.0f);
         pointStyle.width = 13.0f;
 
-        auto makeOverlay = [&](double longitude, OverlayTechnique technique)
+        auto makeOverlay = [&](double longitude, OverlayMode mode)
         {
             auto entity = reg.create();
-            reg.emplace<Mesh>(entity, meshGeometry, meshStyle);
+            reg.emplace<rocky::Polygon>(entity, polygonGeometry, polygonStyle);
             reg.emplace<Line>(entity, lineGeometry, lineStyle);
             reg.emplace<Point>(entity, pointGeometry, pointStyle);
 
@@ -108,14 +110,14 @@ auto Demo_SlugOverlay = [](Application& app)
             transform.localMatrix = glm::scale(glm::dmat4(1.0), glm::dvec3(scale));
 
             auto& overlay = reg.emplace<Overlay>(entity);
-            overlay.technique = technique;
+            overlay.mode = mode;
             overlay.color.a = opacity;
-            overlay.textureSize = { 512u, 512u };
+            overlay.resolution = { 512u, 512u };
             return entity;
         };
 
-        e_rtt = makeOverlay(centerLon - spacing * 0.5, OverlayTechnique::RTT);
-        e_slug = makeOverlay(centerLon + spacing * 0.5, OverlayTechnique::Slug);
+        e_rtt = makeOverlay(centerLon - spacing * 0.5, OverlayMode::Raster);
+        e_slug = makeOverlay(centerLon + spacing * 0.5, OverlayMode::Vector);
 
         if (auto manip = MapManipulator::get(app.display.window(0).view(0).vsgView))
         {
@@ -133,35 +135,35 @@ auto Demo_SlugOverlay = [](Application& app)
     {
         if (ImGuiLTable::Begin("slug-overlay"))
         {
-            ImGuiLTable::Text("West", "RTT");
-            ImGuiLTable::Text("East", "Slug");
+            ImGuiLTable::Text("West", "Raster");
+            ImGuiLTable::Text("East", "Vector");
             if (const auto* resource = reg.try_get<SlugResource>(e_slug))
             {
                 if (resource->ready)
                 {
-                    ImGuiLTable::Text("Slug status", "Ready (%zu layers)", resource->layers.size());
+                    ImGuiLTable::Text("Vector status", "Ready (%zu layers)", resource->layers.size());
                     exportRequested = ImGuiLTable::Button("Export segment repro (.slug)");
                 }
                 else
-                    ImGuiLTable::Text("Slug status", "%s", resource->message.c_str());
+                    ImGuiLTable::Text("Vector status", "%s", resource->message.c_str());
 
                 if (!resource->exportMessage.empty())
                     ImGuiLTable::TextUnformatted("Export status", resource->exportMessage.c_str());
             }
             else
             {
-                ImGuiLTable::Text("Slug status", "Waiting for atlas");
+                ImGuiLTable::Text("Vector status", "Waiting for atlas");
             }
             ImGuiLTable::TextUnformatted("Export path", exportPath.c_str());
             opacityChanged = ImGuiLTable::SliderFloat(
                 "Opacity", &opacity, 0.0f, 1.0f, "%.2f");
 
             auto& rttVisibility = reg.get<Visibility>(e_rtt);
-            ImGuiLTable::Checkbox("Show RTT", &rttVisibility.visible[0]);
+            ImGuiLTable::Checkbox("Show Raster", &rttVisibility.visible[0]);
             rttVisibility.visible.fill(rttVisibility.visible[0]);
 
             auto& slugVisibility = reg.get<Visibility>(e_slug);
-            ImGuiLTable::Checkbox("Show Slug", &slugVisibility.visible[0]);
+            ImGuiLTable::Checkbox("Show Vector", &slugVisibility.visible[0]);
             slugVisibility.visible.fill(slugVisibility.visible[0]);
 
             ImGuiLTable::End();
