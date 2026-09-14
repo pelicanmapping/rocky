@@ -28,6 +28,10 @@ namespace ROCKY_NAMESPACE
         vsg::vec4 viewport;   // pixel-space viewport
         bool passingCull = true; // whether the transform passes frustum/horizon culling
 
+        //! Test a sphere centered at the local origin against the MVP's frustum.
+        //! Radius is in local units, before the scaling already included in mvp.
+        inline bool passesFrustumCull(double radius) const;
+
         // Cached global data
         struct Cached
         {
@@ -80,6 +84,29 @@ namespace ROCKY_NAMESPACE
 
 
     // inline functions
+    inline bool TransformViewDetail::passesFrustumCull(double radius) const
+    {
+        // Pull the Vulkan clip planes (-w <= x,y <= w, 0 <= z <= w) back
+        // into local coordinates. This includes all model/view scaling and
+        // avoids a perspective divide when the sphere crosses the eye plane.
+        const vsg::dvec4 x(mvp[0][0], mvp[1][0], mvp[2][0], mvp[3][0]);
+        const vsg::dvec4 y(mvp[0][1], mvp[1][1], mvp[2][1], mvp[3][1]);
+        const vsg::dvec4 z(mvp[0][2], mvp[1][2], mvp[2][2], mvp[3][2]);
+        const vsg::dvec4 w(mvp[0][3], mvp[1][3], mvp[2][3], mvp[3][3]);
+        const vsg::dvec4 planes[] = { w + x, w - x, w + y, w - y, z, w - z };
+
+        radius = std::max(radius, 0.0);
+        for (const auto& plane : planes)
+        {
+            // At the local origin, the plane equation evaluates to plane.w.
+            // Reject only if the entire sphere lies outside this plane.
+            const auto normalLength = vsg::length(vsg::dvec3(plane.x, plane.y, plane.z));
+            if (plane.w < -radius * normalLength)
+                return false;
+        }
+        return true;
+    }
+
     inline bool TransformDetail::passingCull(RenderingState rs) const
     {
         return views[rs.viewID].passingCull;

@@ -26,7 +26,8 @@ namespace ROCKY_NAMESPACE
         //! when topocentric is set to true.
         glm::dmat4 localMatrix = glm::dmat4(1.0);
 
-        //! Optional radius of the object (meters), which is used for culling.
+        //! Optional bounding sphere radius (meters before local scaling), used
+        //! for culling. Centered at the local origin; must enclose the geometry.
         double radius = 0.0;
 
         //! Whether the localMatrix is relative to a local tangent plane at

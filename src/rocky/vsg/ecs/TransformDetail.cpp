@@ -282,25 +282,10 @@ TransformDetail::traverse(vsg::RecordTraversal& record, const PixelScale* pixelS
 
     view.passingCull = true;
 
-    // Frustum cull (by center point)
+    // Frustum cull the local bounding sphere. The MVP already includes scaling.
     if (sync.frustumCulled)
     {
-        auto clip = view.mvp[3] / view.mvp[3][3];
-
-        double tx = 1.0, ty = 1.0, tz = 1.0;
-        if (sync.radius > 0.0)
-        {
-            auto rv = view.modelview[3] + vsg::dvec4(culling_radius, culling_radius, 0, 0);
-            auto rc = (view.proj * rv);
-
-            tx += std::abs((rc.x / rc.w) - clip.x);
-            ty += std::abs((rc.y / rc.w) - clip.y);
-        }
-
-        if (clip.x < -tx || clip.x > tx || clip.y < -ty || clip.y > ty || clip.z < -tz || clip.z > tz)
-        {
-            view.passingCull = false;
-        }
+        view.passingCull = view.passesFrustumCull(sync.radius);
     }
 
     // horizon cull, if active (geocentric only)

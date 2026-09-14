@@ -2,6 +2,9 @@
 #include "catch.hpp"
 
 #include <rocky/rocky.h>
+#ifdef ROCKY_HAS_VSG
+#include <rocky/vsg/ecs/TransformDetail.h>
+#endif
 #include <atomic>
 #include <chrono>
 #include <random>
@@ -24,6 +27,91 @@ namespace
         }
     };
 }
+
+#ifdef ROCKY_HAS_VSG
+TEST_CASE("Transform bounding sphere frustum culling", "[transform]")
+{
+    auto projection = vsg::perspective(vsg::radians(90.0), 1.0, 1.0, 100.0);
+    TransformViewDetail view;
+    auto passes = [&](double x, double y, double z, double radius)
+    {
+        view.mvp = projection * vsg::translate(x, y, z);
+        return view.passesFrustumCull(radius);
+    };
+
+    SECTION("perspective side planes retain visible sphere edges")
+    {
+        CHECK(passes(0.0, 0.0, -10.0, 1.0));
+        for (double sign : { -1.0, 1.0 })
+        {
+            // Center is outside; the sphere still crosses the sloping plane.
+            // Projecting a radius at the center's depth incorrectly rejects it.
+            CHECK(passes(sign * 11.2, 0.0, -10.0, 1.0));
+            CHECK(passes(0.0, sign * 11.2, -10.0, 1.0));
+            CHECK_FALSE(passes(sign * 11.6, 0.0, -10.0, 1.0));
+            CHECK_FALSE(passes(0.0, sign * 11.6, -10.0, 1.0));
+        }
+    }
+
+    SECTION("near and far planes account for radius")
+    {
+        CHECK(passes(0.0, 0.0, -0.25, 1.0));
+        CHECK_FALSE(passes(0.0, 0.0, -0.25, 0.5));
+        CHECK(passes(0.0, 0.0, -100.5, 1.0));
+        CHECK_FALSE(passes(0.0, 0.0, -101.5, 1.0));
+    }
+
+    SECTION("sphere may cross the eye plane or contain the camera")
+    {
+        CHECK(passes(0.0, 0.0, 0.0, 2.0));
+        CHECK(passes(0.0, 0.0, 0.25, 2.0));
+        CHECK_FALSE(passes(0.0, 0.0, 2.0, 0.5));
+    }
+
+    SECTION("zero radius uses Vulkan point clipping")
+    {
+        CHECK(passes(0.0, 0.0, -10.0, 0.0));
+        CHECK_FALSE(passes(10.1, 0.0, -10.0, 0.0));
+        CHECK_FALSE(passes(0.0, 0.0, -0.75, 0.0));
+        CHECK_FALSE(passes(0.0, 0.0, -101.0, 0.0));
+        CHECK_FALSE(passes(0.0, 0.0, 0.0, 0.0));
+        CHECK(passes(0.0, 0.0, -10.0, -1.0));
+    }
+
+    SECTION("orthographic planes retain intersecting and tangent spheres")
+    {
+        projection = vsg::orthographic(-8.0, 8.0, -8.0, 8.0, 2.0, 18.0);
+        for (double sign : { -1.0, 1.0 })
+        {
+            CHECK(passes(sign * 8.5, 0.0, -10.0, 1.0));
+            CHECK(passes(sign * 9.0, 0.0, -10.0, 1.0));
+            CHECK_FALSE(passes(sign * 9.5, 0.0, -10.0, 1.0));
+            CHECK(passes(0.0, sign * 9.0, -10.0, 1.0));
+            CHECK_FALSE(passes(0.0, sign * 9.5, -10.0, 1.0));
+        }
+        CHECK(passes(0.0, 0.0, -1.0, 1.0));
+        CHECK_FALSE(passes(0.0, 0.0, -0.5, 1.0));
+        CHECK(passes(0.0, 0.0, -19.0, 1.0));
+        CHECK_FALSE(passes(0.0, 0.0, -19.5, 1.0));
+    }
+
+    SECTION("model scaling and rotation are included exactly once")
+    {
+        const auto model = vsg::translate(0.0, 12.0, -10.0);
+        view.mvp = projection * model;
+        CHECK_FALSE(view.passesFrustumCull(1.0));
+        view.mvp = projection * model * vsg::scale(1.0, 3.0, 1.0);
+        CHECK(view.passesFrustumCull(1.0));
+        view.mvp = projection * model *
+            vsg::rotate(vsg::radians(90.0), 0.0, 0.0, 1.0) * vsg::scale(3.0, 1.0, 1.0);
+        CHECK(view.passesFrustumCull(1.0));
+
+        view.mvp = projection * vsg::translate(11.2, 0.0, -10.0) * vsg::scale(0.5, 0.5, 0.5);
+        CHECK_FALSE(view.passesFrustumCull(1.0));
+        CHECK(view.passesFrustumCull(2.0));
+    }
+}
+#endif
 
 TEST_CASE("strings")
 {
