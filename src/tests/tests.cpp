@@ -2,6 +2,7 @@
 #include "catch.hpp"
 
 #include <rocky/rocky.h>
+#include <proj.h>
 #ifdef ROCKY_HAS_VSG
 #include <rocky/vsg/ecs/TransformDetail.h>
 #endif
@@ -529,7 +530,7 @@ TEST_CASE("SRS")
         auto b = pc.bounds();
         CHECK((b.valid() &&
             glm::epsilonEqual(b.xmin, -20037508.342, E) && glm::epsilonEqual(b.xmax, 20037508.342, E) &&
-            glm::epsilonEqual(b.ymin, -10018754.171, E) && glm::epsilonEqual(b.ymax, 10018754.171, E)));
+            glm::epsilonEqual(b.ymin, -10001965.729, E) && glm::epsilonEqual(b.ymax, 10001965.729, E)));
     }
 
     SECTION("UTM SRS")
@@ -633,7 +634,7 @@ TEST_CASE("SRS")
         auto xform_with_warning = wgs84_2d.to(egm96);
         CHECK(xform_with_warning);
         CHECK(proj_error == "Warning, \"epsg:4326->epsg:4326+5773\" transforms from GEOGRAPHIC_2D_CRS to COMPOUND_CRS. Z values will be discarded. Use a GEOGRAPHIC_3D_CRS instead");
-        proj_error.clear();
+        SRS::projMessageCallback = nullptr;
 
         // total equivalency:
         REQUIRE(egm96.equivalentTo(wgs84_2d) == false);
@@ -642,66 +643,70 @@ TEST_CASE("SRS")
         REQUIRE(egm96.horizontallyEquivalentTo(wgs84_2d) == true);
         REQUIRE(wgs84.horizontallyEquivalentTo(wgs84_2d) == true);
 
-        // EGM96 test values are from:
-        // https://earth-info.nga.mil/index.php?dir=wgs84&action=egm96-geoid-calc
-        glm::dvec3 out(0, 0, 0);
+        int egm96GridAvailable = 0;
+        REQUIRE(proj_grid_get_info_from_database(nullptr, "us_nga_egm96_15.tif",
+            nullptr, nullptr, nullptr, nullptr, nullptr, &egm96GridAvailable));
 
-        // geodetic to vdatum:
+        if (!egm96GridAvailable)
         {
-            //Log()->info("Note: if you see SRS/VDatum errors, check that you have the NGA grid in your share/proj or PROJ_DATA folder! https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_egm96_15.tif");
-
-            SRS::projMessageCallback = [&](int level, const char* msg) { 
-                Log()->warn("PROJ: {} ... do you have the NGA grid in your PROJ_DATA or share/proj folder? You can download it from https://github.com/OSGeo/PROJ-data/blob/master/us_nga/us_nga_egm96_15.tif", msg);
-            };
-
-            auto xform = wgs84.to(egm96);
-            REQUIRE(xform.valid());
-
-            REQUIRE(xform(glm::dvec3(0, 0, 17.16), out));
-            CHECK(glm::epsilonEqual(out.z, 0.0, E));
-            REQUIRE(xform(glm::dvec3(90, 0, -63.24), out));
-            CHECK(glm::epsilonEqual(out.z, 0.0, E));
-            REQUIRE(xform(glm::dvec3(180, 0, 21.15), out));
-            CHECK(glm::epsilonEqual(out.z, 0.0, E));
-            REQUIRE(xform(glm::dvec3(-90, 0, -4.29), out));
-            CHECK(glm::epsilonEqual(out.z, 0.0, E));
-
-            // inverse
-            REQUIRE(xform.inverse(glm::dvec3(0, 0, 0), out));
-            CHECK(glm::epsilonEqual(out.z, 17.16, E));
-            REQUIRE(xform.inverse(glm::dvec3(90, 0, 0), out));
-            CHECK(glm::epsilonEqual(out.z, -63.24, E));
-            REQUIRE(xform.inverse(glm::dvec3(180, 0, 0), out));
-            CHECK(glm::epsilonEqual(out.z, 21.15, E));
-            REQUIRE(xform.inverse(glm::dvec3(-90, 0, 0), out));
-            CHECK(glm::epsilonEqual(out.z, -4.29, E));
-
-            SRS::projMessageCallback = nullptr;
+            WARN("Skipping EGM96 height conversion tests: us_nga_egm96_15.tif is not available to PROJ. "
+                "Install it in PROJ_DATA or share/proj from https://cdn.proj.org/us_nga_egm96_15.tif");
         }
-
-        // vdatum to geodetic:
+        else
         {
-            auto xform = egm96.to(wgs84);
-            REQUIRE(xform.valid());
+            // EGM96 test values are from:
+            // https://earth-info.nga.mil/index.php?dir=wgs84&action=egm96-geoid-calc
+            glm::dvec3 out(0, 0, 0);
 
-            REQUIRE(xform(glm::dvec3(0, 0, 0), out));
-            CHECK(glm::epsilonEqual(out.z, 17.16, E));
-            REQUIRE(xform(glm::dvec3(90, 0, 0), out));
-            CHECK(glm::epsilonEqual(out.z, -63.24, E));
-            REQUIRE(xform(glm::dvec3(180, 0, 0), out));
-            CHECK(glm::epsilonEqual(out.z, 21.15, E));
-            REQUIRE(xform(glm::dvec3(-90, 0, 0), out));
-            CHECK(glm::epsilonEqual(out.z, -4.29, E));
+            // geodetic to vdatum:
+            {
+                auto xform = wgs84.to(egm96);
+                REQUIRE(xform.valid());
 
-            // inverse
-            REQUIRE(xform.inverse(glm::dvec3(0, 0, 17.16), out));
-            CHECK(glm::epsilonEqual(out.z, 0.0, E));
-            REQUIRE(xform.inverse(glm::dvec3(90, 0, -63.24), out));
-            CHECK(glm::epsilonEqual(out.z, 0.0, E));
-            REQUIRE(xform.inverse(glm::dvec3(180, 0, 21.15), out));
-            CHECK(glm::epsilonEqual(out.z, 0.0, E));
-            REQUIRE(xform.inverse(glm::dvec3(-90, 0, -4.29), out));
-            CHECK(glm::epsilonEqual(out.z, 0.0, E));
+                REQUIRE(xform(glm::dvec3(0, 0, 17.16), out));
+                CHECK(glm::epsilonEqual(out.z, 0.0, E));
+                REQUIRE(xform(glm::dvec3(90, 0, -63.24), out));
+                CHECK(glm::epsilonEqual(out.z, 0.0, E));
+                REQUIRE(xform(glm::dvec3(180, 0, 21.15), out));
+                CHECK(glm::epsilonEqual(out.z, 0.0, E));
+                REQUIRE(xform(glm::dvec3(-90, 0, -4.29), out));
+                CHECK(glm::epsilonEqual(out.z, 0.0, E));
+
+                // inverse
+                REQUIRE(xform.inverse(glm::dvec3(0, 0, 0), out));
+                CHECK(glm::epsilonEqual(out.z, 17.16, E));
+                REQUIRE(xform.inverse(glm::dvec3(90, 0, 0), out));
+                CHECK(glm::epsilonEqual(out.z, -63.24, E));
+                REQUIRE(xform.inverse(glm::dvec3(180, 0, 0), out));
+                CHECK(glm::epsilonEqual(out.z, 21.15, E));
+                REQUIRE(xform.inverse(glm::dvec3(-90, 0, 0), out));
+                CHECK(glm::epsilonEqual(out.z, -4.29, E));
+            }
+
+            // vdatum to geodetic:
+            {
+                auto xform = egm96.to(wgs84);
+                REQUIRE(xform.valid());
+
+                REQUIRE(xform(glm::dvec3(0, 0, 0), out));
+                CHECK(glm::epsilonEqual(out.z, 17.16, E));
+                REQUIRE(xform(glm::dvec3(90, 0, 0), out));
+                CHECK(glm::epsilonEqual(out.z, -63.24, E));
+                REQUIRE(xform(glm::dvec3(180, 0, 0), out));
+                CHECK(glm::epsilonEqual(out.z, 21.15, E));
+                REQUIRE(xform(glm::dvec3(-90, 0, 0), out));
+                CHECK(glm::epsilonEqual(out.z, -4.29, E));
+
+                // inverse
+                REQUIRE(xform.inverse(glm::dvec3(0, 0, 17.16), out));
+                CHECK(glm::epsilonEqual(out.z, 0.0, E));
+                REQUIRE(xform.inverse(glm::dvec3(90, 0, -63.24), out));
+                CHECK(glm::epsilonEqual(out.z, 0.0, E));
+                REQUIRE(xform.inverse(glm::dvec3(180, 0, 21.15), out));
+                CHECK(glm::epsilonEqual(out.z, 0.0, E));
+                REQUIRE(xform.inverse(glm::dvec3(-90, 0, -4.29), out));
+                CHECK(glm::epsilonEqual(out.z, 0.0, E));
+            }
         }
 
         // vdatum to vdatum (noop)

@@ -1,7 +1,8 @@
-set PATH=%CD%\install\bin;%PATH%
-set VCPKG_DIR=%CD%\x64-windows\vcpkg_installed
-set PATH=%VCPKG_DIR%\x64-windows-release\bin;%PATH%
-set PATH=%VCPKG_DIR%\x64-windows-release\plugins;%PATH%
-set PATH=%VCPKG_DIR%\x64-windows-release\tools\proj;%PATH%
-set GDAL_DATA=%VCPKG_DIR%\x64-windows-release\share\gdal
-set PROJ_DATA=%VCPKG_DIR%\x64-windows-release\share\proj
+set PATH=%CD%\..\install\bin;%PATH%
+set BUILD_DIR=%CD%\..\build
+set VCPKG_DEPS_DIR=%BUILD_DIR%\vcpkg_installed\x64-windows-release
+set PATH=%VCPKG_DEPS_DIR%\bin;%PATH%
+set PATH=%VCPKG_DEPS_DIR%\plugins;%PATH%
+set PATH=%VCPKG_DEPS_DIR%\tools\proj;%PATH%
+set GDAL_DATA=%VCPKG_DEPS_DIR%\share\gdal
+set PROJ_DATA=%VCPKG_DEPS_DIR%\share\proj
