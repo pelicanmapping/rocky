@@ -132,6 +132,7 @@ namespace ROCKY_NAMESPACE
             std::vector<Pipeline> _pipelines;
             bool _pipelinesCompiled = false;
             mutable vsg::ref_ptr<vsg::MatrixTransform> _tempMT;
+            mutable vsg::ref_ptr<vsg::StateGroup> _tempStateGroup;
             mutable vsg::ref_ptr<vsg::DepthSorted> _depthSortedStub;
 
             // Information specific to one view. Indexed by viewID.
@@ -202,6 +203,18 @@ namespace ROCKY_NAMESPACE
             auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&visitor);
             std::uint32_t viewID = ecsVisitor ? ecsVisitor->viewID : 0;
 
+            // ArrayState visitors read pipeline state from a StateGroup, not
+            // standalone commands. Scope the topology and vertex bindings to
+            // this system's geometry (in particular, points are not triangles).
+            _tempStateGroup->stateCommands.clear();
+            _tempStateGroup->prototypeArrayState = nullptr;
+            if (!_pipelines.empty())
+            {
+                auto& config = _pipelines.front().config;
+                _tempStateGroup->add(config->bindGraphicsPipeline);
+                _tempStateGroup->prototypeArrayState = config->getSuitableArrayState();
+            }
+
             _registry.read([&](entt::registry& reg)
                 {
                     reg.view<COMPONENT_T, ActiveState>().each([&](auto entity, auto& comp, auto& active)
@@ -220,18 +233,20 @@ namespace ROCKY_NAMESPACE
                                     {
                                         _tempMT->matrix = transformDetail->views[viewID].model;
                                         _tempMT->children[0] = geomView.root;
-                                        _tempMT->accept(visitor);
+                                        _tempStateGroup->children[0] = _tempMT;
                                     }
                                     else
                                     {
-                                        geomView.root->accept(visitor);
+                                        _tempStateGroup->children[0] = geomView.root;
                                     }
+                                    _tempStateGroup->accept(visitor);
                                 }
                             }
                         });
                 });
 
             _tempMT->children[0] = nullptr;
+            _tempStateGroup->children[0] = nullptr;
         }
 
         using StylePass = vsg::ref_ptr<vsg::Commands>;

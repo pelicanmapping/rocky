@@ -30,6 +30,9 @@ SimpleSystemNodeBase::SimpleSystemNodeBase(Registry& in_registry) :
     _tempMT = vsg::MatrixTransform::create();
     _tempMT->children.resize(1);
 
+    _tempStateGroup = vsg::StateGroup::create();
+    _tempStateGroup->children.resize(1);
+
     // Stub DepthSorted node so the VSG compiler will register its bin for use
     // upon first compile. Not actually used for anything.
     _depthSortedStub = vsg::DepthSorted::create();

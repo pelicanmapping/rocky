@@ -4,6 +4,7 @@
 #include <rocky/rocky.h>
 #include <proj.h>
 #ifdef ROCKY_HAS_VSG
+#include <rocky/vsg/ecs/PointSystem.h>
 #include <rocky/vsg/ecs/TransformDetail.h>
 #endif
 #include <atomic>
@@ -30,6 +31,110 @@ namespace
 }
 
 #ifdef ROCKY_HAS_VSG
+TEST_CASE("ECS point polytope intersections", "[intersection]")
+{
+    auto context = VSGContextFactory::create(nullptr);
+    auto registry = Registry::create();
+    auto system = PointSystemNode::create(registry);
+    system->initialize(context.get());
+    REQUIRE(system->status.ok());
+
+    auto camera = vsg::Camera::create(
+        vsg::Orthographic::create(-10.0, 10.0, -10.0, 10.0, 1.0, 100.0),
+        vsg::LookAt::create(vsg::dvec3(0.0, 0.0, 0.0),
+            vsg::dvec3(0.0, 0.0, -1.0), vsg::dvec3(0.0, 1.0, 0.0)),
+        vsg::ViewportState::create(0, 0, 1000, 1000));
+    auto view = vsg::View::create(camera);
+    auto geometry = PointGeometryNode::create();
+    std::vector<glm::dvec3> points;
+    vsg::dmat4 model;
+    vsg::dmat4 localizer;
+
+    SECTION("a single point is pickable")
+    {
+        points = { { 4.0, 0.0, -10.0 } };
+    }
+    SECTION("two points are independently pickable")
+    {
+        points = { { -4.0, 0.0, -10.0 }, { 4.0, 0.0, -10.0 } };
+    }
+    SECTION("empty space between three points is not a triangle")
+    {
+        points = { { -4.0, -4.0, -10.0 }, { 4.0, -4.0, -10.0 }, { 0.0, 4.0, -10.0 } };
+    }
+    SECTION("points after a group of three are not skipped")
+    {
+        points = { { -4.0, -4.0, -10.0 }, { 4.0, -4.0, -10.0 },
+            { 0.0, 4.0, -10.0 }, { 6.0, 0.0, -10.0 } };
+    }
+    SECTION("entity and geometry transforms are both applied")
+    {
+        points = { { 0.0, 0.0, 0.0 } };
+        model = vsg::translate(2.0, 0.0, 0.0);
+        localizer = vsg::translate(2.0, 0.0, -10.0);
+    }
+
+    geometry->set(points, std::vector<glm::vec4>{}, std::vector<float>{});
+    entt::entity entity;
+    registry.write([&](entt::registry& reg)
+        {
+            entity = reg.create();
+            reg.emplace<PointGeometry>(entity);
+            auto& geomView = reg.get<PointGeometryDetail>(entity).views[view->viewID];
+            geomView.geomNode = geometry;
+            if (localizer != vsg::dmat4{})
+            {
+                auto transform = vsg::MatrixTransform::create(localizer);
+                transform->addChild(geometry);
+                geomView.root = transform;
+                reg.emplace<TransformDetail>(entity).views[view->viewID].model = model;
+            }
+            else
+            {
+                geomView.root = geometry;
+            }
+            reg.emplace<Point>(entity).geometry = entity;
+        });
+
+    auto pick = [&](const vsg::dvec3& world)
+        {
+            auto clip = camera->projectionMatrix->transform() * camera->viewMatrix->transform() * world;
+            double x = (clip.x + 1.0) * 500.0;
+            double y = (clip.y + 1.0) * 500.0;
+            auto intersector = ECSPolytopeIntersector::create(view, x - 3.0, y - 3.0, x + 3.0, y + 3.0);
+            system->accept(*intersector);
+            return intersector;
+        };
+
+    for (const auto& point : points)
+    {
+        auto world = model * localizer * vsg::dvec3(point.x, point.y, point.z);
+        auto hit = pick(world);
+        CHECK(hit->collectedEntities.count(entity) == 1);
+        REQUIRE(hit->intersections.size() == 1);
+        CHECK(hit->intersections.front()->indices.size() == 1);
+        CHECK(vsg::length(hit->intersections.front()->worldIntersection - world) < 1e-6);
+    }
+
+    auto miss = pick(vsg::dvec3(0.0, 0.0, -10.0));
+    CHECK(miss->collectedEntities.empty());
+    CHECK(miss->intersections.empty());
+
+    // Visiting points must leave the default triangle state intact for siblings.
+    auto triangle = vsg::VertexDraw::create();
+    triangle->assignArrays({ vsg::vec3Array::create({
+        { -4.0f, -4.0f, -10.0f }, { 4.0f, -4.0f, -10.0f }, { 0.0f, 4.0f, -10.0f } }) });
+    triangle->vertexCount = 3;
+    triangle->instanceCount = 1;
+    miss->currentEntity = entt::null;
+    triangle->accept(*miss);
+    REQUIRE(miss->intersections.size() == 1);
+    CHECK(miss->intersections.front()->indices.size() == 3);
+    CHECK(miss->collectedEntities.empty());
+
+    registry.write([](entt::registry& reg) { reg.clear(); });
+}
+
 TEST_CASE("Transform bounding sphere frustum culling", "[transform]")
 {
     auto projection = vsg::perspective(vsg::radians(90.0), 1.0, 1.0, 100.0);
