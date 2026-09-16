@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cassert>
 #include <cstring>
+#include <iostream>
 #include <map>
 
 using namespace slughorn::literals;
@@ -187,6 +188,22 @@ uint32_t alignCursorForSpan(uint32_t cursor, uint32_t width, uint32_t span) {
 	return cursor;
 }
 
+// Re-keys @p key for Atlas::append(): Codepoint keys get their mask field replaced (the real
+// codepoint and any AUTO_KEY_START marker bits pass through untouched); Name keys get prefixed.
+slughorn::Key remapAppendKey(const slughorn::Key& key, uint8_t mask, const std::string& namePrefix) {
+	using slughorn::Key;
+
+	if(key.type() == Key::Type::Name) {
+		if(namePrefix.empty()) return key;
+
+		return Key(namePrefix + ":" + key.name());
+	}
+
+	const uint32_t raw = (key.codepoint() & ~Key::MASK_MASK) | (uint32_t(mask) << Key::MASK_SHIFT);
+
+	return Key(raw);
+}
+
 }
 
 namespace slughorn {
@@ -317,6 +334,38 @@ uint32_t Atlas::addGradient(const GradientInfo& info) {
 
 void Atlas::addCompositeShape(Key key, CompositeShape composite) {
 	_compositeShapes[key] = std::move(composite);
+}
+
+// ================================================================================================
+// Atlas::append
+// ================================================================================================
+
+void Atlas::append(const Atlas& source, uint8_t mask, const std::string& namePrefix) {
+	if(_built) return;
+
+	for(const auto& [key, shape] : source.getShapes()) {
+		ShapeInfo info;
+
+		info.curves = shape.curves;
+		info.contourStarts = shape.contourStarts;
+		info.autoMetrics = false;
+		info.bearingX = shape.bearingX;
+		info.bearingY = shape.bearingY;
+		info.width = shape.width;
+		info.height = shape.height;
+		info.advance = shape.advance;
+		info.origin = shape.origin;
+
+		addShape(remapAppendKey(key, mask, namePrefix), info);
+	}
+
+	for(const auto& [key, composite] : source.getCompositeShapes()) {
+		CompositeShape copy = composite;
+
+		for(auto& layer : copy.layers) layer.key = remapAppendKey(layer.key, mask, namePrefix);
+
+		addCompositeShape(remapAppendKey(key, mask, namePrefix), std::move(copy));
+	}
 }
 
 // ================================================================================================
@@ -695,7 +744,7 @@ void Atlas::rasterizeSDFAtlas() {
 //
 // Per-shape opt-in MSDF generation. setMSDFTileSize() locks in the tile dimensions for the
 // atlas; all layers in a sampler2DArray must be identical (hard GPU constraint).
-// requestMSDF() may be called any time -- pre-build calls are queued and rendered inside
+// requestMSDF() may be called any time - pre-build calls are queued and rendered inside
 // build() itself (see Atlas::build()'s _pendingMSDF drain); post-build calls render immediately.
 //
 // getMSDFTextureData() packs all registered tiles into a single RGB32F TextureData on first
@@ -716,10 +765,10 @@ uint32_t Atlas::getMSDFTileSize() const {
 }
 
 // Shared core: filters already-registered keys, renders remaining tiles (parallel when
-// SLUGHORN_HAS_PARALLEL, since each tile is fully independent -- no atlas writes inside the
+// SLUGHORN_HAS_PARALLEL, since each tile is fully independent - no atlas writes inside the
 // parallel region), commits serially for deterministic layer ordering. Callers (requestMSDF's
 // two overloads, both the immediate-post-build path and build()'s pre-build drain) are
-// responsible for validating key existence before calling -- that check differs by whether the
+// responsible for validating key existence before calling - that check differs by whether the
 // atlas has been built yet (_shapes vs _build), so it can't live here.
 void Atlas::_commitMSDF(const std::vector<Key>& keys, slug_t range, MSDFEdgeColoring coloring) {
 	std::vector<Key> newKeys;
@@ -784,10 +833,11 @@ int Atlas::requestMSDF(Key key, slug_t range, MSDFEdgeColoring coloring) {
 		return it != _msdfLayerMap.end() ? it->second : -1;
 	}
 
-	// Pre-build: _shapes doesn't exist yet (populated by packTextures()) -- validate against the
+	// Pre-build: _shapes doesn't exist yet (populated by packTextures()) - validate against the
 	// pre-build working map instead, then queue for build() to render once positions are known.
-	if(_build.find(key) == _build.end())
-		throw std::out_of_range("Atlas::requestMSDF: key not found in atlas");
+	if(_build.find(key) == _build.end()) throw std::out_of_range(
+		"Atlas::requestMSDF: key not found in atlas"
+	);
 
 	_pendingMSDF.push_back({key, range, coloring});
 
@@ -872,7 +922,7 @@ Atlas::Contours Atlas::getShapeContours(Key key) const {
 	Contours result;
 
 	// Explicit metadata path: only populated by Canvas's commit verbs (canvas.hpp), which know
-	// their own subpath boundaries exactly -- no coordinate comparison, no ambiguity. Everything
+	// their own subpath boundaries exactly - no coordinate comparison, no ambiguity. Everything
 	// else (freetype.hpp/nanosvg.hpp/cairo.hpp/blend2d.hpp/skia.hpp glyph/path backends, and any
 	// atlas loaded via serial::read()) leaves this empty and falls through to the heuristic below,
 	// exactly as before this metadata existed.
@@ -885,7 +935,10 @@ Atlas::Contours Atlas::getShapeContours(Key key) const {
 
 			if(begin >= end || begin >= flat->size()) continue;
 
-			result.emplace_back(flat->begin() + begin, flat->begin() + std::min(end, flat->size()));
+			result.emplace_back(
+				flat->begin() + static_cast<std::ptrdiff_t>(begin),
+				flat->begin() + static_cast<std::ptrdiff_t>(std::min(end, flat->size()))
+			);
 		}
 
 		return result;
@@ -893,7 +946,7 @@ Atlas::Contours Atlas::getShapeContours(Key key) const {
 
 	// Heuristic fallback: infer a subpath boundary from a coordinate gap between consecutive
 	// curves. Epsilon-hardened (matching canvas::Path::strokePath()'s own 1e-6 tolerance) rather
-	// than the previous exact `!=` comparison -- strictly more permissive, so this can only
+	// than the previous exact `!=` comparison - strictly more permissive, so this can only
 	// MERGE fewer false boundaries than before, never split a previously-correct one apart.
 	Curves current;
 
@@ -1003,6 +1056,13 @@ void Atlas::buildShapeBands(
 	if(rangeX < 1e-6_cv) rangeX = 1e-6_cv;
 	if(rangeY < 1e-6_cv) rangeY = 1e-6_cv;
 
+	// The TRUE curve bounds, before the overrideMetrics block below may replace minX/maxX/rangeX
+	// with a declared extent. The conditioning check further down must use these: it reasons about
+	// the control points actually written into the curve texture, which a declared extent says
+	// nothing about.
+	const slug_t curveMinX = minX, curveMaxX = maxX, curveRangeX = rangeX;
+	const slug_t curveMinY = minY, curveMaxY = maxY, curveRangeY = rangeY;
+
 	// --------------------------------------------------------------------------------------------
 	// Derive metrics from bounding box when not overridden
 	// --------------------------------------------------------------------------------------------
@@ -1046,6 +1106,86 @@ void Atlas::buildShapeBands(
 
 		if(rangeX < 1e-6_cv) rangeX = 1e-6_cv;
 		if(rangeY < 1e-6_cv) rangeY = 1e-6_cv;
+	}
+
+	// --------------------------------------------------------------------------------------------
+	// Conditioning check.
+	//
+	// Curve coordinates are stored as slug_t (float) here and, on the GPU, as either binary32 or
+	// binary16 texels. Every one of those carries a fixed count of SIGNIFICANT digits rather than
+	// a fixed step size, so a shape's usable resolution is set by the RATIO of its distance from
+	// the origin to its own span - never by either quantity on its own:
+	//
+	//   steps = span / (maxAbsCoordinate * relativeStep)
+	//
+	// A shape authored on its own origin gets the format's entire mantissa. The same shape moved
+	// 1000x its own size away has thrown away three decimal digits of that mantissa before
+	// anything is rendered, and no amount of downstream care can put them back.
+	//
+	// NOTE: this deliberately does NOT check span, which the pre-2026-09-05 version of this check
+	// did. Span is free - scaling a shape up scales every quantity in the pipeline together and
+	// leaves relative precision untouched. Measured 2026-09-05 (osgSlug's
+	// examples/python/pyosgslug-glyph.py, both knobs): a 100000x SPAN change produced no
+	// observable difference at matched zoom, while a 100000-unit OFFSET destroyed the same shape
+	// outright, before any zoom at all. The old span test therefore fired on the harmless case and
+	// stayed completely silent on the fatal one. See osgSlug's ai/context-todo-em-normalization.md.
+	//
+	// Every backend already satisfies this by construction - Canvas::_toLocalOrigin() (autoMetrics,
+	// the default), freetype.hpp's 1/units_per_EM, nanosvg.hpp's 1/image->width - so in practice
+	// this only ever fires for curves handed straight to addShape() by a caller.
+	// --------------------------------------------------------------------------------------------
+	{
+		const bool curveIsHalf = _curveFormat == TextureData::Format::RGBA16F;
+
+		// Relative step of the storage format's mantissa: 2^-23 for binary32, 2^-11 for binary16.
+		const slug_t relStep = curveIsHalf ? 0.00048828125_cv : 0.00000011920929_cv;
+
+		// Minimum steps we want landing across a shape. 16384 leaves a 4K-wide render about 4x of
+		// subpixel headroom, which is loose enough never to fire on legitimate authoring (a tiny
+		// shape tucked in the corner of a unit tiling canvas still clears it comfortably) yet
+		// still orders of magnitude above genuinely damaged input. binary16 can only ever offer
+		// ~2048 steps even perfectly conditioned, so it gets a proportionally lower bar rather
+		// than warning on every shape.
+		const slug_t minSteps = curveIsHalf ? 256_cv : 16384_cv;
+
+		const slug_t maxAbsX = std::max(std::abs(curveMinX), std::abs(curveMaxX));
+		const slug_t maxAbsY = std::max(std::abs(curveMinY), std::abs(curveMaxY));
+
+		// Past binary16's largest finite value the coordinate is no longer exactly representable.
+		// It may round back to that limit before sufficiently larger values overflow to Inf, but this
+		// is still a hard error rather than a conditioning heuristic.
+		constexpr slug_t HALF_MAX_FINITE = 65504_cv;
+
+		if(curveIsHalf && (maxAbsX > HALF_MAX_FINITE || maxAbsY > HALF_MAX_FINITE)) {
+			throw std::runtime_error(detail::to_sstr(
+				"Atlas::buildShapeBands: shape '", key, "' reaches coordinate ",
+				std::max(maxAbsX, maxAbsY), ", beyond binary16's largest finite value (",
+				HALF_MAX_FINITE, "). Under setCurveTextureFormat(RGBA16F) this coordinate cannot be "
+				"represented exactly; it will be rounded to the finite limit or, when sufficiently larger, "
+				"overflow to Inf. Author the shape relative to its own origin and "
+				"position it with Layer::transform instead."
+			));
+		}
+
+		const slug_t stepsX = curveRangeX / std::max(maxAbsX * relStep, 1e-30_cv);
+		const slug_t stepsY = curveRangeY / std::max(maxAbsY * relStep, 1e-30_cv);
+
+		if(stepsX < minSteps || stepsY < minSteps) {
+			const slug_t steps = std::min(stepsX, stepsY);
+
+			std::cerr << detail::to_sstr(
+				"slughorn: shape '", key, "' sits far from its own origin; coordinates reach ",
+				std::max(maxAbsX, maxAbsY), " while the shape spans ", curveRangeX,
+				"x", curveRangeY, ". Only about ", static_cast<long long>(steps), " storage steps "
+				"land across it (slughorn expects at least ", static_cast<long long>(minSteps), "), "
+				"so its outline is quantized before rendering even begins. Author each shape "
+				"relative to its own origin and place it via Layer::transform. Note that a shape's "
+				"SIZE is free; only its distance from the origin costs precision."
+			) << std::endl;
+
+			// TODO: We already use exceptions; do we just throw here? Make it a compile-time
+			// configuration to do so?
+		}
 	}
 
 	// --------------------------------------------------------------------------------------------
@@ -1230,20 +1370,34 @@ void Atlas::packTextures() {
 	uint32_t totalCurveTexels = 0;
 
 	for(const auto& kv : _build) {
-		for(size_t i = 0; i < kv.second.curves.size(); i++) {
-			totalCurveTexels = alignCursorForSpan(totalCurveTexels, _texWidth, 2);
-			totalCurveTexels += 2;
+		const auto& curves = kv.second.curves;
+
+		// Endpoint-sharing: when curve i's start point is bit-exact with curve i-1's end
+		// point, curve i needs only 1 new texel (its tail) instead of 2 - it reuses curve
+		// i-1's tail texel as its own texel0 (see the write pass below for the layout). No
+		// row-alignment here either: the shader now re-derives a curve's second texel's row
+		// via slug_CalcCurveLoc() per fetch, so a curve's 2 texels are free to straddle a row.
+		for(size_t i = 0; i < curves.size(); i++) {
+			const bool shared = i > 0
+				&& curves[i].x1 == curves[i - 1].x3
+				&& curves[i].y1 == curves[i - 1].y3
+			;
+
+			totalCurveTexels += shared ? 1 : 2;
 		}
 	}
 
 	const uint32_t curveTexHeight = std::max(1u, (totalCurveTexels + _texWidth - 1) / _texWidth);
 
+	const bool curveIsHalf = _curveFormat == TextureData::Format::RGBA16F;
+	const size_t curveChannelBytes = curveIsHalf ? sizeof(uint16_t) : sizeof(float);
+
 	_curveData.width = _texWidth;
 	_curveData.height = curveTexHeight;
-	_curveData.format = TextureData::Format::RGBA32F;
+	_curveData.format = _curveFormat;
 
-	// 4 floats per texel
-	_curveData.bytes.assign(size_t{_texWidth} * curveTexHeight * 4 * sizeof(float), 0);
+	// 4 channels per texel, each curveChannelBytes wide.
+	_curveData.bytes.assign(size_t{_texWidth} * curveTexHeight * 4 * curveChannelBytes, 0);
 
 	// --------------------------------------------------------------------------------------------
 	// Pass 1: measure band texture height
@@ -1267,7 +1421,10 @@ void Atlas::packTextures() {
 			for(const auto& band : bands) {
 				const auto count = static_cast<uint32_t>(band.curveIndices.size());
 
-				cursor = alignCursorForSpan(cursor, _texWidth, count);
+				// No row-alignment here: the shader now re-derives each curve's row via
+				// slug_CalcBandLoc() per fetch (see Atlas.shaders.cpp), so a band's list is
+				// free to span multiple texture rows - it no longer needs to start at a row
+				// boundary to avoid straddling one.
 				cursor += count;
 			}
 		};
@@ -1282,10 +1439,12 @@ void Atlas::packTextures() {
 
 	_bandData.width = _texWidth;
 	_bandData.height = bandTexHeight;
-	_bandData.format = TextureData::Format::RGBA16UI;
+	_bandData.format = TextureData::Format::RG16UI;
 
-	// 4 uint16_t per texel
-	_bandData.bytes.assign(size_t{_texWidth} * bandTexHeight * 4 * sizeof(uint16_t), 0);
+	// 2 uint16_t per texel - B/A are never consumed (indirection entries read only R; headers
+	// and curve locations read only RG), confirmed by every writeBandTexel() call below always
+	// having passed 0 for those two channels. Lossless: real values are exact uint16, no rounding.
+	_bandData.bytes.assign(size_t{_texWidth} * bandTexHeight * 2 * sizeof(uint16_t), 0);
 
 	// --------------------------------------------------------------------------------------------
 	// Pass 1: pre-compute monotonic curve decomposition for Scanline Sweeper (opt-in)
@@ -1330,24 +1489,60 @@ void Atlas::packTextures() {
 
 		if(y >= curveTexHeight) return;
 
-		float* p = reinterpret_cast<float*>(
-			_curveData.bytes.data() + (size_t{y} * _texWidth + x) * 4 * sizeof(float)
-		);
+		uint8_t* p = _curveData.bytes.data() + (size_t{y} * _texWidth + x) * 4 * curveChannelBytes;
 
-		p[0] = r; p[1] = g; p[2] = b; p[3] = a;
+		if(curveIsHalf) {
+			auto* half = reinterpret_cast<uint16_t*>(p);
+
+			half[0] = detail::floatToHalf(r);
+			half[1] = detail::floatToHalf(g);
+			half[2] = detail::floatToHalf(b);
+			half[3] = detail::floatToHalf(a);
+		}
+
+		else {
+			auto* full = reinterpret_cast<float*>(p);
+
+			full[0] = r; full[1] = g; full[2] = b; full[3] = a;
+		}
 	};
 
-	auto writeBandTexel = [&](uint32_t idx, uint16_t r, uint16_t g, uint16_t b, uint16_t a) {
+	// Patches only the B/A channels of an already-written curve texel, leaving R/G (the shared
+	// endpoint) untouched - used to fold a shared curve's own control point 2 into the previous
+	// curve's tail texel instead of allocating a fresh one.
+	auto patchCurveTexelBA = [&](uint32_t idx, slug_t b, slug_t a) {
+		const uint32_t x = idx % _texWidth;
+		const uint32_t y = idx / _texWidth;
+
+		if(y >= curveTexHeight) return;
+
+		uint8_t* p = _curveData.bytes.data() + (size_t{y} * _texWidth + x) * 4 * curveChannelBytes;
+
+		if(curveIsHalf) {
+			auto* half = reinterpret_cast<uint16_t*>(p);
+
+			half[2] = detail::floatToHalf(b);
+			half[3] = detail::floatToHalf(a);
+		}
+
+		else {
+			auto* full = reinterpret_cast<float*>(p);
+
+			full[2] = b; full[3] = a;
+		}
+	};
+
+	auto writeBandTexel = [&](uint32_t idx, uint16_t r, uint16_t g) {
 		const uint32_t x = idx % _texWidth;
 		const uint32_t y = idx / _texWidth;
 
 		if(y >= bandTexHeight) return;
 
 		uint16_t* p = reinterpret_cast<uint16_t*>(
-			_bandData.bytes.data() + (size_t{y} * _texWidth + x) * 4 * sizeof(uint16_t)
+			_bandData.bytes.data() + (size_t{y} * _texWidth + x) * 2 * sizeof(uint16_t)
 		);
 
-		p[0] = r; p[1] = g; p[2] = b; p[3] = a;
+		p[0] = r; p[1] = g;
 	};
 
 	auto writeScanlineTexel = [&](uint32_t idx, slug_t r, slug_t g, slug_t b, slug_t a) {
@@ -1366,20 +1561,16 @@ void Atlas::packTextures() {
 	// --------------------------------------------------------------------------------------------
 	// Pass 2: real packing
 	//
-	// Alignment wrappers record padding waste into _packingStats automatically.
+	// Alignment wrapper records padding waste into _packingStats automatically. Curves have no
+	// equivalent wrapper: endpoint-sharing packs them densely with no row alignment at all (see
+	// the measurement pass above), so curveTexelsPadding is always 0 going forward.
 	// --------------------------------------------------------------------------------------------
 	_packingStats = PackingStats{};
+	_packingStats.curveFormat = _curveFormat;
+	_packingStats.bandFormat = TextureData::Format::RG16UI;
 	_packingStats.curveTexelsTotal = _texWidth * curveTexHeight;
 	_packingStats.bandTexelsTotal = _texWidth * bandTexHeight;
 	_packingStats.scanlineTexelsTotal = _texWidth * scanlineTexHeight;
-
-	auto alignCurve = [&](uint32_t cursor, uint32_t span) -> uint32_t {
-		const uint32_t aligned = alignCursorForSpan(cursor, _texWidth, span);
-
-		_packingStats.curveTexelsPadding += aligned - cursor;
-
-		return aligned;
-	};
 
 	auto alignBand = [&](uint32_t cursor, uint32_t span) -> uint32_t {
 		const uint32_t aligned = alignCursorForSpan(cursor, _texWidth, span);
@@ -1398,20 +1589,54 @@ void Atlas::packTextures() {
 		auto& g = kv.second;
 
 		// Curves
+		//
+		// Endpoint-sharing (Lengyel's Slug convention): when curve ci's start point is
+		// bit-exact with the previous curve's end point, ci's texel0 IS the previous curve's
+		// tail texel - its RG already holds the shared point, so only its BA (ci's own
+		// control point 2) needs patching in, and only ci's own tail texel is newly allocated.
+		// A chain of N connected curves costs N+1 texels instead of 2N. Deliberately NOT keyed
+		// off contourStarts (see slughorn.hpp's comment on that field) - a direct coordinate
+		// check works uniformly regardless of shape origin and degrades safely to the old 2N
+		// layout when nothing matches.
 		std::vector<uint32_t> curveLocs(g.curves.size());
 
-		for(size_t ci = 0; ci < g.curves.size(); ci++) {
-			curveTexelOffset = alignCurve(curveTexelOffset, 2);
-			curveLocs[ci] = curveTexelOffset;
+		uint32_t prevTailTexel = 0;
+		bool havePrev = false;
 
+		for(size_t ci = 0; ci < g.curves.size(); ci++) {
 			const auto& c = g.curves[ci];
 
-			writeCurveTexel(curveTexelOffset, c.x1, c.y1, c.x2, c.y2);
-			writeCurveTexel(curveTexelOffset + 1, c.x3, c.y3, 0_cv, 0_cv);
+			const bool shared = havePrev
+				&& c.x1 == g.curves[ci - 1].x3
+				&& c.y1 == g.curves[ci - 1].y3
+			;
 
-			curveTexelOffset += 2;
+			if(shared) {
+				curveLocs[ci] = prevTailTexel;
 
-			_packingStats.curveTexelsUsed += 2;
+				patchCurveTexelBA(prevTailTexel, c.x2, c.y2);
+
+				writeCurveTexel(curveTexelOffset, c.x3, c.y3, 0_cv, 0_cv);
+
+				prevTailTexel = curveTexelOffset;
+				curveTexelOffset += 1;
+
+				_packingStats.curveTexelsUsed += 1;
+			}
+
+			else {
+				curveLocs[ci] = curveTexelOffset;
+
+				writeCurveTexel(curveTexelOffset, c.x1, c.y1, c.x2, c.y2);
+				writeCurveTexel(curveTexelOffset + 1, c.x3, c.y3, 0_cv, 0_cv);
+
+				prevTailTexel = curveTexelOffset + 1;
+				curveTexelOffset += 2;
+
+				_packingStats.curveTexelsUsed += 2;
+			}
+
+			havePrev = true;
 		}
 
 		// Band texture block layout per shape:
@@ -1429,7 +1654,7 @@ void Atlas::packTextures() {
 		const uint32_t blockSize = indirSize + numBandHeaders;
 
 		// blockSize is bounded by 2*INDIRECTION_SIZE + numBandHeaders (currently at most
-		// 128), so this should never trigger for any sane _texWidth -- but silently
+		// 128), so this should never trigger for any sane _texWidth - but silently
 		// `continue`-ing here used to drop the shape's entire band data with no signal
 		// at all. Fail loudly instead: a texture too narrow to hold one shape's fixed-size
 		// header block is a real configuration error, not something to paper over.
@@ -1454,8 +1679,8 @@ void Atlas::packTextures() {
 			g.indirX.size() == INDIRECTION_SIZE
 		) {
 			for(uint32_t q = 0; q < INDIRECTION_SIZE; q++) {
-				writeBandTexel(shapeStart + q, g.indirY[q], 0, 0, 0);
-				writeBandTexel(shapeStart + INDIRECTION_SIZE + q, g.indirX[q], 0, 0, 0);
+				writeBandTexel(shapeStart + q, g.indirY[q], 0);
+				writeBandTexel(shapeStart + INDIRECTION_SIZE + q, g.indirX[q], 0);
 			}
 
 			_packingStats.bandTexelsUsed += 2 * INDIRECTION_SIZE;
@@ -1472,25 +1697,13 @@ void Atlas::packTextures() {
 				const auto& band = bands[b];
 				auto count = static_cast<uint32_t>(band.curveIndices.size());
 
-				// CORRECTION: count > _texWidth IS a real, hard limit, not an arbitrary one --
-				// a band's curve-index list must fit within a single texture row. The shader's
-				// read loop (slug_HFill/slug_VFill in Atlas.shaders.cpp) only wraps the list's
-				// STARTING offset via slug_CalcBandLoc(); it then does
-				// texelFetch(..., hbandLoc.x + curveIndex, hbandLoc.y, ...) with a FIXED row,
-				// so a list longer than one row reads garbage/wrong data past the row boundary.
-				// alignCursorForSpan() can only shift where a span STARTS, it cannot make a
-				// span wider than the row fit without straddling. An earlier version of this
-				// comment claimed the shader already handled multi-row lists and replaced this
-				// check with a uint16_t-only one -- that was wrong, and got caught when a real
-				// tile (738-curve band) still corrupted at texWidth=512 after that "fix".
-				if(count > _texWidth) {
-					throw std::runtime_error(detail::to_sstr(
-						"Atlas::build: ", key, "'s band has ", count, " curves, which "
-						"does not fit in a texture row of width ", _texWidth, ". Increase "
-						"the Atlas's texWidth (constructor parameter) to at least the next "
-						"power of two >= ", count
-					));
-				}
+				// 2026-08-26: the old "count > _texWidth" guard here (a band's curve-index list
+				// must fit within a single texture row) is GONE - the shader's read loop
+				// (slug_Render in Atlas.shaders.cpp) now re-derives each curve's row via
+				// slug_CalcBandLoc() per fetch, instead of computing the row once at the
+				// list's start and flat-adding curveIndex to it. A band's list can now span
+				// as many rows as it needs; the real ceiling is the uint16_t header fields
+				// below, not the texture row width.
 
 				// Separate, independent limit: header.count is a uint16_t regardless of
 				// texWidth. Only reachable if _texWidth itself somehow exceeded 65535.
@@ -1503,12 +1716,13 @@ void Atlas::packTextures() {
 
 				_packingStats.bandMaxCount = std::max(_packingStats.bandMaxCount, count);
 
-				cursor = alignBand(cursor, count);
-
+				// No row-alignment for the curve-index list itself (see the comment above) -
+				// only the fixed-size indirection/header block still needs to avoid straddling
+				// a row, and that alignment happened once already, at shapeStart.
 				const uint32_t hi = headerBase + b;
 
 				// offset is relative to shapeStart and also a uint16_t. This is the more
-				// realistic overflow case in practice -- it accumulates across every band in
+				// realistic overflow case in practice - it accumulates across every band in
 				// the shape (up to 2*INDIRECTION_SIZE of them), so a shape with many
 				// moderately-sized bands can hit this even when no single band's count does.
 				if(cursor - shapeStart > 0xffffu) {
@@ -1532,8 +1746,7 @@ void Atlas::packTextures() {
 					writeBandTexel(
 						cursor,
 						static_cast<uint16_t>(curveLoc % _texWidth),
-						static_cast<uint16_t>(curveLoc / _texWidth),
-						0, 0
+						static_cast<uint16_t>(curveLoc / _texWidth)
 					);
 
 					cursor++;
@@ -1550,15 +1763,13 @@ void Atlas::packTextures() {
 		for(uint32_t i = 0; i < numHBands; i++) writeBandTexel(
 			shapeStart + indirSize + i,
 			headers[i].count,
-			headers[i].offset,
-			0, 0
+			headers[i].offset
 		);
 
 		for(uint32_t i = 0; i < numVBands; i++) writeBandTexel(
 			shapeStart + indirSize + numHBands + i,
 			headers[numHBands + i].count,
-			headers[numHBands + i].offset,
-			0, 0
+			headers[numHBands + i].offset
 		);
 
 		_packingStats.bandTexelsUsed += numBandHeaders;

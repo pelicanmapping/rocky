@@ -1007,7 +1007,7 @@ namespace
         std::string& error)
     {
         if (atlas.curveTexture.format != SlugTextureFormat::RGBA32F ||
-            atlas.bandTexture.format != SlugTextureFormat::RGBA16UI)
+            atlas.bandTexture.format != SlugTextureFormat::RG16UI)
         {
             error = "Slughorn returned unsupported texture formats";
             return false;
@@ -1015,13 +1015,13 @@ namespace
 
         const auto curveBytes = static_cast<std::uint64_t>(atlas.curveTexture.width) *
             atlas.curveTexture.height * sizeof(vsg::vec4);
-        const auto sourceBandBytes = static_cast<std::uint64_t>(atlas.bandTexture.width) *
-            atlas.bandTexture.height * sizeof(vsg::usvec4);
+        const auto bandBytes = static_cast<std::uint64_t>(atlas.bandTexture.width) *
+            atlas.bandTexture.height * sizeof(vsg::usvec2);
 
         if (atlas.curveTexture.width == 0u || atlas.curveTexture.height == 0u ||
             atlas.bandTexture.width == 0u || atlas.bandTexture.height == 0u ||
             curveBytes != atlas.curveTexture.bytes.size() ||
-            sourceBandBytes != atlas.bandTexture.bytes.size())
+            bandBytes != atlas.bandTexture.bytes.size())
         {
             error = "Slughorn returned invalid atlas texture dimensions";
             return false;
@@ -1040,21 +1040,11 @@ namespace
             curveData->dataPointer(),
             atlas.curveTexture.bytes.data(),
             atlas.curveTexture.bytes.size());
-        // Slughorn serializes RGBA16UI, but its shader contract uses only RG:
-        // band indices read R and headers/curve locations read RG. Compact the
-        // private GPU copy without changing Slughorn's atlas or .slug format.
-        auto* destination = static_cast<vsg::usvec2*>(bandData->dataPointer());
-        const auto bandTexelCount = static_cast<std::size_t>(atlas.bandTexture.width) *
-            atlas.bandTexture.height;
-        for (std::size_t i = 0u; i < bandTexelCount; ++i)
-        {
-            vsg::usvec4 source;
-            std::memcpy(
-                &source,
-                atlas.bandTexture.bytes.data() + i * sizeof(source),
-                sizeof(source));
-            destination[i] = vsg::usvec2(source.r, source.g);
-        }
+        // Slughorn now produces the same compact RG16UI layout we upload.
+        std::memcpy(
+            bandData->dataPointer(),
+            atlas.bandTexture.bytes.data(),
+            atlas.bandTexture.bytes.size());
 
         curveImage = vsg::ImageInfo::create(
             sampler, curveData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);

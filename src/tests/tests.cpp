@@ -29,6 +29,7 @@
 #include <filesystem>
 #include <fstream>
 #include <random>
+#include <set>
 #include <sstream>
 #include <thread>
 #include <unordered_map>
@@ -903,6 +904,118 @@ TEST_CASE("slug polygon preserves a hole without a triangle mesh", "[projection]
     removeError.clear();
     CHECK(std::filesystem::remove(withoutHolePath, removeError));
     CHECK_FALSE(removeError);
+}
+
+TEST_CASE("slug atlas shares endpoints and spans texture rows", "[projection][slug][polygon]")
+{
+    Registry registry = Registry::create();
+    auto slugSystem = SlugSystemNode::create(registry);
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+    std::set<std::array<float, 6>> expectedCurves;
+
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& geometry = reg.emplace<PolygonGeometry>(entity);
+        // All rectangles share a Y range, forcing a horizontal band with
+        // more than 512 curves. The four-edge chains also force shared curve
+        // pairs to straddle rows. Use binary-exact coordinates for comparison.
+        for (unsigned i = 0u; i < 600u; ++i)
+        {
+            const double x = -0.375 + double(i) / 1024.0;
+            const double w = 1.0 / 2048.0;
+            PolygonPart part;
+            part.outer = {
+                { x, -0.25, 0.0 }, { x + w, -0.25, 0.0 },
+                { x + w, 0.25, 0.0 }, { x, 0.25, 0.0 }
+            };
+            for (unsigned edge = 0u; edge < 4u; ++edge)
+            {
+                const auto& a = part.outer[edge];
+                const auto& b = part.outer[(edge + 1u) % 4u];
+                // Local geometry maps to [0,1]. The SDK represents a straight
+                // edge with its control point coincident with its endpoint.
+                expectedCurves.insert({
+                    float(a.x + 0.5), float(a.y + 0.5),
+                    float(b.x + 0.5), float(b.y + 0.5),
+                    float(b.x + 0.5), float(b.y + 0.5) });
+            }
+            geometry.polygons.emplace_back(std::move(part));
+        }
+        reg.emplace<rocky::Polygon>(entity, geometry);
+        reg.emplace<Overlay>(entity).mode = OverlayMode::Vector;
+    });
+
+    slugSystem->update(context.get());
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& resource = reg.get<SlugResource>(entity);
+        INFO(resource.message);
+        REQUIRE(resource.ready);
+        REQUIRE(resource.layers.size() == 1u);
+        REQUIRE(resource.curveTexture);
+        REQUIRE(resource.bandTexture);
+        auto* curves = dynamic_cast<vsg::vec4Array2D*>(
+            resource.curveTexture->imageView->image->data.get());
+        auto* bands = dynamic_cast<vsg::usvec2Array2D*>(
+            resource.bandTexture->imageView->image->data.get());
+        REQUIRE(curves);
+        REQUIRE(bands);
+        CHECK(curves->properties.format == VK_FORMAT_R32G32B32A32_SFLOAT);
+        CHECK(bands->properties.format == VK_FORMAT_R16G16_UINT);
+        const unsigned width = 1u << resource.textureWidthLog2;
+        REQUIRE(width == 512u); // No widening/retry needed for long band lists.
+        CHECK(curves->width() == width);
+        CHECK(bands->width() == width);
+
+        // Mirror the shader's wrapped texel lookup, checking every referenced
+        // curve against the original geometry rather than just atlas readiness.
+        auto advance = [&](vsg::usvec2 loc, unsigned offset)
+        {
+            const unsigned x = unsigned(loc.x) + offset;
+            return vsg::uivec2(x & (width - 1u), loc.y + (x >> resource.textureWidthLog2));
+        };
+        const auto& shape = resource.layers.front().shapeData;
+        const unsigned shapeStart = shape.y * width + shape.x;
+        const unsigned headerStart = shapeStart + 2u * resource.indirectionSize;
+        const unsigned headerCount = shape.z + shape.w + 2u;
+        REQUIRE(shape.x + 2u * resource.indirectionSize + headerCount <= width);
+        std::vector<bool> seen(curves->valueCount(), false);
+        bool multiRowBand = false, crossRowCurve = false, sharedEndpoint = false;
+        for (unsigned h = 0u; h < headerCount; ++h)
+        {
+            const auto header = (*bands)[headerStart + h];
+            multiRowBand = multiRowBand || header.x > width;
+            for (unsigned i = 0u; i < header.x; ++i)
+            {
+                const auto bandLoc = advance(vsg::usvec2(shape.x, shape.y), unsigned(header.y) + i);
+                const unsigned bandIndex = bandLoc.y * width + bandLoc.x;
+                REQUIRE(bandIndex < bands->valueCount());
+                CHECK(bandIndex == shapeStart + header.y + i);
+                const auto curveLoc = (*bands)[bandIndex];
+                const unsigned curveIndex = curveLoc.y * width + curveLoc.x;
+                const auto endLoc = advance(curveLoc, 1u);
+                const unsigned endIndex = endLoc.y * width + endLoc.x;
+                REQUIRE(endIndex < curves->valueCount());
+                CHECK(endIndex == curveIndex + 1u);
+                crossRowCurve = crossRowCurve || endLoc.y != curveLoc.y;
+                if (seen[curveIndex])
+                    continue;
+                seen[curveIndex] = true;
+                const auto& p12 = (*curves)[curveIndex];
+                const auto& p3 = (*curves)[endIndex];
+                CHECK(expectedCurves.erase({ p12.x, p12.y, p12.z, p12.w, p3.x, p3.y }) == 1u);
+            }
+        }
+        for (std::size_t i = 1u; i < seen.size(); ++i)
+            sharedEndpoint = sharedEndpoint || (seen[i - 1u] && seen[i]);
+        CHECK(expectedCurves.empty());
+        CHECK(multiRowBand);
+        CHECK(crossRowCurve);
+        CHECK(sharedEndpoint);
+        CHECK(curves->valueCount() < 600u * 4u * 2u);
+    });
 }
 
 TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][slug]")

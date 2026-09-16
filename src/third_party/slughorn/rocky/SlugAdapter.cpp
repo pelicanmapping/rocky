@@ -179,26 +179,20 @@ namespace rocky::detail
             return false;
         }
 
-        // A single Slug band must fit in one texture row. Complex feature
-        // batches (for example, an MVT road tile) can exceed the requested
-        // width, so grow transactionally and rebuild from the original inputs.
-        // 4096 is the Vulkan-required minimum maxImageDimension2D.
-        std::uint32_t textureWidth = input.textureWidth;
-        constexpr std::uint32_t maxAutomaticTextureWidth = 4096u;
-
-        for (;;)
+        try
         {
-            try
-            {
-                Atlas atlas{ textureWidth };
-                Canvas canvas{ atlas, slughorn::KeyIterator{ "rocky-overlay" } };
+            // Band lists can span rows, so a dense shape no longer requires
+            // widening and rebuilding the atlas. Retain full curve precision.
+            Atlas atlas{ input.textureWidth };
+            atlas.setCurveTextureFormat(Atlas::TextureData::Format::RGBA32F);
+            Canvas canvas{ atlas, slughorn::KeyIterator{ "rocky-overlay" } };
 
-                // Every decal fragment supplies the projector's full [0,1] UV.
-                // Full-cell metrics preserve that coordinate system instead of
-                // tight-fitting each shape across the projector.
-                canvas.setAutoMetrics(false);
-                canvas.setTolerance(slughorn::TOLERANCE_FINE);
-                canvas.setSplitStrategy(complexityAwareBandSplits);
+            // Every decal fragment supplies the projector's full [0,1] UV.
+            // Full-cell metrics preserve that coordinate system instead of
+            // tight-fitting each shape across the projector.
+            canvas.setAutoMetrics(false);
+            canvas.setTolerance(slughorn::TOLERANCE_FINE);
+            canvas.setSplitStrategy(complexityAwareBandSplits);
 
             std::vector<PendingLayer> pending;
             pending.reserve(input.shapes.size() * 2u);
@@ -459,7 +453,7 @@ namespace rocky::detail
             const auto& bands = atlas.getBandTextureData();
 
             if (curves.format != Atlas::TextureData::Format::RGBA32F ||
-                bands.format != Atlas::TextureData::Format::RGBA16UI)
+                bands.format != Atlas::TextureData::Format::RG16UI)
             {
                 error = "Slughorn returned unexpected atlas texture formats";
                 return false;
@@ -467,8 +461,8 @@ namespace rocky::detail
 
             SlugAtlasOutput result;
             copyTexture(curves, SlugTextureFormat::RGBA32F, result.curveTexture);
-            copyTexture(bands, SlugTextureFormat::RGBA16UI, result.bandTexture);
-            result.textureWidthLog2 = log2(textureWidth);
+            copyTexture(bands, SlugTextureFormat::RG16UI, result.bandTexture);
+            result.textureWidthLog2 = log2(input.textureWidth);
             result.indirectionSize = Atlas::INDIRECTION_SIZE;
             result.exportAttempted = exportAttempted;
             result.exportSucceeded = exportSucceeded;
@@ -523,31 +517,20 @@ namespace rocky::detail
                 result.layers.emplace_back(std::move(out));
             }
 
-                output = std::move(result);
-                return true;
-            }
-            catch (const std::exception& e)
-            {
-                const std::string message = e.what();
-                const bool rowTooNarrow =
-                    message.find("does not fit in a texture row") != std::string::npos;
-
-                if (rowTooNarrow && textureWidth < maxAutomaticTextureWidth)
-                {
-                    textureWidth *= 2u;
-                    continue;
-                }
-
-                output = {};
-                error = message;
-                return false;
-            }
-            catch (...)
-            {
-                output = {};
-                error = "Unknown exception while building the Slughorn atlas";
-                return false;
-            }
+            output = std::move(result);
+            return true;
+        }
+        catch (const std::exception& e)
+        {
+            output = {};
+            error = e.what();
+            return false;
+        }
+        catch (...)
+        {
+            output = {};
+            error = "Unknown exception while building the Slughorn atlas";
+            return false;
         }
     }
 }

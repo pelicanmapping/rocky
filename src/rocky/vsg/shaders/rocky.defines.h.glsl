@@ -44,8 +44,8 @@
 #define DECAL_TILE_HAS_OUTLINE_BIT   0x80000000u
 #define DECAL_TILE_INDEX_MASK        0x7fffffffu
 
-// Slug atlas width metadata is packed into the decal flags word so the shared
-// atlas can grow without changing the Decal SSBO layout.
+// Each Slug atlas's width is packed into the decal flags word so the shader
+// can wrap texture addresses without changing the Decal SSBO layout.
 #define DECAL_SLUG_TEXTURE_WIDTH_LOG2_SHIFT   8
 #define DECAL_SLUG_TEXTURE_WIDTH_LOG2_MASK   31
 #define SLUG_INDIRECTION_SIZE                32

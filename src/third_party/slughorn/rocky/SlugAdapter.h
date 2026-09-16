@@ -85,8 +85,8 @@ namespace rocky::detail
 
     struct SlugAtlasInput
     {
-        // Initial power-of-two width. The adapter may grow it when a shape's
-        // largest band cannot fit in one row; the actual logarithm is returned.
+        // Power-of-two texture width. Curve pairs and band curve lists may
+        // span rows; the shader uses the returned logarithm to wrap addresses.
         std::uint32_t textureWidth = 512u;
 
         // Experimental authoring optimization. This only joins consecutive
@@ -104,7 +104,7 @@ namespace rocky::detail
     enum class SlugTextureFormat : std::uint8_t
     {
         RGBA32F,
-        RGBA16UI
+        RG16UI
     };
 
     //! Owned byte copy of one texture emitted by Atlas::build().

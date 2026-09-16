@@ -419,13 +419,21 @@ inline Sampler decode(
 	const Atlas::TextureData& bandTex
 ) {
 
-	if(curveTex.format != Atlas::TextureData::Format::RGBA32F)
+	const bool curveIsHalf = curveTex.format == Atlas::TextureData::Format::RGBA16F;
+
+	if(!curveIsHalf && curveTex.format != Atlas::TextureData::Format::RGBA32F)
 		throw std::runtime_error("Unexpected curve texture format")
 	;
 
-	if(bandTex.format != Atlas::TextureData::Format::RGBA16UI)
+	const bool bandIsLegacy = bandTex.format == Atlas::TextureData::Format::RGBA16UI;
+
+	if(!bandIsLegacy && bandTex.format != Atlas::TextureData::Format::RG16UI)
 		throw std::runtime_error("Unexpected band texture format")
 	;
+
+	// RG16UI (current) is 2 uint16_t/texel; RGBA16UI (legacy read-compat) is 4 - callers only
+	// ever read indices 0/1 either way (B/A were never consumed even in the legacy format).
+	const uint32_t bandStride = bandIsLegacy ? 4 : 2;
 
 	Sampler out;
 
@@ -438,8 +446,30 @@ inline Sampler decode(
 		return out;
 	}
 
-	const auto* curveData = reinterpret_cast<const float*>(curveTex.bytes.data());
+	const auto* curveBytes = curveTex.bytes.data();
 	const auto* bandData = reinterpret_cast<const uint16_t*>(bandTex.bytes.data());
+
+	// Curve texel values are either raw float32 or half-float, per curveIsHalf above --
+	// always returned as float32 here so the rest of decode() stays format-agnostic.
+	auto readCurveTexel = [&](uint32_t texelIndex) -> std::array<float, 4> {
+		if(texelIndex >= curveTex.width * curveTex.height)
+			throw std::runtime_error("Curve texture read out of bounds")
+		;
+
+		std::array<float, 4> v;
+
+		if(curveIsHalf) {
+			const auto* p = reinterpret_cast<const uint16_t*>(curveBytes) + size_t{texelIndex} * 4;
+
+			for(size_t i = 0; i < 4; i++) v[i] = detail::halfToFloat(p[i]);
+		} else {
+			const auto* p = reinterpret_cast<const float*>(curveBytes) + size_t{texelIndex} * 4;
+
+			for(size_t i = 0; i < 4; i++) v[i] = p[i];
+		}
+
+		return v;
+	};
 
 	const uint32_t shapeStart = shape.bandTexY * bandTex.width + shape.bandTexX;
 	const uint32_t numHBands = shape.bandMaxY + 1;
@@ -452,7 +482,7 @@ inline Sampler decode(
 			throw std::runtime_error("Band texture read out of bounds")
 		;
 
-		return bandData + size_t{texelIndex} * 4;
+		return bandData + size_t{texelIndex} * bandStride;
 	};
 
 	for(uint32_t q = 0; q < Atlas::INDIRECTION_SIZE; q++) {
@@ -492,7 +522,12 @@ inline Sampler decode(
 				const auto* texel = readBandTexel(shapeStart + h.offset + j);
 				const uint32_t cx = texel[0];
 				const uint32_t cy = texel[1];
-				const uint32_t idx = (cy * curveTex.width + cx) / 2;
+
+				// Raw texel address of the curve's first texel, used directly as the dedup/remap
+				// key - NOT divided down into a "curve index" via an assumed 2-texels-per-curve
+				// stride. That assumption breaks once endpoint-shared packing lets a curve's
+				// first texel land at an odd offset (a shared texel isn't always curve-aligned).
+				const uint32_t idx = cy * curveTex.width + cx;
 
 				indices.push_back(idx);
 				globalIndices.push_back(idx);
@@ -519,15 +554,11 @@ inline Sampler decode(
 	out.curves.reserve(globalIndices.size());
 
 	for(uint32_t globalIndex : globalIndices) {
-		const uint32_t texel0 = globalIndex * 2;
+		const uint32_t texel0 = globalIndex;
 		const uint32_t texel1 = texel0 + 1;
 
-		if(texel1 >= curveTex.width * curveTex.height)
-			throw std::runtime_error("Curve texture read out of bounds")
-		;
-
-		const float* t0 = curveData + size_t{texel0} * 4;
-		const float* t1 = curveData + size_t{texel1} * 4;
+		const auto t0 = readCurveTexel(texel0);
+		const auto t1 = readCurveTexel(texel1);
 
 		remap[globalIndex] = static_cast<uint32_t>(out.curves.size());
 

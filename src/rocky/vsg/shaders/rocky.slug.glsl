@@ -3,6 +3,8 @@
  *
  * Adapted from example/slughorn-example-glfw.cpp in Slughorn commit
  * 312ef217aaf6b1c47b05ba7575342b513daa830d.
+ * Atlas addressing updated for the packed, row-spanning layout in commit
+ * 1b203c191bd152c20685f8a896d22dcff974cec4.
  *
  * Copyright (c) 2026 AlphaPixel LLC
  *
@@ -89,6 +91,9 @@ vec2 slug_SolveVertPoly(vec4 p12, vec2 p3)
         (a.y * t2 - b.y * 2.0) * t2 + p12.y);
 }
 
+// Both textures use linear addressing: band lists and curve pairs can cross
+// rows. Curve starts need not be even-aligned because adjacent curves share
+// their endpoint texel. Only the indirection/header block stays on one row.
 ivec2 slug_CalcBandLoc(ivec2 glyphLoc, uint offset, int textureWidthLog2)
 {
     ivec2 bandLoc = ivec2(glyphLoc.x + int(offset), glyphLoc.y);
@@ -149,9 +154,9 @@ float slug_Render(
     for (int ci = 0; ci < int(hbandData.x); ++ci)
     {
         ivec2 curveLoc = ivec2(texelFetch(
-            bandTexture, ivec2(hbandLoc.x + ci, hbandLoc.y), 0).xy);
+            bandTexture, slug_CalcBandLoc(hbandLoc, uint(ci), textureWidthLog2), 0).xy);
         vec4 p12 = texelFetch(curveTexture, curveLoc, 0) - vec4(renderCoord, renderCoord);
-        vec2 p3 = texelFetch(curveTexture, ivec2(curveLoc.x + 1, curveLoc.y), 0).xy - renderCoord;
+        vec2 p3 = texelFetch(curveTexture, slug_CalcBandLoc(curveLoc, 1u, textureWidthLog2), 0).xy - renderCoord;
 
         if (max(max(p12.x, p12.z), p3.x) * pixelsPerEm.x < -0.5) break;
 
@@ -182,9 +187,9 @@ float slug_Render(
     for (int ci = 0; ci < int(vbandData.x); ++ci)
     {
         ivec2 curveLoc = ivec2(texelFetch(
-            bandTexture, ivec2(vbandLoc.x + ci, vbandLoc.y), 0).xy);
+            bandTexture, slug_CalcBandLoc(vbandLoc, uint(ci), textureWidthLog2), 0).xy);
         vec4 p12 = texelFetch(curveTexture, curveLoc, 0) - vec4(renderCoord, renderCoord);
-        vec2 p3 = texelFetch(curveTexture, ivec2(curveLoc.x + 1, curveLoc.y), 0).xy - renderCoord;
+        vec2 p3 = texelFetch(curveTexture, slug_CalcBandLoc(curveLoc, 1u, textureWidthLog2), 0).xy - renderCoord;
 
         if (max(max(p12.y, p12.w), p3.y) * pixelsPerEm.y < -0.5) break;
 

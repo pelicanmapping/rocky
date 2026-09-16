@@ -110,7 +110,7 @@ public:
 	Path(): _decomposer(_activeCurves) {}
 
 	// `curves` carries no subpath-boundary information (e.g. a raw numpy-array buffer from the
-	// Python Path(curves) binding) -- _pendingSubpathsUntracked stays true for the life of this
+	// Python Path(curves) binding) - _pendingSubpathsUntracked stays true for the life of this
 	// Path (and contaminates any Path that later addPath()'s from it, see addPath()'s contagion
 	// rule), so strokePath()/pendingContourStarts() fall back to the coordinate-gap heuristic.
 	explicit Path(Atlas::Curves curves):
@@ -305,7 +305,7 @@ public:
 	// -------------------------------------------------------------------------
 
 	Path& moveTo(slug_t x, slug_t y) {
-		// A moveTo() while _activeCurves already holds data starts a NEW subpath -- record where
+		// A moveTo() while _activeCurves already holds data starts a NEW subpath - record where
 		// it will begin (its first curve is about to be pushed at this exact index). An empty
 		// _activeCurves (fresh path, or right after clear()/closePath()) needs no marker: that
 		// subpath's start is the implicit index 0.
@@ -517,7 +517,7 @@ public:
 	// beginPath(). Each moveTo() starts a new subpath; subpaths are stroked independently
 	// and their outlines combined into one shape. Two-segment interior corners get a real
 	// Miter/Bevel/Round join per @p join (Miter falls back to Bevel past @p miterLimit, the SVG
-	// default 4.0 -- Bevel/Round ignore miterLimit entirely); open subpath endpoints get a
+	// default 4.0 - Bevel/Round ignore miterLimit entirely); open subpath endpoints get a
 	// Butt/Round/Square cap per @p cap.
 	//
 	// Independent butt-capped subpaths that share an endpoint leave an uncovered "star" vertex.
@@ -544,8 +544,8 @@ public:
 				: _resolveStarts(_pendingCurves.size(), _pendingSubpathStarts)
 			;
 
-			// Untracked (a raw Path(Atlas::Curves) buffer -- e.g. the Python Path(curves)
-			// binding -- or addPath() contagion from one): boundaries are genuinely unknown.
+			// Untracked (a raw Path(Atlas::Curves) buffer--e.g. the Python Path(curves)
+			// binding--or addPath() contagion from one): boundaries are genuinely unknown.
 			// Fall back to the coordinate-gap heuristic this tracking mechanism otherwise
 			// replaces (see Path::_pendingSubpathsUntracked's doc comment).
 			if(starts.empty()) {
@@ -583,11 +583,11 @@ public:
 
 		// Per-corner join data. innerNx/innerNy is the offset factor applied symmetrically
 		// (+h on the left wall, -h on the right wall) exactly like the original single `pn`
-		// value did -- correct on its own for Miter (both walls share one point), but for
+		// value did - correct on its own for Miter (both walls share one point), but for
 		// Bevel/Round it's only correct for the INNER wall (unit bisector, never miter-scaled;
 		// concave corners never need more, they undershoot by construction). The OUTER wall at
 		// a Bevel/Round corner ignores innerNx/innerNy entirely and instead gets two raw
-		// segN-offset points joined by an explicit bevel edge or arc -- see the per-segment loop.
+		// segN-offset points joined by an explicit bevel edge or arc - see the per-segment loop.
 		struct Corner {
 			CornerKind kind = CornerKind::Miter;
 			bool outerIsLeft = true;
@@ -597,7 +597,7 @@ public:
 		bool any = false;
 
 		// "Star" vertex tracking: a point where 2+ INDEPENDENT open subpaths in this call share
-		// an endpoint (e.g. several disconnected 2-point edges meeting at one point) -- not a
+		// an endpoint (e.g. several disconnected 2-point edges meeting at one point) - not a
 		// 2-segment corner, undefined by any LineJoin style. Collected during the main loop below
 		// (one arm per open subpath's true start/end), clustered and round-disc-patched after it.
 		struct Arm { slug_t x, y; size_t subpathIndex; };
@@ -663,10 +663,10 @@ public:
 					bx /= blen; by /= blen;
 
 					// Sign of cross(segN[prev], segN[cur]) equals the sign of cross(dir[prev],
-					// dir[cur]) (a shared 90 deg rotation preserves it) -- positive means a CCW/
+					// dir[cur]) (a shared 90 deg rotation preserves it) - positive means a CCW/
 					// left turn, whose convex/outer side is the RIGHT wall (verified against a
 					// concrete CCW square-corner case: East-then-North turn gives turnSign=+1,
-					// and a CCW-traced convex polygon's interior -- the concave side -- is by
+					// and a CCW-traced convex polygon's interior - the concave side - is by
 					// definition on the left, so outer must be right).
 					const slug_t turnSign = segN[prev].first * segN[cur].second - segN[prev].second * segN[cur].first;
 
@@ -715,7 +715,7 @@ public:
 				else corners[i] = calcCorner(i - 1, i);
 			}
 
-			// Pass 3: build lwall / rwall as append-only curve lists -- a Bevel/Round corner
+			// Pass 3: build lwall / rwall as append-only curve lists - a Bevel/Round corner
 			// emits two outer-wall points + a connecting piece where a Miter corner emits one
 			// shared point, so a fixed 1:1-with-pts index no longer holds.
 			Atlas::Curves lwall, rwall;
@@ -734,7 +734,7 @@ public:
 				slug_t r0x = p0x - h * c0.innerNx, r0y = p0y - h * c0.innerNy;
 
 				// A Bevel/Round corner's OUTER side ignores the shared inner-wall point and
-				// starts this segment at the raw, un-mitered pt + h*segN[i] instead -- matching
+				// starts this segment at the raw, un-mitered pt + h*segN[i] instead - matching
 				// exactly where the join geometry (emitted below, while closing out the
 				// PREVIOUS segment) left off.
 				if(c0.kind != CornerKind::Miter) {
@@ -754,7 +754,7 @@ public:
 				pushWallSegment(rwall, r0x, r0y, r2x, r2y);
 
 				// Emit corner (i+1)'s join geometry on its outer wall, connecting this segment's
-				// outer-wall end to the next segment's outer-wall start -- only for a real
+				// outer-wall end to the next segment's outer-wall start - only for a real
 				// interior corner (the subpath's own true end gets a cap instead, not a join;
 				// corners[0]/corners[numSegs] on an open subpath are always Miter-kind by
 				// construction above, so this never fires for them regardless of this guard).
@@ -785,7 +785,7 @@ public:
 
 			if(lwall.empty()) continue;
 
-			// Caps: only for open subpaths -- closed subpaths keep the existing degenerate
+			// Caps: only for open subpaths - closed subpaths keep the existing degenerate
 			// zero-length "cap" curve at the wraparound point (harmless, unchanged).
 			if(!isClosed && cap == LineCap::Square) {
 				// Extend the terminal wall points outward along the path's own tangent
@@ -850,7 +850,7 @@ public:
 		}
 
 		// Star-vertex patch: cluster collected arms by coincident location via spatial hash
-		// bucketing (not naive O(n^2) -- a large MVT linestring batch could have hundreds of
+		// bucketing (not naive O(n^2) - a large polyline string batch could have hundreds of
 		// subpaths per call), and round-disc any butt-capped cluster spanning 2+ DISTINCT
 		// subpath indices (same-subpath self-touching is just that subpath's own cap, not a
 		// star). Round and square caps already contain this disc; emitting it again adds a
@@ -951,7 +951,7 @@ public:
 	bool hasPendingPath() const { return !_pendingCurves.empty() || !_activeCurves.empty(); }
 
 	// Resolved subpath-start list for _pendingCurves (index 0 explicit, unlike the internal
-	// _pendingSubpathStarts storage convention) -- what strokePath()/getShapeContours() actually
+	// _pendingSubpathStarts storage convention) - what strokePath()/getShapeContours() actually
 	// want to consume. Empty return means "no curves, or boundaries are unknown" (see
 	// _pendingSubpathsUntracked); callers must fall back to the coordinate-gap heuristic in that
 	// case, exactly as before this tracking existed.
@@ -1088,11 +1088,11 @@ private:
 
 	// Appends quadratic curves approximating an arc from angle a0 to a0+sweep (|sweep| <= PI),
 	// centered at (cx,cy), radius r, into `out`. The first point emitted is exactly
-	// (cx + r*cos(a0), cy + r*sin(a0)) -- unlike _arcSegments()/arc() below, this never moveTo()s
+	// (cx + r*cos(a0), cy + r*sin(a0)) - unlike _arcSegments()/arc() below, this never moveTo()s
 	// or bridges from the current pen position; callers (round joins, round caps, the star-vertex
 	// discs) already know their own start point and must splice this in directly at an
 	// already-computed wall-offset point. Reuses _arcSegments()'s own per-chunk cubic formula,
-	// then folds each chunk down to quadratics via a scratch CurveDecomposer -- the same adaptive
+	// then folds each chunk down to quadratics via a scratch CurveDecomposer - the same adaptive
 	// cubic->quadratic subdivision every other curve-emission path in this file already goes
 	// through (CurveDecomposer::cubicTo/_cubicAdaptive), not a second copy of that algorithm.
 	static void _appendArcChunks(Atlas::Curves& out, slug_t cx, slug_t cy, slug_t r, slug_t a0, slug_t sweep) {
@@ -1205,7 +1205,7 @@ private:
 	// Subpath-start curve-index offsets, parallel to _activeCurves/_pendingCurves respectively.
 	// Index 0 of a subpath is always implicit (never stored); these hold every SUBSEQUENT
 	// boundary in increasing order. Maintained incrementally by moveTo()/closePath()/
-	// _flushActiveIntoPending()/addPath() -- see the doc comment at each site. Replaces inferring
+	// _flushActiveIntoPending()/addPath() - see the doc comment at each site. Replaces inferring
 	// subpath boundaries from an exact-coordinate gap, which silently fails whenever two
 	// independent subpaths happen to share a literal vertex (see strokePath()'s doc comment).
 	std::vector<size_t> _activeSubpathStarts;
@@ -1658,7 +1658,7 @@ public:
 		TextAnchorY anchorY=TextAnchorY::Baseline,
 		TextAlignX alignX=TextAlignX::Left,
 		// Opt-in namespace matching the mask a font's glyphs were loaded under
-		// (freetype.hpp's LoadConfig::mask) -- see slughorn::Key's bit-layout comment.
+		// (freetype.hpp's LoadConfig::mask) - see slughorn::Key's bit-layout comment.
 		// Lets multiple fonts share one Atlas/Canvas instead of needing one per font.
 		uint8_t mask=0
 	) {
@@ -1710,7 +1710,7 @@ public:
 			_composite.layers.push_back(layer);
 
 #ifdef SLUGHORN_HAS_MSDF
-			// text() is the one commit verb that does NOT go through _commitFill() -- glyph
+			// text() is the one commit verb that does NOT go through _commitFill() - glyph
 			// shapes are pre-registered by the Font loader at codepoint keys, so there's no
 			// addShape() call here for _applyMSDF() to piggyback on the way
 			// _commitFill()/_commitGradient() do. Call it directly per glyph instead.
@@ -1875,10 +1875,10 @@ public:
 	// calls Atlas::requestMSDF(key, range) for the shape it just registered. Replaces the
 	// "for(layer : compositeShape.layers) atlas->registerMSDF(layer.key, range)" boilerplate
 	// loop every MSDF-effect example used to need after finalize()+build(). setMSDF(false)
-	// (the default) reverts to no MSDF request at all -- unaffected callers pay nothing.
+	// (the default) reverts to no MSDF request at all - unaffected callers pay nothing.
 	//
-	// requestMSDF() itself (unlike the old registerMSDF()) is safe to call before build() -- see
-	// its doc comment in slughorn.hpp -- which is what makes this a Canvas-side toggle instead
+	// requestMSDF() itself (unlike the old registerMSDF()) is safe to call before build() - see
+	// its doc comment in slughorn.hpp - which is what makes this a Canvas-side toggle instead
 	// of a post-build loop the caller has to remember to write: every commit made under
 	// setMSDF(true) just queues its shape's tile request immediately, and build() renders all
 	// of them (batched, in parallel) once it's safe to.
@@ -1903,19 +1903,19 @@ public:
 	// -------------------------------------------------------------------------
 	// Mask authoring
 	//
-	// Two forms, both sugar over mechanisms that already exist -- neither is new capability,
+	// Two forms, both sugar over mechanisms that already exist - neither is new capability,
 	// and direct field access (compositeShape.mask = ...) remains valid unchanged either way.
 	//
 	// mask(range, invert) - commits the Canvas's accumulated internal path as an MSDF-baked
 	// mask: defineShape() semantics (registers geometry in the Atlas, does NOT push a Layer),
 	// auto-generated key (same convention as fill()/stroke() with no explicit key), then
 	// assigns Mask::msdf(key) to the CompositeShape under construction. cx/cy/r are derived
-	// from the path's own canvas-space bbox at author time -- this is different from (and does
+	// from the path's own canvas-space bbox at author time - this is different from (and does
 	// NOT contradict) osgSlug::RenderMask deliberately refusing to derive this at render time;
 	// slughorn's Canvas is the authoring layer, so bbox math here is the same kind of thing
 	// _commitFill's origin handling already does, not a render-time inference.
 	//
-	// This calls Atlas::requestMSDF(key, range) itself (unconditionally -- independent of the
+	// This calls Atlas::requestMSDF(key, range) itself (unconditionally - independent of the
 	// setMSDF() toggle above, which only affects ordinary fill()/text() layers, not masks) --
 	// requestMSDF() is safe to call here even though mask() always runs pre-build, so there's no
 	// separate post-build step for the caller to remember, unlike the old registerMSDF()-based
@@ -1999,14 +1999,14 @@ private:
 
 		if(!info || info->curves.empty()) return Layer{};
 
-		// angle==0 needs no rotated/baked geometry -- reference the atlas glyph directly instead
+		// angle==0 needs no rotated/baked geometry - reference the atlas glyph directly instead
 		// of copying its curves under a fresh auto-key, exactly mirroring text()'s per-character
 		// Layer construction (same em-space anchor math). Layer.transform has no rotation field
-		// (see NEXT_SESSION.md's "Real gap #1"), so angle!=0 still has to bake -- but the common
+		// (see NEXT_SESSION.md's "Real gap #1"), so angle!=0 still has to bake - but the common
 		// unrotated case (e.g. every non-D4 die face in decalcube.cpp) no longer does.
 		//
 		// NOTE 2026-08-14: consumers that map a shape's declared em-bounds across a fixed-size
-		// target (DecalDrawable's planar decals) need their OWN compensation for this -- see
+		// target (DecalDrawable's planar decals) need their OWN compensation for this - see
 		// NEXT_SESSION.md's DecalDrawable em-window writeup. Referencing the real glyph here is
 		// correct; whether it LOOKS correct downstream depends on that consumer.
 		if(angle == 0_cv) {
@@ -2073,7 +2073,7 @@ private:
 		using Origin = Atlas::ShapeInfo::Origin;
 
 		// `baked` is an element-wise world-space transform of info->curves (same size/order, see
-		// the loop above) -- info->contourStarts (if the glyph's own source ever populated it)
+		// the loop above) - info->contourStarts (if the glyph's own source ever populated it)
 		// carries over unchanged for the same reason _commitFill()'s own doc comment gives.
 		return _commitFill(baked, color, 1_cv, _key.next(), Origin(Origin::Type::Centered), Matrix::identity(), info->contourStarts);
 	}
@@ -2452,7 +2452,7 @@ private:
 
 #ifdef SLUGHORN_HAS_MSDF
 	// setMSDF() state - see its doc comment above. Applied by _applyMSDF(), called from every
-	// layer-producing commit (_commitFill, _commitGradient, text()) -- same shape as
+	// layer-producing commit (_commitFill, _commitGradient, text()) - same shape as
 	// _applySplits() above: persisted per-Canvas toggle state, applied unconditionally at each
 	// commit site, branching internally.
 	bool _msdfEnabled = false;
