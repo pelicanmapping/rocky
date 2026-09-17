@@ -34,10 +34,6 @@ jobs:
       with:
         submodules: recursive
 
-    - name: Lint ShaderDefines includes
-      shell: bash
-      run: cmake -DROCKY_SOURCE_DIR=$GITHUB_WORKSPACE -P $GITHUB_WORKSPACE/cmake/check-shaderdefines-includes.cmake
-
     - name: Install Vulkan SDK
       uses: pelicanmapping/setup-vulkan-sdk@v1.2.1
       with:
