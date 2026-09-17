@@ -27,9 +27,6 @@ namespace ROCKY_NAMESPACE
         //! One time setup of the system
         void initialize(VSGContext context) override;
 
-        //! Per-frame update
-        void update(VSGContext context) override;
-
         //! Intersection support
         void traverse(vsg::ConstVisitor& v) const override;
 

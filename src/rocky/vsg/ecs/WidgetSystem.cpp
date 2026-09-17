@@ -90,6 +90,15 @@ WidgetSystemNode::initialize(VSGContext context)
             {
                 if (widget.render != nullptr && visible(visibility, rs) && xdetail.passingCull(rs))
                 {
+                    // Project after the scene's record traversal has refreshed this view.
+                    // During update, the per-view transform data is still from the previous frame.
+                    const auto& view = xdetail.views[rs.viewID];
+                    auto clip = view.proj * view.position;
+                    clip /= clip.w;
+                    auto& screen = renderable.screen[rs.viewID];
+                    screen.x = (clip.x + 1.0) * 0.5 * (double)view.viewport[2] + (double)view.viewport[0];
+                    screen.y = (clip.y + 1.0) * 0.5 * (double)view.viewport[3] + (double)view.viewport[1];
+
                     WidgetInstance i{
                             widget,
                             renderable.uid,
@@ -146,25 +155,6 @@ WidgetSystemNode::initialize(VSGContext context)
         };
 
     context->guiRecorders.emplace_back(recorder);
-}
-
-void
-WidgetSystemNode::update(VSGContext context)
-{
-    auto [lock, registry] = _registry.read();
-
-    // calculate the screen position of the widget in each view
-    registry.view<WidgetDetail, TransformDetail>().each([&](auto& renderable, auto& xdetail)
-        {
-            for(auto& viewID : context->activeViewIDs)
-            {
-                auto& view = xdetail.views[viewID];
-                auto clip = view.proj * view.position;
-                clip /= clip.w;
-                renderable.screen[viewID].x = (clip.x + 1.0) * 0.5 * (double)view.viewport[2] + (double)view.viewport[0];
-                renderable.screen[viewID].y = (clip.y + 1.0) * 0.5 * (double)view.viewport[3] + (double)view.viewport[1];
-            }
-        });
 }
 
 void
