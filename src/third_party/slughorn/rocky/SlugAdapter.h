@@ -34,6 +34,14 @@ namespace rocky::detail
         bool closed = false;
     };
 
+    //! An indivisible filled polygon. Keep holes attached to their exterior so
+    //! atlas-capacity preflight can partition a batch without filling its holes.
+    struct SlugPolygonInput
+    {
+        SlugContourInput outer;
+        std::vector<SlugContourInput> holes;
+    };
+
     //! Compact circle primitive used for PointGeometry batches.
     struct SlugCircleInput
     {
@@ -57,6 +65,14 @@ namespace rocky::detail
         std::uint32_t owner = 0u;
 
         SlugShapeKind kind = SlugShapeKind::Fill;
+
+        // Polygon fills use this instead of contours. One same-colored group
+        // normally produces one atlas shape; the adapter can partition it into
+        // several shapes in the same atlas if SDK band offsets/counts overflow.
+        std::vector<SlugPolygonInput> polygons;
+
+        // Unstructured paths (including legacy mesh fills) cannot be safely
+        // partitioned: their exterior/hole associations are not available.
         std::vector<SlugContourInput> contours;
         std::vector<SlugCircleInput> circles;
 

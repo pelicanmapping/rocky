@@ -48,6 +48,7 @@ namespace
     using rocky::detail::SlugCircleInput;
     using rocky::detail::SlugContourInput;
     using rocky::detail::SlugPointInput;
+    using rocky::detail::SlugPolygonInput;
     using rocky::detail::SlugShapeInput;
     using rocky::detail::SlugShapeKind;
     using rocky::detail::SlugTextureFormat;
@@ -560,8 +561,9 @@ namespace
             return true;
         };
 
-        // A Slug shape has one color. Group same-colored polygons into one
-        // shape so a tile full of same-style features remains one layer.
+        // A Slug shape has one color. Normally each color group remains one
+        // layer. Preserve polygon/hole ownership across the adapter boundary
+        // so an oversized group can become several shapes in the same atlas.
         std::vector<SlugShapeInput> groups;
         for (std::size_t index = 0u; index < geometry->polygons.size(); ++index)
         {
@@ -599,7 +601,8 @@ namespace
                 group = std::prev(groups.end());
             }
 
-            group->contours.emplace_back(std::move(outer));
+            SlugPolygonInput mappedPolygon;
+            mappedPolygon.outer = std::move(outer);
             for (const auto& inputHole : part.holes)
             {
                 SlugContourInput hole;
@@ -616,13 +619,14 @@ namespace
                 // reverse the source coordinate system's handedness.
                 if ((outerArea < 0.0) == (holeArea < 0.0))
                     std::reverse(hole.points.begin(), hole.points.end());
-                group->contours.emplace_back(std::move(hole));
+                mappedPolygon.holes.emplace_back(std::move(hole));
             }
+            group->polygons.emplace_back(std::move(mappedPolygon));
         }
 
         for (auto& group : groups)
         {
-            if (!group.contours.empty())
+            if (!group.polygons.empty())
                 build.shapes.emplace_back(std::move(group));
         }
         return true;
@@ -1200,9 +1204,8 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         }
 
         SlugAtlasInput input;
-        // Always begin at the baseline width. Slughorn grows transactionally
-        // when necessary; restarting here lets a simplified overlay shrink
-        // instead of retaining its historical maximum allocation.
+        // Keep a fixed row width; the SDK wraps band lists across rows. The
+        // adapter partitions oversized polygon groups into shapes, not atlases.
         input.textureWidth = textureWidth;
         input.mergeConnectedLineSegments = mergeConnectedLineSegments;
         input.shapes = std::move(build.shapes);

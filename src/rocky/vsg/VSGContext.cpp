@@ -464,8 +464,9 @@ VSGContextImpl::ctor(int& argc, char** argv)
             return Failure(Failure::ServiceUnavailable, "No image reader for \"" + contentType + "\"");
         };
 
-    // caches URI request results
-    io.services().contentCache = std::make_shared<ContentCache>(256);
+    // caches URI request results.
+    // the user may replace this with any custom cache.
+    io.services().contentCache = std::make_shared<rocky::detail::LRUCache<std::string, Result<Content>>>(256);
 
     // weak cache of resident image (and elevation) rasters
     io.services().residentImageCache = std::make_shared<ResidentCache<std::string, Image, GeoExtent>>();

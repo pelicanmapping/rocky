@@ -28,6 +28,7 @@
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <map>
 #include <random>
 #include <set>
 #include <sstream>
@@ -1015,6 +1016,267 @@ TEST_CASE("slug atlas shares endpoints and spans texture rows", "[projection][sl
         CHECK(crossRowCurve);
         CHECK(sharedEndpoint);
         CHECK(curves->valueCount() < 600u * 4u * 2u);
+    });
+}
+
+TEST_CASE("slug partitions dense polygon groups within one atlas", "[projection][slug][polygon]")
+{
+    Registry registry = Registry::create();
+    auto polygonSystem = PolygonSystemNode::create(registry);
+    auto slugSystem = SlugSystemNode::create(registry);
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+    using Curve = std::array<float, 6>;
+    std::map<Curve, std::size_t> expected;
+    std::vector<glm::vec2> holeSamples, fillSamples;
+    const Color fillColor(StockColor::Yellow, 0.5f);
+    constexpr std::size_t polygonCount = 1024u;
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& geometry = reg.emplace<PolygonGeometry>(entity);
+        auto addPolygon = [&](PolygonPart part)
+        {
+            auto addRing = [&](const PolygonPart::Ring& ring)
+            {
+                for (std::size_t i = 0u; i < ring.size(); ++i)
+                {
+                    const auto& a = ring[i];
+                    const auto& b = ring[(i + 1u) % ring.size()];
+                    expected.emplace(Curve{
+                        float(a.x + 0.5), float(a.y + 0.5),
+                        float(b.x + 0.5), float(b.y + 0.5),
+                        float(b.x + 0.5), float(b.y + 0.5) }, geometry.polygons.size());
+                }
+            };
+            addRing(part.outer);
+            for (const auto& hole : part.holes)
+                addRing(hole);
+            geometry.polygons.emplace_back(std::move(part));
+            geometry.colors.push_back(fillColor);
+        };
+        // Thousands of vertical edges cross most Y bands: the former one-key
+        // group cannot fit its uint16 band offsets. Scramble spatial order so
+        // the partitioner must actually sort rather than split input ranges.
+        for (std::size_t i = 0u; i < polygonCount; ++i)
+        {
+            const double x = -0.375 + double((i * 613u) % polygonCount) / 2048.0;
+            const double w = 1.0 / 4096.0;
+            PolygonPart part;
+            part.outer = {
+                { x, -0.375, 0.0 }, { x + w, -0.375, 0.0 },
+                { x + w, 0.375, 0.0 }, { x, 0.375, 0.0 }
+            };
+            part.holes.push_back({
+                { x + w * 0.25, -0.25, 0.0 }, { x + w * 0.25, 0.25, 0.0 },
+                { x + w * 0.75, 0.25, 0.0 }, { x + w * 0.75, -0.25, 0.0 }
+            });
+            holeSamples.emplace_back(float(x + w * 0.5 + 0.5), 0.5f);
+            fillSamples.emplace_back(float(x + w * 0.5 + 0.5), 0.15625f);
+            addPolygon(std::move(part));
+        }
+        // An overlapping polygon must stay with building zero, not become a
+        // second independently blended fill. It does not cover our sample points.
+        PolygonPart overlapping;
+        const double x = geometry.polygons.front().outer.front().x;
+        overlapping.outer = {
+            { x - 1.0 / 16384.0, 0.30, 0.0 }, { x + 1.0 / 16384.0, 0.30, 0.0 },
+            { x + 1.0 / 16384.0, 0.40, 0.0 }, { x - 1.0 / 16384.0, 0.40, 0.0 }
+        };
+        addPolygon(std::move(overlapping));
+        // A later color group must still follow every batch of the first group.
+        PolygonPart other;
+        other.outer = { { 0.3, 0.3, 0.0 }, { 0.4, 0.3, 0.0 },
+                        { 0.4, 0.4, 0.0 }, { 0.3, 0.4, 0.0 } };
+        addPolygon(std::move(other));
+        geometry.colors.back() = StockColor::Cyan;
+        auto& style = reg.emplace<PolygonStyle>(entity);
+        style.useGeometryColors = true;
+        reg.emplace<rocky::Polygon>(entity, geometry, style);
+        reg.emplace<Overlay>(entity).mode = OverlayMode::Vector;
+    });
+
+    slugSystem->update(context.get());
+    vsg::ref_ptr<vsg::ImageInfo> savedCurves, savedBands;
+    std::uint64_t generation = 0u;
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& resource = reg.get<SlugResource>(entity);
+        INFO(resource.message);
+        REQUIRE(resource.ready);
+        REQUIRE(resource.layers.size() > 2u);
+        CHECK(resource.layers.size() < 16u);
+        CHECK(resource.layers.back().color == StockColor::Cyan);
+        savedCurves = resource.curveTexture;
+        savedBands = resource.bandTexture;
+        generation = resource.atlasGeneration;
+        auto* curves = dynamic_cast<vsg::vec4Array2D*>(savedCurves->imageView->image->data.get());
+        auto* bands = dynamic_cast<vsg::usvec2Array2D*>(savedBands->imageView->image->data.get());
+        REQUIRE(curves);
+        REQUIRE(bands);
+        REQUIRE(curves->width() == 512u);
+        const auto width = bands->width();
+        std::vector<std::size_t> polygonLayer(polygonCount + 2u, resource.layers.size());
+        std::vector<std::vector<Curve>> decoded(resource.layers.size());
+        for (std::size_t layerIndex = 0u; layerIndex < resource.layers.size(); ++layerIndex)
+        {
+            const auto& layer = resource.layers[layerIndex];
+            if (layerIndex + 1u < resource.layers.size())
+            {
+                CHECK(layer.color == fillColor);
+                CHECK(layer.bandTransform.x > 32.0f / 0.51f); // tighter than the original batch
+            }
+            const auto& shape = layer.shapeData;
+            const unsigned start = shape.y * width + shape.x;
+            const unsigned headerStart = start + 2u * resource.indirectionSize;
+            const unsigned headerCount = shape.z + shape.w + 2u;
+            std::set<unsigned> seen;
+            for (unsigned h = 0u; h < headerCount; ++h)
+            {
+                const auto header = (*bands)[headerStart + h];
+                REQUIRE(start + unsigned(header.y) + unsigned(header.x) <= bands->valueCount());
+                for (unsigned i = 0u; i < header.x; ++i)
+                {
+                    const auto loc = (*bands)[start + header.y + i];
+                    const unsigned curveIndex = loc.y * curves->width() + loc.x;
+                    REQUIRE(curveIndex + 1u < curves->valueCount());
+                    if (!seen.insert(curveIndex).second)
+                        continue;
+                    const auto& a = (*curves)[curveIndex];
+                    const auto& b = (*curves)[curveIndex + 1u];
+                    const Curve curve{ a.x, a.y, a.z, a.w, b.x, b.y };
+                    const auto found = expected.find(curve);
+                    REQUIRE(found != expected.end());
+                    auto& ownerLayer = polygonLayer[found->second];
+                    if (ownerLayer == resource.layers.size())
+                        ownerLayer = layerIndex;
+                    CHECK(ownerLayer == layerIndex); // exterior and every hole are inseparable
+                    expected.erase(found);
+                    decoded[layerIndex].push_back(curve);
+                }
+            }
+        }
+        CHECK(expected.empty());
+        CHECK(polygonLayer.front() == polygonLayer[polygonCount]); // overlapping pair
+        CHECK(polygonLayer.back() == resource.layers.size() - 1u);
+
+        // Evaluate winding from the actual packed straight edges, checking that
+        // every hole stays empty and every building still has a filled interior.
+        auto winding = [&](const std::vector<Curve>& batch, glm::vec2 point)
+        {
+            int result = 0;
+            for (const auto& c : batch)
+            {
+                const double side = (double(c[4]) - c[0]) * (double(point.y) - c[1]) -
+                    (double(c[5]) - c[1]) * (double(point.x) - c[0]);
+                if (c[1] <= point.y && c[5] > point.y && side > 0.0) ++result;
+                if (c[1] > point.y && c[5] <= point.y && side < 0.0) --result;
+            }
+            return result;
+        };
+        for (std::size_t i = 0u; i < polygonCount; ++i)
+        {
+            CHECK(winding(decoded[polygonLayer[i]], holeSamples[i]) == 0);
+            CHECK(winding(decoded[polygonLayer[i]], fillSamples[i]) != 0);
+        }
+    });
+
+    slugSystem->update(context.get());
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& resource = reg.get<SlugResource>(entity);
+        CHECK(resource.atlasGeneration == generation);
+        CHECK(resource.curveTexture == savedCurves);
+        CHECK(resource.bandTexture == savedBands);
+    });
+
+    const auto exportPath = std::filesystem::temp_directory_path() /
+        ("rocky-slug-batched-" + std::to_string(
+            std::chrono::steady_clock::now().time_since_epoch().count()) + ".slug");
+    registry.write([&](entt::registry& reg)
+    {
+        reg.get<SlugResource>(entity).exportPath = exportPath.string();
+    });
+    slugSystem->update(context.get());
+    REQUIRE(std::filesystem::exists(exportPath));
+    {
+        std::ifstream input(exportPath);
+        const auto document = json::parse(input);
+        registry.read([&](entt::registry& reg)
+        {
+            const auto& resource = reg.get<SlugResource>(entity);
+            CHECK(resource.exportSucceeded);
+            CHECK(resource.atlasGeneration == generation);
+            CHECK(resource.curveTexture == savedCurves);
+            CHECK(resource.bandTexture == savedBands);
+            CHECK(document["shapes"].size() == resource.layers.size());
+            for (const auto& layer : resource.layers)
+            {
+                bool found = false;
+                for (const auto& shape : document["shapes"])
+                    found = found || (shape["band_tex_x"] == layer.shapeData.x &&
+                        shape["band_tex_y"] == layer.shapeData.y);
+                CHECK(found); // deterministic batching on export-only rebuilds
+            }
+            CHECK(reg.view<SlugResource>().size() == 1u);
+        });
+    }
+    std::error_code removeError;
+    CHECK(std::filesystem::remove(exportPath, removeError));
+    CHECK_FALSE(removeError);
+    registry.write([&](entt::registry& reg)
+    {
+        auto& geometry = reg.get<PolygonGeometry>(entity);
+        geometry.polygons.resize(1u);
+        geometry.colors.resize(1u);
+        geometry.dirty(reg);
+    });
+    slugSystem->update(context.get());
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& resource = reg.get<SlugResource>(entity);
+        CHECK(resource.ready);
+        CHECK(resource.layers.size() == 1u);
+        CHECK(resource.atlasGeneration > generation);
+        CHECK(resource.bandTexture->imageView->image->data->dataSize() <
+            savedBands->imageView->image->data->dataSize());
+    });
+}
+
+TEST_CASE("slug refuses to split an oversized indivisible polygon", "[projection][slug][polygon]")
+{
+    Registry registry = Registry::create();
+    auto slugSystem = SlugSystemNode::create(registry);
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        auto& geometry = reg.emplace<PolygonGeometry>(entity);
+        PolygonPart part;
+        part.outer = { { -0.4, -0.4, 0.0 }, { 0.4, -0.4, 0.0 },
+                       { 0.4, 0.4, 0.0 }, { -0.4, 0.4, 0.0 } };
+        for (unsigned i = 0u; i < 2048u; ++i)
+        {
+            const double x = -0.375 + double(i) / 4096.0;
+            part.holes.push_back({
+                { x, -0.35, 0.0 }, { x, 0.35, 0.0 },
+                { x + 1.0 / 8192.0, 0.35, 0.0 }, { x + 1.0 / 8192.0, -0.35, 0.0 }
+            });
+        }
+        geometry.polygons.push_back(std::move(part));
+        reg.emplace<rocky::Polygon>(entity, geometry);
+        reg.emplace<Overlay>(entity).mode = OverlayMode::Vector;
+    });
+    slugSystem->update(context.get());
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& resource = reg.get<SlugResource>(entity);
+        CHECK_FALSE(resource.ready);
+        CHECK_FALSE(resource.curveTexture);
+        CHECK_FALSE(resource.bandTexture);
+        CHECK(resource.layers.empty());
+        CHECK(resource.message.find("cannot be split safely") != std::string::npos);
     });
 }
 

@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cmath>
 #include <exception>
+#include <limits>
+#include <numeric>
 #include <string>
 #include <utility>
 #include <vector>
@@ -158,6 +160,284 @@ namespace rocky::detail
             const int bandCount = bandCountForCurveCount(curves.size());
             return Atlas::computeUniformSplits(curves, bandCount, bandCount);
         }
+
+        //! Bounds in the original bounded authoring coordinates. Polygon batch
+        //! subdivision changes neither coordinates nor the UV-to-em transform.
+        struct PolygonBounds
+        {
+            float minX = std::numeric_limits<float>::max();
+            float minY = std::numeric_limits<float>::max();
+            float maxX = std::numeric_limits<float>::lowest();
+            float maxY = std::numeric_limits<float>::lowest();
+
+            void expand(const PolygonBounds& rhs)
+            {
+                minX = std::min(minX, rhs.minX);
+                minY = std::min(minY, rhs.minY);
+                maxX = std::max(maxX, rhs.maxX);
+                maxY = std::max(maxY, rhs.maxY);
+            }
+        };
+
+        //! One polygon prepared with the SDK's own line/closure rules. Contour
+        //! starts retain the exterior and hole rings for diagnostic exports.
+        struct PreparedPolygon
+        {
+            Atlas::Curves curves;
+            std::vector<std::size_t> contourStarts;
+            PolygonBounds bounds;
+        };
+
+        //! Polygons with overlapping/touching bounds are kept in one fill. This
+        //! avoids changing compound-path winding or applying opacity twice where
+        //! polygons overlap. Disjoint units can be spatially batched independently.
+        struct PolygonBatchUnit
+        {
+            std::vector<const PreparedPolygon*> polygons;
+            PolygonBounds bounds;
+        };
+
+        // This mirrors Atlas::buildShapeBands/packTextures in the pinned SDK:
+        // inclusive curve-box intersections with grid-snapped band boundaries,
+        // followed by the two indirection tables, headers, and Y then X lists.
+        // Count actual references, not unique edges or a worst-case curve cap.
+        // Keeping this check private lets SDK format changes stay in the adapter.
+        bool polygonBandDataFits(
+            const Atlas::ShapeInfo& info,
+            const std::vector<PolygonBatchUnit>& units,
+            std::size_t begin,
+            std::size_t end)
+        {
+            constexpr std::uint64_t limit = std::numeric_limits<std::uint16_t>::max();
+            const std::size_t countX = info.splitsX.size() + 1u;
+            const std::size_t countY = info.splitsY.size() + 1u;
+            std::uint64_t offset = 2u * Atlas::INDIRECTION_SIZE + countY + countX;
+            auto axisFits = [&](bool yAxis)
+            {
+                const auto& splits = yAxis ? info.splitsY : info.splitsX;
+                const float lo = yAxis ? info.bearingY - info.height : info.bearingX;
+                const float hi = yAxis ? info.bearingY : info.bearingX + info.width;
+                const float range = yAxis ? info.height : info.width;
+                std::vector<float> boundaries{ lo };
+                for (float split : splits)
+                    boundaries.push_back(lo + std::round(split * Atlas::INDIRECTION_SIZE) /
+                        Atlas::INDIRECTION_SIZE * range);
+                boundaries.push_back(hi);
+                std::vector<std::uint64_t> counts(boundaries.size() - 1u, 0u);
+                for (auto i = begin; i < end; ++i)
+                {
+                    for (const auto* polygon : units[i].polygons)
+                    {
+                        for (const auto& curve : polygon->curves)
+                        {
+                            const float cmin = yAxis ?
+                                std::min({ curve.y1, curve.y2, curve.y3 }) :
+                                std::min({ curve.x1, curve.x2, curve.x3 });
+                            const float cmax = yAxis ?
+                                std::max({ curve.y1, curve.y2, curve.y3 }) :
+                                std::max({ curve.x1, curve.x2, curve.x3 });
+                            for (std::size_t b = 0u; b < counts.size(); ++b)
+                            {
+                                if (cmax >= boundaries[b] && cmin <= boundaries[b + 1u])
+                                    ++counts[b];
+                            }
+                        }
+                    }
+                }
+                for (auto count : counts)
+                {
+                    if (offset > limit || count > limit)
+                        return false;
+                    offset += count;
+                }
+                return true;
+            };
+            return axisFits(true) && axisFits(false);
+        }
+
+        // Compute connected components of overlapping bounds only when a group
+        // needs subdivision. A sweep avoids pairwise work for separated buildings;
+        // a component remains indivisible even if its members have opposing winding.
+        std::vector<PolygonBatchUnit> polygonBatchUnits(
+            const std::vector<PreparedPolygon>& polygons)
+        {
+            std::vector<std::size_t> order(polygons.size()), parents(polygons.size());
+            std::iota(order.begin(), order.end(), 0u);
+            std::iota(parents.begin(), parents.end(), 0u);
+            auto root = [&](std::size_t i)
+            {
+                while (parents[i] != i)
+                {
+                    parents[i] = parents[parents[i]];
+                    i = parents[i];
+                }
+                return i;
+            };
+            std::stable_sort(order.begin(), order.end(), [&](auto a, auto b)
+            {
+                return polygons[a].bounds.minX < polygons[b].bounds.minX;
+            });
+            for (std::size_t i = 0u; i < order.size(); ++i)
+            {
+                const auto& a = polygons[order[i]].bounds;
+                for (auto j = i + 1u; j < order.size(); ++j)
+                {
+                    const auto& b = polygons[order[j]].bounds;
+                    if (b.minX > a.maxX)
+                        break;
+                    if (a.maxY >= b.minY && b.maxY >= a.minY)
+                        parents[root(order[j])] = root(order[i]);
+                }
+            }
+            std::vector<PolygonBatchUnit> result;
+            std::vector<std::size_t> unitForRoot(polygons.size(), polygons.size());
+            for (std::size_t i = 0u; i < polygons.size(); ++i)
+            {
+                auto& unit = unitForRoot[root(i)];
+                if (unit == polygons.size())
+                {
+                    unit = result.size();
+                    result.emplace_back();
+                }
+                result[unit].polygons.push_back(&polygons[i]);
+                result[unit].bounds.expand(polygons[i].bounds);
+            }
+            return result;
+        }
+
+        bool addPolygonShapes(
+            Atlas& atlas,
+            const SlugShapeInput& input,
+            const std::string& keyStem,
+            std::vector<PendingLayer>& pending,
+            std::string& error)
+        {
+            std::vector<PreparedPolygon> polygons;
+            polygons.reserve(input.polygons.size());
+            for (const auto& source : input.polygons)
+            {
+                if (source.outer.points.size() < 3u)
+                    continue;
+                PreparedPolygon polygon;
+                slughorn::CurveDecomposer decomposer(polygon.curves);
+                auto addRing = [&](const SlugContourInput& ring)
+                {
+                    if (ring.points.size() < 3u)
+                        return true;
+                    for (const auto& point : ring.points)
+                    {
+                        if (!valid(point))
+                        {
+                            error = "Slug polygon shape " + keyStem + " has a non-finite point";
+                            return false;
+                        }
+                        polygon.bounds.expand({ point.x, point.y, point.x, point.y });
+                    }
+                    polygon.contourStarts.push_back(polygon.curves.size());
+                    decomposer.moveTo(ring.points.front().x, ring.points.front().y);
+                    for (std::size_t i = 1u; i < ring.points.size(); ++i)
+                        decomposer.lineTo(ring.points[i].x, ring.points[i].y);
+                    decomposer.close();
+                    return true;
+                };
+                if (!addRing(source.outer))
+                    return false;
+                for (const auto& hole : source.holes)
+                {
+                    if (!addRing(hole))
+                        return false;
+                }
+                polygons.push_back(std::move(polygon));
+            }
+            if (polygons.empty())
+                return true;
+
+            // First preflight the original group; small groups retain one fill.
+            // No failed builds, exception matching, or whole-atlas retries.
+            std::vector<PolygonBatchUnit> units(1u);
+            for (const auto& polygon : polygons)
+            {
+                units.front().polygons.push_back(&polygon);
+                units.front().bounds.expand(polygon.bounds);
+            }
+            bool partitioned = false;
+            std::size_t batchNumber = 0u;
+            auto emit = [&](auto&& self, std::size_t begin, std::size_t end) -> bool
+            {
+                PolygonBounds bounds;
+                std::size_t curveCount = 0u;
+                for (auto i = begin; i < end; ++i)
+                {
+                    bounds.expand(units[i].bounds);
+                    for (const auto* polygon : units[i].polygons)
+                        curveCount += polygon->curves.size();
+                }
+                Atlas::ShapeInfo info;
+                // Explicit tight metrics enable the shader's existing carrier
+                // rejection per batch WITHOUT rebasing or rescaling its curves.
+                info.autoMetrics = false;
+                info.bearingX = bounds.minX;
+                info.bearingY = bounds.maxY;
+                info.width = std::max(bounds.maxX - bounds.minX, 1e-6f);
+                info.height = std::max(bounds.maxY - bounds.minY, 1e-6f);
+                if (!finite(info.width) || !finite(info.height))
+                {
+                    error = "Slug polygon shape " + keyStem + " has non-finite bounds";
+                    return false;
+                }
+                info.numBandsX = info.numBandsY = bandCountForCurveCount(curveCount);
+                auto splits = Atlas::computeUniformSplits({}, info.numBandsX, info.numBandsY);
+                info.splitsX = std::move(splits.first);
+                info.splitsY = std::move(splits.second);
+                if (!polygonBandDataFits(info, units, begin, end))
+                {
+                    if (!partitioned)
+                    {
+                        units = polygonBatchUnits(polygons);
+                        partitioned = true;
+                        return self(self, 0u, units.size());
+                    }
+                    if (end - begin < 2u)
+                    {
+                        error = "Slug polygon shape " + keyStem +
+                            " exceeds the uint16_t band capacity (65535); a single polygon "
+                            "with its holes or an overlapping polygon group cannot be split safely";
+                        return false;
+                    }
+                    // Stable median split on the longest axis yields compact,
+                    // deterministic batches and bounded logarithmic recursion.
+                    const bool splitX = info.width >= info.height;
+                    std::stable_sort(units.begin() + begin, units.begin() + end,
+                        [&](const auto& a, const auto& b)
+                        {
+                            return splitX ?
+                                double(a.bounds.minX) + a.bounds.maxX < double(b.bounds.minX) + b.bounds.maxX :
+                                double(a.bounds.minY) + a.bounds.maxY < double(b.bounds.minY) + b.bounds.maxY;
+                        });
+                    const auto middle = begin + (end - begin) / 2u;
+                    return self(self, begin, middle) && self(self, middle, end);
+                }
+
+                info.curves.reserve(curveCount);
+                for (auto i = begin; i < end; ++i)
+                {
+                    for (const auto* polygon : units[i].polygons)
+                    {
+                        for (auto start : polygon->contourStarts)
+                            info.contourStarts.push_back(info.curves.size() + start);
+                        info.curves.insert(info.curves.end(), polygon->curves.begin(), polygon->curves.end());
+                    }
+                }
+                const Key key{ partitioned ? keyStem + "-batch-" + std::to_string(batchNumber++) : keyStem };
+                atlas.addShape(key, info);
+                Layer layer;
+                layer.key = key;
+                layer.color = makeColor(input.color);
+                pending.push_back({ input.owner, std::move(layer), input.uvToEmX, input.uvToEmY });
+                return true;
+            };
+            return emit(emit, 0u, units.size());
+        }
     }
 
     bool buildSlugAtlas(
@@ -239,6 +519,12 @@ namespace rocky::detail
                 switch (shape.kind)
                 {
                 case SlugShapeKind::Fill:
+                    if (!shape.polygons.empty())
+                    {
+                        if (!addPolygonShapes(atlas, shape, keyStem, pending, error))
+                            return false;
+                        break;
+                    }
                     if (addContours(canvas, shape, true, false))
                     {
                         layer = canvas.fill(color, 1.0f, key);
