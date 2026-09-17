@@ -48,7 +48,7 @@ namespace ROCKY_NAMESPACE
     };
 
     //! A cache that stores Content objects by URI.
-    using ContentCache = rocky::detail::LRUCache<std::string, Result<Content>>;
+    using ContentCache = rocky::Cache<std::string, Result<Content>>;
 
     /**
     * Collection of service available to rocky classes that perform IO operations.

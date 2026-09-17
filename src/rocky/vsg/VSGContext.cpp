@@ -465,7 +465,7 @@ VSGContextImpl::ctor(int& argc, char** argv)
         };
 
     // caches URI request results
-    io.services().contentCache = std::make_shared<ContentCache>(256);
+    io.services().contentCache = std::make_shared<rocky::detail::LRUCache<std::string,Result<Content>>>(256);
 
     // weak cache of resident image (and elevation) rasters
     io.services().residentImageCache = std::make_shared<ResidentCache<std::string, Image, GeoExtent>>();
