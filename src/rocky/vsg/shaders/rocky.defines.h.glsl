@@ -23,7 +23,7 @@
 #define BINDING_VDS_FRUSTUMS                12
 #define BINDING_VDS_DECALS                  13
 #define BINDING_VDS_DECAL_TILES             14
-#define BINDING_VDS_SLUG_LAYERS              15
+#define BINDING_VDS_SLUG_LAYERS             15
 
 // map global state (in descriptor set 2):
 #define DESCRIPTOR_SET_GLOBAL                2
@@ -54,10 +54,12 @@
 // configuration and limits:
 #define FRUSTUM_GRID_TILE_SIZE_PIXELS       16
 #define FRUSTUM_GRID_TILES_PER_THREAD_GROUP 16
-#define MAX_DECALS_PER_TILE                  7
-#ifndef MAX_NUM_DECAL_TEXTURES
-#define MAX_NUM_DECAL_TEXTURES              64
-#endif
+
+// One count plus these indices keeps each CPU/GPU tile record 16-byte aligned.
+#define MAX_DECALS_PER_TILE                 11
+
+// If the decal count exceeds this, you will start to see rendering artifacts.
+#define MAX_NUM_DECAL_TEXTURES             128
 
 
 #ifdef __cplusplus
