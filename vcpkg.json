@@ -19,5 +19,11 @@
         { "name" : "vsg", "features" : [ "windowing" ] },
         { "name" : "vsgxchange", "features": [ "assimp", "freetype", "draco" ] },
         { "name" : "zlib" }
-    ]
+    ],
+    "features": {
+        "slughorn": {
+            "description": "Experimental vector overlays using Slughorn",
+            "dependencies": [ "slughorn" ]
+        }
+    }
 }

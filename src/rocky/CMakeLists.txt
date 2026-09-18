@@ -254,31 +254,28 @@ if(ROCKY_RENDERER_VSG)
     if(ROCKY_SUPPORTS_SLUGHORN)
         set(ROCKY_HAS_SLUGHORN TRUE)
 
-        # Slughorn itself requires C++20. Keep it and Rocky's private compatibility
-        # adapter in an object target so Rocky's public C++17 requirement and exported
-        # target remain unchanged.
-        set(ROCKY_SLUGHORN_ROOT "${PROJECT_SOURCE_DIR}/src/third_party/slughorn")
-        add_library(rocky_slughorn_adapter OBJECT
-            "${ROCKY_SLUGHORN_ROOT}/slughorn/slughorn.cpp"
-            "${ROCKY_SLUGHORN_ROOT}/rocky/SlugAdapter.cpp"
-            "${ROCKY_SLUGHORN_ROOT}/rocky/SlugAdapter.h")
-        set_source_files_properties(
-            "${ROCKY_SLUGHORN_ROOT}/slughorn/slughorn.cpp"
-            PROPERTIES COMPILE_DEFINITIONS SLUGHORN_SERIAL_IMPLEMENTATION)
-        target_include_directories(rocky_slughorn_adapter PRIVATE
-            "${ROCKY_SLUGHORN_ROOT}")
-        if(NOT TARGET nlohmann_json::nlohmann_json)
-            find_package(nlohmann_json CONFIG REQUIRED)
-        endif()
-        target_link_libraries(rocky_slughorn_adapter PRIVATE
-            nlohmann_json::nlohmann_json)
+        include(ResolveSlughorn)
+        rocky_resolve_slughorn()
+
+        # A PRIVATE dependency of this static adapter becomes link-only for its
+        # consumers. Slughorn's PUBLIC cxx_std_20 therefore applies to the adapter,
+        # not to Rocky or applications linking Rocky (including static installs).
+        set(ROCKY_SLUGHORN_ADAPTER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/slug")
+        add_library(rocky_slughorn_adapter STATIC
+            "${ROCKY_SLUGHORN_ADAPTER_DIR}/SlugAdapter.cpp"
+            "${ROCKY_SLUGHORN_ADAPTER_DIR}/SlugAdapter.h")
+        target_link_libraries(rocky_slughorn_adapter PRIVATE slughorn::slughorn)
         set_target_properties(rocky_slughorn_adapter PROPERTIES
             CXX_STANDARD 20
             CXX_STANDARD_REQUIRED ON
             CXX_EXTENSIONS OFF
             POSITION_INDEPENDENT_CODE ON
             FOLDER "third_party")
-        set(ROCKY_SLUGHORN_OBJECTS $<TARGET_OBJECTS:rocky_slughorn_adapter>)
+        list(APPEND PRIVATE_LIBS rocky_slughorn_adapter)
+        if(NOT ROCKY_BUILD_SHARED_LIBS)
+            install(TARGETS rocky_slughorn_adapter EXPORT rockyTargets
+                ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        endif()
     endif()
 endif()
 
@@ -307,12 +304,11 @@ add_library(rocky ${BUILD_TYPE}
     ${HEADERS_VSG_ECS} ${SOURCES_VSG_ECS}
     ${HEADERS_VSG_IMGUI} ${SOURCES_VSG_IMGUI}
     ${SHADERS_VSG}
-    ${ROCKY_SLUGHORN_OBJECTS}
 )
 
 if(ROCKY_RENDERER_VSG AND ROCKY_SUPPORTS_SLUGHORN)
     target_include_directories(rocky PRIVATE
-        "${ROCKY_SLUGHORN_ROOT}/rocky")
+        "${ROCKY_SLUGHORN_ADAPTER_DIR}")
 endif()
 
 # For windows import/export
@@ -380,7 +376,7 @@ if(ROCKY_RENDERER_VSG)
     install(FILES ${HEADERS_VSG_IMGUI} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/vsg/imgui)
     install(FILES ${SHADERS_VSG} ${SPIRV_SHADERS} DESTINATION ${CMAKE_INSTALL_DATADIR}/rocky/shaders)
     if(ROCKY_SUPPORTS_SLUGHORN)
-        install(FILES ${ROCKY_SLUGHORN_ROOT}/LICENSE
-            DESTINATION ${CMAKE_INSTALL_DATADIR}/rocky/licenses/slughorn)
+        install(FILES "${PROJECT_SOURCE_DIR}/cmake/licenses/slughorn-LICENSE"
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/rocky/licenses/slughorn RENAME LICENSE)
     endif()
 endif()

@@ -1,10 +1,22 @@
 cmake_minimum_required(VERSION 3.21)
 
+# Dependency selection must precede project(): the vcpkg toolchain installs the
+# manifest while project() initializes the compiler. A source override bypasses
+# the Slughorn port so SDK development does not also build an unused second copy.
+option(ROCKY_RENDERER_VSG "Build the Vulkan/VSG rendering engine" ON)
+option(ROCKY_SUPPORTS_SLUGHORN "Experimental: support Slughorn vector decals" OFF)
+set(SLUGHORN_SOURCE_DIR "" CACHE PATH "Use an existing Slughorn source checkout")
+
 # if using vcpkg, configure overlay ports (that are not available in vcpkg prime)
-if (${CMAKE_TOOLCHAIN_FILE} MATCHES ".*vcpkg.cmake.*")
+if ("${CMAKE_TOOLCHAIN_FILE}" MATCHES ".*vcpkg.cmake.*")
     message(STATUS "Building with vcpkg toolchain.")
     set(USING_VCPKG ON)
     set(VCPKG_OVERLAY_PORTS ${CMAKE_CURRENT_SOURCE_DIR}/vcpkg-ports)
+    if(ROCKY_RENDERER_VSG AND ROCKY_SUPPORTS_SLUGHORN AND
+       NOT SLUGHORN_SOURCE_DIR AND NOT FETCHCONTENT_SOURCE_DIR_SLUGHORN)
+        list(APPEND VCPKG_MANIFEST_FEATURES slughorn)
+        list(REMOVE_DUPLICATES VCPKG_MANIFEST_FEATURES)
+    endif()
 endif()
 
 # Main PROJECT definition
@@ -53,7 +65,6 @@ include(GNUInstallDirs)
 include("cmake/install-export-files.cmake")
 
 # optional modules
-option(ROCKY_RENDERER_VSG "Build the Vulkan/VSG rendering engine" ON)
 option(ROCKY_SUPPORTS_HTTPLIB "Support HTTP with the lightweight cpp-httplib library" ON)
 option(ROCKY_SUPPORTS_CURL "Support HTTP with the CURL library" OFF)
 option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
@@ -63,7 +74,6 @@ option(ROCKY_SUPPORTS_AZURE "Support Azure Maps (subscription required)" ON)
 option(ROCKY_SUPPORTS_BING "Support Bing Maps (subscription required)" OFF)
 option(ROCKY_SUPPORTS_IMGUI "Support Dear ImGui and build ImGui-based demos" ON)
 option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
-option(ROCKY_SUPPORTS_SLUGHORN "Experimental: support Slughorn vector decals" OFF)
 
 # whether to copy dependency DLLs (under windows, usually) to the installation destination
 option(ROCKY_INSTALL_VCPKG_DEPENDENCY_DLLS "Copy dependency DLLs from vcpkg to the install destination" OFF)

@@ -1,0 +1,12 @@
+{
+  "name": "slughorn",
+  "version-date": "2026-09-13",
+  "description": "Slughorn vector atlas core with serialization support",
+  "homepage": "https://github.com/AlphaPixel/slughorn",
+  "license": "MIT",
+  "dependencies": [
+    "nlohmann-json",
+    { "name": "vcpkg-cmake", "host": true },
+    { "name": "vcpkg-cmake-config", "host": true }
+  ]
+}
