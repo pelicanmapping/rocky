@@ -1,0 +1,823 @@
+// SDK-specific implementation; compiled separately from Rocky's C++17 sources.
+#include "SlugAdapter.h"
+
+#include <slughorn/canvas.hpp>
+#include <slughorn/serial.hpp>
+
+#include <algorithm>
+#include <cmath>
+#include <exception>
+#include <limits>
+#include <numeric>
+#include <string>
+#include <utility>
+#include <vector>
+
+namespace rocky::detail
+{
+    namespace
+    {
+        using slughorn::Atlas;
+        using slughorn::Color;
+        using slughorn::Key;
+        using slughorn::Layer;
+        using slughorn::canvas::Canvas;
+        using slughorn::canvas::LineCap;
+        using slughorn::canvas::LineJoin;
+        using slughorn::canvas::Path;
+
+        /**
+         * Associates a Canvas result with Rocky metadata until Atlas::build()
+         * assigns final band-table locations. A Layer identifies the Slughorn
+         * key/color/placement, while owner and the UV rows are Rocky data that
+         * must survive the private SDK boundary.
+         */
+        struct PendingLayer
+        {
+            std::uint32_t owner = 0u;
+            Layer layer;
+            std::array<float, 4> uvToEmX = { 1.0f, 0.0f, 0.0f, 0.0f };
+            std::array<float, 4> uvToEmY = { 0.0f, 1.0f, 0.0f, 0.0f };
+            bool isOutline = false;
+        };
+
+        bool finite(float value)
+        {
+            return std::isfinite(value);
+        }
+
+        bool valid(const SlugPointInput& point)
+        {
+            return finite(point.x) && finite(point.y);
+        }
+
+        Color makeColor(const std::array<float, 4>& value)
+        {
+            return Color{ value[0], value[1], value[2], value[3] };
+        }
+
+        bool equal(const SlugPointInput& lhs, const SlugPointInput& rhs)
+        {
+            return lhs.x == rhs.x && lhs.y == rhs.y;
+        }
+
+        template<typename PathType>
+        bool addContours(
+            PathType& path,
+            const SlugShapeInput& input,
+            bool closeForFill,
+            bool mergeConnectedSegments)
+        {
+            bool added = false;
+            bool chainOpen = false;
+            SlugPointInput chainEnd;
+
+            for (const auto& contour : input.contours)
+            {
+                const std::size_t minimum = closeForFill ? 3u : 2u;
+                if (contour.points.size() < minimum)
+                    continue;
+
+                for (const auto& point : contour.points)
+                {
+                    if (!valid(point))
+                        return false;
+                }
+
+                const bool append =
+                    mergeConnectedSegments &&
+                    !closeForFill &&
+                    !contour.closed &&
+                    chainOpen &&
+                    equal(chainEnd, contour.points.front());
+
+                if (!append)
+                {
+                    path.moveTo(contour.points.front().x, contour.points.front().y);
+                }
+
+                for (std::size_t i = 1u; i < contour.points.size(); ++i)
+                    path.lineTo(contour.points[i].x, contour.points[i].y);
+
+                if (closeForFill || contour.closed)
+                {
+                    path.closePath();
+                    chainOpen = false;
+                }
+                else if (mergeConnectedSegments)
+                {
+                    chainEnd = contour.points.back();
+                    chainOpen = true;
+                }
+
+                added = true;
+            }
+
+            return added;
+        }
+
+        void copyTexture(
+            const Atlas::TextureData& source,
+            SlugTextureFormat format,
+            SlugTextureOutput& destination)
+        {
+            destination.width = source.width;
+            destination.height = source.height;
+            destination.format = format;
+            destination.bytes = source.bytes;
+        }
+
+        std::uint32_t log2(std::uint32_t value)
+        {
+            std::uint32_t result = 0u;
+            while (value > 1u)
+            {
+                value >>= 1u;
+                ++result;
+            }
+            return result;
+        }
+
+        //! Selects more spatial bands for complex shapes so the fragment shader
+        //! examines shorter curve lists. Small shapes retain Slughorn's normal
+        //! curveCount/2 behavior; complex shapes use every indirection cell.
+        int bandCountForCurveCount(std::size_t curveCount)
+        {
+            // Match Slughorn's existing one-band-per-two-curves policy for
+            // small shapes. Once that policy reaches its old 16-band ceiling,
+            // jump directly to all 32 indirection cells. Exact 1/32 bands are
+            // nested inside the old 1/16 bands, guaranteeing that a selected
+            // band's per-fragment curve list cannot grow.
+            const auto automaticCount =
+                std::max<std::size_t>(1u, curveCount / 2u);
+            const auto count = automaticCount > 16u ?
+                std::size_t{ Atlas::INDIRECTION_SIZE } : automaticCount;
+            return static_cast<int>(count);
+        }
+
+        std::pair<std::vector<slughorn::slug_t>, std::vector<slughorn::slug_t>>
+        complexityAwareBandSplits(const Atlas::Curves& curves)
+        {
+            const int bandCount = bandCountForCurveCount(curves.size());
+            return Atlas::computeUniformSplits(curves, bandCount, bandCount);
+        }
+
+        //! Bounds in the original bounded authoring coordinates. Polygon batch
+        //! subdivision changes neither coordinates nor the UV-to-em transform.
+        struct PolygonBounds
+        {
+            float minX = std::numeric_limits<float>::max();
+            float minY = std::numeric_limits<float>::max();
+            float maxX = std::numeric_limits<float>::lowest();
+            float maxY = std::numeric_limits<float>::lowest();
+
+            void expand(const PolygonBounds& rhs)
+            {
+                minX = std::min(minX, rhs.minX);
+                minY = std::min(minY, rhs.minY);
+                maxX = std::max(maxX, rhs.maxX);
+                maxY = std::max(maxY, rhs.maxY);
+            }
+        };
+
+        //! One polygon prepared with the SDK's own line/closure rules. Contour
+        //! starts retain the exterior and hole rings for diagnostic exports.
+        struct PreparedPolygon
+        {
+            Atlas::Curves curves;
+            std::vector<std::size_t> contourStarts;
+            PolygonBounds bounds;
+        };
+
+        //! Polygons with overlapping/touching bounds are kept in one fill. This
+        //! avoids changing compound-path winding or applying opacity twice where
+        //! polygons overlap. Disjoint units can be spatially batched independently.
+        struct PolygonBatchUnit
+        {
+            std::vector<const PreparedPolygon*> polygons;
+            PolygonBounds bounds;
+        };
+
+        // This mirrors Atlas::buildShapeBands/packTextures in the pinned SDK:
+        // inclusive curve-box intersections with grid-snapped band boundaries,
+        // followed by the two indirection tables, headers, and Y then X lists.
+        // Count actual references, not unique edges or a worst-case curve cap.
+        // Keeping this check private lets SDK format changes stay in the adapter.
+        bool polygonBandDataFits(
+            const Atlas::ShapeInfo& info,
+            const std::vector<PolygonBatchUnit>& units,
+            std::size_t begin,
+            std::size_t end)
+        {
+            constexpr std::uint64_t limit = std::numeric_limits<std::uint16_t>::max();
+            const std::size_t countX = info.splitsX.size() + 1u;
+            const std::size_t countY = info.splitsY.size() + 1u;
+            std::uint64_t offset = 2u * Atlas::INDIRECTION_SIZE + countY + countX;
+            auto axisFits = [&](bool yAxis)
+            {
+                const auto& splits = yAxis ? info.splitsY : info.splitsX;
+                const float lo = yAxis ? info.bearingY - info.height : info.bearingX;
+                const float hi = yAxis ? info.bearingY : info.bearingX + info.width;
+                const float range = yAxis ? info.height : info.width;
+                std::vector<float> boundaries{ lo };
+                for (float split : splits)
+                    boundaries.push_back(lo + std::round(split * Atlas::INDIRECTION_SIZE) /
+                        Atlas::INDIRECTION_SIZE * range);
+                boundaries.push_back(hi);
+                std::vector<std::uint64_t> counts(boundaries.size() - 1u, 0u);
+                for (auto i = begin; i < end; ++i)
+                {
+                    for (const auto* polygon : units[i].polygons)
+                    {
+                        for (const auto& curve : polygon->curves)
+                        {
+                            const float cmin = yAxis ?
+                                std::min({ curve.y1, curve.y2, curve.y3 }) :
+                                std::min({ curve.x1, curve.x2, curve.x3 });
+                            const float cmax = yAxis ?
+                                std::max({ curve.y1, curve.y2, curve.y3 }) :
+                                std::max({ curve.x1, curve.x2, curve.x3 });
+                            for (std::size_t b = 0u; b < counts.size(); ++b)
+                            {
+                                if (cmax >= boundaries[b] && cmin <= boundaries[b + 1u])
+                                    ++counts[b];
+                            }
+                        }
+                    }
+                }
+                for (auto count : counts)
+                {
+                    if (offset > limit || count > limit)
+                        return false;
+                    offset += count;
+                }
+                return true;
+            };
+            return axisFits(true) && axisFits(false);
+        }
+
+        // Compute connected components of overlapping bounds only when a group
+        // needs subdivision. A sweep avoids pairwise work for separated buildings;
+        // a component remains indivisible even if its members have opposing winding.
+        std::vector<PolygonBatchUnit> polygonBatchUnits(
+            const std::vector<PreparedPolygon>& polygons)
+        {
+            std::vector<std::size_t> order(polygons.size()), parents(polygons.size());
+            std::iota(order.begin(), order.end(), 0u);
+            std::iota(parents.begin(), parents.end(), 0u);
+            auto root = [&](std::size_t i)
+            {
+                while (parents[i] != i)
+                {
+                    parents[i] = parents[parents[i]];
+                    i = parents[i];
+                }
+                return i;
+            };
+            std::stable_sort(order.begin(), order.end(), [&](auto a, auto b)
+            {
+                return polygons[a].bounds.minX < polygons[b].bounds.minX;
+            });
+            for (std::size_t i = 0u; i < order.size(); ++i)
+            {
+                const auto& a = polygons[order[i]].bounds;
+                for (auto j = i + 1u; j < order.size(); ++j)
+                {
+                    const auto& b = polygons[order[j]].bounds;
+                    if (b.minX > a.maxX)
+                        break;
+                    if (a.maxY >= b.minY && b.maxY >= a.minY)
+                        parents[root(order[j])] = root(order[i]);
+                }
+            }
+            std::vector<PolygonBatchUnit> result;
+            std::vector<std::size_t> unitForRoot(polygons.size(), polygons.size());
+            for (std::size_t i = 0u; i < polygons.size(); ++i)
+            {
+                auto& unit = unitForRoot[root(i)];
+                if (unit == polygons.size())
+                {
+                    unit = result.size();
+                    result.emplace_back();
+                }
+                result[unit].polygons.push_back(&polygons[i]);
+                result[unit].bounds.expand(polygons[i].bounds);
+            }
+            return result;
+        }
+
+        bool addPolygonShapes(
+            Atlas& atlas,
+            const SlugShapeInput& input,
+            const std::string& keyStem,
+            std::vector<PendingLayer>& pending,
+            std::string& error)
+        {
+            std::vector<PreparedPolygon> polygons;
+            polygons.reserve(input.polygons.size());
+            for (const auto& source : input.polygons)
+            {
+                if (source.outer.points.size() < 3u)
+                    continue;
+                PreparedPolygon polygon;
+                slughorn::CurveDecomposer decomposer(polygon.curves);
+                auto addRing = [&](const SlugContourInput& ring)
+                {
+                    if (ring.points.size() < 3u)
+                        return true;
+                    for (const auto& point : ring.points)
+                    {
+                        if (!valid(point))
+                        {
+                            error = "Slug polygon shape " + keyStem + " has a non-finite point";
+                            return false;
+                        }
+                        polygon.bounds.expand({ point.x, point.y, point.x, point.y });
+                    }
+                    polygon.contourStarts.push_back(polygon.curves.size());
+                    decomposer.moveTo(ring.points.front().x, ring.points.front().y);
+                    for (std::size_t i = 1u; i < ring.points.size(); ++i)
+                        decomposer.lineTo(ring.points[i].x, ring.points[i].y);
+                    decomposer.close();
+                    return true;
+                };
+                if (!addRing(source.outer))
+                    return false;
+                for (const auto& hole : source.holes)
+                {
+                    if (!addRing(hole))
+                        return false;
+                }
+                polygons.push_back(std::move(polygon));
+            }
+            if (polygons.empty())
+                return true;
+
+            // First preflight the original group; small groups retain one fill.
+            // No failed builds, exception matching, or whole-atlas retries.
+            std::vector<PolygonBatchUnit> units(1u);
+            for (const auto& polygon : polygons)
+            {
+                units.front().polygons.push_back(&polygon);
+                units.front().bounds.expand(polygon.bounds);
+            }
+            bool partitioned = false;
+            std::size_t batchNumber = 0u;
+            auto emit = [&](auto&& self, std::size_t begin, std::size_t end) -> bool
+            {
+                PolygonBounds bounds;
+                std::size_t curveCount = 0u;
+                for (auto i = begin; i < end; ++i)
+                {
+                    bounds.expand(units[i].bounds);
+                    for (const auto* polygon : units[i].polygons)
+                        curveCount += polygon->curves.size();
+                }
+                Atlas::ShapeInfo info;
+                // Explicit tight metrics enable the shader's existing carrier
+                // rejection per batch WITHOUT rebasing or rescaling its curves.
+                info.autoMetrics = false;
+                info.bearingX = bounds.minX;
+                info.bearingY = bounds.maxY;
+                info.width = std::max(bounds.maxX - bounds.minX, 1e-6f);
+                info.height = std::max(bounds.maxY - bounds.minY, 1e-6f);
+                if (!finite(info.width) || !finite(info.height))
+                {
+                    error = "Slug polygon shape " + keyStem + " has non-finite bounds";
+                    return false;
+                }
+                info.numBandsX = info.numBandsY = bandCountForCurveCount(curveCount);
+                auto splits = Atlas::computeUniformSplits({}, info.numBandsX, info.numBandsY);
+                info.splitsX = std::move(splits.first);
+                info.splitsY = std::move(splits.second);
+                if (!polygonBandDataFits(info, units, begin, end))
+                {
+                    if (!partitioned)
+                    {
+                        units = polygonBatchUnits(polygons);
+                        partitioned = true;
+                        return self(self, 0u, units.size());
+                    }
+                    if (end - begin < 2u)
+                    {
+                        error = "Slug polygon shape " + keyStem +
+                            " exceeds the uint16_t band capacity (65535); a single polygon "
+                            "with its holes or an overlapping polygon group cannot be split safely";
+                        return false;
+                    }
+                    // Stable median split on the longest axis yields compact,
+                    // deterministic batches and bounded logarithmic recursion.
+                    const bool splitX = info.width >= info.height;
+                    std::stable_sort(units.begin() + begin, units.begin() + end,
+                        [&](const auto& a, const auto& b)
+                        {
+                            return splitX ?
+                                double(a.bounds.minX) + a.bounds.maxX < double(b.bounds.minX) + b.bounds.maxX :
+                                double(a.bounds.minY) + a.bounds.maxY < double(b.bounds.minY) + b.bounds.maxY;
+                        });
+                    const auto middle = begin + (end - begin) / 2u;
+                    return self(self, begin, middle) && self(self, middle, end);
+                }
+
+                info.curves.reserve(curveCount);
+                for (auto i = begin; i < end; ++i)
+                {
+                    for (const auto* polygon : units[i].polygons)
+                    {
+                        for (auto start : polygon->contourStarts)
+                            info.contourStarts.push_back(info.curves.size() + start);
+                        info.curves.insert(info.curves.end(), polygon->curves.begin(), polygon->curves.end());
+                    }
+                }
+                const Key key{ partitioned ? keyStem + "-batch-" + std::to_string(batchNumber++) : keyStem };
+                atlas.addShape(key, info);
+                Layer layer;
+                layer.key = key;
+                layer.color = makeColor(input.color);
+                pending.push_back({ input.owner, std::move(layer), input.uvToEmX, input.uvToEmY });
+                return true;
+            };
+            return emit(emit, 0u, units.size());
+        }
+    }
+
+    bool buildSlugAtlas(
+        const SlugAtlasInput& input,
+        SlugAtlasOutput& output,
+        std::string& error)
+    {
+        // This function is a transactional C++20 island. It authors every
+        // requested Rocky shape into a fresh SDK Atlas, builds and optionally
+        // serializes it, then copies only POD texture/layer data across the
+        // C++17 boundary. Exceptions and partial atlas state never escape.
+        output = {};
+        error.clear();
+
+        if (input.textureWidth < 128u ||
+            (input.textureWidth & (input.textureWidth - 1u)) != 0u)
+        {
+            error = "Slughorn atlas width must be a power of two and at least 128 texels";
+            return false;
+        }
+
+        try
+        {
+            // Band lists can span rows, so a dense shape no longer requires
+            // widening and rebuilding the atlas. Retain full curve precision.
+            Atlas atlas{ input.textureWidth };
+            atlas.setCurveTextureFormat(Atlas::TextureData::Format::RGBA32F);
+            Canvas canvas{ atlas, slughorn::KeyIterator{ "rocky-overlay" } };
+
+            // Every decal fragment supplies the projector's full [0,1] UV.
+            // Full-cell metrics preserve that coordinate system instead of
+            // tight-fitting each shape across the projector.
+            canvas.setAutoMetrics(false);
+            canvas.setTolerance(slughorn::TOLERANCE_FINE);
+            canvas.setSplitStrategy(complexityAwareBandSplits);
+
+            std::vector<PendingLayer> pending;
+            pending.reserve(input.shapes.size() * 2u);
+
+            for (std::size_t index = 0u; index < input.shapes.size(); ++index)
+            {
+                const auto& shape = input.shapes[index];
+                const auto keyStem = "rocky-overlay-" + std::to_string(index);
+                const Key key{ keyStem };
+                const Color color = makeColor(shape.color);
+
+                for (float channel : shape.color)
+                {
+                    if (!finite(channel))
+                    {
+                        error = "Slug shape " + std::to_string(index) + " has a non-finite color";
+                        return false;
+                    }
+                }
+
+                for (float coefficient : shape.uvToEmX)
+                {
+                    if (!finite(coefficient))
+                    {
+                        error = "Slug shape " + std::to_string(index) +
+                            " has a non-finite UV mapping";
+                        return false;
+                    }
+                }
+                for (float coefficient : shape.uvToEmY)
+                {
+                    if (!finite(coefficient))
+                    {
+                        error = "Slug shape " + std::to_string(index) +
+                            " has a non-finite UV mapping";
+                        return false;
+                    }
+                }
+
+                canvas.beginPath();
+                Layer layer;
+                bool committed = false;
+
+                switch (shape.kind)
+                {
+                case SlugShapeKind::Fill:
+                    if (!shape.polygons.empty())
+                    {
+                        if (!addPolygonShapes(atlas, shape, keyStem, pending, error))
+                            return false;
+                        break;
+                    }
+                    if (addContours(canvas, shape, true, false))
+                    {
+                        layer = canvas.fill(color, 1.0f, key);
+                        committed = layer.key == key;
+                    }
+                    else
+                    {
+                        for (const auto& contour : shape.contours)
+                        {
+                            for (const auto& point : contour.points)
+                            {
+                                if (!valid(point))
+                                {
+                                    error = "Slug fill shape " + std::to_string(index) +
+                                        " has a non-finite point";
+                                    return false;
+                                }
+                            }
+                        }
+                    }
+                    break;
+
+                case SlugShapeKind::Stroke:
+                    if (!finite(shape.strokeWidth) || shape.strokeWidth <= 0.0f)
+                    {
+                        error = "Slug stroke shape " + std::to_string(index) +
+                            " has an invalid width";
+                        return false;
+                    }
+
+                    if (!finite(shape.outlineWidth) || shape.outlineWidth < 0.0f)
+                    {
+                        error = "Slug stroke shape " + std::to_string(index) +
+                            " has an invalid outline width";
+                        return false;
+                    }
+
+                    if (shape.outlineWidth > 0.0f)
+                    {
+                        for (float channel : shape.outlineColor)
+                        {
+                            if (!finite(channel))
+                            {
+                                error = "Slug stroke shape " + std::to_string(index) +
+                                    " has a non-finite outline color";
+                                return false;
+                            }
+                        }
+                    }
+
+                    {
+                        Path centerline;
+                        if (!addContours(
+                            centerline,
+                            shape,
+                            false,
+                            input.mergeConnectedLineSegments))
+                        {
+                            for (const auto& contour : shape.contours)
+                            {
+                                for (const auto& point : contour.points)
+                                {
+                                    if (!valid(point))
+                                    {
+                                        error = "Slug stroke shape " + std::to_string(index) +
+                                            " has a non-finite point";
+                                        return false;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+
+                        if (shape.outlineWidth > 0.0f)
+                        {
+                            const float outerWidth =
+                                shape.strokeWidth + 2.0f * shape.outlineWidth;
+                            const Key outlineKey{ keyStem + "-outline" };
+                            Layer outlineLayer;
+
+                            if (shape.useOpaqueOutlineCasing)
+                            {
+                                // Opaque cores completely cover the casing's
+                                // interior, so do not author the redundant
+                                // reversed inner boundary used by a ring.
+                                outlineLayer = canvas.stroke(
+                                    centerline,
+                                    outerWidth,
+                                    makeColor(shape.outlineColor),
+                                    1.0f,
+                                    outlineKey,
+                                    {},
+                                    LineJoin::Round,
+                                    LineCap::Round,
+                                    4.0f);
+                            }
+                            else
+                            {
+                                Path ring = centerline;
+                                Path hole = centerline;
+                                if (!ring.strokePath(
+                                        outerWidth, false,
+                                        LineJoin::Round, LineCap::Round, 4.0f) ||
+                                    !hole.strokePath(
+                                        shape.strokeWidth, true,
+                                        LineJoin::Round, LineCap::Round, 4.0f))
+                                {
+                                    error = "Slug stroke shape " + std::to_string(index) +
+                                        " could not construct its outline";
+                                    return false;
+                                }
+
+                                ring.addPath(hole);
+                                outlineLayer = canvas.fill(
+                                    ring,
+                                    makeColor(shape.outlineColor),
+                                    1.0f,
+                                    outlineKey);
+                            }
+
+                            if (outlineLayer.key != outlineKey)
+                            {
+                                error = "Slug stroke shape " + std::to_string(index) +
+                                    " could not commit its outline";
+                                return false;
+                            }
+                            pending.push_back(PendingLayer{
+                                shape.owner,
+                                std::move(outlineLayer),
+                                shape.uvToEmX,
+                                shape.uvToEmY,
+                                true });
+                        }
+
+                        layer = canvas.stroke(
+                            centerline,
+                            shape.strokeWidth,
+                            color,
+                            1.0f,
+                            key,
+                            {},
+                            LineJoin::Round,
+                            LineCap::Round,
+                            4.0f);
+                        committed = layer.key == key;
+                        if (!committed)
+                        {
+                            error = "Slug stroke shape " + std::to_string(index) +
+                                " could not commit its core";
+                            return false;
+                        }
+                    }
+                    break;
+
+                case SlugShapeKind::Circles:
+                    for (const auto& circle : shape.circles)
+                    {
+                        if (!finite(circle.x) || !finite(circle.y) ||
+                            !finite(circle.radius) || circle.radius <= 0.0f)
+                        {
+                            error = "Slug circle shape " + std::to_string(index) +
+                                " has invalid geometry";
+                            return false;
+                        }
+
+                        canvas.circle(circle.x, circle.y, circle.radius);
+                        committed = true;
+                    }
+
+                    if (committed)
+                    {
+                        layer = canvas.fill(color, 1.0f, key);
+                        committed = layer.key == key;
+                    }
+                    break;
+                }
+
+                if (committed)
+                    pending.push_back(PendingLayer{
+                        shape.owner,
+                        std::move(layer),
+                        shape.uvToEmX,
+                        shape.uvToEmY });
+            }
+
+            atlas.build();
+
+            const bool exportAttempted = !input.exportPath.empty();
+            bool exportSucceeded = false;
+            std::string exportMessage;
+            if (exportAttempted)
+            {
+                try
+                {
+                    slughorn::serial::write(atlas, input.exportPath);
+                    exportSucceeded = true;
+                    exportMessage = "Wrote " + input.exportPath;
+                }
+                catch (const std::exception& e)
+                {
+                    // Diagnostic export must not invalidate an otherwise good
+                    // runtime atlas.
+                    exportMessage = e.what();
+                }
+                catch (...)
+                {
+                    exportMessage = "Unknown exception while writing " + input.exportPath;
+                }
+            }
+
+            const auto& curves = atlas.getCurveTextureData();
+            const auto& bands = atlas.getBandTextureData();
+
+            if (curves.format != Atlas::TextureData::Format::RGBA32F ||
+                bands.format != Atlas::TextureData::Format::RG16UI)
+            {
+                error = "Slughorn returned unexpected atlas texture formats";
+                return false;
+            }
+
+            SlugAtlasOutput result;
+            copyTexture(curves, SlugTextureFormat::RGBA32F, result.curveTexture);
+            copyTexture(bands, SlugTextureFormat::RG16UI, result.bandTexture);
+            result.textureWidthLog2 = log2(input.textureWidth);
+            result.indirectionSize = Atlas::INDIRECTION_SIZE;
+            result.exportAttempted = exportAttempted;
+            result.exportSucceeded = exportSucceeded;
+            result.exportMessage = std::move(exportMessage);
+            result.layers.reserve(pending.size());
+
+            for (const auto& pendingLayer : pending)
+            {
+                const auto shape = atlas.getShape(pendingLayer.layer.key);
+                if (!shape)
+                {
+                    error = "Slughorn atlas is missing a committed shape";
+                    return false;
+                }
+
+                const float inverseScale = pendingLayer.layer.scale != 0.0f ?
+                    1.0f / pendingLayer.layer.scale : 1.0f;
+
+                SlugLayerOutput out;
+                out.owner = pendingLayer.owner;
+                out.isOutline = pendingLayer.isOutline;
+                out.color = {
+                    pendingLayer.layer.color.r,
+                    pendingLayer.layer.color.g,
+                    pendingLayer.layer.color.b,
+                    pendingLayer.layer.color.a
+                };
+                out.uvToEmX = {
+                    pendingLayer.uvToEmX[0] * inverseScale,
+                    pendingLayer.uvToEmX[1] * inverseScale,
+                    (pendingLayer.uvToEmX[2] - pendingLayer.layer.transform.x) * inverseScale,
+                    0.0f
+                };
+                out.uvToEmY = {
+                    pendingLayer.uvToEmY[0] * inverseScale,
+                    pendingLayer.uvToEmY[1] * inverseScale,
+                    (pendingLayer.uvToEmY[2] - pendingLayer.layer.transform.y) * inverseScale,
+                    0.0f
+                };
+                out.bandTransform = {
+                    shape->bandScaleX,
+                    shape->bandScaleY,
+                    shape->bandOffsetX,
+                    shape->bandOffsetY
+                };
+                out.shapeData = {
+                    shape->bandTexX,
+                    shape->bandTexY,
+                    shape->bandMaxX,
+                    shape->bandMaxY
+                };
+                result.layers.emplace_back(std::move(out));
+            }
+
+            output = std::move(result);
+            return true;
+        }
+        catch (const std::exception& e)
+        {
+            output = {};
+            error = e.what();
+            return false;
+        }
+        catch (...)
+        {
+            output = {};
+            error = "Unknown exception while building the Slughorn atlas";
+            return false;
+        }
+    }
+}
