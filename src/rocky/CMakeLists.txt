@@ -201,18 +201,7 @@ if(ROCKY_RENDERER_VSG)
     
     rocky_glob(HEADERS_VSG_ECS vsg/ecs/*.h)
     rocky_glob(SOURCES_VSG_ECS vsg/ecs/*.cpp)
-    list(APPEND HEADERS_VSG_ECS
-        ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/OverlayBakeSystem.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/RenderTextureParticipant.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/OverlayRenderContext.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/TextureResource.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/TextureSystem.h)
-    list(APPEND SOURCES_VSG_ECS
-        ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/OverlayBakeSystem.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/TextureSystem.cpp)
-    list(REMOVE_DUPLICATES HEADERS_VSG_ECS)
-    list(REMOVE_DUPLICATES SOURCES_VSG_ECS)
-
+    
     if(NOT ROCKY_SUPPORTS_SLUGHORN)
         remove_items(HEADERS_VSG_ECS
             vsg/ecs/SlugResource.h

@@ -3,9 +3,26 @@ cmake_minimum_required(VERSION 3.21)
 # Dependency selection must precede project(): the vcpkg toolchain installs the
 # manifest while project() initializes the compiler. A source override bypasses
 # the Slughorn port so SDK development does not also build an unused second copy.
+
+# optional modules
+option(ROCKY_SUPPORTS_HTTPLIB "Support HTTP with the lightweight cpp-httplib library" ON)
+option(ROCKY_SUPPORTS_CURL "Support HTTP with the CURL library" OFF)
+option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
+option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
+option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
+option(ROCKY_SUPPORTS_AZURE "Support Azure Maps (subscription required)" ON)
+option(ROCKY_SUPPORTS_BING "Support Bing Maps (subscription required)" OFF)
+option(ROCKY_SUPPORTS_IMGUI "Support Dear ImGui and build ImGui-based demos" ON)
+option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
+option(ROCKY_SUPPORTS_SLUGHORN "Support Slughorn vector decals" ON)
+
+# whether to copy dependency DLLs (under windows, usually) to the installation destination
+option(ROCKY_INSTALL_VCPKG_DEPENDENCY_DLLS "Copy dependency DLLs from vcpkg to the install destination" OFF)
 option(ROCKY_RENDERER_VSG "Build the Vulkan/VSG rendering engine" ON)
-option(ROCKY_SUPPORTS_SLUGHORN "Experimental: support Slughorn vector decals" OFF)
+option(ROCKY_USE_UTF8_FILENAMES_ON_WINDOWS "" ON)
+
 set(SLUGHORN_SOURCE_DIR "" CACHE PATH "Use an existing Slughorn source checkout")
+
 
 # if using vcpkg, configure overlay ports (that are not available in vcpkg prime)
 if ("${CMAKE_TOOLCHAIN_FILE}" MATCHES ".*vcpkg.cmake.*")
@@ -64,25 +81,9 @@ include(GNUInstallDirs)
 # load utilities
 include("cmake/install-export-files.cmake")
 
-# optional modules
-option(ROCKY_SUPPORTS_HTTPLIB "Support HTTP with the lightweight cpp-httplib library" ON)
-option(ROCKY_SUPPORTS_CURL "Support HTTP with the CURL library" OFF)
-option(ROCKY_SUPPORTS_HTTPS "Support HTTPS (requires openssl)" ON)
-option(ROCKY_SUPPORTS_GDAL "Support GeoTIFF, WMS, WMTS, and other GDAL formats (requires gdal)" ON)
-option(ROCKY_SUPPORTS_MBTILES "Support MBTiles databases with extended spatial profile support (requires sqlite3, zlib)" ON)
-option(ROCKY_SUPPORTS_AZURE "Support Azure Maps (subscription required)" ON)
-option(ROCKY_SUPPORTS_BING "Support Bing Maps (subscription required)" OFF)
-option(ROCKY_SUPPORTS_IMGUI "Support Dear ImGui and build ImGui-based demos" ON)
-option(ROCKY_SUPPORTS_QT "Build Qt demos" OFF)
-
-# whether to copy dependency DLLs (under windows, usually) to the installation destination
-option(ROCKY_INSTALL_VCPKG_DEPENDENCY_DLLS "Copy dependency DLLs from vcpkg to the install destination" OFF)
-
 mark_as_advanced(ROCKY_RENDERER_VSG)
 mark_as_advanced(ROCKY_SUPPORTS_HTTPLIB)
 mark_as_advanced(ROCKY_SUPPORTS_CURL)
-
-option(ROCKY_USE_UTF8_FILENAMES_ON_WINDOWS "" ON)
 
 set(BUILD_WITH_JSON ON)
 

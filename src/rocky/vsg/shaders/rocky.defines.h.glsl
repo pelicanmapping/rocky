@@ -56,6 +56,7 @@
 #define FRUSTUM_GRID_TILES_PER_THREAD_GROUP 16
 
 // One count plus these indices keeps each CPU/GPU tile record 16-byte aligned.
+// If more than this number of decals intersect a tile, not all will render.
 #define MAX_DECALS_PER_TILE                 11
 
 // If the decal count exceeds this, you will start to see rendering artifacts.
