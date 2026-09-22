@@ -7,7 +7,7 @@
 #include <rocky/ecs/ProjectedTexture.h>
 #include <vsg/state/ImageInfo.h>
 
-namespace ROCKY_NAMESPACE
+namespace ROCKY_NAMESPACE::detail
 {
     //! Identifies which subsystem may replace or remove a TextureResource.
     //! Consumers such as DecalSystem never dispose producer-owned image data.

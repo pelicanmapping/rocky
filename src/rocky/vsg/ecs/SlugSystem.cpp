@@ -29,6 +29,7 @@
 ROCKY_ABOUT(slughorn, rocky::detail::slughornVersionString());
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 /*
  * Slug overlay data flow
@@ -87,7 +88,7 @@ namespace
         bool exportAttempted = false;
         bool exportSucceeded = false;
         bool suppressWarning = false;
-        bool bandCapacityExceeded = false;
+        bool capacityExceeded = false; // SDK band capacity or device image dimensions.
         std::vector<detail::SlugBandReduction> bandReductions;
         std::string exportMessage;
         std::string warning;
@@ -907,17 +908,20 @@ namespace
     //! Identifies atlas inputs without inspecting vertices. The fallback key
     //! excludes automatic projector revisions, which can change solely because
     //! Raster creates a derived mesh/refits the same source. Caller transforms
-    //! and geometry/style revisions still permit a new Vector attempt.
+    //! and geometry/style revisions still permit a new Vector attempt. Device
+    //! limits are part of both keys so CPU-only results are rechecked on a GPU.
     std::size_t computeSourceSignature(
         entt::registry& registry,
         entt::entity entity,
         const SRS& worldSRS,
         bool mergeConnectedLineSegments,
+        std::uint32_t maxTextureDimension,
         bool includeAutomaticProjector = true)
     {
         std::size_t signature = 0u;
         hashValue(signature, worldSRS.definition());
         hashValue(signature, mergeConnectedLineSegments);
+        hashValue(signature, maxTextureDimension);
 
         const auto& overlay = registry.get<Overlay>(entity);
         hashValue(signature, overlay.resolution.x);
@@ -1016,13 +1020,18 @@ namespace
         return sampler;
     }
 
+    //! Validates the atlas before allocating upload images. Device-limit failures
+    //! request Raster fallback; malformed SDK output remains an authoring error.
     bool makeAtlasImages(
         const SlugAtlasOutput& atlas,
+        std::uint32_t maxTextureDimension,
         vsg::ref_ptr<vsg::Sampler> sampler,
         vsg::ref_ptr<vsg::ImageInfo>& curveImage,
         vsg::ref_ptr<vsg::ImageInfo>& bandImage,
+        bool& capacityExceeded,
         std::string& error)
     {
+        capacityExceeded = false;
         if (atlas.curveTexture.format != SlugTextureFormat::RGBA32F ||
             atlas.bandTexture.format != SlugTextureFormat::RG16UI)
         {
@@ -1041,6 +1050,12 @@ namespace
             bandBytes != atlas.bandTexture.bytes.size())
         {
             error = "Slughorn returned invalid atlas texture dimensions";
+            return false;
+        }
+
+        if (!detail::checkSlugAtlasDimensions(atlas, maxTextureDimension, error))
+        {
+            capacityExceeded = true;
             return false;
         }
 
@@ -1128,6 +1143,12 @@ void SlugSystemNode::update(VSGContext vsgcontext)
     if (!_atlasSampler)
         _atlasSampler = makeAtlasSampler();
 
+    // Headless CPU tests/exports have no device. A subsequently available or
+    // different limit invalidates the signatures and rechecks the full atlas.
+    std::uint32_t maxTextureDimension = 0u;
+    if (auto device = vsgcontext->device())
+        maxTextureDimension = device->getPhysicalDevice()->getProperties().limits.maxImageDimension2D;
+
     bool resourcesChanged = false;
     std::unordered_set<entt::entity> retryNextFrame;
     _registry.write([&](entt::registry& registry)
@@ -1138,7 +1159,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             const auto* overlay = registry.try_get<Overlay>(entity);
             if (!overlay || overlay->mode != OverlayMode::Vector ||
                 fallback.sourceSignature != computeSourceSignature(
-                    registry, entity, worldSRS, mergeConnectedLineSegments, false))
+                    registry, entity, worldSRS, mergeConnectedLineSegments, maxTextureDimension, false))
             {
                 expired.push_back(entity);
             }
@@ -1190,7 +1211,8 @@ void SlugSystemNode::update(VSGContext vsgcontext)
                 registry,
                 entity,
                 worldSRS,
-                mergeConnectedLineSegments);
+                mergeConnectedLineSegments,
+                maxTextureDimension);
 
             if (const auto* resource = registry.try_get<SlugResource>(entity))
             {
@@ -1204,7 +1226,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
                 }
             }
             build.fallbackSignature = computeSourceSignature(
-                registry, entity, worldSRS, mergeConnectedLineSegments, false);
+                registry, entity, worldSRS, mergeConnectedLineSegments, maxTextureDimension, false);
             bool foundPrimitive = false;
             const auto* polygon = registry.try_get<Polygon>(entity);
             if (polygon)
@@ -1276,7 +1298,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         SlugAtlasOutput atlas;
         if (!rocky::detail::buildSlugAtlas(input, atlas, build.error))
         {
-            build.bandCapacityExceeded = atlas.bandCapacityExceeded;
+            build.capacityExceeded = atlas.bandCapacityExceeded;
             if (!build.exportPath.empty())
             {
                 build.exportAttempted = true;
@@ -1296,8 +1318,8 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             continue;
 
         if (!makeAtlasImages(
-            atlas, _atlasSampler,
-            build.curveTexture, build.bandTexture, build.error))
+            atlas, maxTextureDimension, _atlasSampler,
+            build.curveTexture, build.bandTexture, build.capacityExceeded, build.error))
             continue;
 
         build.textureWidthLog2 = atlas.textureWidthLog2;
@@ -1359,7 +1381,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         {
             const auto* overlay = registry.valid(build.entity) ? registry.try_get<Overlay>(build.entity) : nullptr;
             if (!overlay || overlay->mode != OverlayMode::Vector ||
-                computeSourceSignature(registry, build.entity, worldSRS, mergeConnectedLineSegments) !=
+                computeSourceSignature(registry, build.entity, worldSRS, mergeConnectedLineSegments, maxTextureDimension) !=
                     build.sourceSignature)
             {
                 if (build.curveTexture)
@@ -1392,7 +1414,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             if (build.exportOnly)
                 continue;
 
-            if (build.bandCapacityExceeded)
+            if (build.capacityExceeded)
             {
                 auto& fallback = registry.get_or_emplace<detail::OverlayVectorFallback>(build.entity);
                 fallback.sourceSignature = build.fallbackSignature;
@@ -1436,7 +1458,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
 
         if (!build.error.empty() && !build.suppressWarning)
         {
-            if (build.bandCapacityExceeded && !build.exportOnly)
+            if (build.capacityExceeded && !build.exportOnly)
                 Log()->info("SlugSystemNode: {}; overlay {} is falling back to Raster until its source changes",
                     build.error, entt::to_integral(build.entity));
             else

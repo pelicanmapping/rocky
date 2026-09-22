@@ -19,7 +19,7 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
 
-namespace
+namespace ROCKY_NAMESPACE::detail
 {
     /*
      * Overlay is a convenience facade shared by two producers. RTT overlays
@@ -75,7 +75,10 @@ namespace
         //! Whether the preceding fit produced or found a usable Transform.
         bool transformAvailable = false;
     };
+}
 
+namespace
+{
     //! Keeps facade-owned low-level components synchronized with mode and
     //! Overlay settings. Slug intentionally suppresses the RenderTexture while
     //! retaining ownership so switching back to RTT can recreate it safely.
@@ -1024,14 +1027,14 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 if (worldSRSChanged)
                 {
                     detail.autoTransformDirty = true;
-                    detail.phase = BakePhase::Priming;
+                    detail.phase = OverlayBakePhase::Priming;
                     detail.generationPending = true;
                 }
                 if (detail.fitToSources != renderTexture.fitToSources)
                 {
                     detail.fitToSources = renderTexture.fitToSources;
                     detail.autoTransformDirty = true;
-                    detail.phase = BakePhase::Priming;
+                    detail.phase = OverlayBakePhase::Priming;
                     detail.generationPending = true;
                 }
                 if (!(detail.renderGraph && detail.texture && detail.viewNode && detail.hostCommandGraph) ||
@@ -1124,7 +1127,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 detail.fitToSources = r.get<RenderTexture>(p.e_overlay).fitToSources;
                 detail.published = false;
                 detail.generationPending = true;
-                detail.phase = BakePhase::Priming;
+                detail.phase = OverlayBakePhase::Priming;
 
                 auto& resource = r.get<TextureResource>(p.e_overlay);
                 resource.texture = detail.texture;
@@ -1162,7 +1165,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 auto sourceStatus = getRenderTextureSourceStatus(r, sources, _renderParticipants);
                 if (sourceStatus.state != RenderTextureSourceStatus::State::Ready)
                 {
-                    detail.phase = BakePhase::WaitingForSources;
+                    detail.phase = OverlayBakePhase::WaitingForSources;
                     jobStatus.state = sourceStatus.state == RenderTextureSourceStatus::State::Failed ?
                         RenderTextureState::Failed : RenderTextureState::WaitingForSources;
                     jobStatus.message = sourceStatus.message;
@@ -1180,7 +1183,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                     if (r.any_of<AutoOverlayTransform>(e_overlay))
                     {
                         detail.autoTransformDirty = true;
-                        detail.phase = BakePhase::Priming;
+                        detail.phase = OverlayBakePhase::Priming;
                         detail.generationPending = true;
                     }
                 }
@@ -1190,19 +1193,19 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 {
                     detail.contentRevision = contentRevision;
                     detail.contentRevisionValid = true;
-                    detail.phase = BakePhase::Priming;
+                    detail.phase = OverlayBakePhase::Priming;
                     detail.generationPending = true;
                 }
 
                 if (depthPolicyChanged && r.any_of<AutoOverlayTransform>(e_overlay))
                 {
-                    detail.phase = BakePhase::Priming;
+                    detail.phase = OverlayBakePhase::Priming;
                     detail.generationPending = true;
                 }
 
                 if (!updateBakeCamera(r, e_overlay, detail, detail.autoTransformDirty))
                 {
-                    detail.phase = BakePhase::WaitingForSources;
+                    detail.phase = OverlayBakePhase::WaitingForSources;
                     jobStatus.state = RenderTextureState::WaitingForSources;
                     jobStatus.message = "Waiting for valid source bounds and projector transform";
                     detachRenderGraph();
@@ -1210,10 +1213,10 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 }
 
                 detail.autoTransformDirty = false;
-                if (detail.phase == BakePhase::WaitingForSources)
-                    detail.phase = BakePhase::Priming;
+                if (detail.phase == OverlayBakePhase::WaitingForSources)
+                    detail.phase = OverlayBakePhase::Priming;
 
-                const bool shouldBake = renderTexture.continuous || detail.phase != BakePhase::Ready;
+                const bool shouldBake = renderTexture.continuous || detail.phase != OverlayBakePhase::Ready;
                 {
                     auto& children = detail.hostCommandGraph->children;
                     auto existing = std::find(children.begin(), children.end(), detail.renderGraph);
@@ -1224,16 +1227,16 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 }
 
                 jobStatus.message.clear();
-                if (detail.phase == BakePhase::Priming)
+                if (detail.phase == OverlayBakePhase::Priming)
                 {
                     jobStatus.state = RenderTextureState::Priming;
-                    detail.phase = BakePhase::Baking;
+                    detail.phase = OverlayBakePhase::Baking;
                     requestAnotherFrame = true;
                 }
-                else if (detail.phase == BakePhase::Baking)
+                else if (detail.phase == OverlayBakePhase::Baking)
                 {
                     jobStatus.state = RenderTextureState::Baking;
-                    detail.phase = BakePhase::Ready;
+                    detail.phase = OverlayBakePhase::Ready;
                     requestAnotherFrame = true;
                 }
                 else

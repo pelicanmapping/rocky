@@ -350,7 +350,7 @@ TEST_CASE("projected texture contracts", "[projection]")
     CHECK(metricRecord.outlineWidth == Approx(0.6096f));
 
     Overlay overlay;
-    CHECK(overlay.mode == OverlayMode::Raster);
+    CHECK(overlay.mode == OverlayMode::Vector);
 
     RenderTexture renderTexture;
     CHECK(renderTexture.sources.empty());

@@ -9,6 +9,7 @@
 #include <rocky/vsg/ViewDependentState.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 
 namespace

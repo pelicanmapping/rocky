@@ -32,7 +32,7 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        mutable TransformDetail _transformDetail;
+        mutable detail::TransformDetail _transformDetail;
     };
 
 } // namespace

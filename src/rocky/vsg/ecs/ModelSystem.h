@@ -57,8 +57,8 @@ namespace ROCKY_NAMESPACE
         struct Drawable
         {
             vsg::Node* node = nullptr;
-            TransformDetail* xformDetail = nullptr;
-            Drawable(vsg::Node* node_, TransformDetail* xformDetail_) : node(node_), xformDetail(xformDetail_) {}
+            detail::TransformDetail* xformDetail = nullptr;
+            Drawable(vsg::Node* node_, detail::TransformDetail* xformDetail_) : node(node_), xformDetail(xformDetail_) {}
         };
 
         using DrawList = std::vector<Drawable>;

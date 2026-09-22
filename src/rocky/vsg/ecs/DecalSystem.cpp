@@ -24,7 +24,7 @@ using namespace ROCKY_NAMESPACE::detail;
 
 #define DECAL_CULLING_SHADER "shaders/rocky.decal.cull.comp"
 
-namespace
+namespace ROCKY_NAMESPACE::detail
 {
     /*
      * The decal renderer consumes a small, composable component model:

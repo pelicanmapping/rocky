@@ -49,9 +49,9 @@ struct FrustumView
 
     void updateOrthographic(
         entt::registry& r,
-        const TransformDetail& hostTransformDetail,
+        const detail::TransformDetail& hostTransformDetail,
         const Optics* optics,
-        const ProjectionViewDetail& projectionDetail,
+        const detail::ProjectionViewDetail& projectionDetail,
         ViewIDType viewID = 0)
     {
         initialize(r);
@@ -103,7 +103,7 @@ struct FrustumView
         entt::registry& r,
         const Transform& hostTransform,
         const Optics& optics,
-        const ProjectionViewDetail& projectionDetail)
+        const detail::ProjectionViewDetail& projectionDetail)
     {
         initialize(r);
 
@@ -244,7 +244,7 @@ auto Demo_Decal_Orthographic = [](Application& app)
     if (showFrustum)
     {
         auto&& [transformDetail, projectionDetail] =
-            reg.get<TransformDetail, ProjectionDetail>(e_decal);
+            reg.get<detail::TransformDetail, detail::ProjectionDetail>(e_decal);
         if (useOptics)
         {
             auto& optics = reg.get<Optics>(e_decal);
@@ -308,7 +308,7 @@ auto Demo_Decal_Perspective = [](Application& app)
         ImGuiLTable::Checkbox("Show", &reg.get<Visibility>(e_decal).visible[0]);
 
         auto&& [optics, projectionDetail, style, decal] =
-            reg.get<Optics, ProjectionDetail, DecalStyle, Decal>(e_decal);
+            reg.get<Optics, detail::ProjectionDetail, DecalStyle, Decal>(e_decal);
 
         if (ImGuiLTable::SliderFloat("Opacity", &style.color.a, 0.0f, 1.0f, "%.1f"))
         {
@@ -424,7 +424,7 @@ auto Demo_Decal_Projector = [](Application& app)
             // pan the projector from left to right:
             const double pitch = 25.0;
             double heading = -90.0 + 10.0 * sin((double)(app.frameCount()) * 0.01);
-            const auto& [optics, projectionDetail] = r.get<Optics, ProjectionDetail>(e_platform);
+            const auto& [optics, projectionDetail] = r.get<Optics, detail::ProjectionDetail>(e_platform);
             optics.pose = glm::mat4_cast(quaternion_from_euler_degrees(pitch, 0.0, heading));
 
             // update the frustum geometry to represent a frustum view of the optics:
@@ -586,8 +586,8 @@ auto Demo_Decal_Stamper = [](Application& app)
             auto& decal = reg.get<Decal>(e_cursor);
 
             auto& transform = reg.get<Transform>(e_cursor);
-            auto& transformDetail = reg.get<TransformDetail>(e_cursor);
-            auto&& [optics, projectionDetail] = reg.get<Optics, ProjectionDetail>(e_cursor);
+            auto& transformDetail = reg.get<detail::TransformDetail>(e_cursor);
+            auto&& [optics, projectionDetail] = reg.get<Optics, detail::ProjectionDetail>(e_cursor);
 
             auto rot = quaternion_from_matrix<glm::dquat>(transform.localMatrix);
             auto [pitch, roll, heading] = euler_degrees_from_quaternion(rot);

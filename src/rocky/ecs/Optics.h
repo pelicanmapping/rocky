@@ -46,6 +46,11 @@ namespace ROCKY_NAMESPACE
 
     };
 
+}
+
+namespace ROCKY_NAMESPACE::detail
+{
+    //! Renderer-calculated lens parameters for one view.
     struct OpticsViewDetail
     {
         double focalDistance = 1.0;
@@ -53,6 +58,7 @@ namespace ROCKY_NAMESPACE
         double farDistance = 1.0;
     };
 
+    //! System-owned per-view optical state attached alongside Optics.
     struct OpticsDetail
     {
         ViewLocal<OpticsViewDetail> views;

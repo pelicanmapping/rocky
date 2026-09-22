@@ -183,6 +183,33 @@ namespace rocky::detail
         std::string exportMessage;
     };
 
+    //! Checks both atlas dimensions against a host-supplied device limit without
+    //! allocating images. Zero means no device yet (CPU-only builds/exports).
+    //! Only checks capacity; callers must separately validate formats/byte sizes.
+    //! Returns false with a diagnostic naming the oversized texture and limit.
+    inline bool checkSlugAtlasDimensions(
+        const SlugAtlasOutput& atlas, std::uint32_t maxDimension, std::string& error)
+    {
+        error.clear();
+        if (maxDimension == 0u)
+            return true;
+
+        const SlugTextureOutput* textures[] = { &atlas.curveTexture, &atlas.bandTexture };
+        const char* names[] = { "curve", "band" };
+        for (unsigned i = 0u; i < 2u; ++i)
+        {
+            const auto& texture = *textures[i];
+            if (texture.width > maxDimension || texture.height > maxDimension)
+            {
+                error = std::string("Slug ") + names[i] + " atlas dimensions " +
+                    std::to_string(texture.width) + "x" + std::to_string(texture.height) +
+                    " exceed device maxImageDimension2D=" + std::to_string(maxDimension);
+                return false;
+            }
+        }
+        return true;
+    }
+
     // Builds a complete atlas transactionally. On failure, no texture/layer
     // data is published; error and bandCapacityExceeded describe the failure.
     // No Slughorn type crosses this boundary.

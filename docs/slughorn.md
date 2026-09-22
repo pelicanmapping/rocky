@@ -58,8 +58,12 @@ testing. If any shape still cannot fit at 8 bands, its entire Overlay uses Raste
 at its configured resolution. Band reductions and Raster fallbacks are logged
 at info level when accepted, not every frame. Other overlays remain Vector, and the requested
 `Overlay::mode` is unchanged. The fallback stays in effect until its source
-geometry, style, or relevant authoring inputs change; automatic projector refits
-and creation of the Raster mesh do not repeatedly retry the failed atlas.
+geometry, style, relevant authoring inputs, or device dimension limit change;
+automatic projector refits and creation of the Raster mesh do not repeatedly
+retry the failed atlas. The complete curve and band textures are also checked
+against the active GPU's `maxImageDimension2D` before creating upload images.
+If either texture is too wide or tall, the same logged Raster fallback applies,
+even when each individual shape fits the SDK's band limits.
 
 The source revision and archive checksum are shared in
 `vcpkg-ports/slughorn/slughorn-version.cmake`. Update those together and update the

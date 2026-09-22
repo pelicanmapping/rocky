@@ -9,8 +9,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    struct TransformDetail;
-
     /**
     * VSG node that renders Node components (just plain vsg nodes)
     */
@@ -42,8 +40,8 @@ namespace ROCKY_NAMESPACE
         struct Drawable
         {
             vsg::Node* node = nullptr;
-            TransformDetail* xformDetail = nullptr;
-            Drawable(vsg::Node* node_, TransformDetail* xformDetail) : node(node_), xformDetail(xformDetail) {}
+            detail::TransformDetail* xformDetail = nullptr;
+            Drawable(vsg::Node* node_, detail::TransformDetail* xformDetail) : node(node_), xformDetail(xformDetail) {}
         };
 
         using DrawList = std::vector<Drawable>;

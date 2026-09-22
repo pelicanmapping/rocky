@@ -11,8 +11,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    struct TransformDetail;
-
     /**
     * Renders a line or linestring geometry.
     */

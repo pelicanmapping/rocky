@@ -16,7 +16,7 @@ namespace ROCKY_NAMESPACE
     /**
      * Experimental vector overlay encoder.
      *
-     * Each supported Mesh/Line/Point Overlay receives an independently owned
+     * Each supported Polygon/Mesh/Line/Point Overlay receives an independently owned
      * Slughorn curve/band atlas pair. The system publishes that pair and its
      * per-layer mapping metadata as a SlugResource; DecalSystem owns descriptor
      * residency and rendering. Mesh input is accepted as a compatibility path
@@ -32,7 +32,7 @@ namespace ROCKY_NAMESPACE
         //! World SRS used to convert georeferenced geometry into projector space.
         SRS worldSRS;
 
-        //! Initial per-overlay atlas width. The adapter grows it when necessary.
+        //! Fixed per-overlay atlas row width; packed data may span multiple rows.
         static constexpr std::uint32_t textureWidth = 512u;
 
         //! Experimental: merge consecutive segment contours whose mapped

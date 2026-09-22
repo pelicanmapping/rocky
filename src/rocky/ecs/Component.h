@@ -16,6 +16,15 @@ namespace ROCKY_NAMESPACE
         //! Rocky library (rather than a template static) so DLL clients and
         //! the library cannot generate duplicate revisions.
         extern ROCKY_EXPORT std::uint64_t nextComponentRevision();
+
+        //! System-owned singleton queue of dirty entities for one component type.
+        //! Producers append under mutex; the owning system drains it on update.
+        template<class COMPONENT>
+        struct ComponentDirty
+        {
+            std::mutex mutex;
+            std::vector<entt::entity> entities;
+        };
     }
 
     // Base component type with built-in dirty tracking.
@@ -26,13 +35,9 @@ namespace ROCKY_NAMESPACE
         //! The entity that owns this component
         entt::entity owner = entt::null;
 
-        // NOTE: RELIES on the System to install the Dirty singleton!
-        // NOTE: type of this struct is Component<DERIVED>::Dirty
-        struct Dirty
-        {
-            std::mutex mutex;
-            std::vector<entt::entity> entities;
-        };
+        // System convenience alias; the ECS queue type itself is internal.
+        // RELIES on the System to install the Dirty singleton!
+        using Dirty = detail::ComponentDirty<DERIVED>;
 
         //! Persistent generation assigned whenever this component is dirtied.
         //! Unlike the consumable Dirty queue, this remains available to any

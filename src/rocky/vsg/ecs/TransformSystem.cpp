@@ -8,6 +8,7 @@
 #include "OverlayRenderContext.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 
 void TransformSystemNode::on_construct_Transform(entt::registry& r, entt::entity e)

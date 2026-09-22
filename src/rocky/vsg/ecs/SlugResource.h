@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-namespace ROCKY_NAMESPACE
+namespace ROCKY_NAMESPACE::detail
 {
     /**
      * GPU-facing metadata for one vector layer in an overlay's Slug atlas.

@@ -18,8 +18,9 @@
 #include <imgui.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
-namespace
+namespace ROCKY_NAMESPACE::detail
 {
     // Internal component for rendering a widget instance
     struct WidgetDetail

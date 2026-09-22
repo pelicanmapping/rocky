@@ -14,7 +14,7 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
 
-namespace
+namespace ROCKY_NAMESPACE::detail
 {
     /**
      * Ownership record for the mesh resources derived from one Polygon.
@@ -37,7 +37,10 @@ namespace
         bool overlayModeValid = false;
         OverlayMode overlayMode = OverlayMode::Raster;
     };
+}
 
+namespace
+{
     template<typename T>
     T* resolveComponent(entt::registry& registry, entt::entity reference, entt::entity owner)
     {

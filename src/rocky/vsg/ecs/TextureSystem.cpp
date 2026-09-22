@@ -7,6 +7,21 @@
 #include <rocky/vsg/VSGUtils.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
+
+namespace ROCKY_NAMESPACE::detail
+{
+    //! Producer-owned cache of the ImageTexture generation and sampling metadata.
+    struct ImageTextureDetail
+    {
+        Image::Ptr sourceImage;
+        std::uint64_t sourceRevision = 0u;
+        TextureOrigin origin = TextureOrigin::LowerLeft;
+        TextureAlphaMode alphaMode = TextureAlphaMode::Straight;
+        bool initialized = false;
+        bool conflictLogged = false;
+    };
+}
 
 TextureSystemNode::TextureSystemNode(Registry& registry) :
     Inherit(registry)

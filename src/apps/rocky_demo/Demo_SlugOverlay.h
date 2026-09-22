@@ -137,7 +137,7 @@ auto Demo_SlugOverlay = [](Application& app)
         {
             ImGuiLTable::Text("West", "Raster");
             ImGuiLTable::Text("East", "Vector");
-            if (const auto* resource = reg.try_get<SlugResource>(e_slug))
+            if (const auto* resource = reg.try_get<detail::SlugResource>(e_slug))
             {
                 if (resource->ready)
                 {
@@ -174,7 +174,7 @@ auto Demo_SlugOverlay = [](Application& app)
     {
         app.registry.write([&](entt::registry& reg)
         {
-            if (auto* resource = reg.try_get<SlugResource>(e_slug))
+            if (auto* resource = reg.try_get<detail::SlugResource>(e_slug))
             {
                 resource->exportPath = exportPath;
                 resource->exportSucceeded = false;

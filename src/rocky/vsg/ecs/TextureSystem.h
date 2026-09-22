@@ -21,16 +21,6 @@ namespace ROCKY_NAMESPACE
         void update(VSGContext) override;
 
     private:
-        struct ImageTextureDetail
-        {
-            Image::Ptr sourceImage;
-            std::uint64_t sourceRevision = 0u;
-            TextureOrigin origin = TextureOrigin::LowerLeft;
-            TextureAlphaMode alphaMode = TextureAlphaMode::Straight;
-            bool initialized = false;
-            bool conflictLogged = false;
-        };
-
         // Resource removal can occur on a paging thread. Retain producer-owned
         // images until update() can hand them to the deferred GPU disposer.
         std::mutex _pendingDisposalsMutex;

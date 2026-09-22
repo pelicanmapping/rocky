@@ -9,8 +9,9 @@
 #include <cmath>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
-namespace
+namespace ROCKY_NAMESPACE::detail
 {
     //! Per-anchor terrain-query cache, invalidated by motion or relevant tile loads.
     struct TerrainAnchorDetail
@@ -20,7 +21,10 @@ namespace
         bool queryCacheValid = false;
         bool terrainPointValid = false;
     };
+}
 
+namespace
+{
     //! Returns whether two geodetic points identify the same horizontal location.
     bool sameHorizontalLocation(const GeoPoint& lhs, const GeoPoint& rhs)
     {

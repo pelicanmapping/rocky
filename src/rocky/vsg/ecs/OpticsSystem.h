@@ -12,7 +12,7 @@
 #include <mutex>
 #include <unordered_set>
 
-namespace ROCKY_NAMESPACE
+namespace ROCKY_NAMESPACE::detail
 {
     //! Internal per-view result of applying a ProjectedTexture placement policy.
     struct ProjectionViewDetail
@@ -35,7 +35,10 @@ namespace ROCKY_NAMESPACE
     {
         ViewLocal<ProjectionViewDetail> views;
     };
+}
 
+namespace ROCKY_NAMESPACE
+{
     /**
      * Resolves optical parameters and terrain placement for projected textures.
      */
