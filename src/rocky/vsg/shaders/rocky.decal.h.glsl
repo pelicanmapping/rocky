@@ -362,7 +362,7 @@ void applyDecals(
 
     // debugging overlay to show tile density
     float ramp = clamp(float(tileCount) / 5.0, 0.0, 1.0);
-    vec3 debugColor = vec3(0, ramp, ramp);
+    vec3 debugColor = tileCount > MAX_DECALS_PER_TILE ? vec3(1, 0, 0) : vec3(0, ramp, ramp);
     color.rgb = mix(color.rgb, debugColor, u_debugTiles * 0.75);
 }
 

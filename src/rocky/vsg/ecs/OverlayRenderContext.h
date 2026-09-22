@@ -15,6 +15,15 @@ namespace ROCKY_NAMESPACE
 {
     namespace detail
     {
+        //! Renderer-owned capacity fallback for one Overlay. SlugSystem keeps
+        //! this decision until the source signature changes; generated meshes
+        //! and automatic projector refits must not invalidate that signature.
+        //! Contains no GPU resources and disappears with its owning Overlay.
+        struct OverlayVectorFallback
+        {
+            std::size_t sourceSignature = 0u;
+        };
+
         // Resolve backend availability without modifying the requested mode.
         // All overlay producers and consumers must agree on this decision;
         // in particular, Raster fallback still needs Polygon's derived mesh.
@@ -26,6 +35,15 @@ namespace ROCKY_NAMESPACE
                 return OverlayMode::Raster;
 #endif
             return requested;
+        }
+
+        //! Resolves both backend availability and per-overlay capacity fallback.
+        //! Call under the registry lock; this does not change the requested mode.
+        inline OverlayMode resolveOverlayMode(
+            const entt::registry& registry, entt::entity entity, OverlayMode requested)
+        {
+            return registry.any_of<OverlayVectorFallback>(entity) ?
+                OverlayMode::Raster : resolveOverlayMode(requested);
         }
 
         static constexpr const char* RENDER_PURPOSE_KEY = "rocky.render_purpose";

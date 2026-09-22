@@ -5,6 +5,7 @@
  */
 #include "SlugSystem.h"
 #include "SlugResource.h"
+#include "OverlayBakeSystem.h"
 #include "OverlayRenderContext.h"
 
 #include <rocky/ecs/Line.h>
@@ -23,6 +24,9 @@
 #include <cmath>
 #include <cstring>
 #include <limits>
+#include <unordered_set>
+
+ROCKY_ABOUT(slughorn, rocky::detail::slughornVersionString());
 
 using namespace ROCKY_NAMESPACE;
 
@@ -73,6 +77,7 @@ namespace
 
         // Rebuild key and shader/atlas contract.
         std::size_t sourceSignature = 0u;
+        std::size_t fallbackSignature = 0u;
         std::uint32_t textureWidthLog2 = 0u;
         std::uint32_t indirectionSize = 0u;
 
@@ -82,6 +87,8 @@ namespace
         bool exportAttempted = false;
         bool exportSucceeded = false;
         bool suppressWarning = false;
+        bool bandCapacityExceeded = false;
+        std::vector<detail::SlugBandReduction> bandReductions;
         std::string exportMessage;
         std::string warning;
         std::string error;
@@ -897,11 +904,16 @@ namespace
         return true;
     }
 
+    //! Identifies atlas inputs without inspecting vertices. The fallback key
+    //! excludes automatic projector revisions, which can change solely because
+    //! Raster creates a derived mesh/refits the same source. Caller transforms
+    //! and geometry/style revisions still permit a new Vector attempt.
     std::size_t computeSourceSignature(
         entt::registry& registry,
         entt::entity entity,
         const SRS& worldSRS,
-        bool mergeConnectedLineSegments)
+        bool mergeConnectedLineSegments,
+        bool includeAutomaticProjector = true)
     {
         std::size_t signature = 0u;
         hashValue(signature, worldSRS.definition());
@@ -981,7 +993,8 @@ namespace
         // conversion does too, since localMatrix defines the decal's extent.
         if (georeferenced || metricLine)
         {
-            const auto* transform = registry.try_get<Transform>(entity);
+            const auto* transform = !includeAutomaticProjector && registry.any_of<AutoOverlayTransform>(entity) ?
+                nullptr : registry.try_get<Transform>(entity);
             hashValue(signature, transform != nullptr);
             if (transform)
                 hashValue(signature, transform->revision);
@@ -1064,7 +1077,16 @@ SlugSystemNode::SlugSystemNode(Registry& registry) :
     _registry.write([&](entt::registry& r)
     {
         r.on_destroy<SlugResource>().connect<&SlugSystemNode::on_destroy_SlugResource>(*this);
+        r.on_destroy<Overlay>().connect<&SlugSystemNode::on_destroy_Overlay>(*this);
     });
+}
+
+//! Discards renderer-owned fallback and atlas state when the facade disappears.
+//! Image retirement remains deferred through the SlugResource destruction hook.
+void SlugSystemNode::on_destroy_Overlay(entt::registry& registry, entt::entity entity)
+{
+    registry.remove<detail::OverlayVectorFallback>(entity);
+    registry.remove<SlugResource>(entity);
 }
 
 void SlugSystemNode::on_destroy_SlugResource(entt::registry& registry, entt::entity entity)
@@ -1106,13 +1128,51 @@ void SlugSystemNode::update(VSGContext vsgcontext)
     if (!_atlasSampler)
         _atlasSampler = makeAtlasSampler();
 
+    bool resourcesChanged = false;
+    std::unordered_set<entt::entity> retryNextFrame;
+    _registry.write([&](entt::registry& registry)
+    {
+        std::vector<entt::entity> expired;
+        registry.view<detail::OverlayVectorFallback>().each([&](auto entity, const auto& fallback)
+        {
+            const auto* overlay = registry.try_get<Overlay>(entity);
+            if (!overlay || overlay->mode != OverlayMode::Vector ||
+                fallback.sourceSignature != computeSourceSignature(
+                    registry, entity, worldSRS, mergeConnectedLineSegments, false))
+            {
+                expired.push_back(entity);
+            }
+            else if (auto* resource = registry.try_get<SlugResource>(entity);
+                resource && !resource->exportPath.empty())
+            {
+                // There is no serializable atlas for this source. Complete a
+                // diagnostic request without retrying the known capacity failure.
+                resource->exportPath.clear();
+                resource->exportSucceeded = false;
+                resource->exportMessage = "Overlay is using Raster: " + resource->message;
+                resourcesChanged = true;
+            }
+        });
+        for (auto entity : expired)
+        {
+            registry.remove<detail::OverlayVectorFallback>(entity);
+            if (auto* resource = registry.try_get<SlugResource>(entity))
+                resource->sourceSignatureValid = false;
+            // Let PolygonSystem and OverlayBakeSystem retire Raster caches and
+            // restore the Vector projector before capturing a fresh atlas.
+            retryNextFrame.insert(entity);
+            resourcesChanged = true;
+        }
+    });
+
     std::vector<OverlayBuild> builds;
     _registry.read([&](entt::registry& registry)
     {
         std::vector<entt::entity> entities;
         registry.view<Overlay>().each([&](auto entity, const auto& overlay)
         {
-            if (detail::resolveOverlayMode(overlay.mode) == OverlayMode::Vector)
+            if (detail::resolveOverlayMode(registry, entity, overlay.mode) == OverlayMode::Vector &&
+                retryNextFrame.count(entity) == 0u)
                 entities.emplace_back(entity);
         });
         std::sort(entities.begin(), entities.end(), [](auto lhs, auto rhs)
@@ -1143,6 +1203,8 @@ void SlugSystemNode::update(VSGContext vsgcontext)
                     build.exportOnly = true;
                 }
             }
+            build.fallbackSignature = computeSourceSignature(
+                registry, entity, worldSRS, mergeConnectedLineSegments, false);
             bool foundPrimitive = false;
             const auto* polygon = registry.try_get<Polygon>(entity);
             if (polygon)
@@ -1214,6 +1276,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         SlugAtlasOutput atlas;
         if (!rocky::detail::buildSlugAtlas(input, atlas, build.error))
         {
+            build.bandCapacityExceeded = atlas.bandCapacityExceeded;
             if (!build.exportPath.empty())
             {
                 build.exportAttempted = true;
@@ -1268,12 +1331,13 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             continue;
         }
 
+        build.bandReductions = std::move(atlas.bandReductions);
+
         // Do not compile here. DecalSystem compiles the pair only after this
         // payload is visible and has acquired a bounded descriptor slot.
     }
 
     std::vector<vsg::ref_ptr<vsg::ImageInfo>> oldImages;
-    bool resourcesChanged = false;
     _registry.write([&](entt::registry& registry)
     {
         std::vector<entt::entity> stale;
@@ -1293,12 +1357,22 @@ void SlugSystemNode::update(VSGContext vsgcontext)
 
         for (auto& build : builds)
         {
-            if (!registry.valid(build.entity))
+            const auto* overlay = registry.valid(build.entity) ? registry.try_get<Overlay>(build.entity) : nullptr;
+            if (!overlay || overlay->mode != OverlayMode::Vector ||
+                computeSourceSignature(registry, build.entity, worldSRS, mergeConnectedLineSegments) !=
+                    build.sourceSignature)
             {
                 if (build.curveTexture)
                     oldImages.emplace_back(build.curveTexture);
                 if (build.bandTexture)
                     oldImages.emplace_back(build.bandTexture);
+                // The owner/source changed while the build ran outside the
+                // registry lock. Do not publish stale geometry or a fallback.
+                build.warning.clear();
+                build.error.clear();
+                build.bandReductions.clear();
+                build.exportAttempted = false;
+                resourcesChanged = true;
                 continue;
             }
 
@@ -1317,6 +1391,12 @@ void SlugSystemNode::update(VSGContext vsgcontext)
 
             if (build.exportOnly)
                 continue;
+
+            if (build.bandCapacityExceeded)
+            {
+                auto& fallback = registry.get_or_emplace<detail::OverlayVectorFallback>(build.entity);
+                fallback.sourceSignature = build.fallbackSignature;
+            }
 
             if (resource.curveTexture)
                 oldImages.emplace_back(resource.curveTexture);
@@ -1348,8 +1428,20 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         if (!build.warning.empty())
             Log()->warn("SlugSystemNode: {}", build.warning);
 
+        // Only accepted runtime builds reach here with reductions. Cached
+        // frames, export-only rebuilds, and discarded results stay silent.
+        for (const auto& reduction : build.bandReductions)
+            Log()->info("SlugSystemNode: overlay {} shape {} reduced bands per axis from {} to {} to fit band capacity",
+                entt::to_integral(build.entity), reduction.shapeKey, reduction.originalCount, reduction.reducedCount);
+
         if (!build.error.empty() && !build.suppressWarning)
-            Log()->warn("SlugSystemNode: {}", build.error);
+        {
+            if (build.bandCapacityExceeded && !build.exportOnly)
+                Log()->info("SlugSystemNode: {}; overlay {} is falling back to Raster until its source changes",
+                    build.error, entt::to_integral(build.entity));
+            else
+                Log()->warn("SlugSystemNode: {}", build.error);
+        }
         else if (build.exportAttempted)
         {
             if (build.exportSucceeded)

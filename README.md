@@ -53,12 +53,6 @@ If you would rather not use vcpkg, you can build and install the [dependencies](
 
 > *Note: Rocky requires ImGui version 1.92 or newer to get full dynamic font support.*
 
-Experimental vector overlays are available with `-DROCKY_SUPPORTS_SLUGHORN=ON`.
-Rocky uses an explicit Slughorn checkout or installed package when available,
-otherwise downloading a pinned SDK automatically. Both vcpkg and non-vcpkg builds
-are supported; see [Slughorn dependency setup](docs/slughorn.md).
-
-
 ## Run the Demo
 Rocky is pretty good at finding its data files, but if you run into trouble, you might need to set a couple environment variables to help:
 ```bat
@@ -771,6 +765,7 @@ Thanks to these excellent open source projects that help make Rocky possible!
 * [nlohmann-json](https://github.com/nlohmann/json)
 * [openssl](https://github.com/openssl/openssl) (optional)
 * [proj](https://github.com/OSGeo/PROJ)
+* [slughorn](https://github.com/AlphaPixel/slughorn) (optional)
 * [spdlog](https://github.com/gabime/spdlog)
 * [sqlite3](https://github.com/sqlite/sqlite) (optional)
 * [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)

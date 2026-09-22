@@ -15,6 +15,7 @@ TextureSystemNode::TextureSystemNode(Registry& registry) :
     {
         r.on_construct<ImageTexture>().connect<&TextureSystemNode::on_construct_ImageTexture>(*this);
         r.on_destroy<ImageTexture>().connect<&TextureSystemNode::on_destroy_ImageTexture>(*this);
+        r.on_destroy<TextureResource>().connect<&TextureSystemNode::on_destroy_TextureResource>(*this);
 
         auto dirtyEntity = r.create();
         r.emplace<ImageTexture::Dirty>(dirtyEntity);
@@ -45,10 +46,41 @@ void TextureSystemNode::on_destroy_ImageTexture(entt::registry& r, entt::entity 
     }
 }
 
+void TextureSystemNode::on_destroy_TextureResource(entt::registry& r, entt::entity entity)
+{
+    // Hook the resource itself, not only ImageTexture: whole-entity destruction
+    // may remove these components in either order. Other producers manage their
+    // own resource lifetimes and must not be retired by this system.
+    const auto& resource = r.get<TextureResource>(entity);
+    if (resource.producer == TextureResourceProducer::ImageTexture && resource.texture)
+    {
+        std::scoped_lock lock(_pendingDisposalsMutex);
+        _pendingDisposals.emplace_back(resource.texture);
+    }
+}
+
 void TextureSystemNode::update(VSGContext vsgcontext)
 {
-    if (status.failed())
+    if (!vsgcontext)
         return;
+
+    // DecalSystem can now relinquish the descriptor reference without freeing
+    // an image still used by an in-flight frame. Drain even after a failure.
+    {
+        std::vector<vsg::ref_ptr<vsg::ImageInfo>> pending;
+        {
+            std::scoped_lock lock(_pendingDisposalsMutex);
+            pending.swap(_pendingDisposals);
+        }
+        for (auto& image : pending)
+            dispose(image);
+    }
+
+    if (status.failed())
+    {
+        Inherit::update(vsgcontext);
+        return;
+    }
 
     _registry.write([&](entt::registry& r)
     {

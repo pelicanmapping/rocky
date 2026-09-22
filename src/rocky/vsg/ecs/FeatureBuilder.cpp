@@ -701,8 +701,7 @@ namespace
         int cols = std::max(2, (int)(local_ex.width() / xspan));
         int rows = std::max(2, (int)(local_ex.height() / yspan));
 
-        // weemesh uses 16-bit-ish vertex indexing internally, so keep the seed grid
-        // comfortably below its allocation ceiling.
+        // Bound the initial grid's cost; boundary cuts can add more vertices.
         constexpr int max_grid_vertices = 60000;
         while ((long long)cols * (long long)rows > max_grid_vertices)
         {

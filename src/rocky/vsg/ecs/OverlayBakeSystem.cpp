@@ -85,8 +85,8 @@ namespace
         Overlay& overlay,
         OverlayBakeFacadeAdapter& adapter)
     {
-        const auto mode = resolveOverlayMode(overlay.mode);
-        if (mode != overlay.mode && !adapter.warnedAboutVectorFallback)
+        const auto mode = resolveOverlayMode(r, entity, overlay.mode);
+        if (resolveOverlayMode(overlay.mode) != overlay.mode && !adapter.warnedAboutVectorFallback)
         {
             Log()->warn(
                 "Overlay: Vector mode requested for entity {}, but Slughorn support "
@@ -929,7 +929,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
         {
             r.view<Overlay>().each([&](auto entity, auto& overlay)
                 {
-                    if (resolveOverlayMode(overlay.mode) != OverlayMode::Vector ||
+                    if (resolveOverlayMode(r, entity, overlay.mode) != OverlayMode::Vector ||
                         r.any_of<RenderTexture>(entity))
                     {
                         if (r.any_of<SlugOverlayFitDetail>(entity))

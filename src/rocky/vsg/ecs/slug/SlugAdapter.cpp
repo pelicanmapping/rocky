@@ -15,6 +15,12 @@
 
 namespace rocky::detail
 {
+    //! Reports the actual SDK version, including when using a source/package override.
+    std::string slughornVersionString()
+    {
+        return slughorn::versionString();
+    }
+
     namespace
     {
         using slughorn::Atlas;
@@ -25,6 +31,11 @@ namespace rocky::detail
         using slughorn::canvas::LineCap;
         using slughorn::canvas::LineJoin;
         using slughorn::canvas::Path;
+
+        // Capacity recovery must not turn a complex shape into a near-global
+        // curve scan per fragment. Already-fitting small shapes may still use
+        // fewer bands under the SDK's normal curve-count policy.
+        constexpr int minimumCapacityBands = 8;
 
         /**
          * Associates a Canvas result with Rocky metadata until Atlas::build()
@@ -155,6 +166,8 @@ namespace rocky::detail
             return static_cast<int>(count);
         }
 
+        //! Supplies the normal uniform grid while Canvas constructs SDK curves.
+        //! Capacity is checked after commit, including generated caps and joins.
         std::pair<std::vector<slughorn::slug_t>, std::vector<slughorn::slug_t>>
         complexityAwareBandSplits(const Atlas::Curves& curves)
         {
@@ -203,11 +216,10 @@ namespace rocky::detail
         // followed by the two indirection tables, headers, and Y then X lists.
         // Count actual references, not unique edges or a worst-case curve cap.
         // Keeping this check private lets SDK format changes stay in the adapter.
-        bool polygonBandDataFits(
-            const Atlas::ShapeInfo& info,
-            const std::vector<PolygonBatchUnit>& units,
-            std::size_t begin,
-            std::size_t end)
+        // visitCurves enumerates either a prepared polygon batch or the actual
+        // SDK-generated stroke/fill curves without copying the polygon batches.
+        template<typename CurveVisitor>
+        bool shapeBandDataFits(const Atlas::ShapeInfo& info, const CurveVisitor& visitCurves)
         {
             constexpr std::uint64_t limit = std::numeric_limits<std::uint16_t>::max();
             const std::size_t countX = info.splitsX.size() + 1u;
@@ -225,26 +237,20 @@ namespace rocky::detail
                         Atlas::INDIRECTION_SIZE * range);
                 boundaries.push_back(hi);
                 std::vector<std::uint64_t> counts(boundaries.size() - 1u, 0u);
-                for (auto i = begin; i < end; ++i)
+                visitCurves([&](const Atlas::Curve& curve)
                 {
-                    for (const auto* polygon : units[i].polygons)
+                    const float cmin = yAxis ?
+                        std::min({ curve.y1, curve.y2, curve.y3 }) :
+                        std::min({ curve.x1, curve.x2, curve.x3 });
+                    const float cmax = yAxis ?
+                        std::max({ curve.y1, curve.y2, curve.y3 }) :
+                        std::max({ curve.x1, curve.x2, curve.x3 });
+                    for (std::size_t b = 0u; b < counts.size(); ++b)
                     {
-                        for (const auto& curve : polygon->curves)
-                        {
-                            const float cmin = yAxis ?
-                                std::min({ curve.y1, curve.y2, curve.y3 }) :
-                                std::min({ curve.x1, curve.x2, curve.x3 });
-                            const float cmax = yAxis ?
-                                std::max({ curve.y1, curve.y2, curve.y3 }) :
-                                std::max({ curve.x1, curve.x2, curve.x3 });
-                            for (std::size_t b = 0u; b < counts.size(); ++b)
-                            {
-                                if (cmax >= boundaries[b] && cmin <= boundaries[b + 1u])
-                                    ++counts[b];
-                            }
-                        }
+                        if (cmax >= boundaries[b] && cmin <= boundaries[b + 1u])
+                            ++counts[b];
                     }
-                }
+                });
                 for (auto count : counts)
                 {
                     if (offset > limit || count > limit)
@@ -254,6 +260,103 @@ namespace rocky::detail
                 return true;
             };
             return axisFits(true) && axisFits(false);
+        }
+
+        //! Checks a polygon range without concatenating its curves before the
+        //! partitioner knows which batches will actually be committed.
+        bool polygonBandDataFits(
+            const Atlas::ShapeInfo& info,
+            const std::vector<PolygonBatchUnit>& units,
+            std::size_t begin,
+            std::size_t end)
+        {
+            return shapeBandDataFits(info, [&](const auto& visit)
+            {
+                for (auto i = begin; i < end; ++i)
+                    for (const auto* polygon : units[i].polygons)
+                        for (const auto& curve : polygon->curves)
+                            visit(curve);
+            });
+        }
+
+        //! Sets both explicit counts and grid splits. At one band the split
+        //! arrays are empty, so explicit counts prevent SDK automatic selection.
+        void setUniformBandCount(Atlas::ShapeInfo& info, int count)
+        {
+            info.numBandsX = info.numBandsY = count;
+            auto splits = Atlas::computeUniformSplits({}, count, count);
+            info.splitsX = std::move(splits.first);
+            info.splitsY = std::move(splits.second);
+        }
+
+        //! An indivisible shape that failed preflight sacrifices band density,
+        //! never geometry. Stop at the performance floor instead of accepting
+        //! extremely long curve lists. The predicate uses the updated descriptor.
+        template<typename Fits>
+        bool reduceBandsToFit(Atlas::ShapeInfo& info, const Fits& fits)
+        {
+            for (int count = info.numBandsX / 2; count >= minimumCapacityBands; count /= 2)
+            {
+                setUniformBandCount(info, count);
+                if (fits())
+                    return true;
+            }
+            return false;
+        }
+
+        //! Preflights Canvas's actual generated curves, not its input vertices.
+        //! Before build(), the SDK allows a registered shape to be replaced by
+        //! addShape with the same key. Only an oversized shape is re-registered,
+        //! preserving its curves, contour starts, metrics, origin, and layer.
+        //! Failure publishes a typed capacity result for whole-overlay Raster
+        //! fallback; it never matches exception text or rebuilds atlas textures.
+        bool fitCanvasShapeBands(
+            Atlas& atlas,
+            const std::string& shapeKey,
+            std::vector<SlugBandReduction>& bandReductions,
+            std::string& error,
+            bool& bandCapacityExceeded)
+        {
+            const Key key{ shapeKey };
+            auto shape = atlas.getShape(key);
+            if (!shape)
+            {
+                error = "Slughorn atlas is missing a committed shape " + shapeKey;
+                return false;
+            }
+            Atlas::ShapeInfo info;
+            info.autoMetrics = false;
+            info.curves = std::move(shape->curves);
+            info.contourStarts = std::move(shape->contourStarts);
+            info.bearingX = shape->bearingX;
+            info.bearingY = shape->bearingY;
+            info.width = shape->width;
+            info.height = shape->height;
+            info.advance = shape->advance;
+            info.origin = shape->origin;
+            const int originalBandCount = static_cast<int>(shape->bandMaxX + 1u);
+            setUniformBandCount(info, originalBandCount);
+            const auto fits = [&]()
+            {
+                return shapeBandDataFits(info, [&](const auto& visit)
+                {
+                    for (const auto& curve : info.curves)
+                        visit(curve);
+                });
+            };
+            if (fits())
+                return true;
+            if (!reduceBandsToFit(info, fits))
+            {
+                bandCapacityExceeded = true;
+                error = "Slug shape " + shapeKey +
+                    " exceeds the uint16_t band capacity (65535) at the " +
+                    std::to_string(minimumCapacityBands) + "-band-per-axis performance floor";
+                return false;
+            }
+            atlas.addShape(key, info);
+            bandReductions.push_back({ shapeKey, originalBandCount, info.numBandsX });
+            return true;
         }
 
         // Compute connected components of overlapping bounds only when a group
@@ -306,12 +409,17 @@ namespace rocky::detail
             return result;
         }
 
+        //! Keeps independent polygon batches at full band density; only an
+        //! indivisible oversized fill sacrifices band density before failing.
+        //! A capacity failure leaves the caller's unpublished atlas disposable.
         bool addPolygonShapes(
             Atlas& atlas,
             const SlugShapeInput& input,
             const std::string& keyStem,
             std::vector<PendingLayer>& pending,
-            std::string& error)
+            std::vector<SlugBandReduction>& bandReductions,
+            std::string& error,
+            bool& bandCapacityExceeded)
         {
             std::vector<PreparedPolygon> polygons;
             polygons.reserve(input.polygons.size());
@@ -386,10 +494,8 @@ namespace rocky::detail
                     error = "Slug polygon shape " + keyStem + " has non-finite bounds";
                     return false;
                 }
-                info.numBandsX = info.numBandsY = bandCountForCurveCount(curveCount);
-                auto splits = Atlas::computeUniformSplits({}, info.numBandsX, info.numBandsY);
-                info.splitsX = std::move(splits.first);
-                info.splitsY = std::move(splits.second);
+                const int originalBandCount = bandCountForCurveCount(curveCount);
+                setUniformBandCount(info, originalBandCount);
                 if (!polygonBandDataFits(info, units, begin, end))
                 {
                     if (!partitioned)
@@ -400,23 +506,36 @@ namespace rocky::detail
                     }
                     if (end - begin < 2u)
                     {
-                        error = "Slug polygon shape " + keyStem +
-                            " exceeds the uint16_t band capacity (65535); a single polygon "
-                            "with its holes or an overlapping polygon group cannot be split safely";
-                        return false;
-                    }
-                    // Stable median split on the longest axis yields compact,
-                    // deterministic batches and bounded logarithmic recursion.
-                    const bool splitX = info.width >= info.height;
-                    std::stable_sort(units.begin() + begin, units.begin() + end,
-                        [&](const auto& a, const auto& b)
+                        // Band lists duplicate references to curves crossing
+                        // multiple bands. Coarser bands reduce that duplication
+                        // without changing any curve, contour, or fill rule.
+                        if (!reduceBandsToFit(info, [&]()
                         {
-                            return splitX ?
-                                double(a.bounds.minX) + a.bounds.maxX < double(b.bounds.minX) + b.bounds.maxX :
-                                double(a.bounds.minY) + a.bounds.maxY < double(b.bounds.minY) + b.bounds.maxY;
-                        });
-                    const auto middle = begin + (end - begin) / 2u;
-                    return self(self, begin, middle) && self(self, middle, end);
+                            return polygonBandDataFits(info, units, begin, end);
+                        }))
+                        {
+                            bandCapacityExceeded = true;
+                            error = "Slug polygon shape " + keyStem +
+                                " exceeds the uint16_t band capacity (65535) at the " +
+                                std::to_string(minimumCapacityBands) + "-band-per-axis performance floor";
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // Stable median split on the longest axis yields compact,
+                        // deterministic batches and bounded logarithmic recursion.
+                        const bool splitX = info.width >= info.height;
+                        std::stable_sort(units.begin() + begin, units.begin() + end,
+                            [&](const auto& a, const auto& b)
+                            {
+                                return splitX ?
+                                    double(a.bounds.minX) + a.bounds.maxX < double(b.bounds.minX) + b.bounds.maxX :
+                                    double(a.bounds.minY) + a.bounds.maxY < double(b.bounds.minY) + b.bounds.maxY;
+                            });
+                        const auto middle = begin + (end - begin) / 2u;
+                        return self(self, begin, middle) && self(self, middle, end);
+                    }
                 }
 
                 info.curves.reserve(curveCount);
@@ -429,8 +548,11 @@ namespace rocky::detail
                         info.curves.insert(info.curves.end(), polygon->curves.begin(), polygon->curves.end());
                     }
                 }
-                const Key key{ partitioned ? keyStem + "-batch-" + std::to_string(batchNumber++) : keyStem };
+                const auto shapeKey = partitioned ? keyStem + "-batch-" + std::to_string(batchNumber++) : keyStem;
+                const Key key{ shapeKey };
                 atlas.addShape(key, info);
+                if (info.numBandsX < originalBandCount)
+                    bandReductions.push_back({ shapeKey, originalBandCount, info.numBandsX });
                 Layer layer;
                 layer.key = key;
                 layer.color = makeColor(input.color);
@@ -476,6 +598,7 @@ namespace rocky::detail
             canvas.setSplitStrategy(complexityAwareBandSplits);
 
             std::vector<PendingLayer> pending;
+            std::vector<SlugBandReduction> bandReductions;
             pending.reserve(input.shapes.size() * 2u);
 
             for (std::size_t index = 0u; index < input.shapes.size(); ++index)
@@ -522,7 +645,8 @@ namespace rocky::detail
                 case SlugShapeKind::Fill:
                     if (!shape.polygons.empty())
                     {
-                        if (!addPolygonShapes(atlas, shape, keyStem, pending, error))
+                        if (!addPolygonShapes(
+                            atlas, shape, keyStem, pending, bandReductions, error, output.bandCapacityExceeded))
                             return false;
                         break;
                     }
@@ -652,6 +776,9 @@ namespace rocky::detail
                                     " could not commit its outline";
                                 return false;
                             }
+                            if (!fitCanvasShapeBands(atlas, keyStem + "-outline",
+                                bandReductions, error, output.bandCapacityExceeded))
+                                return false;
                             pending.push_back(PendingLayer{
                                 shape.owner,
                                 std::move(outlineLayer),
@@ -704,11 +831,16 @@ namespace rocky::detail
                 }
 
                 if (committed)
+                {
+                    if (!fitCanvasShapeBands(atlas, keyStem,
+                        bandReductions, error, output.bandCapacityExceeded))
+                        return false;
                     pending.push_back(PendingLayer{
                         shape.owner,
                         std::move(layer),
                         shape.uvToEmX,
                         shape.uvToEmY });
+                }
             }
 
             atlas.build();
@@ -747,6 +879,7 @@ namespace rocky::detail
             }
 
             SlugAtlasOutput result;
+            result.bandReductions = std::move(bandReductions);
             copyTexture(curves, SlugTextureFormat::RGBA32F, result.curveTexture);
             copyTexture(bands, SlugTextureFormat::RG16UI, result.bandTexture);
             result.textureWidthLog2 = log2(input.textureWidth);

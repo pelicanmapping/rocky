@@ -1,6 +1,6 @@
 set(APP_NAME rocky_tests)
 
-set(SOURCES tests.cpp catch.hpp)
+set(SOURCES tests.cpp tests_projection_lifecycle.cpp tests_tessellation.cpp tests_slug_fallback.cpp catch.hpp)
 
 add_executable(${APP_NAME} ${SOURCES})
 

@@ -17,7 +17,8 @@ namespace ROCKY_NAMESPACE
         Raster,
 
         //! Experimental resolution-independent rendering for vector geometry.
-        //! Falls back to Raster with a warning if vector rendering is unavailable.
+        //! Falls back to Raster with a log message if vector rendering is unavailable
+        //! or geometry complexity exceeds its capacity, using Overlay::resolution.
         Vector
     };
 
@@ -27,7 +28,7 @@ namespace ROCKY_NAMESPACE
     struct Overlay : public Component<Overlay>
     {
         //! Requested rendering mode for this overlay.
-        OverlayMode mode = OverlayMode::Raster;
+        OverlayMode mode = OverlayMode::Vector;
 
         //! Image resolution (X,Y) for raster rendering, in pixels.
         glm::uvec2 resolution = { 512u, 512u };

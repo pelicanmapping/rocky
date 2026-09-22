@@ -1243,7 +1243,7 @@ TEST_CASE("slug partitions dense polygon groups within one atlas", "[projection]
     });
 }
 
-TEST_CASE("slug refuses to split an oversized indivisible polygon", "[projection][slug][polygon]")
+TEST_CASE("slug reduces bands for an oversized indivisible polygon", "[projection][slug][polygon]")
 {
     Registry registry = Registry::create();
     auto slugSystem = SlugSystemNode::create(registry);
@@ -1272,11 +1272,13 @@ TEST_CASE("slug refuses to split an oversized indivisible polygon", "[projection
     registry.read([&](entt::registry& reg)
     {
         const auto& resource = reg.get<SlugResource>(entity);
-        CHECK_FALSE(resource.ready);
-        CHECK_FALSE(resource.curveTexture);
-        CHECK_FALSE(resource.bandTexture);
-        CHECK(resource.layers.empty());
-        CHECK(resource.message.find("cannot be split safely") != std::string::npos);
+        REQUIRE(resource.ready);
+        REQUIRE(resource.curveTexture);
+        REQUIRE(resource.bandTexture);
+        REQUIRE(resource.layers.size() == 1u);
+        CHECK(resource.layers.front().shapeData.z < 31u);
+        CHECK(resource.layers.front().shapeData.w < 31u);
+        CHECK(resource.message.empty());
     });
 }
 

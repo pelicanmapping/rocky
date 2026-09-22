@@ -7,6 +7,8 @@
 #include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/vsg/ecs/ECSNode.h>
 #include <rocky/vsg/ecs/TextureResource.h>
+#include <mutex>
+#include <vector>
 
 namespace ROCKY_NAMESPACE
 {
@@ -29,8 +31,14 @@ namespace ROCKY_NAMESPACE
             bool conflictLogged = false;
         };
 
+        // Resource removal can occur on a paging thread. Retain producer-owned
+        // images until update() can hand them to the deferred GPU disposer.
+        std::mutex _pendingDisposalsMutex;
+        std::vector<vsg::ref_ptr<vsg::ImageInfo>> _pendingDisposals;
+
         void on_construct_ImageTexture(entt::registry&, entt::entity);
         void on_destroy_ImageTexture(entt::registry&, entt::entity);
+        void on_destroy_TextureResource(entt::registry&, entt::entity);
     };
 }
 

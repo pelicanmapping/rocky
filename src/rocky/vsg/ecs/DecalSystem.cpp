@@ -507,7 +507,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
             const auto payload = projected.texture != entt::null ? projected.texture : entity;
 #ifdef ROCKY_HAS_SLUGHORN
             const auto* overlay = reg.try_get<Overlay>(payload);
-            if (overlay && resolveOverlayMode(overlay->mode) == OverlayMode::Vector)
+            if (overlay && resolveOverlayMode(reg, payload, overlay->mode) == OverlayMode::Vector)
                 demandedSlugAtlases.insert(payload);
             else
 #endif
@@ -657,6 +657,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
     DecalStyle::eachDirty(reg, [](entt::entity) {});
     Overlay::eachDirty(reg, [](entt::entity) {});
     Decal::eachDirty(reg, [](entt::entity) {});
+    ProjectedTexture::eachDirty(reg, [](entt::entity) {});
 }
 
 void
@@ -677,7 +678,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
             const auto payload = projected.texture != entt::null ? projected.texture : entity;
 #ifdef ROCKY_HAS_SLUGHORN
             const auto* overlay = reg.try_get<Overlay>(payload);
-            if (overlay && resolveOverlayMode(overlay->mode) == OverlayMode::Vector)
+            if (overlay && resolveOverlayMode(reg, payload, overlay->mode) == OverlayMode::Vector)
             {
                 const auto* resource = reg.try_get<SlugResource>(payload);
                 const auto* detail = reg.try_get<SlugSlotDetail>(payload);
@@ -1060,7 +1061,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
 #ifdef ROCKY_HAS_SLUGHORN
                     const auto* overlay = reg.try_get<Overlay>(e_texture);
-                    if (overlay && resolveOverlayMode(overlay->mode) == OverlayMode::Vector)
+                    if (overlay && resolveOverlayMode(reg, e_texture, overlay->mode) == OverlayMode::Vector)
                     {
                         // Perspective UV derivatives are intentionally deferred from
                         // this first Slug slice; the shader also guards this case.

@@ -48,6 +48,8 @@ namespace ROCKY_NAMESPACE
         vsg::ref_ptr<vsg::Sampler> _atlasSampler;
 
         void on_destroy_SlugResource(entt::registry&, entt::entity);
+        //! Removes the private capacity fallback and atlas when an Overlay is removed.
+        void on_destroy_Overlay(entt::registry&, entt::entity);
     };
 }
 

@@ -59,8 +59,11 @@
 // If more than this number of decals intersect a tile, not all will render.
 #define MAX_DECALS_PER_TILE                 11
 
-// If the decal count exceeds this, you will start to see rendering artifacts.
+// Default descriptor capacity. TerrainState overrides it at startup to match
+// the requested capacity after clamping to the Vulkan device limits.
+#ifndef MAX_NUM_DECAL_TEXTURES
 #define MAX_NUM_DECAL_TEXTURES             128
+#endif
 
 
 #ifdef __cplusplus

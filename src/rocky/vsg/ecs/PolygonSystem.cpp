@@ -47,7 +47,7 @@ namespace
     bool needsDerivedMesh(entt::registry& registry, entt::entity entity)
     {
         const auto* overlay = registry.try_get<Overlay>(entity);
-        return !overlay || resolveOverlayMode(overlay->mode) != OverlayMode::Vector;
+        return !overlay || resolveOverlayMode(registry, entity, overlay->mode) != OverlayMode::Vector;
     }
 
     void removeDerivedMesh(
@@ -283,9 +283,12 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
                 auto* adapter = registry.try_get<PolygonMeshAdapter>(entity);
                 if (adapter &&
                     (!adapter->overlayModeValid ||
-                        adapter->overlayMode != resolveOverlayMode(overlay.mode)))
+                        adapter->overlayMode != resolveOverlayMode(registry, entity, overlay.mode)))
                 {
-                    polygon.dirty(registry);
+                    // A renderer mode transition changes the derived cache,
+                    // not the source Polygon's revision. In particular, do not
+                    // invalidate a capacity fallback just by creating its mesh.
+                    changedPolygons.insert(entity);
                 }
             });
 
@@ -329,7 +332,7 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
             auto& adapter = registry.get_or_emplace<PolygonMeshAdapter>(entity);
             if (const auto* overlay = registry.try_get<Overlay>(entity))
             {
-                adapter.overlayMode = resolveOverlayMode(overlay->mode);
+                adapter.overlayMode = resolveOverlayMode(registry, entity, overlay->mode);
                 adapter.overlayModeValid = true;
             }
             else

@@ -11,6 +11,9 @@
 // target, whose public language requirement remains C++17.
 namespace rocky::detail
 {
+    //! Returns the SDK version without exposing Slughorn headers to C++17 consumers.
+    std::string slughornVersionString();
+
     /*
      * This is a producer boundary, not Rocky's public Slug API. SlugSystem
      * fills the input records below; the C++20 implementation translates them
@@ -151,21 +154,38 @@ namespace rocky::detail
         std::array<std::uint32_t, 4> shapeData = { 0u, 0u, 0u, 0u };
     };
 
+    //! Build-time diagnostic for one shape that needed coarser bands. Returned
+    //! only with a successful atlas, so the host can log the accepted decision
+    //! without coupling the SDK adapter to Rocky's logger.
+    struct SlugBandReduction
+    {
+        std::string shapeKey;
+        int originalCount = 0;
+        int reducedCount = 0; // Counts are per axis; both axes use the same count.
+    };
+
     struct SlugAtlasOutput
     {
+        //! Set when shape preflight cannot fit within the allowed band counts
+        //! (capacity reductions stop at eight per axis to limit shader cost).
+        //! Callers may use Raster for this failure, not for unrelated errors.
+        bool bandCapacityExceeded = false;
+
         SlugTextureOutput curveTexture;
         SlugTextureOutput bandTexture;
         std::uint32_t textureWidthLog2 = 0u;
         std::uint32_t indirectionSize = 0u;
         std::vector<SlugLayerOutput> layers;
+        std::vector<SlugBandReduction> bandReductions;
 
         bool exportAttempted = false;
         bool exportSucceeded = false;
         std::string exportMessage;
     };
 
-    // Builds a complete atlas transactionally. On failure, output is reset and
-    // error contains a diagnostic. No Slughorn type crosses this boundary.
+    // Builds a complete atlas transactionally. On failure, no texture/layer
+    // data is published; error and bandCapacityExceeded describe the failure.
+    // No Slughorn type crosses this boundary.
     bool buildSlugAtlas(
         const SlugAtlasInput& input,
         SlugAtlasOutput& output,
