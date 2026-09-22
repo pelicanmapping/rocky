@@ -384,11 +384,13 @@ namespace
                 curvatureDrop = R - std::sqrt(std::max(0.0, R * R - hh * hh));
             }
 
-            // Adaptive terrain-relief floor based on footprint size.
-            // Keeps small overlays tight and large overlays robust.
+            // Conservative terrain-relief fallback based on footprint size.
+            // A half-diagonal full thickness approximates a 27-degree grade
+            // from the footprint center to its corners. Terrain-aware fitting
+            // can replace this fallback in the future.
             const double diagonalMeters = std::sqrt(eastMeters * eastMeters + northMeters * northMeters);
             const double terrainReliefFloor =
-                std::clamp(0.03 * diagonalMeters, 500.0, 4000.0);
+                std::clamp(0.5 * diagonalMeters, 1000.0, 10000.0);
             const double margin = 25.0; // meters
             const double requiredHalfDepth =
                 curvatureDrop +
@@ -422,7 +424,7 @@ namespace
             const double verticalRange = std::max(1.0, bounds.maxz - bounds.minz);
             const double diagonalMeters = std::sqrt(width * width + height * height);
             const double terrainReliefFloor =
-                std::clamp(0.03 * diagonalMeters, 500.0, 4000.0);
+                std::clamp(0.5 * diagonalMeters, 1000.0, 10000.0);
             const double safety = std::max(0.1, (double)depthSafetyFactor);
             xform->localMatrix = glm::scale(
                 glm::dmat4(1.0),

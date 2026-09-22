@@ -6,6 +6,7 @@
 #pragma once
 #include "helpers.h"
 #include <rocky/vsg/ecs/MotionSystem.h>
+#include <rocky/vsg/ecs/OpticsSystem.h>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -49,8 +50,8 @@ struct FrustumView
     void updateOrthographic(
         entt::registry& r,
         const TransformDetail& hostTransformDetail,
-        const Optics& optics,
-        const OpticsViewDetail& opticsDetail,
+        const Optics* optics,
+        const ProjectionViewDetail& projectionDetail,
         ViewIDType viewID = 0)
     {
         initialize(r);
@@ -59,9 +60,11 @@ struct FrustumView
         if (hostView.revision < 0 || !hostView.cache.world_srs.valid())
             return;
 
-        glm::dmat4 modelWorld = to_glm(hostView.model) * optics.pose;
-        if (optics.autoComputeFocalDistance && opticsDetail.focalPointValid)
-            modelWorld[3] = glm::dvec4(opticsDetail.focalPoint, 1.0);
+        glm::dmat4 modelWorld = to_glm(hostView.model);
+        if (optics)
+            modelWorld *= optics->pose;
+        if (projectionDetail.focalPointValid)
+            modelWorld[3] = glm::dvec4(projectionDetail.focalPoint, 1.0);
 
         auto& frustum_xform = r.get<Transform>(e);
         frustum_xform.position = GeoPoint(hostView.cache.world_srs, glm::dvec3(modelWorld[3]));
@@ -96,7 +99,11 @@ struct FrustumView
         lineGeom.dirty(r);
     }
 
-    void updatePerspective(entt::registry& r, const Transform& hostTransform, const Optics& optics, const OpticsViewDetail& opticsDetail)
+    void updatePerspective(
+        entt::registry& r,
+        const Transform& hostTransform,
+        const Optics& optics,
+        const ProjectionViewDetail& projectionDetail)
     {
         initialize(r);
 
@@ -108,8 +115,8 @@ struct FrustumView
         frustum_xform.localMatrix = hostTransform.localMatrix * optics.pose;
         frustum_xform.dirty(r);
 
-        double nearClip = std::max(0.01, opticsDetail.nearDistance);
-        double farClip = std::max(nearClip + 0.01, opticsDetail.farDistance);
+        double nearClip = std::max(0.01, projectionDetail.nearDistance);
+        double farClip = std::max(nearClip + 0.01, projectionDetail.farDistance);
 
         double tanHalfFovY = tan(glm::radians(optics.fovY * 0.5));
         double nearHalfH = nearClip * tanHalfFovY;
@@ -192,6 +199,15 @@ auto Demo_Decal_Orthographic = [](Application& app)
         ImGuiLTable::Checkbox("Show", &reg.get<Visibility>(e_decal).visible[0]);
         ImGuiLTable::Checkbox("Show frustum", &showFrustum);
 
+        auto& decal = reg.get<Decal>(e_decal);
+        bool clampToTerrain = decal.placement == ProjectionPlacement::Terrain;
+        if (ImGuiLTable::Checkbox("Clamp to terrain", &clampToTerrain))
+        {
+            decal.placement = clampToTerrain ? ProjectionPlacement::Terrain : ProjectionPlacement::Fixed;
+            decal.dirty(reg);
+            app.vsgcontext->requestFrame();
+        }
+
         if (ImGuiLTable::Checkbox("Use optics", &useOptics))
         {
             if (useOptics)
@@ -205,9 +221,6 @@ auto Demo_Decal_Orthographic = [](Application& app)
         if (useOptics)
         {
             auto& optics = reg.get<Optics>(e_decal);
-
-            if (ImGuiLTable::Checkbox("Auto-clamp to terrain", &optics.autoComputeFocalDistance))
-                app.vsgcontext->requestFrame();
 
             auto quat = quaternion_from_unscaled_matrix<glm::dquat>(optics.pose);
             auto [pitch, roll, heading] = euler_degrees_from_quaternion(quat);
@@ -230,15 +243,16 @@ auto Demo_Decal_Orthographic = [](Application& app)
 
     if (showFrustum)
     {
+        auto&& [transformDetail, projectionDetail] =
+            reg.get<TransformDetail, ProjectionDetail>(e_decal);
         if (useOptics)
         {
-            auto&& [transformDetail, optics, opticsDetail] =
-                reg.get<TransformDetail, Optics, OpticsDetail>(e_decal);
-            frustumView.updateOrthographic(reg, transformDetail, optics, opticsDetail.views[0]);
+            auto& optics = reg.get<Optics>(e_decal);
+            frustumView.updateOrthographic(reg, transformDetail, &optics, projectionDetail.views[0]);
         }
         else
         {
-            frustumView.update(reg, reg.get<Transform>(e_decal));
+            frustumView.updateOrthographic(reg, transformDetail, nullptr, projectionDetail.views[0]);
         }
     }
     else
@@ -293,7 +307,8 @@ auto Demo_Decal_Perspective = [](Application& app)
     {
         ImGuiLTable::Checkbox("Show", &reg.get<Visibility>(e_decal).visible[0]);
 
-        auto&& [optics, opticsDetail, style] = reg.get<Optics, OpticsDetail, DecalStyle>(e_decal);
+        auto&& [optics, projectionDetail, style, decal] =
+            reg.get<Optics, ProjectionDetail, DecalStyle, Decal>(e_decal);
 
         if (ImGuiLTable::SliderFloat("Opacity", &style.color.a, 0.0f, 1.0f, "%.1f"))
         {
@@ -313,7 +328,7 @@ auto Demo_Decal_Perspective = [](Application& app)
             optics.pose = glm::mat4_cast(quaternion_from_euler_degrees(xaxis, yaxis, zaxis));
         }
 
-        ImGuiLTable::Checkbox("Auto compute near/far", &optics.autoComputeNearFar);
+        ImGuiLTable::Checkbox("Fit near/far to terrain", &decal.computeClipRange);
 
         ImGuiLTable::SliderDouble("Near scale", &optics.nearScale, 0.0, 1.0, "%.2lf");
         ImGuiLTable::SliderDouble("Near bias", &optics.nearBias, -100000.0, 0.0, "%.1lf", ImGuiSliderFlags_Logarithmic);
@@ -325,7 +340,7 @@ auto Demo_Decal_Perspective = [](Application& app)
         ImGuiLTable::End();
 
         if (showFrustum)
-            frustumView.updatePerspective(reg, reg.get<Transform>(e_decal), optics, opticsDetail.views[0]);
+            frustumView.updatePerspective(reg, reg.get<Transform>(e_decal), optics, projectionDetail.views[0]);
         else
             frustumView.setVisible(reg, false);
     }
@@ -380,13 +395,10 @@ auto Demo_Decal_Projector = [](Application& app)
         motion.velocity = glm::dvec3(2200, 0, 0);
 
         // Now we define the optical parameters of the remote sensing device.
-        // autoComputeFocalDistance will perform a terrain intersection to find the
-        // distance to the terrain and set the focal distance accordingly.
+        // Decal's default terrain placement will find the focal distance.
         auto& optics = reg.emplace<Optics>(e_platform);
         optics.projection = Optics::Projection::Perspective;
         optics.fovY = 35.0f; // degrees
-        optics.autoComputeFocalDistance = true;
-        optics.autoComputeNearFar = true;
         
         // Style our Decal with a texture and a semi-transparent alpha value.
         auto& style = reg.emplace<DecalStyle>(e_platform);
@@ -412,14 +424,14 @@ auto Demo_Decal_Projector = [](Application& app)
             // pan the projector from left to right:
             const double pitch = 25.0;
             double heading = -90.0 + 10.0 * sin((double)(app.frameCount()) * 0.01);
-            const auto& [optics, opticsDetail] = r.get<Optics, OpticsDetail>(e_platform);
+            const auto& [optics, projectionDetail] = r.get<Optics, ProjectionDetail>(e_platform);
             optics.pose = glm::mat4_cast(quaternion_from_euler_degrees(pitch, 0.0, heading));
 
             // update the frustum geometry to represent a frustum view of the optics:
             if (showFrustum)
             {
                 auto& platform_xform = r.get<Transform>(e_platform);
-                frustumView.updatePerspective(r, platform_xform, optics, opticsDetail.views[0]);
+                frustumView.updatePerspective(r, platform_xform, optics, projectionDetail.views[0]);
             }
             else
             {
@@ -575,7 +587,7 @@ auto Demo_Decal_Stamper = [](Application& app)
 
             auto& transform = reg.get<Transform>(e_cursor);
             auto& transformDetail = reg.get<TransformDetail>(e_cursor);
-            auto&& [optics, opticsDetail] = reg.get<Optics, OpticsDetail>(e_cursor);
+            auto&& [optics, projectionDetail] = reg.get<Optics, ProjectionDetail>(e_cursor);
 
             auto rot = quaternion_from_matrix<glm::dquat>(transform.localMatrix);
             auto [pitch, roll, heading] = euler_degrees_from_quaternion(rot);
@@ -622,7 +634,7 @@ auto Demo_Decal_Stamper = [](Application& app)
             }
 
             if (showFrustums)
-                cursorFrustumView.updateOrthographic(reg, transformDetail, optics, opticsDetail.views[0]);
+                cursorFrustumView.updateOrthographic(reg, transformDetail, &optics, projectionDetail.views[0]);
         }
 
         if (ImGuiLTable::Button("Clear stamps"))

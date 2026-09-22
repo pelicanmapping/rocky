@@ -295,10 +295,6 @@ auto Demo_Overlay_Absolute = [](Application& app)
         meshStyle.depthOffset = 200.0f;
         reg.emplace<Mesh>(e, meshGeom, meshStyle);
 
-        auto& optics = reg.emplace<Optics>(e);
-        optics.projection = Optics::Projection::Orthographic;
-        optics.autoComputeFocalDistance = true;
-
         auto& lineGeom = reg.emplace<LineGeometry>(e);
         lineGeom.srs = SRS::WGS84;
         lineGeom.points = {
@@ -356,6 +352,8 @@ auto Demo_Overlay_Absolute = [](Application& app)
         if (useOverlay)
         {
             auto& overlay = reg.emplace<Overlay>(e);
+            // This demo includes a stippled Line, which requires Raster mode.
+            overlay.mode = OverlayMode::Raster;
             overlay.color.a = (float)opacity;
             overlay.continuousBake = continuousBake;
         }
@@ -373,8 +371,6 @@ auto Demo_Overlay_Absolute = [](Application& app)
 
     bool toggleOverlay = false;
     bool nextOverlay = useOverlay;
-    bool setAutoClamp = false;
-    bool autoClamp = true;
 
     app.registry.read([&](entt::registry& reg)
     {
@@ -397,9 +393,6 @@ auto Demo_Overlay_Absolute = [](Application& app)
                 useDepthBuffer = overlay.useDepthBuffer;
             }
 
-            if (auto* optics = reg.try_get<Optics>(e))
-                autoClamp = optics->autoComputeFocalDistance;
-
             if (ImGuiLTable::SliderFloat("Opacity", &alpha, 0.0f, 1.0f, "%.2f"))
             {
                 opacity = alpha;
@@ -410,9 +403,6 @@ auto Demo_Overlay_Absolute = [](Application& app)
                     overlay.dirty(reg);
                 }
             }
-
-            if (ImGuiLTable::Checkbox("Auto clamp center", &autoClamp))
-                setAutoClamp = true;
 
             if (ImGuiLTable::Checkbox("Continuous bake", &continuousBake) && reg.any_of<Overlay>(e))
             {
@@ -448,6 +438,8 @@ auto Demo_Overlay_Absolute = [](Application& app)
             if (useOverlay)
             {
                 auto& overlay = r.emplace_or_replace<Overlay>(e);
+                // Preserve the stippled Line by routing this demo through RTT.
+                overlay.mode = OverlayMode::Raster;
                 overlay.color.a = (float)opacity;
                 overlay.useDepthBuffer = useDepthBuffer;
                 overlay.continuousBake = continuousBake;
@@ -456,16 +448,6 @@ auto Demo_Overlay_Absolute = [](Application& app)
             else
                 r.remove<Overlay>(e);
         });
-    }
-
-    if (setAutoClamp)
-    {
-        app.registry.write([&](entt::registry& r)
-        {
-            if (auto* optics = r.try_get<Optics>(e))
-                optics->autoComputeFocalDistance = autoClamp;
-        });
-        app.vsgcontext->requestFrame();
     }
 
 };

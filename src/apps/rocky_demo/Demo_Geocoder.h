@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky/Geocoder.h>
+#include <rocky/ecs/TerrainAnchor.h>
 #include <nlohmann/json.hpp>
 #include <cmath>
 #include <fstream>
@@ -127,6 +128,8 @@ auto Demo_Geocoder = [](Application& app)
             label = reg.create();
             reg.emplace<Label>(label, "");
             reg.emplace<Transform>(label);
+            auto& anchor = reg.emplace<TerrainAnchor>(label);
+            anchor.offset = 10.0;
         }
 
         void show(entt::registry& r, bool toggle)

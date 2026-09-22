@@ -15,6 +15,7 @@
 #include "ModelSystem.h"
 #include "NodeGraphSystem.h"
 #include "OpticsSystem.h"
+#include "TerrainAnchorSystem.h"
 
 ROCKY_ABOUT(entt, ENTT_VERSION);
 
@@ -215,6 +216,9 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
 {
     if (addDefaultSystems)
     {
+        // Terrain anchors mutate Transform positions, so resolve them before
+        // TransformSystem snapshots positions for rendering and culling.
+        add(std::make_shared<TerrainAnchorSystem>(registry));
         add(TransformSystemNode::create(registry));
         add(OpticsSystemNode::create(registry));
         add(NodeSystemNode::create(registry));

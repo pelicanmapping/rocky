@@ -8,6 +8,7 @@
 #include <rocky/Image.h>
 #include <rocky/Color.h>
 #include <rocky/ecs/Component.h>
+#include <rocky/ecs/ProjectedTexture.h>
 #include <optional>
 
 namespace ROCKY_NAMESPACE
@@ -42,6 +43,14 @@ namespace ROCKY_NAMESPACE
 
         //! Entity containing the DecalStyle. Null uses this Decal's entity.
         entt::entity style = entt::null;
+
+        //! Decals align their projection with terrain by default. Select Fixed
+        //! for a manually positioned projection volume.
+        ProjectionPlacement placement = ProjectionPlacement::Terrain;
+
+        //! Fit a terrain-placed perspective decal's near/far range to its
+        //! terrain intersection and optical field of view.
+        bool computeClipRange = true;
 
         //! Construct a default decal
         Decal() = default;

@@ -19,6 +19,7 @@
 #endif
 #include <rocky/vsg/ecs/TextureSystem.h>
 #include <rocky/vsg/ecs/OpticsSystem.h>
+#include <rocky/vsg/ecs/TerrainAnchorSystem.h>
 
 #ifdef ROCKY_HAS_IMGUI
 #include <rocky/rocky_imgui.h>
@@ -323,7 +324,13 @@ Application::ctor(int& argc, char** argv)
     // Create the ECS system manager and all its default systems.
     systemsNode = ECSNode::create(registry, true);
 
-    // optics: set a target for terrain intersections:
+    // Terrain anchors resolve ordinary Transform positions against the map terrain.
+    if (auto* terrainAnchorSystem = systemsNode->get<TerrainAnchorSystem>())
+    {
+        terrainAnchorSystem->target = mapNode->terrainNode;
+    }
+
+    // Projection placement uses the terrain scene for focal-point intersections.
     if (auto* opticsSystem = systemsNode->get<OpticsSystemNode>())
     {
         opticsSystem->target = mapNode->terrainNode;

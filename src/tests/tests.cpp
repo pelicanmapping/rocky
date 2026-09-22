@@ -9,6 +9,7 @@
 #include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/ecs/Overlay.h>
 #include <rocky/ecs/Decal.h>
+#include <rocky/ecs/TerrainAnchor.h>
 #include <rocky/vsg/ecs/OverlayBakeSystem.h>
 #ifdef ROCKY_HAS_SLUGHORN
 #include <rocky/vsg/ecs/SlugResource.h>
@@ -331,6 +332,9 @@ TEST_CASE("polygon system owns only its derived mesh", "[polygon][projection]")
 
 TEST_CASE("projected texture contracts", "[projection]")
 {
+    TerrainAnchor anchor;
+    CHECK(anchor.offset == 0.0);
+
     LineStyle lineStyle;
     CHECK(lineStyle.outlineWidth == 0.0f);
     CHECK(lineStyle.outlineColor == StockColor::Black);
@@ -356,6 +360,7 @@ TEST_CASE("projected texture contracts", "[projection]")
     ProjectedTexture projected;
     CHECK((projected.texture == entt::null));
     CHECK((projected.projector == entt::null));
+    CHECK(projected.placement == ProjectionPlacement::Fixed);
 
     RenderTextureBounds bounds;
     bounds.expand(SRS::WGS84, glm::dvec3(179.9, 10.0, 0.0));
@@ -605,8 +610,6 @@ TEST_CASE("manual optics work without a terrain target", "[projection]")
     {
         entity = reg.create();
         auto& optics = reg.emplace<Optics>(entity);
-        optics.autoComputeFocalDistance = false;
-        optics.autoComputeNearFar = false;
         optics.focalDistance = 25.0;
         optics.nearScale = 0.5;
         optics.nearBias = 1.0;
@@ -623,7 +626,23 @@ TEST_CASE("manual optics work without a terrain target", "[projection]")
         CHECK(detail.focalDistance == Approx(25.0));
         CHECK(detail.nearDistance == Approx(13.5));
         CHECK(detail.farDistance == Approx(53.0));
-        CHECK_FALSE(detail.focalPointValid);
+    });
+}
+
+TEST_CASE("projected textures own placement runtime state", "[projection]")
+{
+    Registry registry = Registry::create();
+    auto opticsSystem = OpticsSystemNode::create(registry);
+
+    registry.write([&](entt::registry& reg)
+    {
+        auto entity = reg.create();
+        auto& projected = reg.emplace<ProjectedTexture>(entity);
+        projected.placement = ProjectionPlacement::Terrain;
+
+        CHECK(reg.any_of<ProjectionDetail>(entity));
+        reg.remove<ProjectedTexture>(entity);
+        CHECK_FALSE(reg.any_of<ProjectionDetail>(entity));
     });
 }
 
@@ -636,9 +655,12 @@ TEST_CASE("legacy overlay adapter", "[projection]")
     registry.write([&](entt::registry& reg)
     {
         auto overlayEntity = reg.create();
-        reg.emplace<Overlay>(overlayEntity);
+        Overlay rasterOverlay;
+        rasterOverlay.mode = OverlayMode::Raster;
+        reg.emplace<Overlay>(overlayEntity, rasterOverlay);
         CHECK(reg.any_of<RenderTexture>(overlayEntity));
         CHECK(reg.any_of<ProjectedTexture>(overlayEntity));
+        CHECK(reg.get<ProjectedTexture>(overlayEntity).placement == ProjectionPlacement::Terrain);
         REQUIRE(reg.any_of<RenderParticipation>(overlayEntity));
         CHECK_FALSE(reg.get<RenderParticipation>(overlayEntity).mainView);
 
@@ -1362,8 +1384,10 @@ TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][sl
             lineLayer.uvToEmX.y, lineLayer.uvToEmY.y);
         const glm::dvec3 projectorXAxis(transform.localMatrix[0]);
         const glm::dvec3 projectorYAxis(transform.localMatrix[1]);
+        const glm::dvec3 projectorZAxis(transform.localMatrix[2]);
         REQUIRE(glm::length(authoredXAxis) > 0.0);
         REQUIRE(glm::length(authoredYAxis) > 0.0);
+        CHECK(glm::length(projectorZAxis) >= 1000.0);
         CHECK(std::abs(
             glm::length(authoredXAxis) / glm::length(authoredYAxis) -
             glm::length(projectorXAxis) / glm::length(projectorYAxis)) < 1e-4);
@@ -1796,6 +1820,7 @@ TEST_CASE("legacy decal adapter", "[projection]")
         reg.emplace<Decal>(decalEntity, styleEntity);
         REQUIRE(reg.any_of<ProjectedTexture>(decalEntity));
         CHECK(reg.get<ProjectedTexture>(decalEntity).texture == styleEntity);
+        CHECK(reg.get<ProjectedTexture>(decalEntity).placement == ProjectionPlacement::Terrain);
 
         reg.remove<Decal>(decalEntity);
         CHECK_FALSE(reg.any_of<ProjectedTexture>(decalEntity));

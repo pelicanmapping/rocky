@@ -17,6 +17,7 @@
 #include <rocky/ecs/Overlay.h>
 #include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/ecs/Optics.h>
+#include <rocky/ecs/TerrainAnchor.h>
 #include <rocky/ecs/Transform.h>
 #include <rocky/ecs/Visibility.h>
 #include <rocky/ecs/Declutter.h>

@@ -29,7 +29,7 @@ namespace ROCKY_NAMESPACE
         //! the transformed unit cube is the projection volume.
         glm::dmat4 pose = glm::dmat4(1.0);
 
-        //! Distance from the lens to the focal plane in meters.
+        //! Manual/fallback distance from the lens to the focal plane in meters.
         double focalDistance = 1.0;
 
         //! Lens parameters (perspective projection)
@@ -44,26 +44,13 @@ namespace ROCKY_NAMESPACE
         double nearBias = 0.0;
         double farBias = 0.0;
 
-        //! Whether to attempt to automatically compute a focal distance based on
-        //! scene geometry. For an orthographic projection, a successful terrain
-        //! intersection also recenters the projection volume on the focal point.
-        bool autoComputeFocalDistance = true;
-
-        //! For a perspective projection, whether to automatically compute near/far
-        //! distances based on scene geometry and the focal distance.
-        bool autoComputeNearFar = true;
     };
 
     struct OpticsViewDetail
     {
-        glm::dvec3 focalPoint;
         double focalDistance = 1.0;
         double nearDistance = 1.0;
         double farDistance = 1.0;
-        bool focalPointValid = false;
-        bool autoComputeCacheValid = false;
-        std::uint64_t lastTerrainRevision = 0u;
-        glm::dmat4 lastAutoComputeWorld = glm::dmat4(1.0);
     };
 
     struct OpticsDetail

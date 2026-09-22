@@ -115,6 +115,8 @@ void DecalSystemNode::on_construct_Decal(entt::registry& r, entt::entity e)
         auto& projected = r.emplace<ProjectedTexture>(e);
         projected.texture = decal.style;
         projected.projector = decal.optics;
+        projected.placement = decal.placement;
+        projected.computeClipRange = decal.computeClipRange;
         projected.requireOptics = decal.optics != entt::null;
         adapter.ownsProjectedTexture = true;
     }
@@ -130,6 +132,8 @@ void DecalSystemNode::on_construct_Overlay(entt::registry& r, entt::entity e)
         projected.texture = e;
         projected.projector = e;
         projected.color = r.get<Overlay>(e).color;
+        projected.placement = ProjectionPlacement::Terrain;
+        projected.computeClipRange = true;
         adapter.ownsProjectedTexture = true;
     }
     Overlay::dirty(r, e);
@@ -922,15 +926,30 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     return true;
                 };
 
-                auto applyProjection = [&](entt::entity e_optics, const glm::dmat4& mvm, bool requireOptics, DecalGPU& out) -> bool
+                auto applyProjection = [&](
+                    entt::entity e_projection,
+                    entt::entity e_projector,
+                    const glm::dmat4& projectorWorld,
+                    const ProjectedTexture& projected,
+                    DecalGPU& out) -> bool
                 {
-                    auto* optics = reg.try_get<Optics>(e_optics);
+                    auto* optics = reg.try_get<Optics>(e_projector);
+                    auto* projectionDetails = reg.try_get<ProjectionDetail>(e_projection);
+                    auto* projectionDetail = projectionDetails ? &projectionDetails->views[viewID] : nullptr;
+
                     if (!optics)
                     {
-                        if (requireOptics)
+                        if (projected.requireOptics)
                             return false;
 
-                        out.mvm = glm::fmat4(mvm);
+                        auto effectiveWorld = projectorWorld;
+                        if (projected.placement == ProjectionPlacement::Terrain &&
+                            projectionDetail && projectionDetail->focalPointValid)
+                        {
+                            effectiveWorld[3] = glm::dvec4(projectionDetail->focalPoint, 1.0);
+                        }
+
+                        out.mvm = glm::fmat4(vm * effectiveWorld);
                         out.distance = 0.0f;
                         out.zMin = 1.0f;
                         out.zMax = 10.0f;
@@ -940,20 +959,10 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         return true;
                     }
 
-                    auto* opticsDetails = reg.try_get<OpticsDetail>(e_optics);
-                    auto* opticsTransformDetail = reg.try_get<TransformDetail>(e_optics);
-                    if (!opticsDetails || !opticsTransformDetail)
-                        return false;
-
-                    auto* opticsDetail = &opticsDetails->views[viewID];
-                    auto& opticsTransformView = opticsTransformDetail->views[viewID];
-                    if (opticsTransformView.revision < 0)
-                        return false;
-
                     // Optics always project relative to the Transform on the Optics
                     // entity. This also makes an explicitly referenced Optics entity
                     // behave consistently for perspective and orthographic decals.
-                    glm::dmat4 opticsModel = to_glm(opticsTransformView.model) * optics->pose;
+                    glm::dmat4 opticsModel = projectorWorld * optics->pose;
 
                     if (optics->projection == Optics::Projection::Perspective)
                     {
@@ -980,9 +989,15 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         out.mvm = glm::fmat4(opticsMvm);
                         // The inverse is computed once on the CPU below.
 
+                        const double nearDistance = projectionDetail ?
+                            projectionDetail->nearDistance :
+                            optics->focalDistance * optics->nearScale + optics->nearBias;
+                        const double farDistance = projectionDetail ?
+                            projectionDetail->farDistance :
+                            optics->focalDistance * optics->farScale + optics->farBias;
                         float tanH = tanf(glm::radians((float)optics->fovY * 0.5f));
-                        float nearClip = std::max(1.0f, (float)opticsDetail->nearDistance);
-                        float farClip = std::max(nearClip + 1.0f, (float)opticsDetail->farDistance);
+                        float nearClip = std::max(1.0f, (float)nearDistance);
+                        float farClip = std::max(nearClip + 1.0f, (float)farDistance);
 
                         float halfDepth = 0.5f * (farClip - nearClip);
                         float farHalfW = farClip * tanH * (float)optics->aspectRatio;
@@ -1000,13 +1015,11 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     else
                     {
                         // Orthographic projection uses the posed unit cube, including
-                        // scale. Auto-clamping only replaces its world-space center.
-                        bool recenter = optics->autoComputeFocalDistance;
-                        if (auto* terrainClamp = reg.try_get<TerrainClamp>(e_optics))
-                            recenter = terrainClamp->enabled && terrainClamp->recenterOrthographic;
-                        if (recenter && opticsDetail->focalPointValid)
+                        // scale. Terrain placement only replaces its world-space center.
+                        if (projected.placement == ProjectionPlacement::Terrain &&
+                            projectionDetail && projectionDetail->focalPointValid)
                         {
-                            opticsModel[3] = glm::dvec4(opticsDetail->focalPoint, 1.0);
+                            opticsModel[3] = glm::dvec4(projectionDetail->focalPoint, 1.0);
                         }
                         out.mvm = glm::fmat4(vm * opticsModel);
                         // The inverse is computed once on the CPU below.
@@ -1034,11 +1047,9 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         return;
 
                     auto modelWorld = to_glm(transformView.model);
-                    auto mvm = vm * modelWorld;
-
                     DecalGPU pending{};
 
-                    if (!applyProjection(e_projector, mvm, projected.requireOptics, pending))
+                    if (!applyProjection(entity, e_projector, modelWorld, projected, pending))
                         return;
 
                     if (pending.distance == 0.0f)
@@ -1222,6 +1233,8 @@ DecalSystemNode::update(VSGContext vsgcontext)
                         return;
                     projected.texture = decal.style != entt::null ? decal.style : entity;
                     projected.projector = decal.optics != entt::null ? decal.optics : entity;
+                    projected.placement = decal.placement;
+                    projected.computeClipRange = decal.computeClipRange;
                     projected.requireOptics = decal.optics != entt::null;
                     projected.color = StockColor::White;
                     if (auto* style = r.try_get<DecalStyle>(projected.texture))
@@ -1236,6 +1249,8 @@ DecalSystemNode::update(VSGContext vsgcontext)
                     projected.texture = entity;
                     projected.projector = entity;
                     projected.color = overlay.color;
+                    projected.placement = ProjectionPlacement::Terrain;
+                    projected.computeClipRange = true;
                     projected.requireOptics = false;
                 });
         });

@@ -73,6 +73,14 @@ namespace ROCKY_NAMESPACE
         std::string message;
     };
 
+    //! Selects whether a projected texture uses its fixed projector position or
+    //! aligns the projection with the terrain beneath its projection axis.
+    enum class ProjectionPlacement
+    {
+        Fixed,
+        Terrain
+    };
+
     /**
      * Projects a texture through an ECS projector.
      *
@@ -86,6 +94,14 @@ namespace ROCKY_NAMESPACE
         entt::entity projector = entt::null;
         Color color = StockColor::White;
 
+        //! Placement policy for the projection. Low-level projected textures are
+        //! fixed by default; terrain-specific facades select Terrain.
+        ProjectionPlacement placement = ProjectionPlacement::Fixed;
+
+        //! For a terrain-placed perspective projection, fit its near/far range
+        //! to the terrain intersection and optical field of view.
+        bool computeClipRange = true;
+
         //! If true, projection is suppressed until the projector has Optics.
         //! This preserves the strict semantics of Decal::optics while native
         //! projected textures normally allow a Transform-only orthographic box.
@@ -97,19 +113,6 @@ namespace ROCKY_NAMESPACE
     {
         bool mainView = true;
         bool renderTexture = true;
-    };
-
-    /**
-     * Optional terrain policy for a projector.
-     *
-     * Optics describes a lens. TerrainClamp describes terrain-specific
-     * behavior, so a generic projector need not know about terrain.
-     */
-    struct TerrainClamp : public Component<TerrainClamp>
-    {
-        bool enabled = true;
-        bool recenterOrthographic = true;
-        bool computeClipRange = true;
     };
 
     /** Accumulates source bounds for RenderTexture auto-fitting. */
