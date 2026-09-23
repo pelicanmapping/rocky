@@ -11,6 +11,7 @@
 #include <rocky/IOTypes.h>
 #include <rocky/Map.h>
 #include <rocky/TileLayer.h>
+#include <cmath>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -319,54 +320,76 @@ TerrainProfileNode::activity()
     return terrain;
 }
 
+namespace
+{
+    //! Rejects invalid transforms and non-finite coordinates before constructing an intersection ray.
+    bool finitePoint(const GeoPoint& point)
+    {
+        return point.valid() && std::isfinite(point.x) && std::isfinite(point.y) && std::isfinite(point.z);
+    }
+
+    //! Finds the first loaded terrain triangle along a world-space segment; callers synchronize scene changes.
+    Result<TerrainIntersection> intersectSegment(
+        const TerrainNode& terrain, const vsg::dvec3& start, const vsg::dvec3& end)
+    {
+        vsg::LineSegmentIntersector lsi(start, end);
+        terrain.accept(lsi);
+
+        if (lsi.intersections.empty())
+            return Failure{};
+
+        auto closest = std::min_element(
+            lsi.intersections.begin(), lsi.intersections.end(),
+            [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
+
+        // Terrain geometry stores float vertices in a local frame, with a double-precision world transform.
+        auto verts = closest->get()->arrays.front()->cast<vsg::vec3Array>();
+        auto& indices = closest->get()->indexRatios;
+        vsg::vec3 normal = vsg::normalize(vsg::cross(
+            verts->at(indices[1].index) - verts->at(indices[0].index),
+            verts->at(indices[2].index) - verts->at(indices[0].index)));
+
+        auto worldNormal = glm::dmat3(to_glm(closest->get()->localToWorld)) * glm::dvec3(to_glm(normal));
+
+        TerrainIntersection result;
+        result.point = GeoPoint(terrain.renderingSRS, closest->get()->worldIntersection);
+        result.normal = glm::normalize(worldNormal);
+        return result;
+    }
+}
+
 Result<TerrainIntersection>
 TerrainNode::intersect(const GeoPoint& input) const
 {
-    if (!input)
-        return Failure{};
-
-    // world vector from earth's center to the input point:
     GeoPoint world = input.transform(renderingSRS);
-
-    vsg::dvec3 start, end;
-    if (renderingSRS.isGeocentric())
-    {
-        start = to_vsg(world) * 2.0;
-        end.set(0, 0, 0);
-    }
-    else
-    {
-        start.set(world.x, world.y, 1e6);
-        end.set(world.x, world.y, -1e6);
-    }
-
-    vsg::LineSegmentIntersector lsi(start, end);
-
-    this->accept(lsi);
-
-    if (lsi.intersections.empty())
+    if (!finitePoint(world))
         return Failure{};
 
-    // there should be only one, but we will take the closest one anyway:
-    auto closest = std::min_element(
-        lsi.intersections.begin(), lsi.intersections.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
+    if (renderingSRS.isGeocentric())
+        return intersectSegment(*this, to_vsg(world) * 2.0, vsg::dvec3(0.0, 0.0, 0.0));
+    else
+        return intersectSegment(*this, { world.x, world.y, 1e6 }, { world.x, world.y, -1e6 });
+}
 
-    // given the intersection object, calcluate the normal vector at the intersection point:
-    auto verts = closest->get()->arrays.front()->cast<vsg::vec3Array>();
-    auto& indices = closest->get()->indexRatios;
-    vsg::vec3 normal = vsg::normalize(vsg::cross(
-        verts->at(indices[1].index) - verts->at(indices[0].index),
-        verts->at(indices[2].index) - verts->at(indices[0].index)));
+Result<TerrainIntersection>
+TerrainNode::intersectVertical(const GeoPoint& input) const
+{
+    if (!finitePoint(input) || !renderingSRS.valid())
+        return Failure{};
 
-    // transform the normal into world space:
-    auto worldNormal = glm::dmat3(to_glm(closest->get()->localToWorld)) * glm::dvec3(to_glm(normal));
+    // On an ellipsoid, varying geodetic height follows the surface normal, not the center-to-point radius.
+    // On a projected map, keep map XY fixed instead. Neither ray depends on the anchor's current altitude.
+    const auto querySRS = renderingSRS.isGeocentric() ? renderingSRS.geodeticSRS() : renderingSRS;
+    auto location = input.transform(querySRS);
+    if (!finitePoint(location))
+        return Failure{};
 
-    TerrainIntersection result;
-    result.point = GeoPoint(renderingSRS, closest->get()->worldIntersection);
-    result.normal = glm::normalize(worldNormal);
+    location.z = 1e6;
+    auto start = location.transform(renderingSRS);
+    location.z = -1e6;
+    auto end = location.transform(renderingSRS);
+    if (!finitePoint(start) || !finitePoint(end))
+        return Failure{};
 
-    return result;
-
-    //return GeoPoint(renderingSRS, closest->get()->worldIntersection);
+    return intersectSegment(*this, to_vsg(start), to_vsg(end));
 }

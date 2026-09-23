@@ -16,15 +16,27 @@ namespace ROCKY_NAMESPACE::detail
     //! Per-anchor terrain-query cache, invalidated by motion or relevant tile loads.
     struct TerrainAnchorDetail
     {
+        // Requested longitude/latitude is authoritative; never replace it with an intersection's XY.
         GeoPoint location;
-        GeoPoint terrainPoint;
+        SRS renderingSRS;
+        double terrainHeight = 0.0;
+        bool terrainHeightValid = false;
         bool queryCacheValid = false;
-        bool terrainPointValid = false;
+
+        // Recognize our own writes exactly, avoiding SRS round-trip noise and redundant queries/dirty notifications.
+        GeoPoint lastPosition;
+        double lastOffset = 0.0;
     };
 }
 
 namespace
 {
+    //! Tests validity and finiteness; GeoPoint::valid alone only validates its SRS.
+    bool finitePoint(const GeoPoint& point)
+    {
+        return point.valid() && std::isfinite(point.x) && std::isfinite(point.y) && std::isfinite(point.z);
+    }
+
     //! Returns whether two geodetic points identify the same horizontal location.
     bool sameHorizontalLocation(const GeoPoint& lhs, const GeoPoint& rhs)
     {
@@ -146,49 +158,69 @@ void TerrainAnchorSystem::update(VSGContext vsgcontext)
     registry.view<TerrainAnchor, Transform, TerrainAnchorDetail>().each(
         [&](auto, const auto& anchor, auto& transform, auto& detail)
     {
-        if (!transform.position.valid())
+        if (!finitePoint(transform.position) || !std::isfinite(anchor.offset))
             return;
 
-        auto location = transform.position.transform(geodeticSRS);
-        if (!location.valid())
+        const bool samePosition = transform.position == detail.lastPosition;
+        const bool sameRenderingSRS = terrain->renderingSRS == detail.renderingSRS;
+        if (detail.queryCacheValid && samePosition && sameRenderingSRS && anchor.offset == detail.lastOffset)
             return;
-        location.z = 0.0;
 
-        if (!sameHorizontalLocation(location, detail.location))
+        auto currentGeodetic = transform.position.transform(geodeticSRS);
+        if (!finitePoint(currentGeodetic))
+            return;
+
+        if (!sameRenderingSRS || (!samePosition && !sameHorizontalLocation(currentGeodetic, detail.location)))
+        {
+            detail.location = currentGeodetic;
+            detail.location.z = 0.0;
             detail.queryCacheValid = false;
+        }
 
         if (!detail.queryCacheValid)
         {
-            detail.location = location;
-            detail.terrainPointValid = false;
+            detail.renderingSRS = terrain->renderingSRS;
+            detail.terrainHeightValid = false;
 
-            auto intersection = terrain->intersect(transform.position);
+            auto intersection = terrain->intersectVertical(detail.location);
             if (intersection.ok())
             {
-                detail.terrainPoint = intersection.value().point;
-                detail.terrainPointValid = true;
+                auto terrainPoint = intersection.value().point.transform(geodeticSRS);
+                if (finitePoint(terrainPoint))
+                {
+                    detail.terrainHeight = terrainPoint.z;
+                    detail.terrainHeightValid = true;
+                }
             }
+            // Cache misses too: only motion, a different target/SRS, or a relevant tile load warrants another query.
             detail.queryCacheValid = true;
         }
 
-        if (!detail.terrainPointValid || !std::isfinite(anchor.offset))
-            return;
-
-        auto resolvedGeodetic = detail.terrainPoint.transform(geodeticSRS);
-        if (!resolvedGeodetic.valid())
-            return;
-        resolvedGeodetic.z += anchor.offset;
-
-        auto resolved = resolvedGeodetic.transform(transform.position.srs);
-        auto currentWorld = transform.position.transform(terrain->renderingSRS);
-        auto resolvedWorld = resolved.transform(terrain->renderingSRS);
-        if (!resolved.valid() || !currentWorld.valid() || !resolvedWorld.valid())
-            return;
-
-        if (glm::length(glm::dvec3(resolvedWorld) - glm::dvec3(currentWorld)) > 0.001)
+        if (detail.terrainHeightValid)
         {
-            transform.position = resolved;
-            transform.dirty(registry);
+            auto resolvedGeodetic = detail.location;
+            resolvedGeodetic.z = detail.terrainHeight + anchor.offset;
+            auto resolved = resolvedGeodetic.transform(transform.position.srs);
+            if (!finitePoint(resolved))
+                return;
+
+            // Preserve caller-authored XY exactly in geographic/projected coordinates. ECEF requires all three
+            // Cartesian coordinates to change with height; its horizontal invariant is the cached longitude/latitude.
+            if (!transform.position.srs.isGeocentric())
+            {
+                resolved.x = transform.position.x;
+                resolved.y = transform.position.y;
+            }
+
+            // Geodetic height is in meters, even when the Transform uses a projection with different map units.
+            if (std::abs(resolvedGeodetic.z - currentGeodetic.z) > 0.001)
+            {
+                transform.position = resolved;
+                transform.dirty(registry);
+            }
         }
+
+        detail.lastPosition = transform.position;
+        detail.lastOffset = anchor.offset;
     });
 }

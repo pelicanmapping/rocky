@@ -9,7 +9,7 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Constrains an entity's Transform position to loaded terrain.
+     * Constrains an entity's Transform altitude to loaded terrain, preserving its horizontal location.
      * While present, the terrain-anchor system owns the Transform altitude;
      * removing the component leaves the last resolved position in place.
      */

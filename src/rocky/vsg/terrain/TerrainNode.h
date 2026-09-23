@@ -90,7 +90,14 @@ namespace ROCKY_NAMESPACE
     public:
         
         //! Intersect a point with the loaded terrain geometry.
+        //! On a globe, the query follows a radial line toward the center of the planet.
         Result<TerrainIntersection> intersect(const GeoPoint& input) const;
+
+        //! Intersect loaded terrain along geodetic vertical on a globe, or constant XY on a projected map.
+        //! Searches downward from +1,000,000 to -1,000,000 altitude (meters on a globe, map units otherwise),
+        //! independently of input altitude. Returns failure for invalid coordinates or no intersection.
+        //! Call while the terrain scene graph is not being modified.
+        Result<TerrainIntersection> intersectVertical(const GeoPoint& input) const;
 
     public:
         //! Construct a new terrain node
