@@ -38,6 +38,8 @@ namespace ROCKY_NAMESPACE
         void on_construct_Polygon(entt::registry&, entt::entity);
         void on_update_Polygon(entt::registry&, entt::entity);
         void on_destroy_Polygon(entt::registry&, entt::entity);
+        //! Retires derived resources even when whole-entity destruction removes the adapter before Polygon.
+        void on_destroy_PolygonMeshAdapter(entt::registry&, entt::entity);
         void on_construct_PolygonGeometry(entt::registry&, entt::entity);
         void on_update_PolygonGeometry(entt::registry&, entt::entity);
         void on_destroy_PolygonGeometry(entt::registry&, entt::entity);

@@ -110,14 +110,6 @@ std::vector<Demo> demos =
             Demo{ "Perspective", Demo_Decal_Perspective },
             Demo{ "Projector", Demo_Decal_Projector },
             Demo{ "Stamper", Demo_Decal_Stamper }
-        } },
-        Demo{ "Overlay", {}, {
-            Demo{ "Overlay geometry (absolute)", Demo_Overlay_Absolute },
-            Demo{ "Overlay geometry (relative)", Demo_Overlay_Relative }
-#ifdef ROCKY_HAS_SLUGHORN
-            ,
-            Demo{ "Raster vs Vector", Demo_SlugOverlay }
-#endif
         } }
     } },
     Demo{ "GIS", {},
@@ -151,12 +143,19 @@ std::vector<Demo> demos =
         Demo{ "Forward+", Demo_FrustumGrid },
         Demo{ "Geocoding", Demo_Geocoder },
         Demo{ "Ordered rendering", Demo_OrderedRendering },
+        Demo{ "Overlays", {}, {
+            Demo{ "Overlay geometry (absolute)", Demo_Overlay_Absolute },
+            Demo{ "Overlay geometry (relative)", Demo_Overlay_Relative },
+#ifdef ROCKY_HAS_SLUGHORN
+            Demo{ "Raster vs Vector", Demo_SlugOverlay },
+#endif
+        } },
         Demo{ "Render to texture", Demo_RTT },
         Demo{ "Scene graph inspector", Demo_SceneGraphInspector },
         Demo{ "Screenshot", Demo_Screenshot },
         Demo{ "Serialization", Demo_Serialization },
         Demo{ "Sky", Demo_Environment },
-        Demo{ "Synchronization", Demo_Synchro }
+        Demo{ "Synchronization", Demo_Synchro },
     } },
     Demo{ "Stats", Demo_Stats },
     Demo{ "About", Demo_About }

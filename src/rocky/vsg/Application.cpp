@@ -17,7 +17,6 @@
 #ifdef ROCKY_HAS_SLUGHORN
 #include <rocky/vsg/ecs/SlugSystem.h>
 #endif
-#include <rocky/vsg/ecs/TextureSystem.h>
 #include <rocky/vsg/ecs/OpticsSystem.h>
 #include <rocky/vsg/ecs/TerrainAnchorSystem.h>
 
@@ -349,14 +348,11 @@ Application::ctor(int& argc, char** argv)
 
 #ifdef ROCKY_HAS_DECALS
     // Producer/consumer ordering is significant:
-    //  1. TextureSystem publishes ImageTexture resources.
+    //  1. The main ECSNode publishes shared textures before MeshSystem updates.
     //  2. OverlayBakeSystem updates RTT resources and fits shared projectors.
     //  3. SlugSystem consumes those projectors and publishes vector atlases.
     //  4. DecalSystem assigns visible producer results to descriptors, writes
     //     the common projection buffers, and records the tile-culling pass.
-    auto textureSystem = TextureSystemNode::create(registry);
-    computeSystemsNode->add(textureSystem);
-
     auto overlayBakeSystem = OverlayBakeSystemNode::create(registry);
     overlayBakeSystem->worldSRS = mapNode->srs();
     overlayBakeSystem->renderSourceSystems = systemsNode.get();

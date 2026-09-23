@@ -6,6 +6,7 @@
 #include "PolygonSystem.h"
 #include "FeatureBuilder.h"
 #include "OverlayRenderContext.h"
+#include "TextureResource.h"
 #include <rocky/ecs/Mesh.h>
 #include <rocky/ecs/Overlay.h>
 #include <rocky/ecs/ProjectedTexture.h>
@@ -95,6 +96,7 @@ PolygonSystemNode::PolygonSystemNode(Registry& registry) :
         r.on_construct<Polygon>().connect<&PolygonSystemNode::on_construct_Polygon>(*this);
         r.on_update<Polygon>().connect<&PolygonSystemNode::on_update_Polygon>(*this);
         r.on_destroy<Polygon>().connect<&PolygonSystemNode::on_destroy_Polygon>(*this);
+        r.on_destroy<PolygonMeshAdapter>().connect<&PolygonSystemNode::on_destroy_PolygonMeshAdapter>(*this);
         r.on_construct<PolygonGeometry>().connect<&PolygonSystemNode::on_construct_PolygonGeometry>(*this);
         r.on_update<PolygonGeometry>().connect<&PolygonSystemNode::on_update_PolygonGeometry>(*this);
         r.on_destroy<PolygonGeometry>().connect<&PolygonSystemNode::on_destroy_PolygonGeometry>(*this);
@@ -141,11 +143,12 @@ void PolygonSystemNode::on_update_Polygon(entt::registry& r, entt::entity e)
 
 void PolygonSystemNode::on_destroy_Polygon(entt::registry& r, entt::entity e)
 {
-    if (auto* adapter = r.try_get<PolygonMeshAdapter>(e))
-    {
-        removeDerivedMesh(r, e, *adapter);
-        r.remove<PolygonMeshAdapter>(e);
-    }
+    r.remove<PolygonMeshAdapter>(e);
+}
+
+void PolygonSystemNode::on_destroy_PolygonMeshAdapter(entt::registry& r, entt::entity e)
+{
+    removeDerivedMesh(r, e, r.get<PolygonMeshAdapter>(e));
 }
 
 void PolygonSystemNode::on_construct_PolygonGeometry(entt::registry& r, entt::entity e)
@@ -267,6 +270,16 @@ void PolygonSystemNode::contributeRenderTextureRevision(
     combineRenderTextureComponent(
         revision.content,
         resolveComponent<PolygonStyle>(registry, polygon->style, entity));
+    if (const auto* style = resolveComponent<PolygonStyle>(registry, polygon->style, entity))
+    {
+        combineRenderTextureEntity(revision.content, style->texture);
+        if (const auto* texture = registry.try_get<TextureResource>(style->texture))
+        {
+            combineRenderTextureComponent(revision.content, texture);
+            combineRenderTextureRevision(revision.content, texture->revision);
+            combineRenderTextureRevision(revision.content, texture->ready);
+        }
+    }
 }
 
 void PolygonSystemNode::update(VSGContext vsgcontext)
@@ -424,6 +437,7 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
                 meshStyle.useGeometryColors = resolvedStyle.useGeometryColors;
                 meshStyle.depthOffset = effectiveDepthOffset;
                 meshStyle.resolution = resolvedStyle.resolution;
+                meshStyle.texture = resolvedStyle.texture;
                 registry.emplace_or_replace<MeshStyle>(
                     adapter.style, std::move(meshStyle));
                 adapter.sourceStyle = sourceStyle;

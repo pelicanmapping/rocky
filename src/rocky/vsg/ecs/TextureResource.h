@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include <rocky/ecs/ProjectedTexture.h>
+#include <rocky/ecs/Texture.h>
 #include <vsg/state/ImageInfo.h>
 
 namespace ROCKY_NAMESPACE::detail
@@ -14,17 +14,17 @@ namespace ROCKY_NAMESPACE::detail
     enum class TextureResourceProducer
     {
         External,
+        Texture,
         ImageTexture,
         RenderTexture
     };
 
     /**
-     * VSG-side producer/consumer boundary for projected raster content.
+     * VSG-side producer/consumer boundary for shared sampled images.
      *
-     * TextureSystem populates this from ImageTexture; OverlayBakeSystem
-     * populates it from RenderTexture. DecalSystem observes identity/revision,
-     * assigns visible resources to descriptor slots, and retains no ownership
-     * beyond its descriptor reference.
+     * TextureSystem publishes Texture and ImageTexture; OverlayBakeSystem
+     * publishes RenderTexture. MeshSystem and DecalSystem observe revisions
+     * and retain descriptor references without taking over producer disposal.
      */
     struct TextureResource : public Component<TextureResource>
     {
@@ -36,7 +36,7 @@ namespace ROCKY_NAMESPACE::detail
         TextureResourceProducer producer = TextureResourceProducer::External;
         //! Whether consumers may publish this resource for drawing.
         bool ready = true;
-        //! Sampling/compositing metadata carried into DecalGPU flags.
+        //! Sampling/compositing metadata shared by all consumers.
         TextureOrigin origin = TextureOrigin::LowerLeft;
         TextureAlphaMode alphaMode = TextureAlphaMode::Straight;
     };

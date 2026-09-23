@@ -14,7 +14,7 @@
 namespace ROCKY_NAMESPACE
 {
     /**
-     * Experimental vector overlay encoder.
+     * Vector overlay encoder.
      *
      * Each supported Polygon/Mesh/Line/Point Overlay receives an independently owned
      * Slughorn curve/band atlas pair. The system publishes that pair and its

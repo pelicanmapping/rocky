@@ -7,6 +7,7 @@
 
 #include "MeshSystem.h"
 #include "PolygonSystem.h"
+#include "TextureSystem.h"
 #include "LineSystem.h"
 #include "PointSystem.h"
 #include "LabelSystem.h"
@@ -223,6 +224,8 @@ ECSNode::ECSNode(Registry& reg, bool addDefaultSystems) :
         add(OpticsSystemNode::create(registry));
         add(NodeSystemNode::create(registry));
         add(ModelSystemNode::create(registry));
+        // Publish shared image/sampler resources before any geometry consumes them.
+        add(TextureSystemNode::create(registry));
         add(PolygonSystemNode::create(registry));
         add(MeshSystemNode::create(registry));
         add(LineSystemNode::create(registry));

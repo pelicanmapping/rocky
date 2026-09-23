@@ -438,6 +438,22 @@ app.registry.write([&](entt::registry& registry)
     });
 ```
 
+### TerrainAnchor
+
+Pair `TerrainAnchor` with a `Transform` to keep an entity at the loaded terrain height without changing its horizontal
+location. Use `offset` to position it above the surface, in meters.
+
+```c++
+app.registry.write([&](entt::registry& r)
+    {
+        auto& xform = r.emplace<Transform>(entity);
+        xform.position = GeoPoint(SRS::WGS84, -76, 34, 0);
+
+        auto& anchor = r.emplace<TerrainAnchor>(entity);
+        anchor.offset = 10.0; // meters above the terrain
+    });
+```
+
 ### Visibility
 Use the `Visibility` component to toggle an entity's visibility. (Rocky automatically adds a `Visibility` whenever you create one of the built-in primitive types - you don't have to emplace it yourself.) The component is actually an array so you can control visibility on a per-view basis.
 ```c++
@@ -470,6 +486,22 @@ app.registry.write([&](entt::registry& r)
         auto& pixelScale = r.emplace<PixelScale>(entity);
         pixelScale.minPixels = 32.0f;
         pixelScale.maxPixels = 256.0f;
+    });
+```
+
+### Overlay
+
+Attach `Overlay` to an entity with geometry to drape it on the terrain. The default `Vector` mode provides
+resolution-independent rendering; `Raster` renders into a texture at the specified resolution.
+
+```c++
+app.registry.write([&](entt::registry& r)
+    {
+        // The entity already has a Polygon, Line, Point, or Mesh component.
+        auto& overlay = r.emplace<Overlay>(entity);
+        overlay.mode = OverlayMode::Vector; // or OverlayMode::Raster
+        overlay.color.a = 0.8f;
+        overlay.resolution = { 1024u, 1024u }; // used by Raster mode and raster fallback
     });
 ```
 

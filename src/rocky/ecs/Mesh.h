@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
         //! to help mitigate depth fighting artifacts
         float depthOffset = 0.0f;
 
-        //! Entity hosting the (optional) MeshTexture to use
+        //! Entity supplying an optional ImageTexture or VSG Texture. Null disables texturing.
         entt::entity texture = entt::null;
 
         //! Whether to display only the edges of the mesh triangles

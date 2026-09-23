@@ -48,6 +48,9 @@ namespace ROCKY_NAMESPACE
         //! Use the colors in PolygonGeometry instead of color when available.
         bool useGeometryColors = false;
 
+        //! Entity supplying an optional ImageTexture or VSG Texture. Null disables texturing.
+        entt::entity texture = entt::null;
+
         //! Vertex adjustment, in meters, used to mitigate depth fighting for
         //! ordinary rendering. This does not apply when using Overlay.
         float depthOffset = 0.0f;

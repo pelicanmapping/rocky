@@ -5,9 +5,6 @@
  */
 #pragma once
 #include "helpers.h"
-#ifdef ROCKY_HAS_SLUGHORN
-#include <rocky/vsg/ecs/SlugResource.h>
-#endif
 
 using namespace ROCKY_NAMESPACE;
 
@@ -22,9 +19,7 @@ auto Demo_Polygon = [](Application& app)
     static entt::entity e_normal = entt::null;
     static entt::entity e_rtt = entt::null;
     static entt::entity e_autofit_rtt = entt::null;
-#ifdef ROCKY_HAS_SLUGHORN
-    static entt::entity e_slug = entt::null;
-#endif
+    static entt::entity e_vector = entt::null;
 
     if (e_normal == entt::null)
     {
@@ -102,18 +97,15 @@ auto Demo_Polygon = [](Application& app)
             rtt.mode = OverlayMode::Raster;
             rtt.resolution = { 512u, 512u };
 
-#ifdef ROCKY_HAS_SLUGHORN
-            // Slug consumes the source polygon and hole contours directly.
-            e_slug = makeLocalPolygon(centerLon + 0.065, centerLat - 0.055, 0.0);
-            auto& slug = reg.emplace<Overlay>(e_slug);
-            slug.mode = OverlayMode::Vector;
-#endif
+            // construct a vector overlay explicitly:
+            e_vector = makeLocalPolygon(centerLon + 0.065, centerLat - 0.055, 0.0);
+            auto& vector = reg.emplace<Overlay>(e_vector);
+            vector.mode = OverlayMode::Vector;
 
             // Absolute coordinates need no placement Transform. OverlayBakeSystem
             // will create and maintain a fitted projector from these ring bounds.
             e_autofit_geometry = reg.create();
-            auto& autofitGeometry =
-                reg.emplace<PolygonGeometry>(e_autofit_geometry);
+            auto& autofitGeometry = reg.emplace<PolygonGeometry>(e_autofit_geometry);
             autofitGeometry.srs = SRS::WGS84;
             autofitGeometry.polygons.emplace_back(PolygonPart{
                 {
@@ -152,19 +144,11 @@ auto Demo_Polygon = [](Application& app)
         app.vsgcontext->requestFrame();
     }
 
-#ifdef ROCKY_HAS_SLUGHORN
     ImGui::TextWrapped(
         "The north, southwest, and southeast instances share normalized local "
         "geometry with explicit transforms for normal, Raster, and Vector rendering. "
         "The center WGS84 polygon has no Transform; its Raster projector is fitted "
         "automatically from the ring bounds.");
-#else
-    ImGui::TextWrapped(
-        "The north and southwest instances share normalized local geometry with "
-        "explicit transforms for normal and Raster rendering. The center WGS84 "
-        "polygon has no Transform; its Raster projector is fitted automatically "
-        "from the ring bounds.");
-#endif
 
     bool changed = false;
     app.registry.write([&](entt::registry& reg)
@@ -184,9 +168,7 @@ auto Demo_Polygon = [](Application& app)
             visibilityControl("Show normal", e_normal);
             visibilityControl("Show explicit Raster", e_rtt);
             visibilityControl("Show auto-fit Raster", e_autofit_rtt);
-#ifdef ROCKY_HAS_SLUGHORN
-            visibilityControl("Show explicit Vector", e_slug);
-#endif
+            visibilityControl("Show explicit Vector", e_vector);
 
             auto& style = reg.get<PolygonStyle>(e_style);
             if (ImGuiLTable::Checkbox(

@@ -6,6 +6,8 @@
 #include "catch.hpp"
 #include <rocky/ecs/Transform.h>
 #include <rocky/vsg/ecs/TerrainAnchorSystem.h>
+#include <rocky/vsg/ecs/OpticsSystem.h>
+#include <rocky/vsg/ecs/TransformDetail.h>
 #include <rocky/vsg/terrain/TerrainNode.h>
 #include <rocky/vsg/VSGUtils.h>
 #include <vsg/utils/LineSegmentIntersector.h>
@@ -13,6 +15,21 @@
 #include <limits>
 
 using namespace ROCKY_NAMESPACE;
+
+//! Containment must retain ECEF Z until conversion; it represents latitude, not a disposable height.
+TEST_CASE("extent containment preserves geocentric point coordinates", "[geoextent][projection]")
+{
+    const GeoExtent extent(SRS::WGS84, -123.0, 37.0, -122.0, 38.0);
+    for (double height : { -900.0, 0.0, 1800.0 })
+    {
+        const GeoPoint inside(SRS::WGS84, -122.4857, 37.7182, height);
+        CHECK(extent.contains(inside));
+        CHECK(extent.contains(inside.transform(SRS::ECEF)));
+        CHECK(extent.transform(SRS::SPHERICAL_MERCATOR).contains(inside.transform(SRS::ECEF)));
+        CHECK_FALSE(extent.contains(GeoPoint(SRS::WGS84, -122.4857, 0.0, height).transform(SRS::ECEF)));
+    }
+    CHECK_FALSE(GeoExtent().contains(GeoPoint(SRS::WGS84, -122.4857, 37.7182, 0.0)));
+}
 
 namespace
 {
@@ -259,6 +276,59 @@ TEST_CASE("terrain anchor height caches respond to terrain changes", "[ecs][terr
     f.update();
     CHECK(f.counter->queries == 23u);
     f.checkPosition(210.0);
+}
+
+//! Simulates a coarse terrain hit followed by a finer tile load, without Vulkan or network requests.
+TEST_CASE("terrain projectors refresh cached hits when local tiles load", "[projection][terrain-placement]")
+{
+    const SRS worldSRS = GENERATE(Catch::values(SRS::ECEF, SRS::SPHERICAL_MERCATOR));
+    AnchorFixture f(worldSRS);
+    auto optics = OpticsSystemNode::create(f.registry);
+    optics->target = f.terrain;
+    f.setHeight(-900.0);
+
+    entt::entity entity = entt::null;
+    f.registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        reg.emplace<ProjectedTexture>(entity).placement = ProjectionPlacement::Terrain;
+        auto& view = reg.emplace<detail::TransformDetail>(entity).views[0];
+        view.revision = 0;
+        view.cache.world_srs = worldSRS;
+        const auto world = worldSRS.topocentricToWorldMatrix(f.origin.transform(worldSRS));
+        view.model = to_vsg(world * glm::scale(glm::dmat4(1.0), glm::dvec3(7200.0, 3600.0, 1000.0)));
+    });
+
+    // Inspect placement independently of raster/vector resource creation; both modes consume this same result.
+    auto checkHeight = [&](double height)
+    {
+        f.registry.read([&](entt::registry& reg)
+        {
+            const auto& view = reg.get<detail::ProjectionDetail>(entity).views[0];
+            REQUIRE(view.focalPointValid);
+            const auto hit = GeoPoint(worldSRS, view.focalPoint).transform(SRS::WGS84);
+            REQUIRE(hit.valid());
+            CHECK(std::abs(hit.z - height) < 1e-4);
+        });
+    };
+    optics->update(f.context.get());
+    checkHeight(-900.0);
+    CHECK(f.counter->queries == 1u);
+
+    const auto key = TileKey::createTileKeyContainingPoint(f.origin, 8u, Profile("global-geodetic"));
+    REQUIRE(key.valid());
+    f.setHeight(40.0);
+    f.terrain->onTileLoaded.fire(key.createNeighborKey(1, 0));
+    optics->update(f.context.get());
+    checkHeight(-900.0);
+    CHECK(f.counter->queries == 1u);
+
+    f.terrain->onTileLoaded.fire(key);
+    optics->update(f.context.get());
+    checkHeight(40.0);
+    CHECK(f.counter->queries == 2u);
+    optics->update(f.context.get());
+    CHECK(f.counter->queries == 2u);
 }
 
 //! Ensures missing terrain and invalid offsets leave user coordinates intact, with cached misses retried on load.

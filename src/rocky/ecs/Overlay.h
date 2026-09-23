@@ -16,7 +16,8 @@ namespace ROCKY_NAMESPACE
         //! Render content at a specified image resolution
         Raster,
 
-        //! Experimental resolution-independent rendering for vector geometry.
+        //! Resolution-independent rendering for vector geometry.
+        //! Unsupported styling is omitted with a warning; supported content still renders in Vector mode.
         //! Falls back to Raster with a log message if vector rendering is unavailable
         //! or geometry complexity exceeds its capacity, using Overlay::resolution.
         Vector
@@ -27,7 +28,7 @@ namespace ROCKY_NAMESPACE
      */
     struct Overlay : public Component<Overlay>
     {
-        //! Requested rendering mode for this overlay.
+        //! Requested rendering mode for this overlay. Defaults to Vector.
         OverlayMode mode = OverlayMode::Vector;
 
         //! Image resolution (X,Y) for raster rendering, in pixels.

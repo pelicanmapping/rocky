@@ -1,8 +1,25 @@
 # Slughorn dependency
 
-Experimental vector overlay support is enabled by default
+Vector overlay support is enabled by default
 (`ROCKY_SUPPORTS_SLUGHORN=ON`); disable it with `-DROCKY_SUPPORTS_SLUGHORN=OFF`.
 Rocky does not embed the Slughorn SDK sources in its repository.
+
+`Overlay::mode` defaults to `OverlayMode::Vector`, including in builds without
+Slughorn support. This is an intentional default while vector feature support
+continues to expand; applications can explicitly choose `OverlayMode::Raster`.
+When vector rendering is unavailable, Rocky uses Raster and emits a warning,
+without changing the application's requested mode.
+
+Unsupported styling does not suppress an otherwise valid vector overlay or
+switch it to Raster. Rocky emits `Log()->warn` messages identifying each omitted
+feature and renders the supported appearance: solid lines instead of stippling,
+uniform style colors instead of per-vertex Line/Point/Mesh colors, and uniform
+`PointStyle::width` instead of per-point widths. Mesh textures, stippling,
+wireframe, and lighting are likewise omitted with warnings. These warnings occur
+when changed source content is processed, not every frame; the caller's styles
+and requested mode are left intact. Invalid geometry still fails validation,
+and the capacity-related Raster fallback described below remains in effect.
+
 When enabled with the VSG renderer, dependency resolution is:
 
 1. `-DSLUGHORN_SOURCE_DIR=/path/to/slughorn` uses an existing source checkout.

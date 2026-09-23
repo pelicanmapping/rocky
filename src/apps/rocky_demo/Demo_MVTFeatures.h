@@ -7,6 +7,7 @@
 #include <rocky/GDALFeatureSource.h>
 #include <rocky/ElevationSampler.h>
 #include <rocky/ecs/Registry.h>
+#include <rocky/ecs/Overlay.h>
 #include <rocky/vsg/NodePager.h>
 #include "helpers.h"
 
@@ -19,6 +20,8 @@ auto Demo_MVTFeatures = [](Application& app)
     static vsg::ref_ptr<NodePager> pager;
     static ElevationSampler elevationSampler;
     static entt::entity styleEntity = entt::null;
+    // Access under the registry lock so paging jobs and the UI agree on the current mode.
+    static OverlayMode overlayMode = OverlayMode::Vector;
 
     if (!pager)
     {
@@ -137,10 +140,8 @@ auto Demo_MVTFeatures = [](Application& app)
                             auto& style = reg.get<PolygonStyle>(styleEntity);
                             reg.emplace<rocky::Polygon>(entity, geom, style);
 
-#ifdef ROCKY_HAS_SLUGHORN
                             auto& overlay = reg.emplace<Overlay>(entity);
-                            overlay.mode = OverlayMode::Vector;
-#endif
+                            overlay.mode = overlayMode;
 
                             entityNode->entities.emplace_back(entity);
                         });
@@ -163,10 +164,8 @@ auto Demo_MVTFeatures = [](Application& app)
                             auto& style = reg.get<LineStyle>(styleEntity);
                             reg.emplace<Line>(entity, geom, style);
 
-#ifdef ROCKY_HAS_SLUGHORN
                             auto& overlay = reg.emplace<Overlay>(entity);
-                            overlay.mode = OverlayMode::Vector;
-#endif
+                            overlay.mode = overlayMode;
 
                             entityNode->entities.emplace_back(entity);
                         });
@@ -194,13 +193,41 @@ auto Demo_MVTFeatures = [](Application& app)
 
     if (ImGuiLTable::Begin("MVTFeatures"))
     {
+        int selectedMode = 0;
+        app.registry.read([&](entt::registry&)
+            {
+                selectedMode = overlayMode == OverlayMode::Raster ? 0 : 1;
+            });
+        const char* modes[] = { "Raster", "Vector" };
+        if (ImGuiLTable::Combo("Overlay mode", &selectedMode, modes, 2))
+        {
+            // Update loaded tiles and the mode used by future payloads atomically.
+            // Shared style references identify this demo's entities without touching other overlays.
+            app.registry.write([&](entt::registry& reg)
+                {
+                    overlayMode = selectedMode == 0 ? OverlayMode::Raster : OverlayMode::Vector;
+                    for (auto entity : reg.view<Overlay>())
+                    {
+                        const auto* polygon = reg.try_get<rocky::Polygon>(entity);
+                        const auto* line = reg.try_get<Line>(entity);
+                        if ((polygon && polygon->style == styleEntity) || (line && line->style == styleEntity))
+                        {
+                            auto& overlay = reg.get<Overlay>(entity);
+                            overlay.mode = overlayMode;
+                            overlay.dirty(reg);
+                        }
+                    }
+                });
+            app.vsgcontext->requestFrame();
+        }
+
         if (ImGuiLTable::SliderFloat("Screen Space Error", &pager->pixelError, 64.0f, 1024.0f, "%.0f px"))
         {
             app.vsgcontext->requestFrame();
         }
 
         ImGuiLTable::End();
-}
+    }
 
     auto& view = app.display.window(0).view(0);
     if (auto manip = MapManipulator::get(view.vsgView))

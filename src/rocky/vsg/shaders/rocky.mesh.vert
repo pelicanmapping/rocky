@@ -34,6 +34,8 @@ struct MeshStyle {
 #define MASK_HAS_TEXTURE 1
 #define MASK_HAS_LIGHTING 2
 #define MASK_HAS_PER_VERTEX_COLORS 4
+#define MASK_TEXTURE_UPPER_LEFT 8
+#define MASK_TEXTURE_PREMULTIPLIED 16
 
 layout(set = 0, binding = 1) uniform MeshUniform {
     MeshStyle style;
@@ -47,6 +49,7 @@ layout(location = 1) out Varyings {
     float applyTexture;
     float applyLighting;
     flat uint stipplePattern;
+    flat uint texturePremultiplied;
 } vary;
 
 // GLSL built-ins
@@ -65,6 +68,7 @@ void main()
     vary.applyTexture = hasTexture ? 1.0 : 0.0;
     vary.applyLighting = hasLighting ? 1.0 : 0.0;
     vary.stipplePattern = u_mesh.style.stipplePattern;
+    vary.texturePremultiplied = u_mesh.style.featureMask & MASK_TEXTURE_PREMULTIPLIED;
 
     vec4 vertexVs = pc.modelview * vec4(in_vertex, 1.0);
     
@@ -77,6 +81,8 @@ void main()
 
     vary.vertexVs = vertexVs.xyz / vertexVs.w;
     vary.uv = in_uv;
+    if ((u_mesh.style.featureMask & MASK_TEXTURE_UPPER_LEFT) != 0)
+        vary.uv.y = 1.0 - vary.uv.y;
 
     gl_Position = pc.projection * vertexVs;
 }

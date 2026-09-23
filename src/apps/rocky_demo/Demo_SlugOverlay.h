@@ -24,7 +24,7 @@ auto Demo_SlugOverlay = [](Application& app)
 
     if (e_slug == entt::null)
     {
-        constexpr double centerLon = -122.4207;
+        constexpr double centerLon = -112.4207;
         constexpr double centerLat = 37.7732;
         constexpr double spacing = 0.16;
         constexpr double scale = 12000.0;

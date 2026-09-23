@@ -91,7 +91,8 @@ namespace
         bool capacityExceeded = false; // SDK band capacity or device image dimensions.
         std::vector<detail::SlugBandReduction> bandReductions;
         std::string exportMessage;
-        std::string warning;
+        // Keep each omitted feature's warning; an Overlay can contain several primitive types.
+        std::vector<std::string> warnings;
         std::string error;
     };
 
@@ -414,6 +415,19 @@ namespace
 
         const auto* style = resolveComponent<MeshStyle>(registry, mesh.style, owner);
         const Color color = style ? style->color : StockColor::White;
+        if (style)
+        {
+            if (style->useGeometryColors)
+                build.warnings.emplace_back("Slug MeshStyle does not support per-vertex colors; using MeshStyle::color");
+            if (style->texture != entt::null)
+                build.warnings.emplace_back("Slug MeshStyle does not support textures; rendering without a texture");
+            if ((style->stipplePattern & 0xFFFFu) != 0xFFFFu)
+                build.warnings.emplace_back("Slug MeshStyle does not support stippling; rendering solid fills");
+            if (style->wireframe)
+                build.warnings.emplace_back("Slug MeshStyle does not support wireframe; rendering filled triangles");
+            if (style->lighting)
+                build.warnings.emplace_back("Slug MeshStyle does not support lighting; rendering unlit fills");
+        }
         if (!isFinite(color))
         {
             build.error = "Slug MeshStyle color must be finite";
@@ -539,6 +553,8 @@ namespace
         const auto* style = resolveComponent<PolygonStyle>(registry, polygon.style, owner);
         const PolygonStyle defaultStyle;
         const auto& resolvedStyle = style ? *style : defaultStyle;
+        if (resolvedStyle.texture != entt::null)
+            build.warnings.emplace_back("Slug PolygonStyle does not support textures; rendering without a texture");
 
         auto mapRing = [&](const PolygonPart::Ring& input, SlugContourInput& output)
         {
@@ -665,16 +681,11 @@ namespace
             build.error = "Slug LineStyle width units must be screen or distance units";
             return false;
         }
+        // Unsupported appearance options degrade to uniform, solid strokes without rejecting the overlay.
         if (resolvedStyle.useGeometryColors)
-        {
-            build.error = "Slug LineStyle does not support per-vertex colors";
-            return false;
-        }
+            build.warnings.emplace_back("Slug LineStyle does not support per-vertex colors; using LineStyle::color");
         if (resolvedStyle.stipplePattern != 0xFFFFu)
-        {
-            build.error = "Slug LineStyle does not support stippling";
-            return false;
-        }
+            build.warnings.emplace_back("Slug LineStyle does not support stippling; rendering solid lines");
 
         // Empty paged feature payloads are valid. They have no bounds from
         // which to fit a projector, so classify them before asking for one.
@@ -855,16 +866,11 @@ namespace
         const auto* style = resolveComponent<PointStyle>(registry, point.style, owner);
         const PointStyle defaultStyle;
         const auto& resolvedStyle = style ? *style : defaultStyle;
+        // Uniform style color/width remain usable when per-point appearance is not yet supported.
         if (resolvedStyle.useGeometryColors)
-        {
-            build.error = "Slug PointStyle does not support per-vertex colors";
-            return false;
-        }
+            build.warnings.emplace_back("Slug PointStyle does not support per-vertex colors; using PointStyle::color");
         if (resolvedStyle.useGeometryWidths)
-        {
-            build.error = "Slug PointStyle does not support per-vertex widths";
-            return false;
-        }
+            build.warnings.emplace_back("Slug PointStyle does not support per-vertex widths; using PointStyle::width");
         if (!isFinite(resolvedStyle.color))
         {
             build.error = "Slug PointStyle color must be finite";
@@ -1237,9 +1243,9 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             else if (const auto* mesh = registry.try_get<Mesh>(entity))
             {
                 foundPrimitive = true;
-                build.warning =
+                build.warnings.emplace_back(
                     "Slug Mesh support treats each input triangle as an independent "
-                    "curve contour; source polygon and hole contours would be more efficient";
+                    "curve contour; source polygon and hole contours would be more efficient");
                 addMesh(registry, entity, worldSRS, *mesh, build);
             }
             if (build.error.empty())
@@ -1390,7 +1396,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
                     oldImages.emplace_back(build.bandTexture);
                 // The owner/source changed while the build ran outside the
                 // registry lock. Do not publish stale geometry or a fallback.
-                build.warning.clear();
+                build.warnings.clear();
                 build.error.clear();
                 build.bandReductions.clear();
                 build.exportAttempted = false;
@@ -1447,8 +1453,12 @@ void SlugSystemNode::update(VSGContext vsgcontext)
 
     for (const auto& build : builds)
     {
-        if (!build.warning.empty())
-            Log()->warn("SlugSystemNode: {}", build.warning);
+        // Cached frames skip authoring; exports of unchanged atlases must not repeat appearance warnings either.
+        if (!build.exportOnly)
+        {
+            for (const auto& warning : build.warnings)
+                Log()->warn("SlugSystemNode: overlay {}: {}", entt::to_integral(build.entity), warning);
+        }
 
         // Only accepted runtime builds reach here with reductions. Cached
         // frames, export-only rebuilds, and discarded results stay silent.

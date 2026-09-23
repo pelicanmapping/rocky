@@ -6,7 +6,7 @@
 #pragma once
 #include <rocky/Common.h>
 #include <rocky/Color.h>
-#include <rocky/Image.h>
+#include <rocky/ecs/Texture.h>
 #include <rocky/GeoPoint.h>
 #include <rocky/ecs/Component.h>
 #include <vector>
@@ -16,28 +16,6 @@
 
 namespace ROCKY_NAMESPACE
 {
-    //! Describes the coordinate convention used by a produced texture.
-    enum class TextureOrigin
-    {
-        LowerLeft,
-        UpperLeft
-    };
-
-    //! Describes how RGB is encoded relative to alpha in a produced texture.
-    enum class TextureAlphaMode
-    {
-        Straight,
-        Premultiplied
-    };
-
-    //! A CPU image used as projected texture content.
-    struct ImageTexture : public Component<ImageTexture>
-    {
-        Image::Ptr image;
-        TextureOrigin origin = TextureOrigin::LowerLeft;
-        TextureAlphaMode alphaMode = TextureAlphaMode::Straight;
-    };
-
     /**
      * Requests an offscreen rendering of one or more ECS entities.
      *

@@ -110,7 +110,8 @@ namespace ROCKY_NAMESPACE
         //!    are in the same SRS as this object.
         bool contains(double x, double y, const SRS& srs = { }) const;
 
-        //! Returns true if the point falls within this extent.
+        //! Returns true if the point falls within this extent. All three coordinates are
+        //! transformed before testing XY; a point without an SRS uses this extent's SRS.
         bool contains(const GeoPoint& rhs) const;
 
         //! Returns true if this extent fully contains another extent.

@@ -885,10 +885,10 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
             r.view<RenderTexture>().each([&](auto entity, auto&)
                 {
                     auto& jobStatus = r.get_or_emplace<RenderTextureStatus>(entity);
-                    if (r.any_of<ImageTexture>(entity))
+                    if (r.any_of<ImageTexture, Texture>(entity))
                     {
                         jobStatus.state = RenderTextureState::Failed;
-                        jobStatus.message = "ImageTexture and RenderTexture cannot produce the same TextureResource";
+                        jobStatus.message = "RenderTexture cannot share an entity with another texture source";
                         r.remove<OverlayBakeDetail>(entity);
                         if (auto* resource = r.try_get<TextureResource>(entity);
                             resource && resource->producer == TextureResourceProducer::RenderTexture)

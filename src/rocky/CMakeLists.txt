@@ -28,7 +28,8 @@ rocky_glob(SOURCES_CONTRIB contrib/*.cpp)
 rocky_glob(HEADERS_ECS ecs/*.h)
 rocky_glob(SOURCES_ECS ecs/*.cpp)
 list(APPEND HEADERS_ECS
-    ${CMAKE_CURRENT_SOURCE_DIR}/ecs/ProjectedTexture.h)
+    ${CMAKE_CURRENT_SOURCE_DIR}/ecs/ProjectedTexture.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ecs/Texture.h)
 list(REMOVE_DUPLICATES HEADERS_ECS)
 
 # data files to install
@@ -200,6 +201,8 @@ if(ROCKY_RENDERER_VSG)
     rocky_glob(SOURCES_VSG_TERRAIN vsg/terrain/*.cpp)
     
     rocky_glob(HEADERS_VSG_ECS vsg/ecs/*.h)
+    list(APPEND HEADERS_VSG_ECS ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/Texture.h)
+    list(REMOVE_DUPLICATES HEADERS_VSG_ECS)
     rocky_glob(SOURCES_VSG_ECS vsg/ecs/*.cpp)
     
     if(NOT ROCKY_SUPPORTS_SLUGHORN)

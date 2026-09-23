@@ -1720,7 +1720,8 @@ TEST_CASE("complex slug geometry uses the full indirection grid", "[projection][
     CHECK_FALSE(removeError);
 }
 
-TEST_CASE("slug overlays approximate meshes and reject unsupported styles", "[projection][slug]")
+//! Unsupported appearance options warn but must leave otherwise valid vector geometry renderable.
+TEST_CASE("slug overlays approximate meshes and omit unsupported styles", "[projection][slug]")
 {
     Registry registry = Registry::create();
     auto slugSystem = SlugSystemNode::create(registry);
@@ -1773,8 +1774,9 @@ TEST_CASE("slug overlays approximate meshes and reject unsupported styles", "[pr
         registry.read([&](entt::registry& reg)
         {
             const auto& resource = reg.get<SlugResource>(entity);
-            CHECK_FALSE(resource.ready);
-            CHECK(resource.message == "Slug LineStyle does not support stippling");
+            CHECK(resource.ready);
+            CHECK(resource.message.empty());
+            CHECK_FALSE(reg.any_of<OverlayVectorFallback>(entity));
         });
     }
 
@@ -1797,9 +1799,9 @@ TEST_CASE("slug overlays approximate meshes and reject unsupported styles", "[pr
         registry.read([&](entt::registry& reg)
         {
             const auto& resource = reg.get<SlugResource>(entity);
-            CHECK_FALSE(resource.ready);
-            CHECK(resource.message ==
-                "Slug PointStyle does not support per-vertex widths");
+            CHECK(resource.ready);
+            CHECK(resource.message.empty());
+            CHECK_FALSE(reg.any_of<OverlayVectorFallback>(entity));
         });
     }
 }

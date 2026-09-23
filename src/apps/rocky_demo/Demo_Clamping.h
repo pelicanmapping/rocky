@@ -68,6 +68,10 @@ auto Demo_Clamping = [](Application& app)
     static std::shared_ptr<ClampingSystem> sys;
     static CallbackSubs _subs;
 
+    // The demo runs immediately after its collapsing header, so detect reopening
+    // before drawing any other ImGui items. Do not move the camera every frame.
+    const bool focusAOI = e == entt::null || ImGui::IsItemToggledOpen();
+
     if (e == entt::null)
     {
         // Create the clamping system and add it to the scene graph
@@ -114,6 +118,19 @@ auto Demo_Clamping = [](Application& app)
             });
     }
 
+
+    if (focusAOI)
+    {
+        if (auto manip = MapManipulator::get(app.display.window(0).view(0).vsgView))
+        {
+            Viewpoint vp;
+            vp.point = GeoPoint(SRS::WGS84, 7.80, 46.145, 0.0); // midpoint of the Alpine test line
+            vp.range = 80000.0;
+            vp.pitch = -45.0;
+            vp.heading = 0.0;
+            manip->setViewpoint(vp, 1.0s);
+        }
+    }
 
     if (ImGuiLTable::Begin("clamping demo"))
     {

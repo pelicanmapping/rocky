@@ -21,6 +21,7 @@
 #include "../rocky/vsg/ecs/slug/SlugAdapter.h"
 #include <rocky/Log.h>
 #include <spdlog/sinks/ostream_sink.h>
+#include <cstring>
 #include <limits>
 #include <sstream>
 
@@ -491,8 +492,7 @@ TEST_CASE("slug band exhaustion falls back once and recovers on source edits",
     }
 }
 
-//! Raster fallback is reserved for the known capacity condition, not malformed
-//! coordinates or other unsupported authoring inputs.
+//! Raster fallback is reserved for capacity failures; invalid geometry remains an authoring error.
 TEST_CASE("slug authoring errors do not activate capacity fallback", "[projection][slug][overlay-fallback]")
 {
     Registry registry = Registry::create();
@@ -514,6 +514,165 @@ TEST_CASE("slug authoring errors do not activate capacity fallback", "[projectio
         CHECK_FALSE(reg.get<SlugResource>(entity).ready);
         CHECK_FALSE(reg.any_of<OverlayVectorFallback>(entity));
         CHECK(resolveOverlayMode(reg, entity, OverlayMode::Vector) == OverlayMode::Vector);
+    });
+}
+
+//! Checks warning-only style degradation, including mixed primitives, without changing the caller's mode/styles.
+//! Comparing atlas bytes before/after removing the unsupported flags verifies that only supported appearance is used.
+TEST_CASE("vector overlays omit unsupported styling and warn once per source build", "[projection][slug]")
+{
+    bool line = false, point = false, mesh = false;
+    SECTION("line appearance") { line = true; }
+    SECTION("point appearance") { point = true; }
+    SECTION("mesh appearance") { mesh = true; }
+    SECTION("all primitive warnings survive") { line = point = mesh = true; }
+
+    LogCapture messages;
+    Registry registry = Registry::create();
+    auto slug = SlugSystemNode::create(registry);
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+    std::vector<std::string> expectedWarnings;
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        CHECK(reg.emplace<Overlay>(entity).mode == OverlayMode::Vector);
+        if (line)
+        {
+            auto& geometry = reg.emplace<LineGeometry>(entity);
+            geometry.points = { { -0.25, 0.0, 0.0 }, { 0.25, 0.0, 0.0 } };
+            geometry.colors = { StockColor::Red, StockColor::Blue };
+            auto& style = reg.emplace<LineStyle>(entity);
+            style.useGeometryColors = true;
+            style.stipplePattern = 0x00FFu;
+            style.color = StockColor::Yellow;
+            reg.emplace<Line>(entity, geometry, style);
+            expectedWarnings.emplace_back("Slug LineStyle does not support per-vertex colors; using LineStyle::color");
+            expectedWarnings.emplace_back("Slug LineStyle does not support stippling; rendering solid lines");
+        }
+        if (point)
+        {
+            auto& geometry = reg.emplace<PointGeometry>(entity);
+            geometry.points = { { -0.25, 0.25, 0.0 }, { 0.25, 0.25, 0.0 } };
+            geometry.colors = { StockColor::Red, StockColor::Blue };
+            geometry.widths = { 7.0f, 13.0f };
+            auto& style = reg.emplace<PointStyle>(entity);
+            style.useGeometryColors = true;
+            style.useGeometryWidths = true;
+            style.color = StockColor::Yellow;
+            reg.emplace<Point>(entity, geometry, style);
+            expectedWarnings.emplace_back("Slug PointStyle does not support per-vertex colors; using PointStyle::color");
+            expectedWarnings.emplace_back("Slug PointStyle does not support per-vertex widths; using PointStyle::width");
+        }
+        if (mesh)
+        {
+            auto& geometry = reg.emplace<MeshGeometry>(entity);
+            geometry.vertices = { { -0.25, -0.25, 0.0 }, { 0.25, -0.25, 0.0 }, { 0.0, 0.25, 0.0 } };
+            auto& style = reg.emplace<MeshStyle>(entity);
+            style.useGeometryColors = true;
+            style.texture = reg.create();
+            style.stipplePattern = 0x00FFu;
+            style.wireframe = true;
+            style.lighting = true;
+            style.color = StockColor::Yellow;
+            reg.emplace<Mesh>(entity, geometry, style);
+            expectedWarnings.emplace_back("Slug Mesh support treats each input triangle as an independent");
+            expectedWarnings.emplace_back("Slug MeshStyle does not support per-vertex colors; using MeshStyle::color");
+            expectedWarnings.emplace_back("Slug MeshStyle does not support textures; rendering without a texture");
+            expectedWarnings.emplace_back("Slug MeshStyle does not support stippling; rendering solid fills");
+            expectedWarnings.emplace_back("Slug MeshStyle does not support wireframe; rendering filled triangles");
+            expectedWarnings.emplace_back("Slug MeshStyle does not support lighting; rendering unlit fills");
+        }
+    });
+
+    slug->update(context.get());
+    vsg::ref_ptr<vsg::Data> curves, bands;
+    std::uint64_t generation = 0u;
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& resource = reg.get<SlugResource>(entity);
+        REQUIRE(resource.ready);
+        CHECK(resource.message.empty());
+        CHECK(resource.layers.size() == static_cast<std::size_t>(line + point + mesh));
+        for (const auto& layer : resource.layers)
+            CHECK(layer.color == StockColor::Yellow);
+        CHECK_FALSE(reg.any_of<OverlayVectorFallback>(entity));
+        CHECK(resolveOverlayMode(reg, entity, reg.get<Overlay>(entity).mode) == OverlayMode::Vector);
+        if (line)
+        {
+            CHECK(reg.get<LineStyle>(entity).useGeometryColors);
+            CHECK(reg.get<LineStyle>(entity).stipplePattern == 0x00FFu);
+        }
+        if (point)
+        {
+            CHECK(reg.get<PointStyle>(entity).useGeometryColors);
+            CHECK(reg.get<PointStyle>(entity).useGeometryWidths);
+        }
+        if (mesh)
+        {
+            const auto& style = reg.get<MeshStyle>(entity);
+            CHECK(style.useGeometryColors);
+            CHECK((style.texture != entt::null));
+            CHECK(style.stipplePattern == 0x00FFu);
+            CHECK(style.wireframe);
+            CHECK(style.lighting);
+        }
+        curves = resource.curveTexture->imageView->image->data;
+        bands = resource.bandTexture->imageView->image->data;
+        generation = resource.atlasGeneration;
+    });
+    const auto firstMessages = messages.text.str();
+    for (const auto& warning : expectedWarnings)
+    {
+        const auto message = "warning: SlugSystemNode: overlay " + std::to_string(entt::to_integral(entity)) + ": " + warning;
+        const auto start = firstMessages.find(message);
+        REQUIRE(start != std::string::npos);
+        CHECK(firstMessages.find(message, start + message.size()) == std::string::npos);
+    }
+    for (unsigned frame = 0u; frame < 4u; ++frame)
+        slug->update(context.get());
+    CHECK(messages.text.str() == firstMessages);
+
+    registry.write([&](entt::registry& reg)
+    {
+        CHECK(reg.get<SlugResource>(entity).atlasGeneration == generation);
+        if (line)
+        {
+            auto& style = reg.get<LineStyle>(entity);
+            style.useGeometryColors = false;
+            style.stipplePattern = 0xFFFFu;
+            LineStyle::dirty(reg, entity);
+        }
+        if (point)
+        {
+            auto& style = reg.get<PointStyle>(entity);
+            style.useGeometryColors = false;
+            style.useGeometryWidths = false;
+            PointStyle::dirty(reg, entity);
+        }
+        if (mesh)
+        {
+            auto& style = reg.get<MeshStyle>(entity);
+            style.useGeometryColors = false;
+            style.texture = entt::null;
+            style.stipplePattern = 0xFFFFu;
+            style.wireframe = false;
+            style.lighting = false;
+            MeshStyle::dirty(reg, entity);
+        }
+    });
+    slug->update(context.get());
+    registry.read([&](entt::registry& reg)
+    {
+        const auto& resource = reg.get<SlugResource>(entity);
+        REQUIRE(resource.ready);
+        CHECK(resource.atlasGeneration > generation);
+        const auto& newCurves = resource.curveTexture->imageView->image->data;
+        const auto& newBands = resource.bandTexture->imageView->image->data;
+        REQUIRE(curves->dataSize() == newCurves->dataSize());
+        REQUIRE(bands->dataSize() == newBands->dataSize());
+        CHECK(std::memcmp(curves->dataPointer(), newCurves->dataPointer(), curves->dataSize()) == 0);
+        CHECK(std::memcmp(bands->dataPointer(), newBands->dataPointer(), bands->dataSize()) == 0);
     });
 }
 
