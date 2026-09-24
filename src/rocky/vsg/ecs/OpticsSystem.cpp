@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "OpticsSystem.h"
+#include "OverlayBakeSystem.h"
 #include "../terrain/TerrainNode.h"
 #include <rocky/vsg/VSGUtils.h>
 #include <algorithm>
@@ -30,11 +31,65 @@ namespace
     void setManualProjection(const Optics* optics, ProjectionViewDetail& detail)
     {
         detail.focalPointValid = false;
+        detail.terrainDepthRangeValid = false;
+        detail.terrainDepthCacheValid = false;
         detail.focalDistance = optics ? optics->focalDistance : 1.0;
         detail.nearDistance = optics ?
             optics->focalDistance * optics->nearScale + optics->nearBias : 1.0;
         detail.farDistance = optics ?
             optics->focalDistance * optics->farScale + optics->farBias : 1.0;
+    }
+
+    //! Encloses a local overlay box in map coordinates, including padding and center/edge samples on a globe.
+    //! This transforms coordinates only; it does not sample elevation or fetch data. Invalid fits use the fallback.
+    GeoExtent projectorFootprint(const glm::dmat4& world, const SRS& worldSRS)
+    {
+        const auto querySRS = worldSRS.isGeocentric() ? worldSRS.geodeticSRS() : worldSRS;
+        GeoExtent footprint(querySRS);
+        for (double z : { -0.5, 0.5 })
+            for (double y : { -0.5, 0.0, 0.5 })
+                for (double x : { -0.5, 0.0, 0.5 })
+                {
+                    const auto p = world * glm::dvec4(x, y, z, 1.0);
+                    const auto point = GeoPoint(worldSRS, p.x, p.y, p.z).transform(querySRS);
+                    if (!point.valid() || !std::isfinite(point.x) || !std::isfinite(point.y))
+                        return {};
+                    footprint.expandToInclude(point.x, point.y);
+                }
+        // Small horizontal allowance for the difference between tangent-frame and map-coordinate edges.
+        footprint.scale(1.01, 1.01);
+        return footprint;
+    }
+
+    //! Refreshes a receiving-volume cache from resident terrain boxes, retaining the original depth on a miss.
+    //! Call during update, after terrain placement. The authored Transform and payload mapping are never changed.
+    void fitTerrainDepth(
+        const TerrainNode& terrain, const glm::dmat4& world, const SRS& worldSRS, ProjectionViewDetail& detail)
+    {
+        if (!worldSRS.valid() || worldSRS != terrain.renderingSRS)
+        {
+            detail.terrainDepthRangeValid = false;
+            detail.terrainDepthCacheValid = false;
+            return;
+        }
+        if (detail.terrainDepthCacheValid && matricesEqual(world, detail.depthProjectorWorld))
+            return;
+
+        detail.depthProjectorWorld = world;
+        detail.terrainDepthFootprint = projectorFootprint(world, worldSRS);
+        detail.terrainDepthCacheValid = true; // Cache misses too, until motion or a relevant terrain change.
+        detail.terrainDepthRangeValid = false;
+        const double zScale = glm::length(glm::dvec3(world[2]));
+        if (!(zScale > 0.0) || !std::isfinite(zScale))
+            return;
+        auto range = terrain.localHeightRange(detail.terrainDepthFootprint, glm::inverse(world));
+        if (range.failed())
+            return;
+
+        // Tile boxes already include curvature and skirts. Only a small numerical/placement margin remains.
+        const double padding = worldSRS.transformDistance(Distance(25.0, Units::METERS), worldSRS.units()) / zScale;
+        detail.terrainDepthRange = range.value() + glm::dvec2(-padding, padding);
+        detail.terrainDepthRangeValid = true;
     }
 
     //! Fits perspective clip distances to a locally planar terrain surface at
@@ -132,6 +187,8 @@ void OpticsSystemNode::updateTargetSubscription()
     {
         std::scoped_lock lock(_loadedTilesMutex);
         _loadedTiles.clear();
+        _changedBoundsTiles.clear();
+        _terrainBoundsReset = false;
     }
 
     if (auto terrain = currentTarget.cast<TerrainNode>())
@@ -143,6 +200,14 @@ void OpticsSystemNode::updateTargetSubscription()
             // the update thread invalidate only projections over that tile.
             std::scoped_lock lock(_loadedTilesMutex);
             _loadedTiles.insert(key);
+        });
+        _terrainSubscriptions += terrain->onTileBoundsChanged([this](const TileKey& key)
+        {
+            std::scoped_lock lock(_loadedTilesMutex);
+            if (key.valid())
+                _changedBoundsTiles.insert(key);
+            else
+                _terrainBoundsReset = true;
         });
     }
 }
@@ -167,25 +232,47 @@ void OpticsSystemNode::updateOptics(VSGContext vsgcontext)
 void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
 {
     std::unordered_set<TileKey> loadedTiles;
+    std::unordered_set<TileKey> changedBoundsTiles;
+    bool terrainBoundsReset = false;
     {
         std::scoped_lock lock(_loadedTilesMutex);
         loadedTiles.swap(_loadedTiles);
+        changedBoundsTiles.swap(_changedBoundsTiles);
+        std::swap(terrainBoundsReset, _terrainBoundsReset);
     }
 
     auto writer = _registry.write();
     auto& registry = writer.registry;
     auto terrainTarget = target.ref_ptr();
 
-    if (_targetChanged || !loadedTiles.empty())
+    if (_targetChanged || terrainBoundsReset || !loadedTiles.empty() || !changedBoundsTiles.empty())
     {
         registry.view<ProjectionDetail>().each([&](auto, auto& projectionDetails)
         {
             for (auto& detail : projectionDetails.views)
             {
-                if (_targetChanged)
+                if (_targetChanged || terrainBoundsReset)
                 {
                     detail.intersectionCacheValid = false;
+                    detail.terrainDepthCacheValid = false;
+                    detail.terrainDepthRangeValid = false;
                     continue;
+                }
+
+                for (const auto& key : changedBoundsTiles)
+                {
+                    if (detail.terrainDepthCacheValid && (!detail.terrainDepthFootprint.valid() ||
+                        key.extent().intersects(detail.terrainDepthFootprint)))
+                    {
+                        detail.terrainDepthCacheValid = false;
+                        detail.terrainDepthRangeValid = false;
+                    }
+                    // Hierarchy changes can also change a cached center-ray hit, including explicit projectors.
+                    if (detail.intersectionCacheValid && detail.focalPointValid && detail.lastWorldSRS.valid() &&
+                        key.extent().contains(GeoPoint(detail.lastWorldSRS, detail.focalPoint)))
+                    {
+                        detail.intersectionCacheValid = false;
+                    }
                 }
 
                 if (!detail.intersectionCacheValid || !detail.focalPointValid || !detail.lastWorldSRS.valid())
@@ -220,6 +307,9 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
         auto* optics = registry.try_get<Optics>(projector);
         auto* visibility = registry.try_get<Visibility>(entity);
         const auto projection = optics ? optics->projection : Optics::Projection::Orthographic;
+        auto terrain = terrainTarget.cast<TerrainNode>();
+        const bool fitAutomaticOverlay = !optics && terrain &&
+            registry.all_of<Overlay, AutoOverlayTransform>(projector);
 
         for (ViewIDType viewID : vsgcontext->activeViewIDs)
         {
@@ -229,6 +319,12 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
                 continue;
             if (visibility && !visibility->visible[viewID])
                 continue;
+
+            if (!fitAutomaticOverlay)
+            {
+                detail.terrainDepthRangeValid = false;
+                detail.terrainDepthCacheValid = false;
+            }
 
             // Do not use the projector Transform's pre-placement cull result here.
             // Terrain placement can move an initially culled projector into view.
@@ -256,6 +352,7 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
             const bool useCachedIntersection =
                 canCache &&
                 detail.intersectionCacheValid &&
+                detail.lastWorldSRS == transformView.cache.world_srs &&
                 matricesEqual(projectorWorld, detail.lastProjectorWorld);
 
             if (!useCachedIntersection)
@@ -302,6 +399,13 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
                 detail.focalPointValid)
             {
                 fitPerspectiveClipRange(*optics, forward, detail);
+            }
+
+            if (fitAutomaticOverlay && detail.focalPointValid)
+            {
+                auto placedWorld = projectorWorld;
+                placedWorld[3] = glm::dvec4(detail.focalPoint, 1.0);
+                fitTerrainDepth(*terrain, placedWorld, transformView.cache.world_srs, detail);
             }
         }
     });

@@ -6,12 +6,116 @@
 #include "catch.hpp"
 #include <rocky/vsg/ecs/DecalSystem.h>
 #include <rocky/vsg/ecs/TextureSystem.h>
+#include <vsg/utils/ShaderCompiler.h>
+#include <filesystem>
 #include <thread>
 #include <type_traits>
 #include <vector>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
+
+//! Compile decal culling, shading, and volume diagnostics with and without vector support, without requiring a GPU.
+TEST_CASE("decal culling and terrain shaders compile together", "[projection][shader]")
+{
+    auto compiler = vsg::ShaderCompiler::create();
+    if (!compiler->supported())
+    {
+        WARN("This VSG build does not include a shader compiler");
+        return;
+    }
+
+    std::vector<std::string> defines;
+    SECTION("raster only") { }
+    SECTION("vector enabled") { defines.emplace_back("ROCKY_HAS_SLUGHORN"); }
+
+    const auto shadersPath = std::filesystem::path(__FILE__).parent_path().parent_path() / "rocky/vsg/shaders";
+    auto options = vsg::Options::create();
+    options->paths.push_back(shadersPath.string());
+    auto compute = vsg::ShaderStage::read(
+        VK_SHADER_STAGE_COMPUTE_BIT, "main", (shadersPath / "rocky.decal.cull.comp").string(), options);
+    REQUIRE(compute);
+    REQUIRE(compiler->compile(compute, defines, options));
+    CHECK_FALSE(compute->module->code.empty());
+
+    auto vertex = vsg::ShaderStage::read(
+        VK_SHADER_STAGE_VERTEX_BIT, "main", (shadersPath / "rocky.terrain.vert").string(), options);
+    auto fragment = vsg::ShaderStage::read(
+        VK_SHADER_STAGE_FRAGMENT_BIT, "main", (shadersPath / "rocky.terrain.frag").string(), options);
+    REQUIRE(vertex);
+    REQUIRE(fragment);
+    vsg::ShaderStages shaders{ vertex, fragment };
+    REQUIRE(compiler->compile(shaders, defines, options));
+    CHECK_FALSE(vertex->module->code.empty());
+    CHECK_FALSE(fragment->module->code.empty());
+
+    auto debugVertex = vsg::ShaderStage::read(
+        VK_SHADER_STAGE_VERTEX_BIT, "main", (shadersPath / "rocky.decal.debug.vert").string(), options);
+    auto debugFragment = vsg::ShaderStage::read(
+        VK_SHADER_STAGE_FRAGMENT_BIT, "main", (shadersPath / "rocky.decal.debug.frag").string(), options);
+    REQUIRE(debugVertex);
+    REQUIRE(debugFragment);
+    vsg::ShaderStages debugShaders{ debugVertex, debugFragment };
+    REQUIRE(compiler->compile(debugShaders, defines, options));
+    CHECK_FALSE(debugVertex->module->code.empty());
+    CHECK_FALSE(debugFragment->module->code.empty());
+}
+
+//! Debug geometry stays renderer-owned, uses line primitives without vertex arrays, and never writes scene depth.
+TEST_CASE("decal volume diagnostics own bounded reusable graphics state", "[projection][decal-debug]")
+{
+    Registry registry = Registry::create();
+    auto system = DecalSystemNode::create(registry);
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    const auto shaderRoot = std::filesystem::path(__FILE__).parent_path().parent_path() / "rocky/vsg";
+    context.get()->searchPaths.push_back(shaderRoot.string());
+    auto node = system->debugNode();
+    REQUIRE(node);
+    CHECK_FALSE(system->debugVolumes);
+    CHECK(system->debugVolumesSeeThrough);
+
+    // Reinitialization must replace, not accumulate, the two pipeline variants.
+    for (unsigned initialization = 0; initialization != 2; ++initialization)
+    {
+        system->initialize(context.get());
+        REQUIRE(system->debugNode() == node);
+        auto* group = dynamic_cast<vsg::Group*>(node.get());
+        REQUIRE(group);
+        REQUIRE(group->children.size() == 2u);
+        for (unsigned variant = 0; variant != 2; ++variant)
+        {
+            auto* stateGroup = dynamic_cast<vsg::StateGroup*>(group->children[variant].get());
+            REQUIRE(stateGroup);
+            REQUIRE(stateGroup->stateCommands.size() == 2u);
+            auto* bind = dynamic_cast<vsg::BindGraphicsPipeline*>(stateGroup->stateCommands.front().get());
+            REQUIRE(bind);
+            bool foundAssembly = false, foundDepth = false, foundVertexInput = false;
+            for (const auto& state : bind->pipeline->pipelineStates)
+            {
+                if (auto* assembly = dynamic_cast<vsg::InputAssemblyState*>(state.get()))
+                {
+                    foundAssembly = true;
+                    CHECK(assembly->topology == VK_PRIMITIVE_TOPOLOGY_LINE_LIST);
+                }
+                if (auto* depth = dynamic_cast<vsg::DepthStencilState*>(state.get()))
+                {
+                    foundDepth = true;
+                    CHECK(depth->depthWriteEnable == VK_FALSE);
+                    CHECK(depth->depthTestEnable == (variant ? VK_FALSE : VK_TRUE));
+                }
+                if (auto* input = dynamic_cast<vsg::VertexInputState*>(state.get()))
+                {
+                    foundVertexInput = true;
+                    CHECK(input->vertexBindingDescriptions.empty());
+                    CHECK(input->vertexAttributeDescriptions.empty());
+                }
+            }
+            CHECK(foundAssembly);
+            CHECK(foundDepth);
+            CHECK(foundVertexInput);
+        }
+    }
+}
 
 //! Keeps the existing system alias bound to internal ECS storage and verifies
 //! that moving its type does not change dirty notification or queue draining.

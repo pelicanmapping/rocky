@@ -330,6 +330,122 @@ TEST_CASE("polygon system owns only its derived mesh", "[polygon][projection]")
     });
 }
 
+//! Guards against render-state edits retessellating colored polygons while retaining
+//! updates to vertex colors baked from the style's fallback color or color mode.
+TEST_CASE("polygon render-state edits reuse colored geometry", "[polygon][projection]")
+{
+    Registry registry = Registry::create();
+    auto polygonSystem = PolygonSystemNode::create(registry);
+    auto meshSystem = MeshSystemNode::create(registry);
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity entity = entt::null;
+    entt::entity texture = entt::null;
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        texture = reg.create();
+        auto& geometry = reg.emplace<PolygonGeometry>(entity);
+        geometry.polygons = {
+            PolygonPart{ { { 0, 0, 0 }, { 1, 0, 0 }, { 0, 1, 0 } }, {} },
+            PolygonPart{ { { 2, 0, 0 }, { 3, 0, 0 }, { 2, 1, 0 } }, {} }
+        };
+        // The second polygon exercises the style color fallback.
+        geometry.colors = { StockColor::Red };
+        auto& style = reg.emplace<PolygonStyle>(entity);
+        style.useGeometryColors = true;
+        style.color = StockColor::Yellow;
+        reg.emplace<rocky::Polygon>(entity, geometry, style);
+    });
+    polygonSystem->update(context.get());
+
+    entt::entity meshGeometry = entt::null;
+    std::uint64_t geometryRevision = 0u;
+    std::vector<glm::fvec4> originalColors;
+    registry.read([&](entt::registry& reg)
+    {
+        meshGeometry = reg.get<Mesh>(entity).geometry;
+        const auto& geometry = reg.get<MeshGeometry>(meshGeometry);
+        geometryRevision = geometry.componentRevision();
+        originalColors = geometry.colors;
+        REQUIRE_FALSE(geometry.vertices.empty());
+        REQUIRE(originalColors.size() == geometry.vertices.size());
+        CHECK(originalColors.front() == StockColor::Red);
+        CHECK(originalColors.back() == StockColor::Yellow);
+    });
+
+    SECTION("render state changes preserve the existing mesh in both directions")
+    {
+        for (bool enabled : { true, false })
+        {
+            registry.write([&](entt::registry& reg)
+            {
+                auto& style = reg.get<PolygonStyle>(entity);
+                style.wireframe = enabled;
+                style.stipplePattern = enabled ? 0x00FFu : 0xFFFFu;
+                style.depthOffset = enabled ? 25.0f : 0.0f;
+                style.texture = enabled ? texture : entt::null;
+                style.dirty(reg);
+            });
+            polygonSystem->update(context.get());
+            registry.read([&](entt::registry& reg)
+            {
+                const auto& mesh = reg.get<Mesh>(entity);
+                CHECK(mesh.geometry == meshGeometry);
+                const auto& geometry = reg.get<MeshGeometry>(meshGeometry);
+                CHECK(geometry.componentRevision() == geometryRevision);
+                CHECK(geometry.colors == originalColors);
+                const auto& style = reg.get<MeshStyle>(mesh.style);
+                CHECK(style.wireframe == enabled);
+                CHECK(style.stipplePattern == (enabled ? 0x00FFu : 0xFFFFu));
+                CHECK(style.depthOffset == (enabled ? 25.0f : 0.0f));
+                CHECK(style.texture == (enabled ? texture : entt::null));
+            });
+        }
+    }
+
+    SECTION("fallback color edits still update vertex colors")
+    {
+        registry.write([&](entt::registry& reg)
+        {
+            auto& style = reg.get<PolygonStyle>(entity);
+            style.color = StockColor::Blue;
+            style.dirty(reg);
+        });
+        polygonSystem->update(context.get());
+        registry.read([&](entt::registry& reg)
+        {
+            const auto& geometry = reg.get<MeshGeometry>(meshGeometry);
+            CHECK(geometry.componentRevision() != geometryRevision);
+            REQUIRE(geometry.colors.size() == originalColors.size());
+            CHECK(geometry.colors.front() == StockColor::Red);
+            CHECK(geometry.colors.back() == StockColor::Blue);
+        });
+    }
+
+    SECTION("geometry color mode changes still update vertex colors")
+    {
+        for (bool enabled : { false, true })
+        {
+            registry.write([&](entt::registry& reg)
+            {
+                auto& style = reg.get<PolygonStyle>(entity);
+                style.useGeometryColors = enabled;
+                style.dirty(reg);
+            });
+            polygonSystem->update(context.get());
+            registry.read([&](entt::registry& reg)
+            {
+                const auto& geometry = reg.get<MeshGeometry>(meshGeometry);
+                CHECK(geometry.componentRevision() != geometryRevision);
+                geometryRevision = geometry.componentRevision();
+                REQUIRE(geometry.colors.size() == originalColors.size());
+                CHECK(geometry.colors.front() == (enabled ? StockColor::Red : StockColor::Yellow));
+                CHECK(geometry.colors.back() == StockColor::Yellow);
+            });
+        }
+    }
+}
+
 TEST_CASE("projected texture contracts", "[projection]")
 {
     TerrainAnchor anchor;

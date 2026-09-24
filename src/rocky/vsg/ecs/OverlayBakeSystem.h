@@ -100,7 +100,8 @@ namespace ROCKY_NAMESPACE
         //! synchronously compile in one frame. Zero means unlimited.
         unsigned maxResourceSetupsPerFrame = 2u;
 
-        // Advanced tuning factor for auto-computed overlay depth thickness.
+        // Advanced tuning factor for fallback auto-computed overlay depth thickness.
+        // Resident terrain bounds override the receiving depth when available.
         // 1.0 = default behavior; >1.0 = safer/thicker; <1.0 = tighter/faster.
         float depthSafetyFactor = 1.0f;
 

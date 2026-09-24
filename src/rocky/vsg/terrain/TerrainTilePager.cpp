@@ -220,6 +220,7 @@ TerrainTilePager::update(std::shared_ptr<TerrainTileFactory> tileFactory, VSGCon
                         tile->children.resize(1);
                         tile->subtilesLoader.reset();
                         tile->needsSubtiles = false;
+                        _host->activity().onTileBoundsChanged.fire(tile->key);
                     }
                 }
                 _tiles.erase(key);
@@ -295,11 +296,13 @@ TerrainTilePager::requestCreateChildren(TileInfo& info, std::shared_ptr<TerrainT
         {
             vsgcontext->compile(result);
 
-            vsgcontext->onNextUpdate([result, weak_parent](VSGContext vsgcontext)
+            vsgcontext->onNextUpdate([result, weak_parent, weak_tileFactory](VSGContext vsgcontext)
                 {
                     if (auto parent = weak_parent.ref_ptr())
                     {
                         parent->addChild(result);
+                        if (auto factory = weak_tileFactory.lock())
+                            factory->host->activity().onTileBoundsChanged.fire(parent->key);
                         vsgcontext->requestFrame();
                     }
                 });
@@ -445,6 +448,7 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io,
 
             // notify the activity interface
             tileFactory->host->activity().onTileLoaded.fire(key);
+            tileFactory->host->activity().onTileBoundsChanged.fire(key);
 
             vsgcontext->requestFrame();
             return true;

@@ -12,6 +12,7 @@
 #include <rocky/Map.h>
 #include <rocky/TileLayer.h>
 #include <cmath>
+#include <cfloat>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -73,6 +74,7 @@ TerrainProfileNode::createRootTiles(VSGContext vsgcontext)
 
         // Add it to the scene graph
         this->addChild(tile);
+        terrain.onTileBoundsChanged.fire(key);
     }
 
     vsgcontext->compile(vsg::ref_ptr<TerrainProfileNode>(this));
@@ -253,6 +255,7 @@ TerrainNode::reset(VSGContext context)
 
     // update the state data with the (possibly new) profile:
     state->updateProfile(profile);
+    onTileBoundsChanged.fire(TileKey{});
 }
 
 void
@@ -322,6 +325,51 @@ TerrainProfileNode::activity()
 
 namespace
 {
+    //! Accumulates leaf tile boxes and covered map-space area, rejecting missing/invalid resident surfaces.
+    //! Descending the hierarchy avoids including enormous ancestor boxes in an otherwise local query.
+    bool accumulateHeightRange(
+        const TerrainTileNode& tile, const GeoExtent& footprint, const glm::dmat4& worldToLocal,
+        glm::dvec2& range, double& coveredArea)
+    {
+        const auto overlap = tile.key.extent().intersectionSameSRS(footprint);
+        if (!overlap.valid() || overlap.width() <= 0.0 || overlap.height() <= 0.0)
+            return true;
+
+        if (tile.children.size() > 1u)
+        {
+            auto* quad = tile.children[1]->cast<vsg::QuadGroup>();
+            if (!quad)
+                return false;
+            for (const auto& child : quad->children)
+            {
+                auto* childTile = child ? child->cast<TerrainTileNode>() : nullptr;
+                if (!childTile || !accumulateHeightRange(*childTile, footprint, worldToLocal, range, coveredArea))
+                    return false;
+            }
+            return true;
+        }
+
+        if (!tile.surface || !tile.surface->localbbox.valid())
+            return false;
+
+        const auto& box = tile.surface->localbbox;
+        const auto matrix = worldToLocal * to_glm(tile.surface->matrix);
+        for (unsigned corner = 0u; corner < 8u; ++corner)
+        {
+            const glm::dvec4 local(
+                (corner & 1u) ? box.max.x : box.min.x,
+                (corner & 2u) ? box.max.y : box.min.y,
+                (corner & 4u) ? box.max.z : box.min.z, 1.0);
+            const auto point = matrix * local;
+            if (!std::isfinite(point.z))
+                return false;
+            range.x = std::min(range.x, point.z);
+            range.y = std::max(range.y, point.z);
+        }
+        coveredArea += overlap.width() * overlap.height();
+        return true;
+    }
+
     //! Rejects invalid transforms and non-finite coordinates before constructing an intersection ray.
     bool finitePoint(const GeoPoint& point)
     {
@@ -356,6 +404,41 @@ namespace
         result.normal = glm::normalize(worldNormal);
         return result;
     }
+}
+
+Result<glm::dvec2>
+TerrainNode::localHeightRange(const GeoExtent& footprint, const glm::dmat4& worldToLocal) const
+{
+    if (!footprint.valid() || !renderingSRS.valid() || !_profileNodes)
+        return Failure{};
+    for (unsigned column = 0; column < 4u; ++column)
+        for (unsigned row = 0; row < 4u; ++row)
+            if (!std::isfinite(worldToLocal[column][row]))
+                return Failure{};
+
+    for (const auto& child : _profileNodes->children)
+    {
+        auto* profileNode = child->cast<TerrainProfileNode>();
+        if (!profileNode)
+            continue;
+        const auto query = footprint.transform(profileNode->profile.srs());
+        if (!query.valid() || !profileNode->profile.extent().contains(query))
+            continue;
+
+        glm::dvec2 range(DBL_MAX, -DBL_MAX);
+        double coveredArea = 0.0;
+        for (const auto& root : profileNode->children)
+        {
+            auto* tile = root->cast<TerrainTileNode>();
+            if (!tile || !accumulateHeightRange(*tile, query, worldToLocal, range, coveredArea))
+                return Failure{};
+        }
+        const double queryArea = query.width() * query.height();
+        if (queryArea > 0.0 && std::isfinite(queryArea) &&
+            coveredArea >= queryArea * (1.0 - 1e-9) && range.x <= range.y)
+            return range;
+    }
+    return Failure{};
 }
 
 Result<TerrainIntersection>

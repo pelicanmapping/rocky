@@ -5,6 +5,7 @@
  */
 #include <rocky/vsg/Application.h>
 #include <rocky/vsg/ShaderDefines.h>
+#include <rocky/vsg/ecs/DecalSystem.h>
 #include "helpers.h"
 
 using namespace ROCKY_NAMESPACE;
@@ -14,6 +15,11 @@ auto Demo_FrustumGrid = [](Application& app)
     ImGuiLTable::Begin("frustum_grid_demo");
 
     auto vds = app.vsgcontext->sharedRenderData->viewDependentState[0];
+    if (!vds || !vds->frustumParamsBuf)
+    {
+        ImGuiLTable::End();
+        return;
+    }
     BufferAccess<FrustumGridParamsGPU> params(vds->frustumParamsBuf);
     float debug = params->debugTiles;
 
@@ -29,6 +35,17 @@ auto Demo_FrustumGrid = [](Application& app)
             }
         }
     }
+
+#ifdef ROCKY_HAS_DECALS
+    if (auto* decals = app.computeSystemsNode->get<DecalSystemNode>())
+    {
+        if (ImGuiLTable::Checkbox("Show decal volumes", &decals->debugVolumes))
+            app.vsgcontext->requestFrame();
+        if (decals->debugVolumes &&
+            ImGuiLTable::Checkbox("See through terrain", &decals->debugVolumesSeeThrough))
+            app.vsgcontext->requestFrame();
+    }
+#endif
 
     ImGuiLTable::End();
 };

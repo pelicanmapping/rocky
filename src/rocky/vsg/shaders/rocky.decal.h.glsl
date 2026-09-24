@@ -34,25 +34,12 @@
 
 struct DecalTile
 {
+    // Debug culling reports MAX+1 on overflow; only MAX indices are stored.
     uint count;
     uint indices[MAX_DECALS_PER_TILE];
 };
 
-struct Decal
-{
-    mat4 mvm;
-    mat4 mvmInverse;
-    vec4 color; // modulation color
-    int textureIndex; // used by element 0 as total decal count
-    float distance; // > 0 = persp
-    float zMin; // persp: -near
-    float zMax; // persp: -far
-    float cullingRadius; // persp
-    float tanHalfFovY; // persp
-    float aspect; // persp
-    int payloadFlags;
-    uvec4 slugLayerRange; // first layer, outline count, total count, reserved
-};
+#pragma include "rocky.decal.record.h.glsl"
 
 #ifdef ROCKY_HAS_SLUGHORN
 struct SlugLayer
@@ -153,9 +140,8 @@ void applyDecals(
     if (index < 0)
         return;
 
-    uint tileCount = min(
-        b_decalTiles.tile[index].count,
-        uint(MAX_DECALS_PER_TILE));
+    uint candidateCount = b_decalTiles.tile[index].count;
+    uint tileCount = min(candidateCount, uint(MAX_DECALS_PER_TILE));
     if (tileCount == 0u)
         return;
 
@@ -360,9 +346,9 @@ void applyDecals(
         }
     }
 
-    // debugging overlay to show tile density
+    // Use the unclamped count to distinguish overflow from an exactly full list.
     float ramp = clamp(float(tileCount) / 5.0, 0.0, 1.0);
-    vec3 debugColor = tileCount > MAX_DECALS_PER_TILE ? vec3(1, 0, 0) : vec3(0, ramp, ramp);
+    vec3 debugColor = candidateCount > MAX_DECALS_PER_TILE ? vec3(1, 0, 0) : vec3(0, ramp, ramp);
     color.rgb = mix(color.rgb, debugColor, u_debugTiles * 0.75);
 }
 

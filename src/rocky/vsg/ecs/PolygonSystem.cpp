@@ -32,7 +32,6 @@ namespace ROCKY_NAMESPACE::detail
         entt::entity sourceStyle = entt::null;
         std::uint64_t sourceGeometryRevision = 0u;
         std::uint64_t sourceStyleRevision = 0u;
-        bool sourceUsesGeometryColors = false;
         bool ownsMesh = false;
         bool warnedAboutExistingMesh = false;
         bool overlayModeValid = false;
@@ -411,13 +410,18 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
                 adapter.sourceStyle != sourceStyle ||
                 adapter.sourceStyleRevision != sourceStyleRevision ||
                 currentMeshStyle->depthOffset != effectiveDepthOffset;
+            // Only color inputs baked into vertices require retessellation. Render-state
+            // edits (such as wireframe) must reuse geometry even with per-polygon colors.
+            const bool colorsChanged =
+                !currentMeshStyle ||
+                currentMeshStyle->useGeometryColors != resolvedStyle.useGeometryColors ||
+                (resolvedStyle.useGeometryColors && currentMeshStyle->color != resolvedStyle.color);
             const bool geometryChanged =
                 !registry.any_of<MeshGeometry>(adapter.geometry) ||
                 adapter.sourceGeometry != sourceGeometry ||
                 adapter.sourceGeometryRevision != sourceGeometryRevision ||
                 resolutionChanged ||
-                (styleChanged &&
-                    (resolvedStyle.useGeometryColors || adapter.sourceUsesGeometryColors));
+                colorsChanged;
 
             if (geometryChanged)
             {
@@ -438,12 +442,12 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
                 meshStyle.depthOffset = effectiveDepthOffset;
                 meshStyle.resolution = resolvedStyle.resolution;
                 meshStyle.texture = resolvedStyle.texture;
+                meshStyle.wireframe = resolvedStyle.wireframe;
                 meshStyle.stipplePattern = resolvedStyle.stipplePattern;
                 registry.emplace_or_replace<MeshStyle>(
                     adapter.style, std::move(meshStyle));
                 adapter.sourceStyle = sourceStyle;
                 adapter.sourceStyleRevision = sourceStyleRevision;
-                adapter.sourceUsesGeometryColors = resolvedStyle.useGeometryColors;
             }
 
             auto& generatedGeometry = registry.get<MeshGeometry>(adapter.geometry);

@@ -99,6 +99,11 @@ namespace ROCKY_NAMESPACE
         //! Call while the terrain scene graph is not being modified.
         Result<TerrainIntersection> intersectVertical(const GeoPoint& input) const;
 
+        //! Bounds the finest resident terrain tiles covering a footprint in a caller's local Z coordinates.
+        //! Uses elevation-aware tile boxes (including skirts), without fetching data. Fails if coverage is
+        //! incomplete or spans multiple terrain profiles. Call only while the terrain scene is not changing.
+        Result<glm::dvec2> localHeightRange(const GeoExtent& footprint, const glm::dmat4& worldToLocal) const;
+
     public:
         //! Construct a new terrain node
         TerrainNode(VSGContext);

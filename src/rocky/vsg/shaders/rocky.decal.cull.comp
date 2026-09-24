@@ -115,7 +115,8 @@ void main()
     uint total = uint(b_decals.decal[0].textureIndex); // first decal just holds the count in its texture index field
     uint found = 0;
 
-    for (uint i = 1; i < total + 1 && found < MAX_DECALS_PER_TILE; ++i)
+    uint i = 1;
+    for (; i < total + 1 && found < MAX_DECALS_PER_TILE; ++i)
     {
         if (intersects(i, frustum))
         {
@@ -126,6 +127,21 @@ void main()
                 packedIndex |= DECAL_TILE_HAS_OUTLINE_BIT;
 #endif
             b_decalTiles.tile[tile].indices[found++] = packedIndex;
+        }
+    }
+
+    // Only the debug view scans past a full list. Stop at the first additional
+    // intersection and record MAX+1 as an overflow sentinel without writing
+    // another index. A full list alone does not prove that anything was lost.
+    if (u_debugTiles > 0.0 && found == MAX_DECALS_PER_TILE)
+    {
+        for (; i < total + 1; ++i)
+        {
+            if (intersects(i, frustum))
+            {
+                ++found;
+                break;
+            }
         }
     }
 

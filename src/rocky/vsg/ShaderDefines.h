@@ -43,7 +43,7 @@ namespace ROCKY_NAMESPACE
 
     /**
      * One logical projected decal, mirrored by struct Decal in
-     * rocky.decal.h.glsl using std430 layout.
+     * rocky.decal.record.h.glsl using std430 layout.
      *
      * The compute culler tests the projector volume and writes this record's
      * index into intersecting DecalTileGPU entries. The terrain fragment shader
@@ -106,6 +106,7 @@ namespace ROCKY_NAMESPACE
      */
     struct DecalTileGPU
     {
+        // Debug culling reports MAX+1 on overflow; only MAX indices are stored.
         glm::uint32_t count = 0;
         glm::uint32_t indices[MAX_DECALS_PER_TILE];
     };

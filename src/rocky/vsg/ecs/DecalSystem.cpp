@@ -15,6 +15,7 @@
 #include "../ShaderDefines.h"
 #include <rocky/ecs/Optics.h>
 #include <rocky/vsg/VSGUtils.h>
+#include <vsg/vk/State.h>
 #include <algorithm>
 #include <cmath>
 #include <unordered_set>
@@ -26,6 +27,98 @@ using namespace ROCKY_NAMESPACE::detail;
 
 namespace ROCKY_NAMESPACE::detail
 {
+    //! Main-pass-only diagnostic renderer. Two reusable pipeline variants share the existing per-view
+    //! decal buffer; a procedural 12-edge box needs no per-decal geometry or copied transforms.
+    //! The weak render-data reference avoids a cycle through its views and their scene graph.
+    class DecalDebugNode : public vsg::Inherit<vsg::Group, DecalDebugNode>
+    {
+    public:
+        bool enabled = false;
+        bool seeThrough = true;
+        std::weak_ptr<SharedRenderData> renderData;
+
+        //! Create depth-tested and see-through pipelines before the scene's normal compile traversal.
+        //! Missing shaders disable only this diagnostic, not decal rendering. Reinitialization defers disposal.
+        void initialize(VSGContext context)
+        {
+            for (auto& child : children)
+                context->dispose(child);
+            children.clear();
+            renderData = context->sharedRenderData;
+
+            auto vertex = vsg::ShaderStage::read(VK_SHADER_STAGE_VERTEX_BIT, "main",
+                vsg::findFile("shaders/rocky.decal.debug.vert", context->searchPaths), context->readerWriterOptions);
+            auto fragment = vsg::ShaderStage::read(VK_SHADER_STAGE_FRAGMENT_BIT, "main",
+                vsg::findFile("shaders/rocky.decal.debug.frag", context->searchPaths), context->readerWriterOptions);
+            if (!vertex || !fragment)
+            {
+                Log()->warn("DecalSystemNode: missing decal volume debug shaders");
+                return;
+            }
+
+            auto shaderSet = vsg::ShaderSet::create(vsg::ShaderStages{ vertex, fragment });
+            addViewDependentStateToShaderSet(shaderSet);
+            shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
+
+            for (unsigned xray = 0; xray != 2; ++xray)
+            {
+                auto config = vsg::GraphicsPipelineConfigurator::create(shaderSet);
+                config->shaderHints = context->shaderCompileSettings;
+                enableViewDependentStateUniforms(config);
+                for (auto& state : config->pipelineStates)
+                {
+                    if (auto* assembly = dynamic_cast<vsg::InputAssemblyState*>(state.get()))
+                        assembly->topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+                    if (auto* raster = dynamic_cast<vsg::RasterizationState*>(state.get()))
+                        raster->cullMode = VK_CULL_MODE_NONE;
+                    if (auto* depth = dynamic_cast<vsg::DepthStencilState*>(state.get()))
+                    {
+                        depth->depthTestEnable = xray ? VK_FALSE : VK_TRUE;
+                        depth->depthWriteEnable = VK_FALSE;
+                    }
+                }
+                config->init();
+                auto group = vsg::StateGroup::create();
+                group->add(config->bindGraphicsPipeline);
+                group->add(vsg::BindViewDescriptorSets::create(
+                    VK_PIPELINE_BIND_POINT_GRAPHICS, config->layout, DESCRIPTOR_SET_VDS));
+                addChild(group);
+            }
+        }
+
+        //! Record one instanced line draw for the current main view. Read only the CPU-owned count;
+        //! the vertex shader fetches final GPU transforms, bypassing the capped Forward+ cell lists.
+        void traverse(vsg::RecordTraversal& record) const override
+        {
+            if (!enabled || children.size() != 2 ||
+                getRenderRequest(record).purpose != RenderPurpose::Main)
+                return;
+
+            auto shared = renderData.lock();
+            auto* commandBuffer = record.getCommandBuffer();
+            if (!shared || !commandBuffer || commandBuffer->viewID >= ROCKY_MAX_NUMBER_OF_VIEWS)
+                return;
+            auto& vds = shared->viewDependentState[commandBuffer->viewID];
+            // Shadow and offscreen views must not borrow the main camera's view-space transforms.
+            if (!vds || commandBuffer->viewDependentState != vds.get() || !vds->decalsBuf)
+                return;
+
+            BufferAccess<DecalGPU> decals(vds->decalsBuf);
+            if (decals.capacity() <= 1u || decals->count <= 0)
+                return;
+            auto count = static_cast<uint32_t>(std::min<std::size_t>(decals->count, decals.capacity() - 1u));
+
+            auto* group = static_cast<vsg::StateGroup*>(children[seeThrough ? 1 : 0].get());
+            auto* state = record.getState();
+            state->push(group->stateCommands);
+            // Stack-local command avoids shared mutable draw counts when views record concurrently.
+            // firstInstance skips element zero, the decal-count header.
+            vsg::Draw draw(24u, count, 0u, 1u);
+            draw.accept(record);
+            state->pop(group->stateCommands);
+        }
+    };
+
     /*
      * The decal renderer consumes a small, composable component model:
      *
@@ -254,7 +347,8 @@ void DecalSystemNode::on_update_DecalStyle(entt::registry& r, entt::entity e)
 }
 
 DecalSystemNode::DecalSystemNode(Registry& registry) :
-    Inherit(registry)
+    Inherit(registry),
+    _debugNode(DecalDebugNode::create())
 {
     _registry.write([&](entt::registry& r)
         {
@@ -947,6 +1041,8 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                             projectionDetail && projectionDetail->focalPointValid)
                         {
                             effectiveWorld[3] = glm::dvec4(projectionDetail->focalPoint, 1.0);
+                            // Tighten only the receiving volume. Source fitting and baked/analytic UVs are unchanged.
+                            projectionDetail->applyTerrainDepth(effectiveWorld);
                         }
 
                         out.mvm = glm::fmat4(vm * effectiveWorld);
@@ -1198,6 +1294,7 @@ void
 DecalSystemNode::initialize(VSGContext vsgcontext)
 {
     _sharedRenderData = vsgcontext->sharedRenderData;
+    static_cast<DecalDebugNode*>(_debugNode.get())->initialize(vsgcontext);
 
     _cullingShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_COMPUTE_BIT,
@@ -1218,6 +1315,9 @@ DecalSystemNode::initialize(VSGContext vsgcontext)
 void
 DecalSystemNode::update(VSGContext vsgcontext)
 {
+    auto* debug = static_cast<DecalDebugNode*>(_debugNode.get());
+    debug->enabled = debugVolumes && status.ok();
+    debug->seeThrough = debugVolumesSeeThrough;
     if (status.failed())
         return;
 

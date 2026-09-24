@@ -18,7 +18,7 @@ namespace ROCKY_NAMESPACE
      * SurfaceNode holds the geometry and transform information
      * for one terrain tile surface.
      */
-    class SurfaceNode : public vsg::Inherit<vsg::MatrixTransform, SurfaceNode>
+    class ROCKY_EXPORT SurfaceNode : public vsg::Inherit<vsg::MatrixTransform, SurfaceNode>
     {
     public:
         SurfaceNode(const TileKey& tilekey, const SRS& worldSRS);

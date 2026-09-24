@@ -28,6 +28,28 @@ namespace ROCKY_NAMESPACE::detail
         bool intersectionCacheValid = false;
         glm::dmat4 lastProjectorWorld = glm::dmat4(1.0);
         SRS lastWorldSRS;
+
+        // Automatic overlay receiving volume, independent of its source Transform and texture/atlas fit.
+        // The range is in the post-placement projector's normalized Z coordinates; XY remains unchanged.
+        glm::dvec2 terrainDepthRange{ 0.0, 0.0 };
+        glm::dmat4 depthProjectorWorld{ 1.0 };
+        GeoExtent terrainDepthFootprint;
+        bool terrainDepthRangeValid = false;
+        bool terrainDepthCacheValid = false;
+
+        //! Applies cached depth only to the exact projector it was queried for; preserves local XY/UV mapping.
+        bool applyTerrainDepth(glm::dmat4& world) const
+        {
+            if (!terrainDepthRangeValid)
+                return false;
+            for (unsigned column = 0; column < 4u; ++column)
+                for (unsigned row = 0; row < 4u; ++row)
+                    if (world[column][row] != depthProjectorWorld[column][row])
+                        return false;
+            world[3] += world[2] * (0.5 * (terrainDepthRange.x + terrainDepthRange.y));
+            world[2] *= terrainDepthRange.y - terrainDepthRange.x;
+            return true;
+        }
     };
 
     //! Internal per-view placement results for one ProjectedTexture instance.
@@ -62,6 +84,8 @@ namespace ROCKY_NAMESPACE
         bool _targetChanged = true;
         std::mutex _loadedTilesMutex;
         std::unordered_set<TileKey> _loadedTiles;
+        std::unordered_set<TileKey> _changedBoundsTiles;
+        bool _terrainBoundsReset = false;
 
         //! Updates the terrain subscription when the target node changes.
         void updateTargetSubscription();

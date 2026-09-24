@@ -55,6 +55,9 @@ namespace ROCKY_NAMESPACE
         //! ordinary rendering. This does not apply when using Overlay.
         float depthOffset = 0.0f;
 
+        //! Whether to display only the edges of the tessellated triangles. Ignored by vector overlays.
+        bool wireframe = false;
+
         //! 4x4 stippling pattern (lower 16 bits only). Ignored by vector overlays.
         std::uint32_t stipplePattern = 0xFFFF;
 

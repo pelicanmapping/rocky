@@ -389,8 +389,9 @@ namespace
 
             // Conservative terrain-relief fallback based on footprint size.
             // A half-diagonal full thickness approximates a 27-degree grade
-            // from the footprint center to its corners. Terrain-aware fitting
-            // can replace this fallback in the future.
+            // from the footprint center to its corners. OpticsSystem replaces
+            // this receiving depth with resident terrain bounds when available,
+            // without changing this source Transform or invalidating its payload.
             const double diagonalMeters = std::sqrt(eastMeters * eastMeters + northMeters * northMeters);
             const double terrainReliefFloor =
                 std::clamp(0.5 * diagonalMeters, 1000.0, 10000.0);

@@ -21,6 +21,10 @@ namespace ROCKY_NAMESPACE
     {
     public:
         Callback<const TileKey> onTileLoaded;
+
+        //! Resident surface/hierarchy changes, including page-out. An invalid key invalidates the whole terrain.
+        //! Fired at scene-update safe points; subscribers must not modify the terrain in the callback.
+        Callback<const TileKey> onTileBoundsChanged;
     };
 
 

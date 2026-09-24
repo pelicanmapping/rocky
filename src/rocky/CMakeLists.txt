@@ -218,6 +218,7 @@ if(ROCKY_RENDERER_VSG)
         rocky_glob(SOURCES_VSG_IMGUI vsg/imgui/*.cpp)
     endif()
     
+    # Includes diagnostic stages and the shared GLSL record headers they depend on.
     rocky_glob(SHADERS_VSG vsg/shaders/*)
 
     find_package(vsg CONFIG REQUIRED)

@@ -27,6 +27,14 @@ namespace ROCKY_NAMESPACE
         //! Construct the system
         DecalSystemNode(Registry& registry);
 
+        //! Draw receiving-volume edges for all submitted decals, independently of cell-list limits.
+        //! Change these settings during update; disabled debug drawing records no graphics commands.
+        bool debugVolumes = false;
+        bool debugVolumesSeeThrough = true;
+
+        //! Renderer-owned graphics node; attach once to the main scene, not the compute graph.
+        vsg::ref_ptr<vsg::Node> debugNode() const { return _debugNode; }
+
     public: // SimpleSystemNodeBase
         void initialize(VSGContext) override;
         void update(VSGContext) override;
@@ -46,6 +54,7 @@ namespace ROCKY_NAMESPACE
         };
         mutable ViewLocal<ViewDetail> _views;
         std::shared_ptr<SharedRenderData> _sharedRenderData;
+        vsg::ref_ptr<vsg::Node> _debugNode;
 
         vsg::ref_ptr<vsg::ShaderStage> _cullingShader;
 

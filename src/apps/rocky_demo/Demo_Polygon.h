@@ -127,6 +127,7 @@ auto Demo_Polygon = [](Application& app)
             bool styleChanged = false;
             styleChanged |= ImGuiLTable::ColorEdit4("Color", reinterpret_cast<float*>(&style.color));
             styleChanged |= ImGuiLTable::Checkbox("Per-polygon colors", &style.useGeometryColors);
+            styleChanged |= ImGuiLTable::Checkbox("Wireframe", &style.wireframe);
             styleChanged |= ImGuiLTable::SliderFloat(
                 "Depth offset (m)", &style.depthOffset, 0.0f, 1000.0f, "%.0f", ImGuiSliderFlags_AlwaysClamp);
 

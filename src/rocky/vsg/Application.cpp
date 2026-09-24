@@ -379,6 +379,11 @@ Application::ctor(int& argc, char** argv)
 
     scene->addChild(systemsNode);
 
+#ifdef ROCKY_HAS_DECALS
+    // Graphics diagnostics belong after terrain/ECS drawing, never in the decal compute traversal.
+    scene->addChild(decalSystem->debugNode());
+#endif
+
 
     // let's try VSG's delete queue.
     _activityStatus = vsg::ActivityStatus::create();
