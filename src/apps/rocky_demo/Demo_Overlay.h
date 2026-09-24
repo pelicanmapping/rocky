@@ -22,6 +22,7 @@ auto Demo_Overlay_Relative = [](Application& app)
     static double scale = 10000.0;
     static float opacity = 0.85f;
     static bool useOverlay = true;
+    static OverlayMode overlayMode = OverlayMode::Vector;
     static bool useDepthBuffer = false;
     static bool continuousBake = false;
 
@@ -62,6 +63,7 @@ auto Demo_Overlay_Relative = [](Application& app)
         if (useOverlay)
         {
             auto& overlay = reg.emplace<Overlay>(e_polygon);
+            overlay.mode = overlayMode;
             overlay.color.a = opacity;
             overlay.continuousBake = continuousBake;
         }
@@ -99,7 +101,21 @@ auto Demo_Overlay_Relative = [](Application& app)
             {
                 const auto& overlay = reg.get<Overlay>(e_polygon);
                 alpha = overlay.color.a;
+                overlayMode = overlay.mode;
                 useDepthBuffer = overlay.useDepthBuffer;
+            }
+
+            const char* modes[] = { "Vector", "Raster" };
+            int selectedMode = overlayMode == OverlayMode::Vector ? 0 : 1;
+            if (ImGuiLTable::Combo("Overlay mode", &selectedMode, modes, 2))
+            {
+                overlayMode = selectedMode == 0 ? OverlayMode::Vector : OverlayMode::Raster;
+                if (auto* overlay = reg.try_get<Overlay>(e_polygon))
+                {
+                    overlay->mode = overlayMode;
+                    overlay->dirty(reg);
+                }
+                app.vsgcontext->requestFrame();
             }
 
             if (ImGuiLTable::SliderFloat("Opacity", &alpha, 0.0f, 1.0f, "%.2f"))
@@ -113,17 +129,17 @@ auto Demo_Overlay_Relative = [](Application& app)
                 }
             }
 
-            if (ImGuiLTable::Checkbox("Continuous bake", &continuousBake) && hasOverlay)
-            {
-                reg.get<Overlay>(e_polygon).continuousBake = continuousBake;
-                app.vsgcontext->requestFrame();
-            }
+            // if (ImGuiLTable::Checkbox("Continuous bake", &continuousBake) && hasOverlay)
+            // {
+            //     reg.get<Overlay>(e_polygon).continuousBake = continuousBake;
+            //     app.vsgcontext->requestFrame();
+            // }
 
-            if (ImGuiLTable::Checkbox("Depth buffer", &useDepthBuffer) && hasOverlay)
-            {
-                reg.get<Overlay>(e_polygon).useDepthBuffer = useDepthBuffer;
-                app.vsgcontext->requestFrame();
-            }
+            // if (ImGuiLTable::Checkbox("Depth buffer", &useDepthBuffer) && hasOverlay)
+            // {
+            //     reg.get<Overlay>(e_polygon).useDepthBuffer = useDepthBuffer;
+            //     app.vsgcontext->requestFrame();
+            // }
 
             auto& polygonXform = reg.get<Transform>(e_polygon);
 
@@ -166,6 +182,7 @@ auto Demo_Overlay_Relative = [](Application& app)
             if (useOverlay)
             {
                 auto& overlay = r.emplace_or_replace<Overlay>(e_polygon);
+                overlay.mode = overlayMode;
                 overlay.color.a = opacity;
                 overlay.useDepthBuffer = useDepthBuffer;
                 overlay.continuousBake = continuousBake;
@@ -183,8 +200,9 @@ auto Demo_Overlay_Absolute = [](Application& app)
     static entt::entity e = entt::null;
     static double opacity = 0.80;
     static bool useOverlay = true;
+    static OverlayMode overlayMode = OverlayMode::Vector;
     static bool useDepthBuffer = false;
-    static float depthSafetyFactorUI = 1.0f;
+    // static float depthSafetyFactorUI = 1.0f;
     static bool continuousBake = false;
 
     if (e == entt::null)
@@ -309,8 +327,7 @@ auto Demo_Overlay_Absolute = [](Application& app)
         if (useOverlay)
         {
             auto& overlay = reg.emplace<Overlay>(e);
-            // This demo includes a stippled Line, which requires Raster mode.
-            overlay.mode = OverlayMode::Raster;
+            overlay.mode = overlayMode;
             overlay.color.a = (float)opacity;
             overlay.continuousBake = continuousBake;
         }
@@ -347,7 +364,21 @@ auto Demo_Overlay_Absolute = [](Application& app)
             {
                 const auto& overlay = reg.get<Overlay>(e);
                 alpha = overlay.color.a;
+                overlayMode = overlay.mode;
                 useDepthBuffer = overlay.useDepthBuffer;
+            }
+
+            const char* modes[] = { "Vector", "Raster" };
+            int selectedMode = overlayMode == OverlayMode::Vector ? 0 : 1;
+            if (ImGuiLTable::Combo("Overlay mode", &selectedMode, modes, 2))
+            {
+                overlayMode = selectedMode == 0 ? OverlayMode::Vector : OverlayMode::Raster;
+                if (auto* overlay = reg.try_get<Overlay>(e))
+                {
+                    overlay->mode = overlayMode;
+                    overlay->dirty(reg);
+                }
+                app.vsgcontext->requestFrame();
             }
 
             if (ImGuiLTable::SliderFloat("Opacity", &alpha, 0.0f, 1.0f, "%.2f"))
@@ -361,27 +392,29 @@ auto Demo_Overlay_Absolute = [](Application& app)
                 }
             }
 
-            if (ImGuiLTable::Checkbox("Continuous bake", &continuousBake) && reg.any_of<Overlay>(e))
-            {
-                reg.get<Overlay>(e).continuousBake = continuousBake;
-                app.vsgcontext->requestFrame();
-            }
+            // TODO: these are commented out because they don't (yet) cause a VISIBLE change in the demo.
 
-            if (ImGuiLTable::Checkbox("Depth buffer", &useDepthBuffer) && reg.any_of<Overlay>(e))
-            {
-                reg.get<Overlay>(e).useDepthBuffer = useDepthBuffer;
-                app.vsgcontext->requestFrame();
-            }
+            // if (ImGuiLTable::Checkbox("Continuous bake", &continuousBake) && reg.any_of<Overlay>(e))
+            // {
+            //     reg.get<Overlay>(e).continuousBake = continuousBake;
+            //     app.vsgcontext->requestFrame();
+            // }
 
-            if (auto* overlayBake = app.computeSystemsNode ? app.computeSystemsNode->get<OverlayBakeSystemNode>() : nullptr)
-            {
-                depthSafetyFactorUI = overlayBake->depthSafetyFactor;
-                if (ImGuiLTable::SliderFloat("Depth safety", &depthSafetyFactorUI, 0.25f, 3.0f, "%.2f"))
-                {
-                    overlayBake->depthSafetyFactor = depthSafetyFactorUI;
-                    app.vsgcontext->requestFrame();
-                }
-            }
+            // if (ImGuiLTable::Checkbox("Depth buffer", &useDepthBuffer) && reg.any_of<Overlay>(e))
+            // {
+            //     reg.get<Overlay>(e).useDepthBuffer = useDepthBuffer;
+            //     app.vsgcontext->requestFrame();
+            // }
+
+            // if (auto* overlayBake = app.computeSystemsNode ? app.computeSystemsNode->get<OverlayBakeSystemNode>() : nullptr)
+            // {
+            //     depthSafetyFactorUI = overlayBake->depthSafetyFactor;
+            //     if (ImGuiLTable::SliderFloat("Depth safety", &depthSafetyFactorUI, 0.25f, 3.0f, "%.2f"))
+            //     {
+            //         overlayBake->depthSafetyFactor = depthSafetyFactorUI;
+            //         app.vsgcontext->requestFrame();
+            //     }
+            // }
 
             ImGuiLTable::End();
         }
@@ -395,8 +428,7 @@ auto Demo_Overlay_Absolute = [](Application& app)
             if (useOverlay)
             {
                 auto& overlay = r.emplace_or_replace<Overlay>(e);
-                // Preserve the stippled Line by routing this demo through RTT.
-                overlay.mode = OverlayMode::Raster;
+                overlay.mode = overlayMode;
                 overlay.color.a = (float)opacity;
                 overlay.useDepthBuffer = useDepthBuffer;
                 overlay.continuousBake = continuousBake;
