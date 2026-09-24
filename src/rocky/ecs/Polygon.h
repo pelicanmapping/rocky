@@ -55,6 +55,9 @@ namespace ROCKY_NAMESPACE
         //! ordinary rendering. This does not apply when using Overlay.
         float depthOffset = 0.0f;
 
+        //! 4x4 stippling pattern (lower 16 bits only). Ignored by vector overlays.
+        std::uint32_t stipplePattern = 0xFFFF;
+
         //! Tessellation resolution hint, in meters, when building polygon
         //! geometry. A value of zero uses the default curvature-following
         //! resolution.

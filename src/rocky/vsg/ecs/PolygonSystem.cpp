@@ -438,6 +438,7 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
                 meshStyle.depthOffset = effectiveDepthOffset;
                 meshStyle.resolution = resolvedStyle.resolution;
                 meshStyle.texture = resolvedStyle.texture;
+                meshStyle.stipplePattern = resolvedStyle.stipplePattern;
                 registry.emplace_or_replace<MeshStyle>(
                     adapter.style, std::move(meshStyle));
                 adapter.sourceStyle = sourceStyle;
