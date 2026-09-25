@@ -57,7 +57,7 @@
 
 // One count plus these indices keeps each CPU/GPU tile record 16-byte aligned.
 // If more than this number of decals intersect a tile, not all will render.
-#define MAX_DECALS_PER_TILE                 19
+#define MAX_DECALS_PER_TILE                 15
 
 // Default descriptor capacity. TerrainState overrides it at startup to match
 // the requested capacity after clamping to the Vulkan device limits.

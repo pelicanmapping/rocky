@@ -15,6 +15,34 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
 
+//! A view may be collected repeatedly; initialization must be empty and must not duplicate or reset published data.
+TEST_CASE("view dependent decal state is empty and initializes only once", "[projection][views]")
+{
+    auto view = vsg::View::create();
+    auto state = ViewDependentStateEx::create(view, vsg::ref_ptr<vsg::Device>{});
+    view->viewDependentState = state;
+    vsg::ResourceRequirements requirements;
+    state->init(requirements);
+
+    const auto descriptorCount = state->descriptorSet->descriptors.size();
+    const auto bindingCount = state->descriptorSetLayout->bindings.size();
+    const auto descriptorSet = state->descriptorSet;
+#ifdef ROCKY_HAS_DECALS
+    BufferAccess<DecalGPU> decals(state->decalsBuf);
+    REQUIRE(decals.capacity() == 1u);
+    CHECK(decals->count == 0);
+    decals->count = 7; // Stand in for a header already published by DecalSystem.
+#endif
+
+    state->init(requirements);
+    CHECK(state->descriptorSet == descriptorSet);
+    CHECK(state->descriptorSet->descriptors.size() == descriptorCount);
+    CHECK(state->descriptorSetLayout->bindings.size() == bindingCount);
+#ifdef ROCKY_HAS_DECALS
+    CHECK(BufferAccess<DecalGPU>(state->decalsBuf)->count == 7);
+#endif
+}
+
 //! Compile decal culling, shading, and volume diagnostics with and without vector support, without requiring a GPU.
 TEST_CASE("decal culling and terrain shaders compile together", "[projection][shader]")
 {

@@ -761,7 +761,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
 void
 DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
 {
-    bool buffersChanged = false;
+    bool anyBuffersChanged = false;
     unsigned totalNumDecals = 0u;
 #ifdef ROCKY_HAS_SLUGHORN
     unsigned totalNumSlugLayers = 0u;
@@ -799,9 +799,11 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
 
     for (auto& vds : _sharedRenderData->viewDependentState)
     {
+        // Private offscreen views and removed views leave holes in the application view table.
         if (!vds || !vds->frustumParamsBuf)
-            break;
+            continue;
 
+        bool buffersChanged = false;
         auto& view = _views[vds->view->viewID];
 
         if (!vds->decalsBuf)
@@ -871,6 +873,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
 
         if (buffersChanged)
         {
+            anyBuffersChanged = true;
             _sharedRenderData->rebuildVdsDescriptorSet(vds->view->viewID, vsgcontext);
 
             dispose(view.commands);
@@ -884,7 +887,7 @@ DecalSystemNode::resizeGPUBuffersIfNeeded(VSGContext vsgcontext)
         }
     }
 
-    if (buffersChanged)
+    if (anyBuffersChanged)
     {
         vsgcontext->sharedRenderData->dirtySharedDescriptors();
     }
@@ -1375,10 +1378,9 @@ DecalSystemNode::traverse(vsg::RecordTraversal& record) const
 
     for(auto& view : _views)
     {
+        // View IDs are not contiguous: an empty slot must not hide later application views.
         if (view.commands)
             view.commands->accept(record);
-        else
-            break;
     }    
 }
 

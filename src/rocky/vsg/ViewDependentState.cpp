@@ -21,6 +21,11 @@ ViewDependentStateEx::ViewDependentStateEx(vsg::ref_ptr<vsg::View> vsgView, vsg:
 void
 ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 {
+    // VSG can collect requirements again when a view is compiled dynamically.
+    // Match the base class's one-time initialization without duplicating Rocky bindings.
+    if (renderParamsBuf)
+        return;
+
     Inherit::init(req);
 
     BufferAccess<RenderParamsGPU> renderParams(
@@ -57,6 +62,10 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 #ifdef ROCKY_HAS_DECALS
     BufferAccess<DecalGPU> decals(decalsBuf,
         BINDING_VDS_DECALS, TYPE_VDS_DECALS);
+
+    // A newly added view can render before the next DecalSystem update/compute pass.
+    // Its header must describe an empty list, not DecalGPU's default texture index (-1).
+    decals->count = 0;
 
     this->descriptorSet->descriptors.emplace_back(decalsBuf);
 

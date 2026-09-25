@@ -136,8 +136,13 @@ void applyDecals(
     in vec3 normalVs,
     in vec2 fragCoord)
 {
+    // New views have an empty header until their first decal update. Do not read
+    // their GPU-only cell lists before the compute pass has populated them.
+    if (b_decals.decal[0].textureIndex <= 0)
+        return;
+
     int index = frustumIndex(fragCoord);
-    if (index < 0)
+    if (index < 0 || index >= b_decalTiles.tile.length())
         return;
 
     uint candidateCount = b_decalTiles.tile[index].count;
