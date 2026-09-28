@@ -24,10 +24,11 @@ namespace ROCKY_NAMESPACE::detail
         bool focalPointValid = false;
 
         // Terrain-intersection cache. The cache is invalidated by a changed
-        // projector matrix or a loaded terrain tile containing the last hit.
+        // projector matrix or terrain changes along the intended query area, not only at the last hit.
         bool intersectionCacheValid = false;
         glm::dmat4 lastProjectorWorld = glm::dmat4(1.0);
         SRS lastWorldSRS;
+        GeoExtent intersectionFootprint;
 
         // Automatic overlay receiving volume, independent of its source Transform and texture/atlas fit.
         // The range is in the post-placement projector's normalized Z coordinates; XY remains unchanged.

@@ -252,3 +252,77 @@ TEST_CASE("terrain height ranges cross the antimeridian", "[projection][overlay-
     CHECK(result.value().x > 30.0);
     CHECK(result.value().y < 50.0);
 }
+
+//! A near-side seam/miss must not clamp either projection type to the opposite hemisphere or cache that miss.
+TEST_CASE("terrain projections reject far-side hits and recover after a local miss", "[projection][placement]")
+{
+    DepthFixture f(true);
+    const bool perspective = GENERATE(Catch::values(false, true));
+    f.addOverlay(OverlayMode::Raster, false);
+    if (perspective)
+        f.registry.write([&](entt::registry& reg)
+        {
+            reg.emplace<Optics>(f.entity).projection = Optics::Projection::Perspective;
+        });
+
+    // Only the opposite hemisphere is intersectable initially, as when the local ray misses a tile seam.
+    const Profile opposite(SRS::WGS84, Box(179.0, -52.5, 181.0, -50.5), 1u, 1u);
+    auto farTile = f.makeTile(TileKey(0u, 0u, 0u, opposite), 40.0);
+    f.profileNode->children.clear();
+    f.profileNode->addChild(farTile);
+    glm::dmat4 model;
+    f.registry.read([&](const entt::registry& reg)
+    {
+        model = to_glm(reg.get<TransformDetail>(f.entity).views[0].model);
+    });
+    const auto forward = -glm::normalize(glm::dvec3(model[2]));
+    const auto start = glm::dvec3(model[3]) - forward * (perspective ? 0.0 : 1e6);
+    vsg::LineSegmentIntersector oldProbe(to_vsg(start), to_vsg(start + forward * 1e8));
+    f.terrain->accept(oldProbe);
+    REQUIRE_FALSE(oldProbe.intersections.empty()); // Verify the regression fixture really has a far-side hit.
+
+    f.optics->update(f.context.get());
+    CHECK_FALSE(f.depth().focalPointValid);
+    CHECK_FALSE(f.depth().intersectionCacheValid);
+
+    // Misses stay retryable even without a notification; local terrain arriving later must restore placement.
+    f.profileNode->addChild(f.root);
+    f.optics->update(f.context.get());
+    REQUIRE(f.depth().focalPointValid);
+    CHECK(f.depth().focalDistance < 2000.0);
+    CHECK(f.depth().intersectionCacheValid);
+}
+
+//! Both load and hierarchy events cover the intended footprint even when the old hit drifted into another tile.
+TEST_CASE("terrain projection cache tracks intended location as well as hit", "[projection][placement]")
+{
+    const bool hierarchyChange = GENERATE(Catch::values(false, true));
+    DepthFixture f;
+    f.addOverlay(OverlayMode::Raster, false);
+    f.optics->update(f.context.get());
+    REQUIRE(f.depth().intersectionCacheValid);
+    const auto original = f.depth().focalPoint;
+
+    // Emulate a displaced previous hit outside the local changed tile, without changing the projector matrix.
+    f.registry.write([&](entt::registry& reg)
+    {
+        reg.get<ProjectionDetail>(f.entity).views[0].focalPoint.x = 1500.0;
+    });
+    f.optics->update(f.context.get());
+    CHECK(f.depth().focalPoint.x == Approx(1500.0));
+
+    const TileKey unrelated(0u, 0u, 0u,
+        Profile(SRS::SPHERICAL_MERCATOR, Box(10000.0, 10000.0, 11000.0, 11000.0), 1u, 1u));
+    f.terrain->onTileLoaded.fire(unrelated);
+    f.optics->update(f.context.get());
+    CHECK(f.depth().focalPoint.x == Approx(1500.0));
+
+    const TileKey local(0u, 0u, 0u,
+        Profile(SRS::SPHERICAL_MERCATOR, Box(-100.0, -100.0, 100.0, 100.0), 1u, 1u));
+    if (hierarchyChange)
+        f.terrain->onTileBoundsChanged.fire(local);
+    else
+        f.terrain->onTileLoaded.fire(local);
+    f.optics->update(f.context.get());
+    CHECK(glm::length(f.depth().focalPoint - original) < 1e-8);
+}

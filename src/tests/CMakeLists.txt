@@ -7,6 +7,9 @@ add_executable(${APP_NAME} ${SOURCES})
 
 target_link_libraries(${APP_NAME} rocky)
 
+# Catch and the ECS templates can exceed the COFF section limit in MSVC debug-info builds.
+target_compile_options(${APP_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
+
 # Tests use json.h, which relies on nlohmann_json, which is not a public dependency of rocky
 if (BUILD_WITH_JSON)
     find_package(nlohmann_json CONFIG)

@@ -61,6 +61,46 @@ namespace
         return footprint;
     }
 
+    //! Stops a globe-terrain probe at closest approach in ellipsoid space, before it can exit the far side.
+    //! The input direction is normalized. Non-globe targets retain their original range; invalid rays fail closed.
+    bool limitTerrainRay(const SRS& worldSRS, const glm::dvec3& start, const glm::dvec3& forward, double& length)
+    {
+        if (!worldSRS.isGeocentric())
+            return true;
+        const auto& ellipsoid = worldSRS.ellipsoid();
+        const glm::dvec3 radii(ellipsoid.semiMajorAxis(), ellipsoid.semiMajorAxis(), ellipsoid.semiMinorAxis());
+        const auto p = start / radii;
+        const auto d = forward / radii;
+        const double closest = -glm::dot(p, d) / glm::dot(d, d);
+        if (!(closest > 0.0) || !std::isfinite(closest))
+            return false;
+        length = std::min(length, closest);
+        return true;
+    }
+
+    //! Tracks the authored footprint and the path to its hit so local terrain changes can correct a displaced hit.
+    //! A small map-coordinate margin includes both neighbors when the ray lies on a tile boundary.
+    GeoExtent intersectionFootprint(const glm::dmat4& world, const SRS& worldSRS, const glm::dvec3& hit)
+    {
+        auto footprint = projectorFootprint(world, worldSRS);
+        if (footprint.valid())
+        {
+            const auto point = GeoPoint(worldSRS, hit).transform(footprint.srs());
+            if (!point.valid() || !std::isfinite(point.x) || !std::isfinite(point.y))
+                return {};
+            footprint.expandToInclude(point.x, point.y);
+            footprint.expand(Distance(1.0, Units::METERS), Distance(1.0, Units::METERS));
+        }
+        return footprint;
+    }
+
+    //! Invalidates only terrain-intersection caches affected by a tile; an unknown footprint is conservative.
+    bool affectsIntersection(const TileKey& key, const ProjectionViewDetail& detail)
+    {
+        return detail.intersectionCacheValid && (!detail.intersectionFootprint.valid() ||
+            key.extent().intersects(detail.intersectionFootprint));
+    }
+
     //! Refreshes a receiving-volume cache from resident terrain boxes, retaining the original depth on a miss.
     //! Call during update, after terrain placement. The authored Transform and payload mapping are never changed.
     void fitTerrainDepth(
@@ -268,8 +308,7 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
                         detail.terrainDepthRangeValid = false;
                     }
                     // Hierarchy changes can also change a cached center-ray hit, including explicit projectors.
-                    if (detail.intersectionCacheValid && detail.focalPointValid && detail.lastWorldSRS.valid() &&
-                        key.extent().contains(GeoPoint(detail.lastWorldSRS, detail.focalPoint)))
+                    if (affectsIntersection(key, detail))
                     {
                         detail.intersectionCacheValid = false;
                     }
@@ -278,10 +317,9 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
                 if (!detail.intersectionCacheValid || !detail.focalPointValid || !detail.lastWorldSRS.valid())
                     continue;
 
-                GeoPoint hit(detail.lastWorldSRS, detail.focalPoint);
                 for (const auto& key : loadedTiles)
                 {
-                    if (key.extent().contains(hit))
+                    if (affectsIntersection(key, detail))
                     {
                         detail.intersectionCacheValid = false;
                         break;
@@ -341,7 +379,7 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
 
             glm::dvec3 forward = -glm::dvec3(projectorWorld[2]);
             double forwardLength = glm::length(forward);
-            if (forwardLength <= 0.0)
+            if (!(forwardLength > 0.0) || !std::isfinite(forwardLength))
             {
                 setManualProjection(optics, detail);
                 detail.intersectionCacheValid = false;
@@ -357,17 +395,23 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
 
             if (!useCachedIntersection)
             {
-                auto origin = vsg::dvec3(projectorWorld[3][0], projectorWorld[3][1], projectorWorld[3][2]);
+                const auto origin = glm::dvec3(projectorWorld[3]);
                 setManualProjection(optics, detail);
 
                 // An orthographic source fit can initially place its center below
                 // terrain, so begin far behind the volume and probe along -Z.
                 auto start = origin;
                 if (projection == Optics::Projection::Orthographic)
-                    start += to_vsg(forward * -1e6);
-                auto end = start + to_vsg(forward * 1e8);
+                    start -= forward * 1e6;
+                double rayLength = 1e8;
+                if (terrain && !limitTerrainRay(transformView.cache.world_srs, start, forward, rayLength))
+                {
+                    detail.intersectionCacheValid = false;
+                    continue;
+                }
+                const auto end = start + forward * rayLength;
 
-                vsg::LineSegmentIntersector intersector(start, end);
+                vsg::LineSegmentIntersector intersector(to_vsg(start), to_vsg(end));
                 terrainTarget->accept(intersector);
                 const bool found = !intersector.intersections.empty();
                 if (found)
@@ -380,7 +424,10 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
                         });
                     detail.focalPoint = to_glm(closest->get()->worldIntersection);
                     detail.focalPointValid = true;
-                    detail.focalDistance = glm::length(detail.focalPoint - to_glm(origin));
+                    detail.focalDistance = glm::length(detail.focalPoint - origin);
+                    if (canCache)
+                        detail.intersectionFootprint = intersectionFootprint(
+                            projectorWorld, transformView.cache.world_srs, detail.focalPoint);
                 }
 
                 detail.lastProjectorWorld = projectorWorld;
