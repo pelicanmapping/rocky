@@ -17,6 +17,67 @@
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
 
+//! A surviving registry can remove GPU resources and replace a texture system without invoking destroyed callbacks.
+TEST_CASE("texture system disconnects lifecycle hooks on destruction", "[texture][ecs][lifecycle]")
+{
+    Registry registry = Registry::create();
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    entt::entity native, image;
+    registry.write([&](entt::registry& reg)
+    {
+        native = reg.create();
+        image = reg.create();
+        reg.emplace<Texture>(native).imageInfo = vsg::ImageInfo::create();
+        reg.emplace<ImageTexture>(image).image = Image::create(Image::R8G8B8A8_UNORM, 2, 2);
+    });
+
+    for (int generation = 0; generation < 2; ++generation)
+    {
+        auto textures = TextureSystemNode::create(registry);
+        textures->update(context.get());
+        registry.read([&](entt::registry& reg)
+        {
+            REQUIRE(reg.get<TextureResource>(native).texture);
+            REQUIRE(reg.get<TextureResource>(image).texture);
+            CHECK(reg.get<TextureResource>(native).producer == TextureResourceProducer::Texture);
+            CHECK(reg.get<TextureResource>(image).producer == TextureResourceProducer::ImageTexture);
+        });
+        textures = {};
+        registry.write([&](entt::registry& reg)
+        {
+            REQUIRE(reg.on_construct<Texture>().empty());
+            REQUIRE(reg.on_update<Texture>().empty());
+            REQUIRE(reg.on_destroy<Texture>().empty());
+            REQUIRE(reg.on_construct<ImageTexture>().empty());
+            REQUIRE(reg.on_update<ImageTexture>().empty());
+            REQUIRE(reg.on_destroy<ImageTexture>().empty());
+            REQUIRE(reg.on_destroy<TextureResource>().empty());
+        });
+
+        // Resource retirement may run on a paging thread after its publishing system has been removed.
+        std::thread removal([&]()
+        {
+            registry.write([&](entt::registry& reg)
+            {
+                reg.remove<TextureResource>(native);
+                reg.remove<TextureResource>(image);
+                reg.patch<Texture>(native);
+                reg.patch<ImageTexture>(image);
+                reg.remove<Texture>(native);
+                reg.remove<ImageTexture>(image);
+                reg.emplace<Texture>(native).imageInfo = vsg::ImageInfo::create();
+                reg.emplace<ImageTexture>(image).image = Image::create(Image::R8G8B8A8_UNORM, 2, 2);
+            });
+        });
+        removal.join();
+        registry.read([&](entt::registry& reg)
+        {
+            CHECK_FALSE(reg.any_of<TextureResource>(native));
+            CHECK_FALSE(reg.any_of<TextureResource>(image));
+        });
+    }
+}
+
 //! Native and CPU producers publish through the same resource contract, including sources created before the system.
 TEST_CASE("shared texture publication and replacement", "[texture][ecs]")
 {

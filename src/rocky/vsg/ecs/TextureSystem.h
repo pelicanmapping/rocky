@@ -20,6 +20,8 @@ namespace ROCKY_NAMESPACE
     public:
         //! Installs producer lifecycle hooks and adopts already-existing texture sources.
         TextureSystemNode(Registry& registry);
+        //! Disconnects lifecycle hooks under the registry write lock before callback-owned members are destroyed.
+        ~TextureSystemNode() override;
         //! Publishes changed sources and retires replaced GPU references on the update thread.
         void update(VSGContext) override;
 

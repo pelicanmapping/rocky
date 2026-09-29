@@ -47,6 +47,20 @@ TextureSystemNode::TextureSystemNode(Registry& registry) :
     });
 }
 
+TextureSystemNode::~TextureSystemNode()
+{
+    _registry.write([&](entt::registry& r)
+    {
+        r.on_construct<Texture>().disconnect(this);
+        r.on_update<Texture>().disconnect(this);
+        r.on_destroy<Texture>().disconnect(this);
+        r.on_construct<ImageTexture>().disconnect(this);
+        r.on_update<ImageTexture>().disconnect(this);
+        r.on_destroy<ImageTexture>().disconnect(this);
+        r.on_destroy<TextureResource>().disconnect(this);
+    });
+}
+
 void TextureSystemNode::on_construct_Texture(entt::registry& r, entt::entity entity)
 {
     Texture::dirty(r, entity);
