@@ -32,9 +32,11 @@
 #endif
 
 #include <atomic>
+#include <cfloat>
 #include <chrono>
 #include <filesystem>
 #include <fstream>
+#include <future>
 #include <map>
 #include <random>
 #include <set>
@@ -141,6 +143,101 @@ TEST_CASE("model system skips a removed dirty component", "[ecs][dirty][model]")
         CHECK(reg.valid(entity));
         CHECK_FALSE((reg.any_of<Model, ModelDetail>(entity)));
     });
+}
+
+//! Queued paging jobs track live priority changes without retaining tiles or dereferencing them after expiration.
+TEST_CASE("node pager priorities survive tile expiration", "[nodepager]")
+{
+    // Traversal needs a command buffer and viewport, but no window or submitted GPU commands.
+    vsg::ref_ptr<vsg::CommandBuffer> commandBuffer;
+    try
+    {
+        auto instance = vsg::Instance::create(vsg::Names{}, vsg::Names{});
+        auto [physicalDevice, queueFamily] = instance->getPhysicalDeviceAndQueueFamily(VK_QUEUE_GRAPHICS_BIT);
+        if (!physicalDevice || queueFamily < 0)
+        {
+            WARN("No Vulkan graphics device available - skipping NodePager traversal test");
+            return;
+        }
+        auto device = vsg::Device::create(physicalDevice, vsg::QueueSettings{{ queueFamily, { 1.0f } }},
+            vsg::Names{}, vsg::Names{});
+        commandBuffer = vsg::CommandPool::create(device, queueFamily)->allocate();
+    }
+    catch (const vsg::Exception& error)
+    {
+        WARN("Vulkan command buffer unavailable - skipping NodePager traversal test: " << error.message);
+        return;
+    }
+
+    auto view = vsg::View::create();
+    auto viewState = vsg::ViewDependentState::create(view);
+    viewState->viewportData = vsg::vec4Array::create(1);
+    viewState->viewportData->at(0) = vsg::vec4(0.0f, 0.0f, 1024.0f, 1024.0f);
+    commandBuffer->viewDependentState = viewState.get();
+    auto record = vsg::RecordTraversal::create();
+    record->getState()->connect(commandBuffer);
+    vsg::dmat4 projection;
+    record->getState()->projectionMatrixStack.set(projection);
+
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    auto& runtime = context.get()->io.services().jobs;
+    runtime.set_allow_work_stealing(false);
+    jobs::context jobContext;
+    jobContext.pool = runtime.get_pool("rocky::nodepager", 1);
+
+    // Hold the worker until we expire the queued tile. Promise destruction also releases it if an assertion fails.
+    std::promise<void> resume;
+    auto started = std::make_shared<std::promise<void>>();
+    auto ready = started->get_future();
+    runtime.dispatch([gate = resume.get_future().share(), started]()
+    {
+        started->set_value();
+        gate.wait();
+    }, jobContext);
+    REQUIRE(ready.wait_for(std::chrono::seconds(5)) == std::future_status::ready);
+
+    auto loadCalls = std::make_shared<std::atomic_uint>(0u);
+    auto pager = NodePager::create(Profile("global-geodetic"), SRS::WGS84);
+    pager->createPayload = [](const TileKey&, const IOOptions&) -> TiledDataPager::Payload::Ptr { return {}; };
+    pager->subtileLoaderFactory = [loadCalls](const TileKey&) -> NodePager::SubtileLoader
+    {
+        return [loadCalls](const IOOptions&) -> NodePager::Subtile::Ptr
+        {
+            ++*loadCalls;
+            return {};
+        };
+    };
+    pager->initialize(context.get());
+    REQUIRE_FALSE(pager->children.empty());
+    auto* tile = pager->children.front()->cast<vsg::CullNode>();
+    REQUIRE(tile != nullptr);
+    tile->bound = vsg::dsphere(0.0, 0.0, 0.0, 1.0);
+    vsg::observer_ptr<vsg::Node> weakTile(tile);
+    tile->traverse(*record);
+
+    std::function<float()> priority;
+    {
+        std::scoped_lock lock(jobContext.pool->_queue_mutex);
+        REQUIRE(jobContext.pool->_queue.size() == 1u);
+        priority = jobContext.pool->_queue.front().ctx.priority;
+    }
+    REQUIRE(priority);
+    CHECK(priority() == Approx(-1.0f));
+    projection[1][1] = 2.0;
+    record->getState()->projectionMatrixStack.set(projection);
+    tile->traverse(*record);
+    CHECK(priority() == Approx(-2.0f));
+
+    pager = {};
+    REQUIRE_FALSE(weakTile.ref_ptr());
+    CHECK(priority() == -FLT_MAX);
+
+    // Step the real scheduler while its worker is paused: it samples priority before testing cancellation.
+    jobs::detail::job queued;
+    REQUIRE(jobContext.pool->_take_job(queued, true));
+    CHECK_FALSE(queued._delegate());
+    CHECK(loadCalls->load() == 0u);
+    resume.set_value();
 }
 
 TEST_CASE("mesh feature default tessellation is curvature bounded", "[featurebuilder]")

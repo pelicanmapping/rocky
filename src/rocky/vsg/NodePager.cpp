@@ -6,6 +6,7 @@
 #include "NodePager.h"
 #include <rocky/vsg/VSGUtils.h>
 #include <atomic>
+#include <cfloat>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -18,7 +19,7 @@ namespace ROCKY_NAMESPACE
         const NodePager* pager = nullptr;
         mutable void* token = nullptr;
         bool canLoadChild = false;
-        mutable float priority = 0.0f;
+        mutable std::atomic<float> priority = { 0.0f };
         int revision = 0;
         mutable std::atomic_bool load_gate = { false };
         vsg::ref_ptr<vsg::Node> payload;
@@ -191,7 +192,7 @@ NodePager::createNode(const TileKey& key, const IOOptions& io) const
         auto p = PagedNode::create();
         p->key = key;
         p->bound = tileBound;
-        p->priority = (float)key.level;
+        p->priority.store((float)key.level, std::memory_order_relaxed);
         p->pager = this;
         p->canLoadChild = true;
 
@@ -257,15 +258,21 @@ PagedNode::startLoading() const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(pager, void());
 
+    vsg::observer_ptr<PagedNode> parent_weak(const_cast<PagedNode*>(this));
+
     jobs::context jc;
     jc.name = key.str();
     jc.pool = pager->vsgcontext->io.services().jobs.get_pool(pager->poolName, 4);
-    jc.priority = [&]() { return priority; };
+    // The scheduler reads priorities even for canceled jobs whose tiles have expired.
+    // Retain the tile only while sampling its render-thread-updated priority.
+    jc.priority = [parent_weak]() -> float
+        {
+            auto parent = parent_weak.ref_ptr();
+            return parent ? parent->priority.load(std::memory_order_relaxed) : -FLT_MAX;
+        };
 
     auto load = pager->createSubtileLoader(key);
     ROCKY_SOFT_ASSERT_AND_RETURN(load, void());
-
-    vsg::observer_ptr<PagedNode> parent_weak(const_cast<PagedNode*>(this));
 
     auto load_job = [load, parent_weak, vsgcontext(pager->vsgcontext), orig_revision(revision), io(pager->vsgcontext->io)](Cancelable& c)
         {
@@ -298,13 +305,13 @@ PagedNode::traverse(vsg::RecordTraversal& record) const
         {
             auto d = std::abs(bound.r * proj[1][1]);
             child_in_range = (d > min_screen_height_ratio);
-            priority = -d;
+            priority.store(static_cast<float>(-d), std::memory_order_relaxed);
         }
         else // perspective
         {
             auto d = state->lodDistance(bound);
             child_in_range = (d > 0.0) && (bound.r > (d * min_screen_height_ratio));
-            priority = -d;
+            priority.store(static_cast<float>(-d), std::memory_order_relaxed);
         }
 
         if (key == pager->debugKey)
