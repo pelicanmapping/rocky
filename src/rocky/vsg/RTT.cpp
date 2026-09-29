@@ -55,6 +55,54 @@ namespace
 }
 
 
+vsg::RenderPass::Dependencies detail::makeRTTDependencies(bool color, bool depth)
+{
+    if (!color && !depth)
+        return {};
+
+    VkPipelineStageFlags attachmentStages = 0;
+    VkAccessFlags attachmentAccess = 0;
+    VkAccessFlags previousWrites = 0;
+    if (color)
+    {
+        attachmentStages |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        attachmentAccess |= VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        previousWrites |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    }
+    if (depth)
+    {
+        attachmentStages |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        attachmentAccess |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        previousWrites |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    }
+
+    vsg::RenderPass::Dependencies dependencies(color ? 2u : 1u);
+    // A rebake must wait for earlier sampling and attachment writes, even when
+    // initialLayout is UNDEFINED and the old contents will be discarded.
+    auto& incoming = dependencies[0];
+    incoming.srcSubpass = VK_SUBPASS_EXTERNAL;
+    incoming.dstSubpass = 0;
+    incoming.srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+    incoming.dstStageMask = attachmentStages;
+    incoming.srcAccessMask = previousWrites | (color ? VK_ACCESS_SHADER_READ_BIT : 0u);
+    incoming.dstAccessMask = attachmentAccess;
+    incoming.dependencyFlags = 0;
+
+    if (color)
+    {
+        auto& outgoing = dependencies[1];
+        outgoing.srcSubpass = 0;
+        outgoing.dstSubpass = VK_SUBPASS_EXTERNAL;
+        outgoing.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        outgoing.dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+        outgoing.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        outgoing.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        // Projective sampling is not framebuffer-local; BY_REGION is unsuitable.
+        outgoing.dependencyFlags = 0;
+    }
+    return dependencies;
+}
+
 // adapted from vsgExamples/vsgrendertotexture.cpp
 
 vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
@@ -177,34 +225,7 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
     }
 
 
-    vsg::RenderPass::Dependencies dependencies;
-#if 0
-    vsg::RenderPass::Dependencies dependencies(2);
-
-    // XXX This dependency is copied from the offscreenrender.cpp
-    // example. I don't completely understand it, but I think it's
-    // purpose is to create a barrier if some earlier render pass was
-    // using this framebuffer's attachment as a texture.
-    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[0].dstSubpass = 0;
-    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-    // This is the heart of what makes Vulkan offscreen rendering
-    // work: render passes that follow are blocked from using this
-    // passes' color attachment in their fragment shaders until all
-    // this pass' color writes are finished.
-    dependencies[1].srcSubpass = 0;
-    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-#endif
+    auto dependencies = detail::makeRTTDependencies(colorImageInfo.valid(), depthImageInfo.valid());
 
     // Framebuffers with the same attachment formats can share a render pass.
     // Apart from reducing Vulkan objects, this lets graphics pipelines compiled

@@ -156,22 +156,6 @@ namespace ROCKY_NAMESPACE::detail
         bool ownsImageTexture = false;
     };
 
-    /**
-     * Consumer-side binding state for one TextureResource.
-     *
-     * The retained ImageInfo identifies the resource currently installed in
-     * descriptorImageIndex and keeps it alive while the descriptor references
-     * it. This component does not own or dispose the producer's image. Removing
-     * it queues the descriptor slot to be restored to the typed fallback during
-     * updateStyles().
-     */
-    struct TextureSlotDetail
-    {
-        vsg::ref_ptr<vsg::ImageInfo> texture;
-        //! Index in SharedRenderData::decalTextures; -1 means unbound.
-        std::int32_t descriptorImageIndex = -1;
-    };
-
 #ifdef ROCKY_HAS_SLUGHORN
     /**
      * Consumer-side binding and publication state for one SlugResource.
@@ -512,8 +496,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
             textures->imageInfoList[detail.descriptorImageIndex] = fallback;
             sharedDescriptorsDirty = true;
         }
-        detail.descriptorImageIndex = -1;
-        detail.texture = {};
+        detail = {};
     };
 
 #ifdef ROCKY_HAS_SLUGHORN
@@ -531,6 +514,7 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
 #endif
 
     std::size_t rejectedTextureCount = 0u;
+    const auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
 
     auto assignResource = [&](const TextureResource& resource, TextureSlotDetail& detail)
     {
@@ -544,7 +528,13 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         if (detail.texture == resource.texture && detail.descriptorImageIndex >= 0 &&
             detail.descriptorImageIndex < static_cast<std::int32_t>(textures->imageInfoList.size()) &&
             textures->imageInfoList[detail.descriptorImageIndex] == resource.texture)
+        {
+            // As with Vector slots, the next terrain update must install this
+            // image in the descriptor set before its index reaches the SSBO.
+            if (!detail.readyForDraw && frame > detail.descriptorWriteFrame)
+                detail.readyForDraw = true;
             return;
+        }
 
         int slot = detail.descriptorImageIndex;
         if (slot < 0)
@@ -569,6 +559,8 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         textures->imageInfoList[slot] = resource.texture;
         detail.descriptorImageIndex = slot;
         detail.texture = resource.texture;
+        detail.descriptorWriteFrame = frame;
+        detail.readyForDraw = false;
         requestCompile(resource.texture);
         sharedDescriptorsDirty = true;
     };
@@ -577,7 +569,6 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
     // referenced by projections that were visible in a recently recorded frame.
     // Node-paged data can remain active in the registry after leaving the view;
     // retaining all of those textures quickly exhausts the arena while panning.
-    const auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
     auto visibleInAnyActiveView = [&](const Visibility& visibility)
     {
         for (auto viewID : vsgcontext->activeViewIDs)
@@ -1010,7 +1001,8 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         if (resource->texture)
                         {
                             auto* textureDetail = reg.try_get<TextureSlotDetail>(e_texture);
-                            if (!textureDetail || textureDetail->descriptorImageIndex < 0)
+                            if (!textureDetail || !textureDetail->readyForDraw ||
+                                textureDetail->descriptorImageIndex < 0 || textureDetail->texture != resource->texture)
                                 return false;
                             out.textureIndex = textureDetail->descriptorImageIndex;
                             if (resource->origin == TextureOrigin::UpperLeft)

@@ -147,6 +147,16 @@ namespace
         return renderTexture.sources.empty() ? std::vector<entt::entity>{ owner } : renderTexture.sources;
     }
 
+    //! Revalidates a job after releasing the registry lock. A removed or
+    //! conflicting producer must not receive resources from an older snapshot.
+    bool validBakeJob(entt::registry& registry, entt::entity entity)
+    {
+        if (!registry.valid(entity) || !registry.all_of<RenderTexture, TextureResource>(entity) ||
+            registry.any_of<ImageTexture, Texture>(entity))
+            return false;
+        return registry.get<TextureResource>(entity).producer == TextureResourceProducer::RenderTexture;
+    }
+
     inline bool participatesInRenderTexture(entt::registry& registry, entt::entity source)
     {
         if (!registry.valid(source) || !registry.any_of<ActiveState>(source))
@@ -197,7 +207,9 @@ namespace
      */
     struct OverlayBakeViewNode : public vsg::Inherit<vsg::Node, OverlayBakeViewNode>
     {
-        vsg::ref_ptr<vsg::View> view;
+        // The system owns the shared view. A job must not retain the view's
+        // render systems and thereby form a cycle back to its owning registry.
+        vsg::observer_ptr<vsg::View> view;
         vsg::ref_ptr<vsg::Camera> camera;
 
         SRS worldSRS;
@@ -217,6 +229,9 @@ namespace
 
         void traverse(vsg::RecordTraversal& record) const override
         {
+            auto retainedView = view.ref_ptr();
+            if (!retainedView)
+                return;
             RenderPurpose prevPurpose = RenderPurpose::Main;
             bool hadPrevPurpose = record.getValue(RENDER_PURPOSE_KEY, prevPurpose);
 
@@ -241,8 +256,7 @@ namespace
                 camera->viewportState = vsg::ViewportState::create(VkExtent2D{ viewportWidth, viewportHeight });
             }
 
-            if (view)
-                view->accept(record);
+            retainedView->accept(record);
 
             record.setValue(RENDER_PURPOSE_KEY, hadPrevPurpose ? prevPurpose : RenderPurpose::Main);
             record.setValue(RENDER_REQUEST_KEY, hadPrevRequest ? prevRequest : RenderRequest{});
@@ -258,8 +272,8 @@ namespace
             SRS previous;
             bool hadPrevious = visitor.getValue("rocky.worldsrs", previous);
             visitor.setValue("rocky.worldsrs", worldSRS);
-            if (view)
-                view->accept(visitor);
+            if (auto retainedView = view.ref_ptr())
+                retainedView->accept(visitor);
             visitor.setValue("rocky.worldsrs", hadPrevious ? previous : SRS{});
         }
 
@@ -268,8 +282,8 @@ namespace
             SRS previous;
             bool hadPrevious = visitor.getValue("rocky.worldsrs", previous);
             visitor.setValue("rocky.worldsrs", worldSRS);
-            if (view)
-                view->accept(visitor);
+            if (auto retainedView = view.ref_ptr())
+                retainedView->accept(visitor);
             visitor.setValue("rocky.worldsrs", hadPrevious ? previous : SRS{});
         }
     };
@@ -507,6 +521,20 @@ namespace
     }
 }
 
+vsg::ref_ptr<vsg::Node> detail::createOverlayBakeView(
+    vsg::ref_ptr<vsg::View> view, const SRS& worldSRS, const glm::uvec2& textureSize)
+{
+    if (!view || !view->camera)
+        return {};
+    auto node = OverlayBakeViewNode::create();
+    node->view = view;
+    node->camera = view->camera;
+    node->worldSRS = worldSRS;
+    node->viewportWidth = textureSize.x;
+    node->viewportHeight = textureSize.y;
+    return node;
+}
+
 OverlayBakeSystemNode::OverlayBakeSystemNode(Registry& registry) :
     Inherit(registry)
 {
@@ -533,6 +561,63 @@ OverlayBakeSystemNode::OverlayBakeSystemNode(Registry& registry) :
                 on_construct_RenderTexture(r, entity);
         });
 
+}
+
+OverlayBakeSystemNode::~OverlayBakeSystemNode()
+{
+    _registry.write([&](entt::registry& r)
+    {
+        r.on_construct<Overlay>().disconnect(this);
+        r.on_update<Overlay>().disconnect(this);
+        r.on_destroy<Overlay>().disconnect(this);
+        r.on_construct<RenderTexture>().disconnect(this);
+        r.on_update<RenderTexture>().disconnect(this);
+        r.on_destroy<RenderTexture>().disconnect(this);
+        r.on_destroy<OverlayBakeDetail>().disconnect(this);
+    });
+}
+
+void OverlayBakeSystemNode::shutdown(VSGContext vsgcontext)
+{
+    _registry.write([&](entt::registry& r)
+    {
+        r.clear<OverlayBakeDetail>();
+        std::vector<entt::entity> resources;
+        r.view<TextureResource>().each([&](auto entity, auto& resource)
+        {
+            if (resource.producer == TextureResourceProducer::RenderTexture)
+                resources.push_back(entity);
+        });
+        for (auto entity : resources)
+            r.remove<TextureResource>(entity);
+    });
+    drainDisposals(vsgcontext);
+}
+
+void OverlayBakeSystemNode::drainDisposals(VSGContext vsgcontext)
+{
+    std::vector<OverlayBakeDetail> pending;
+    {
+        std::scoped_lock lock(_pendingDisposalsMutex);
+        pending.swap(_pendingDisposals);
+    }
+    if (pending.empty())
+        return;
+    auto retired = vsg::Objects::create();
+    for (auto& detail : pending)
+    {
+        if (auto host = detail.hostCommandGraph.ref_ptr())
+        {
+            auto& children = host->children;
+            children.erase(std::remove(children.begin(), children.end(), detail.renderGraph), children.end());
+        }
+        if (detail.renderGraph)
+            retired->addChild(detail.renderGraph);
+        if (detail.texture)
+            retired->addChild(detail.texture);
+    }
+    if (vsgcontext && !retired->children.empty())
+        vsgcontext->dispose(retired);
 }
 
 void OverlayBakeSystemNode::initialize(VSGContext vsgcontext)
@@ -686,16 +771,8 @@ void OverlayBakeSystemNode::on_destroy_RenderTexture(entt::registry& r, entt::en
 
 void OverlayBakeSystemNode::on_destroy_OverlayBakeDetail(entt::registry& r, entt::entity e)
 {
-    auto& detail = r.get<OverlayBakeDetail>(e);
-
-    if (detail.hostCommandGraph && detail.renderGraph)
-    {
-        auto& children = detail.hostCommandGraph->children;
-        children.erase(std::remove(children.begin(), children.end(), detail.renderGraph), children.end());
-    }
-
-    dispose(detail.renderGraph);
-    dispose(detail.texture);
+    std::scoped_lock lock(_pendingDisposalsMutex);
+    _pendingDisposals.emplace_back(std::move(r.get<OverlayBakeDetail>(e)));
 }
 
 bool OverlayBakeSystemNode::createBakeResources(
@@ -717,12 +794,7 @@ bool OverlayBakeSystemNode::createBakeResources(
     if (!_sharedCameras[mode] || !_sharedViews[mode])
         return false;
 
-    auto bakeNode = OverlayBakeViewNode::create();
-    bakeNode->view = _sharedViews[mode];
-    bakeNode->camera = _sharedCameras[mode];
-    bakeNode->worldSRS = worldSRS;
-    bakeNode->viewportWidth = textureSize.x;
-    bakeNode->viewportHeight = textureSize.y;
+    auto bakeNode = createOverlayBakeView(_sharedViews[mode], worldSRS, textureSize);
 
     auto extent = VkExtent2D{ textureSize.x, textureSize.y };
     const bool registerSharedView = !_sharedRenderPasses[mode];
@@ -812,7 +884,7 @@ bool OverlayBakeSystemNode::updateBakeCamera(entt::registry& r, entt::entity e_o
         ensureOverlayTransform(r, e_overlay, sources, _renderParticipants, recomputeAutoTransform, depthSafetyFactor, worldSRS, detail.textureSize) :
         r.try_get<Transform>(e_overlay);
     auto* viewNode = dynamic_cast<OverlayBakeViewNode*>(detail.viewNode.get());
-    if (!xform || !viewNode || !viewNode->camera || !viewNode->view)
+    if (!xform || !viewNode || !viewNode->camera || !viewNode->view.ref_ptr())
         return false;
 
     SRS srs = worldSRS.valid() ? worldSRS : (xform->position.srs.isGeodetic() ? xform->position.srs.geocentricSRS() : xform->position.srs);
@@ -854,15 +926,25 @@ bool OverlayBakeSystemNode::updateBakeCamera(entt::registry& r, entt::entity e_o
     viewNode->znear = 0.01;
     viewNode->zfar = depth;
 
+    detail.setBakeTransform(world);
+
     return true;
 }
 
 void OverlayBakeSystemNode::update(VSGContext vsgcontext)
 {
-    refreshRenderParticipants();
+    if (!vsgcontext)
+        return;
+
+    drainDisposals(vsgcontext);
 
     if (status.failed())
+    {
+        Inherit::update(vsgcontext);
         return;
+    }
+
+    refreshRenderParticipants();
 
     bool depthPolicyChanged = std::abs(depthSafetyFactor - _lastDepthSafetyFactor) > 1e-6f;
     _lastDepthSafetyFactor = depthSafetyFactor;
@@ -1020,6 +1102,8 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
         {
             for (auto renderJob : renderJobs)
             {
+                if (!validBakeJob(r, renderJob))
+                    continue;
                 auto& renderTexture = r.get<RenderTexture>(renderJob);
                 auto& detail = r.get_or_emplace<OverlayBakeDetail>(renderJob);
                 auto requestedSize = resolveTextureSize(renderTexture, textureSize);
@@ -1038,7 +1122,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                     detail.phase = OverlayBakePhase::Priming;
                     detail.generationPending = true;
                 }
-                if (!(detail.renderGraph && detail.texture && detail.viewNode && detail.hostCommandGraph) ||
+                if (!(detail.renderGraph && detail.texture && detail.viewNode && detail.hostCommandGraph.ref_ptr()) ||
                     detail.textureSize != requestedSize ||
                     detail.useDepthBuffer != renderTexture.useDepthBuffer)
                     needsSetup.push_back(renderJob);
@@ -1072,15 +1156,20 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
         auto e_overlay = needsSetup[setupIndex];
         glm::uvec2 requestedSize = { textureSize, textureSize };
         bool useDepthBuffer = false;
+        bool valid = false;
         _registry.read([&](entt::registry& r)
             {
-                if (r.valid(e_overlay) && r.any_of<RenderTexture>(e_overlay))
+                if (validBakeJob(r, e_overlay))
                 {
+                    valid = true;
                     const auto& renderTexture = r.get<RenderTexture>(e_overlay);
                     requestedSize = resolveTextureSize(renderTexture, textureSize);
                     useDepthBuffer = renderTexture.useDepthBuffer;
                 }
             });
+
+        if (!valid)
+            continue;
 
         PendingSetup p;
         p.e_overlay = e_overlay;
@@ -1096,7 +1185,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
         {
             for (auto& p : pending)
             {
-                if (!r.valid(p.e_overlay) || !r.any_of<RenderTexture>(p.e_overlay) ||
+                if (!validBakeJob(r, p.e_overlay) ||
                     resolveTextureSize(r.get<RenderTexture>(p.e_overlay), textureSize) != p.textureSize ||
                     r.get<RenderTexture>(p.e_overlay).useDepthBuffer != p.useDepthBuffer)
                 {
@@ -1107,9 +1196,9 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
 
                 auto& detail = r.get_or_emplace<OverlayBakeDetail>(p.e_overlay);
 
-                if (detail.hostCommandGraph && detail.renderGraph)
+                if (auto host = detail.hostCommandGraph.ref_ptr(); host && detail.renderGraph)
                 {
-                    auto& children = detail.hostCommandGraph->children;
+                    auto& children = host->children;
                     children.erase(std::remove(children.begin(), children.end(), detail.renderGraph), children.end());
                 }
 
@@ -1124,6 +1213,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 detail.useDepthBuffer = p.useDepthBuffer;
                 detail.contentRevisionValid = false;
                 detail.boundsRevisionValid = false;
+                detail.bakeTransformValid = false;
                 detail.autoTransformDirty = true;
                 detail.fitToSources = r.get<RenderTexture>(p.e_overlay).fitToSources;
                 detail.published = false;
@@ -1142,7 +1232,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
 
             for (auto e_overlay : renderJobs)
             {
-                if (!r.valid(e_overlay) || !r.any_of<RenderTexture>(e_overlay))
+                if (!validBakeJob(r, e_overlay))
                     continue;
 
                 auto& detail = r.get_or_emplace<OverlayBakeDetail>(e_overlay);
@@ -1150,14 +1240,15 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 auto& jobStatus = r.get_or_emplace<RenderTextureStatus>(e_overlay);
                 auto sources = resolveSources(renderTexture, e_overlay);
 
-                if (!(detail.renderGraph && detail.texture && detail.viewNode && detail.hostCommandGraph))
+                auto host = detail.hostCommandGraph.ref_ptr();
+                if (!(detail.renderGraph && detail.texture && detail.viewNode && host))
                     continue;
 
                 auto& resource = r.get<TextureResource>(e_overlay);
 
                 auto detachRenderGraph = [&]()
                     {
-                        auto& children = detail.hostCommandGraph->children;
+                        auto& children = host->children;
                         auto existing = std::find(children.begin(), children.end(), detail.renderGraph);
                         if (existing != children.end())
                             children.erase(existing);
@@ -1219,7 +1310,7 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
 
                 const bool shouldBake = renderTexture.continuous || detail.phase != OverlayBakePhase::Ready;
                 {
-                    auto& children = detail.hostCommandGraph->children;
+                    auto& children = host->children;
                     auto existing = std::find(children.begin(), children.end(), detail.renderGraph);
                     if (shouldBake && existing == children.end())
                         children.insert(children.begin(), detail.renderGraph);
@@ -1265,5 +1356,6 @@ void OverlayBakeSystemNode::update(VSGContext vsgcontext)
                 vsgcontext->requestFrame();
         });
 
+    drainDisposals(vsgcontext);
     Inherit::update(vsgcontext);
 }

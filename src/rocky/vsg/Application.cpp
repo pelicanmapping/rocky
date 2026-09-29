@@ -420,6 +420,14 @@ Application::~Application()
         }
     }
 
+#ifdef ROCKY_HAS_DECALS
+    // Stop bake jobs while their hosts and the deferred GPU disposer are still
+    // alive, after recording has stopped and the device has become idle.
+    if (computeSystemsNode)
+        if (auto* bake = computeSystemsNode->get<OverlayBakeSystemNode>())
+            bake->shutdown(vsgcontext);
+#endif
+
     while (!display.windows().empty())
     {
         display.removeWindow(display.windows().back());

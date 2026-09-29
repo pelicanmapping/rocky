@@ -12,6 +12,24 @@
 
 namespace ROCKY_NAMESPACE
 {
+    namespace detail
+    {
+        /**
+         * Consumer-side residency for a TextureResource, not image ownership.
+         * Removing this component queues its slot for release during update.
+         * Publication waits one frame for terrain's descriptor-set rebuild,
+         * just like Vector atlas slots; the arena's CPU update alone is not
+         * sufficient to expose the new texture index to a draw.
+         */
+        struct TextureSlotDetail
+        {
+            vsg::ref_ptr<vsg::ImageInfo> texture;
+            std::int32_t descriptorImageIndex = -1;
+            std::uint64_t descriptorWriteFrame = 0u;
+            bool readyForDraw = false;
+        };
+    }
+
     /**
      * Normalizes decal facades and publishes projected payloads to the GPU.
      *
