@@ -66,6 +66,9 @@ namespace ROCKY_NAMESPACE
         //! automatically remove when removing the view
         std::vector<vsg::ref_ptr<vsg::Visitor>> eventHandlersInstalled;
 
+        //! If ImGui is installed, this is the ImGuiContext* created for this View
+        void* imguiContext = nullptr;
+
     protected:
 
         View(vsg::ref_ptr<vsg::View>, vsg::ref_ptr<vsg::RenderGraph>, DisplayManager*);

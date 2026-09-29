@@ -757,18 +757,19 @@ Application::onAddView(Window& window, View& view)
 
     // ImGui renderer for drawing Widgets (et al) on this view. (false = no .ini file support)
     auto imguiRenderer = ImGuiRenderer::create(window.vsgWindow, false);
-    auto imguicontext = imguiRenderer->imguiContext();
+    auto imguiContext = imguiRenderer->imguiContext();
+    view.imguiContext = imguiContext;
 
     // Next, add a node that will dispatch the actual gui rendering callbacks
     // (like the one installed by the WidgetSystem):
-    imguiRenderer->addChild(detail::ImGuiDispatcher::create(imguicontext, vsgcontext));
+    imguiRenderer->addChild(detail::ImGuiDispatcher::create(imguiContext, vsgcontext));
 
     // and install the renderer and its event processor(s) on the main viewer.
     this->install(imguiRenderer, view.vsgView, false);
 
     // We still need to process ImGui events even if we're not rendering the frame,
     // so install this "idle" function:
-    auto idle = [vsgView(view.vsgView), vsgcontext(vsgcontext), imguicontext]() -> void
+    auto idle = [vsgView(view.vsgView), vsgcontext(vsgcontext), imguiContext]() -> void
         {
             auto vp = vsgView->camera->getViewport();
 
@@ -778,13 +779,13 @@ Application::onAddView(Window& window, View& view)
                 { vp.x, vp.y, vp.x + vp.width, vp.y + vp.height }
             };
 
-            ImGui::SetCurrentContext(imguicontext);
+            ImGui::SetCurrentContext(imguiContext);
             ImGui::GetIO().DeltaTime = ImGui::GetIO().DeltaTime <= 0.0f ? 0.016f : ImGui::GetIO().DeltaTime;
             ImGui::NewFrame();
 
             for (auto& record : vsgcontext->guiRecorders)
             {
-                record(rs, imguicontext);
+                record(rs, imguiContext);
             }
 
             ImGui::EndFrame();
