@@ -2486,6 +2486,65 @@ TEST_CASE("GeoImage preserves layers when reprojecting points", "[geoimage]")
     CHECK(defaultRead->r == Approx(0.25f));
 }
 
+//! Raster sampling and pixel conversion use a continuous longitude interval across the date line.
+TEST_CASE("Raster coordinates wrap across the antimeridian", "[geoimage][heightfield]")
+{
+    Heightfield heights(5, 3);
+    for (unsigned row = 0; row < heights.height(); ++row)
+        for (unsigned col = 0; col < heights.width(); ++col)
+            heights.heightAt(col, row) = 10.0f * col + row;
+    const GeoImage geo(heights.image, GeoExtent(SRS::WGS84, 170.0, -10.0, -170.0, 10.0));
+    const GeoHeightfield hf(geo);
+    for (int col = 0; col < 5; ++col)
+    {
+        const double longitude = 170.0 + col * 5.0;
+        for (double shift : { -720.0, -360.0, 0.0, 360.0, 720.0 })
+        {
+            const double x = longitude + shift;
+            const auto pixel = geo.read(x, 0.0);
+            const auto point = geo.read(GeoPoint(SRS::WGS84, x, 0.0));
+            const auto clamped = geo.read_clamped(x, 0.0);
+            const auto height = hf.read(x, 0.0);
+            REQUIRE(pixel.ok());
+            REQUIRE(point.ok());
+            REQUIRE(clamped.ok());
+            REQUIRE(height.ok());
+            CHECK(pixel->r == Approx(10.0f * col + 1.0f));
+            CHECK(point->r == Approx(pixel->r));
+            CHECK(clamped->r == Approx(pixel->r));
+            CHECK(height.value() == Approx(pixel->r));
+            int s = -1, t = -1;
+            REQUIRE(geo.getPixel(x, 0.0, s, t));
+            CHECK(s == col);
+            CHECK(t == 1);
+        }
+    }
+    for (double x : { 160.0, -200.0, 200.0, -160.0 })
+    {
+        CHECK(geo.read(x, 0.0).failed());
+        CHECK(hf.read(x, 0.0).failed());
+        const auto clamped = geo.read_clamped(x, 0.0);
+        REQUIRE(clamped.ok());
+        CHECK(clamped->r == Approx((x == 160.0 || x == -200.0) ? 1.0f : 41.0f));
+        int s = 0, t = 0;
+        REQUIRE(geo.getPixel(x, 0.0, s, t));
+        CHECK(s == -1);
+    }
+    CHECK(geo.read(170.0 - 1e-7, 0.0).ok());
+    CHECK(geo.read(-170.0 + 1e-7, 0.0).ok());
+    CHECK(hf.read(170.0 - 1e-7, 0.0).ok());
+    CHECK(hf.read(-170.0 + 1e-7, 0.0).ok());
+    const GeoImage world(heights.image, GeoExtent(SRS::WGS84, -180.0, -90.0, 180.0, 90.0));
+    REQUIRE(world.read(-180.0, 0.0).ok());
+    REQUIRE(world.read(180.0, 0.0).ok());
+    CHECK(world.read(-180.0, 0.0)->r == Approx(1.0f));
+    CHECK(world.read(180.0, 0.0)->r == Approx(41.0f));
+    const GeoImage projected(heights.image, GeoExtent(SRS::SPHERICAL_MERCATOR, 170.0, -10.0, 190.0, 10.0));
+    CHECK(projected.read(-175.0, 0.0).failed());
+    REQUIRE(projected.read(185.0, 0.0).ok());
+    CHECK(projected.read(185.0, 0.0)->r == Approx(31.0f));
+}
+
 //! Encoding preserves bilinear no-data behavior for every missing-sample pattern, including flat tiles.
 TEST_CASE("Encoded heightfields preserve missing samples", "[heightfield]")
 {

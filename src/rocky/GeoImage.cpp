@@ -101,7 +101,7 @@ GeoImage::getPixel(double x, double y, int& s, int& t) const
     if (!valid()) return false;
     if (!_image) return false;
 
-    double u = (x - _extent.xmin()) / _extent.width();
+    double u = _extent.xOffset(x) / _extent.width();
     s = (u >= 0.0 && u <= 1.0) ? (int)(u * (double)(_image->width() - 1)) : -1;
 
     double v = (y - _extent.ymin()) / _extent.height();
@@ -180,7 +180,7 @@ GeoImage::read(const GeoPoint& p, int layer) const
             return ResultFail;
     }
 
-    double u = (p.x - _extent.xmin()) / _extent.width();
+    double u = _extent.xOffset(p.x) / _extent.width();
     double v = (p.y - _extent.ymin()) / _extent.height();
 
     // out of bounds? Use a small epsilon to tolerate floating-point
@@ -202,7 +202,7 @@ GeoImage::read(double x, double y, int layer) const
 {
     if (!valid()) return ResultFail;
 
-    double u = (x - _extent.xmin()) / _extent.width();
+    double u = _extent.xOffset(x) / _extent.width();
     double v = (y - _extent.ymin()) / _extent.height();
 
     // out of bounds? Use a small epsilon to tolerate floating-point
@@ -224,7 +224,7 @@ GeoImage::read_clamped(double x, double y, int layer) const
 {
     if (!valid()) return ResultFail;
 
-    double u = (x - _extent.xmin()) / _extent.width();
+    double u = _extent.xOffset(x) / _extent.width();
     double v = (y - _extent.ymin()) / _extent.height();
 
     return _image->read_bilinear((float)std::clamp(u, 0.0, 1.0), (float)std::clamp(v, 0.0, 1.0), layer);

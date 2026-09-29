@@ -63,6 +63,10 @@ namespace ROCKY_NAMESPACE
         inline double ymin() const { return _south; }
         inline double ymax() const { return _south + _height; }
 
+        //! Offset from the western edge for a coordinate in this valid extent's SRS.
+        //! Longitudes wrap into the extent, or to the closest edge if outside; the result is not clamped.
+        double xOffset(double x) const;
+
         //! East-to-west span of the extent
         inline double width() const { return _width; }
 

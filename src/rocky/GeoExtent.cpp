@@ -136,6 +136,23 @@ GeoExtent::getCentroid(double& out_x, double& out_y) const
 }
 
 double
+GeoExtent::xOffset(double x) const
+{
+    double offset = x - _west;
+    // Preserve coordinates already in the interval, including both edges of a full-world raster.
+    if (!_srs.isGeodetic() || (offset >= 0.0 && offset <= _width))
+        return offset;
+
+    offset = std::fmod(offset, 360.0);
+    if (offset < 0.0)
+        offset += 360.0;
+    // Outside points must remain outside, on the side of the nearest edge for clamped reads.
+    if (offset > _width && offset - _width > 360.0 - offset)
+        offset -= 360.0;
+    return offset;
+}
+
+double
 GeoExtent::width(const UnitsType& units) const
 {
     if (!valid())

@@ -109,7 +109,7 @@ namespace ROCKY_NAMESPACE
 
         ReadResult read(double x, double y) const {
             if (!image.valid()) return ResultFail;
-            double u = (x - image.extent().xmin()) / image.extent().width();
+            double u = image.extent().xOffset(x) / image.extent().width();
             double v = (y - image.extent().ymin()) / image.extent().height();
             // Tolerate transformation noise at exact tile boundaries, matching
             // GeoImage::read's cross-profile sampling behavior.
