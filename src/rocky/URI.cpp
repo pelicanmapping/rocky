@@ -357,9 +357,12 @@ namespace
             if (httpDebug)
             {
                 auto dur_ms = 1e-6 * (double)(t1 - t0).count();
-                auto cti = findHeader(response.headers, "Content-Type");
-                auto ct = cti.empty() ? "unknown" : cti;
-                Log()->info(LC "({} {:3d}ms {:6}b {}) HTTP GET {}", response.status, (int)dur_ms, response.data.size(), ct, request.url);
+                auto ct = findHeader(response.headers, "Content-Type");
+                if (ct.empty()) ct = "unknown";
+                auto cachestatus = findHeader(response.headers, "Cf-Cache-Status");
+                if (cachestatus.empty())
+                    cachestatus = findHeader(response.headers, "X-Cache");
+                Log()->info(LC "({} {:4d}ms {:6d}b {}) HTTP GET {} ({})", response.status, (int)dur_ms, response.data.size(), ct, request.url, cachestatus);
             }
 
             if (io.canceled())
@@ -475,7 +478,7 @@ namespace
                             auto xcachei = res->headers.find("X-Cache");
                             cachestatus = xcachei != res->headers.end() ? xcachei->second : "";
                         }
-                        Log()->info(LC "({} {:3d}ms {:6d}b {}) HTTP GET {} ({})", res->status, (int)dur_ms, res->body.size(), ct, request.url, cachestatus);
+                        Log()->info(LC "({} {:4d}ms {:6d}b {}) HTTP GET {} ({})", res->status, (int)dur_ms, res->body.size(), ct, request.url, cachestatus);
                     }
 
                     if (res->status == 404) // NOT FOUND (permanent)
