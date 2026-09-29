@@ -2425,6 +2425,38 @@ TEST_CASE("Heightfield")
     }
 }
 
+//! Explicit-SRS reads must sample input coordinates transformed into the raster's SRS.
+TEST_CASE("GeoImage transforms coordinates from the supplied SRS", "[geoimage]")
+{
+    const SRS mercator = SRS::SPHERICAL_MERCATOR;
+    const auto extent = GeoExtent(SRS::WGS84, 9.0, 9.0, 11.0, 11.0).transform(mercator);
+    REQUIRE(extent.valid());
+    auto image = Image::create(Image::R32_SFLOAT, 2, 2);
+    image->write(Image::Pixel(0.0f), 0, 0);
+    image->write(Image::Pixel(1.0f), 1, 0);
+    image->write(Image::Pixel(2.0f), 0, 1);
+    image->write(Image::Pixel(3.0f), 1, 1);
+    const GeoImage geo(image, extent);
+    for (double latitude : { 9.5, 10.0, 10.5 })
+    {
+        const GeoPoint point(SRS::WGS84, 10.0, latitude);
+        const auto projected = point.transform(mercator);
+        REQUIRE(projected.valid());
+        const auto expected = geo.read(projected.x, projected.y);
+        const auto actual = geo.read(point.srs, point.x, point.y);
+        const auto sameSRS = geo.read(mercator, projected.x, projected.y);
+        REQUIRE(expected.ok());
+        REQUIRE(actual.ok());
+        REQUIRE(sameSRS.ok());
+        CHECK(actual->r == Approx(expected->r));
+        CHECK(sameSRS->r == Approx(expected->r));
+        CHECK(actual->r > 0.5f);
+        CHECK(actual->r < 2.5f);
+    }
+    CHECK(geo.read(SRS(), 10.0, 10.0).failed());
+    CHECK(geo.read(SRS::WGS84, 20.0, 20.0).failed());
+}
+
 //! Encoding preserves bilinear no-data behavior for every missing-sample pattern, including flat tiles.
 TEST_CASE("Encoded heightfields preserve missing samples", "[heightfield]")
 {

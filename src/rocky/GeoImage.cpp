@@ -240,7 +240,7 @@ GeoImage::read(const SRS& xy_srs, double x, double y, int layer) const
         return ResultFail;
 
     glm::dvec3 temp(x, y, 0);
-    if (!srs().to(xy_srs).transform(temp, temp))
+    if (!xy_srs.to(srs()).transform(temp, temp))
         return ResultFail;
 
     return read(temp.x, temp.y, layer);
