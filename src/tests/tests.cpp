@@ -2457,6 +2457,35 @@ TEST_CASE("GeoImage transforms coordinates from the supplied SRS", "[geoimage]")
     CHECK(geo.read(SRS::WGS84, 20.0, 20.0).failed());
 }
 
+//! Reprojecting a GeoPoint must retain the caller's selected image slice.
+TEST_CASE("GeoImage preserves layers when reprojecting points", "[geoimage]")
+{
+    const SRS mercator = SRS::SPHERICAL_MERCATOR;
+    const auto extent = GeoExtent(SRS::WGS84, 9.0, 9.0, 11.0, 11.0).transform(mercator);
+    REQUIRE(extent.valid());
+    auto image = Image::create(Image::R32_SFLOAT, 2, 2, 3);
+    for (unsigned layer = 0; layer < 3; ++layer)
+        for (unsigned row = 0; row < 2; ++row)
+            for (unsigned col = 0; col < 2; ++col)
+                image->write(Image::Pixel(0.25f * (layer + 1)), col, row, layer);
+    const GeoImage geo(image, extent);
+    const GeoPoint point(SRS::WGS84, 10.0, 10.0);
+    const auto projected = point.transform(mercator);
+    REQUIRE(projected.valid());
+    for (int layer = 0; layer < 3; ++layer)
+    {
+        const auto transformedRead = geo.read(point, layer);
+        const auto sameSRSRead = geo.read(projected, layer);
+        REQUIRE(transformedRead.ok());
+        REQUIRE(sameSRSRead.ok());
+        CHECK(transformedRead->r == Approx(0.25f * (layer + 1)));
+        CHECK(sameSRSRead->r == Approx(transformedRead->r));
+    }
+    const auto defaultRead = geo.read(point);
+    REQUIRE(defaultRead.ok());
+    CHECK(defaultRead->r == Approx(0.25f));
+}
+
 //! Encoding preserves bilinear no-data behavior for every missing-sample pattern, including flat tiles.
 TEST_CASE("Encoded heightfields preserve missing samples", "[heightfield]")
 {

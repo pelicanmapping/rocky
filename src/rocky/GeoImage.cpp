@@ -175,7 +175,7 @@ GeoImage::read(const GeoPoint& p, int layer) const
     {
         GeoPoint c = p.transform(srs());
         if (c.valid())
-            return read(c);
+            return read(c, layer);
         else
             return ResultFail;
     }
