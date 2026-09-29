@@ -1,3 +1,17 @@
+#include <rocky/Version.h>
+#if defined(ROCKY_HAS_CURL) && !defined(ROCKY_HAS_HTTPLIB)
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <winsock2.h>
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#endif
+#endif
+
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
 
@@ -34,6 +48,7 @@
 #include <atomic>
 #include <cfloat>
 #include <chrono>
+#include <condition_variable>
 #include <filesystem>
 #include <fstream>
 #include <future>
@@ -41,6 +56,7 @@
 #include <random>
 #include <set>
 #include <sstream>
+#include <stdexcept>
 #include <thread>
 #include <unordered_map>
 
@@ -2828,6 +2844,251 @@ TEST_CASE("SRS")
         Profile profile;
         profile.from_json(json);
     }
+}
+
+#if defined(ROCKY_HAS_CURL) && !defined(ROCKY_HAS_HTTPLIB)
+namespace
+{
+    //! Serves scripted loopback responses on one thread; destruction interrupts stalls and joins the server.
+    class TestHTTPServer
+    {
+#ifdef _WIN32
+        using Socket = SOCKET;
+        static constexpr Socket invalidSocket = INVALID_SOCKET;
+#else
+        using Socket = int;
+        static constexpr Socket invalidSocket = -1;
+#endif
+    public:
+        struct Reply
+        {
+            std::string head;
+            std::chrono::milliseconds stall{ 0 };
+            std::string tail;
+        };
+
+        //! Binds an ephemeral IPv4 loopback port or throws; owns sockets and the serving thread.
+        explicit TestHTTPServer(std::vector<Reply> replies)
+        {
+#ifdef _WIN32
+            WSADATA data;
+            if (WSAStartup(MAKEWORD(2, 2), &data) != 0)
+                throw std::runtime_error("Unable to initialize test sockets");
+#endif
+            try
+            {
+                _listener = socket(AF_INET, SOCK_STREAM, 0);
+                sockaddr_in address{};
+                address.sin_family = AF_INET;
+                address.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+                if (_listener == invalidSocket ||
+                    bind(_listener, reinterpret_cast<sockaddr*>(&address), sizeof(address)) != 0 ||
+                    listen(_listener, 4) != 0)
+                    throw std::runtime_error("Unable to bind loopback HTTP fixture");
+#ifdef _WIN32
+                int length = sizeof(address);
+#else
+                socklen_t length = sizeof(address);
+#endif
+                if (getsockname(_listener, reinterpret_cast<sockaddr*>(&address), &length) != 0)
+                    throw std::runtime_error("Unable to read test server port");
+                url = "http://127.0.0.1:" + std::to_string(ntohs(address.sin_port)) + "/";
+                _thread = std::thread([this, replies = std::move(replies)]() { serve(replies); });
+            }
+            catch (...)
+            {
+                closeSocket(_listener);
+#ifdef _WIN32
+                WSACleanup();
+#endif
+                throw;
+            }
+        }
+
+        //! Stops accepting requests and wakes a stalled response before releasing socket resources.
+        ~TestHTTPServer()
+        {
+            {
+                std::scoped_lock lock(_mutex);
+                _stop = true;
+            }
+            _changed.notify_all();
+            _thread.join();
+            closeSocket(_listener);
+#ifdef _WIN32
+            WSACleanup();
+#endif
+        }
+
+        //! Waits for the first request so cancellation is tested after a connection is established.
+        bool waitForRequest()
+        {
+            std::unique_lock lock(_mutex);
+            return _changed.wait_for(lock, std::chrono::seconds(5), [&]() { return _requests > 0; });
+        }
+
+        std::string url;
+
+    private:
+        //! Closes a fixture socket, including an uninitialized one during failed setup.
+        static void closeSocket(Socket socket)
+        {
+            if (socket == invalidSocket) return;
+#ifdef _WIN32
+            closesocket(socket);
+#else
+            close(socket);
+#endif
+        }
+
+        //! Bounds each socket wait so destruction cannot hang on an absent client.
+        static bool readable(Socket socket)
+        {
+            fd_set sockets;
+            FD_ZERO(&sockets);
+            FD_SET(socket, &sockets);
+            timeval timeout{ 0, 100000 };
+            return select(static_cast<int>(socket + 1), &sockets, nullptr, nullptr, &timeout) > 0;
+        }
+
+        //! Writes a small scripted response, tolerating clients that canceled or timed out.
+        static void sendResponse(Socket socket, const std::string& data)
+        {
+#ifdef SO_NOSIGPIPE
+            int enabled = 1;
+            setsockopt(socket, SOL_SOCKET, SO_NOSIGPIPE, &enabled, sizeof(enabled));
+#endif
+#ifdef MSG_NOSIGNAL
+            constexpr int flags = MSG_NOSIGNAL;
+#else
+            constexpr int flags = 0;
+#endif
+            std::size_t sent = 0;
+            while (sent < data.size())
+            {
+                auto count = send(socket, data.data() + sent, static_cast<int>(data.size() - sent), flags);
+                if (count <= 0) break;
+                sent += static_cast<std::size_t>(count);
+            }
+        }
+
+        //! Handles one connection per scripted reply; all stalls are interruptible and requests contain no body.
+        void serve(const std::vector<Reply>& replies)
+        {
+            for (const auto& reply : replies)
+            {
+                while (!_stop && !readable(_listener)) {}
+                if (_stop) return;
+                auto client = accept(_listener, nullptr, nullptr);
+                if (client == invalidSocket) return;
+                while (!_stop && !readable(client)) {}
+                char request[4096];
+                if (!_stop && recv(client, request, sizeof(request), 0) > 0)
+                {
+                    sendResponse(client, reply.head);
+                    std::unique_lock lock(_mutex);
+                    ++_requests;
+                    _changed.notify_all();
+                    _changed.wait_for(lock, reply.stall, [&]() { return _stop.load(); });
+                    lock.unlock();
+                    if (!_stop) sendResponse(client, reply.tail);
+                }
+                closeSocket(client);
+            }
+        }
+
+        Socket _listener = invalidSocket;
+        std::thread _thread;
+        std::atomic_bool _stop{ false };
+        std::mutex _mutex;
+        std::condition_variable _changed;
+        unsigned _requests = 0;
+    };
+}
+
+//! Canceling an active URI job must stop stalled headers, stalled bodies, and retry backoff before worker shutdown.
+TEST_CASE("CURL cancellation releases network workers", "[io][curl]")
+{
+    TestHTTPServer::Reply reply;
+    SECTION("stalled response headers") { reply.stall = std::chrono::seconds(6); }
+    SECTION("stalled response body")
+    {
+        reply.head = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n";
+        reply.stall = std::chrono::seconds(6);
+    }
+    SECTION("retry backoff") { reply.head = "HTTP/1.1 429 Too Many Requests\r\nContent-Length: 0\r\n\r\n"; }
+    TestHTTPServer server({ reply });
+    IOOptions io;
+    io.networkReadTimeout = std::chrono::seconds(10);
+    std::promise<Result<URIResponse>> completion;
+    auto result = completion.get_future();
+    jobs::runtime runtime;
+    auto job = runtime.dispatch([&](Cancelable& cancelable)
+    {
+        completion.set_value(URI(server.url).read(io.with(cancelable)));
+        return true;
+    });
+    REQUIRE(server.waitForRequest());
+    // Let the client consume the headers or enter backoff before withdrawing its future.
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    const auto start = std::chrono::steady_clock::now();
+    job.reset();
+    runtime.shutdown();
+    const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+    auto response = result.get();
+    INFO("cancellation/shutdown seconds: " << elapsed);
+    REQUIRE(response.failed());
+    CHECK(response.error().type == Failure::OperationCanceled);
+    CHECK(elapsed < 2.5);
+}
+
+//! Stalled downloads time out, retries discard partial responses, and later requests reuse a clean CURL handle.
+TEST_CASE("CURL read stalls are bounded and retries start clean", "[io][curl]")
+{
+    const std::string success = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nContent-Type: text/plain\r\n\r\nOK";
+    const std::string partial = "HTTP/1.1 200 OK\r\nContent-Length: 5\r\nContent-Type: application/partial\r\n\r\nbad";
+    IOOptions io;
+    io.networkReadTimeout = std::chrono::seconds(1);
+    io.maxNetworkAttempts = 1;
+    SECTION("stalled body times out without cancellation")
+    {
+        TestHTTPServer server({ { "HTTP/1.1 200 OK\r\nContent-Length: 2\r\n\r\n", std::chrono::seconds(6), {} } });
+        const auto start = std::chrono::steady_clock::now();
+        auto response = URI(server.url).read(io);
+        const auto elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
+        INFO("stall timeout seconds: " << elapsed);
+        REQUIRE(response.failed());
+        CHECK(response.error().type == Failure::ServiceUnavailable);
+        CHECK(elapsed < 4.0);
+    }
+    SECTION("partial attempt is discarded before retry")
+    {
+        TestHTTPServer server({ { partial, std::chrono::seconds(6), {} }, { success, {}, {} } });
+        io.maxNetworkAttempts = 2;
+        auto response = URI(server.url).read(io);
+        if (response.failed()) INFO(response.error().message);
+        REQUIRE(response.ok());
+        CHECK(response->content.data == "OK");
+        CHECK(response->content.type == "text/plain");
+    }
+    TestHTTPServer server({ { success, {}, {} } });
+    auto response = URI(server.url).read(io);
+    REQUIRE(response.ok());
+    CHECK(response->content.data == "OK");
+}
+#endif
+
+//! Timeout configuration survives copying and moving options before dispatching network work.
+TEST_CASE("IO options preserve network timeouts", "[io]")
+{
+    IOOptions source;
+    source.networkConnectionTimeout = std::chrono::seconds(2);
+    source.networkReadTimeout = std::chrono::seconds(7);
+    IOOptions copy(source);
+    IOOptions moved;
+    moved = std::move(copy);
+    CHECK(moved.networkConnectionTimeout == source.networkConnectionTimeout);
+    CHECK(moved.networkReadTimeout == source.networkReadTimeout);
 }
 
 TEST_CASE("IO")

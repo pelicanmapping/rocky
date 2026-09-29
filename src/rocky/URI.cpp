@@ -209,7 +209,7 @@ namespace
 
         void writeHeader(const char* ptr, size_t realsize)
         {
-            std::string header(ptr);
+            std::string header(ptr, realsize);
             std::size_t colon = header.find_first_of(':');
             if (colon != std::string::npos && colon > 0 && colon < header.length() - 1)
             {
@@ -239,15 +239,28 @@ namespace
         return realsize;
     }
 
-    struct CURLHandle
+    //! Consults the caller's cancellation token during transfers, including periods with no incoming data.
+    static int curl_progress(void* data, curl_off_t, curl_off_t, curl_off_t, curl_off_t)
     {
-        CURL* handle = nullptr;
-        CURLHandle() {
-            handle = curl_easy_init();
-        }
-        ~CURLHandle() {
-            if (handle)
-                curl_easy_cleanup(handle);
+        const auto* io = static_cast<const IOOptions*>(data);
+        return io && io->canceled() ? 1 : 0;
+    }
+
+    //! Owns per-request headers and clears borrowed pointers before a reusable CURL handle outlives their storage.
+    struct CURLRequestState
+    {
+        CURL* handle;
+        curl_slist* headers = nullptr;
+
+        //! Detaches per-call state on success, failure, or cancellation; leaves the connection cache reusable.
+        ~CURLRequestState()
+        {
+            curl_easy_setopt(handle, CURLOPT_HTTPHEADER, nullptr);
+            curl_easy_setopt(handle, CURLOPT_WRITEDATA, nullptr);
+            curl_easy_setopt(handle, CURLOPT_HEADERDATA, nullptr);
+            curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, nullptr);
+            curl_easy_setopt(handle, CURLOPT_XFERINFODATA, nullptr);
+            curl_slist_free_all(headers);
         }
     };
 
@@ -259,12 +272,14 @@ namespace
             ~Basket() { if (handle) curl_easy_cleanup(handle); }
         } basket;
 
-        HTTPResponse response;
+        HTTPResponse response{};
 
         CURL* handle = basket.handle;
         if (!handle)
         {
             handle = curl_easy_init();
+            if (!handle)
+                return Failure(Failure::ServiceUnavailable, "Failed to initialize CURL");
 
             curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, stream_object_write_function);
             curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, stream_object_header_function);
@@ -285,17 +300,21 @@ namespace
             basket.handle = handle;
         }
 
+        CURLRequestState state{ handle };
+
         //todo: authentication
         //todo: proxy server
 
         // request headers:
-        struct curl_slist* headers = nullptr;
         for (auto& h : request.headers)
         {
             std::string header = h.name + ": " + h.value;
-            headers = curl_slist_append(headers, header.c_str());
+            auto* headers = curl_slist_append(state.headers, header.c_str());
+            if (!headers)
+                return Failure(Failure::ServiceUnavailable, "Failed to allocate HTTP headers");
+            state.headers = headers;
         }
-        curl_easy_setopt(handle, CURLOPT_HTTPHEADER, headers);
+        curl_easy_setopt(handle, CURLOPT_HTTPHEADER, state.headers);
         curl_easy_setopt(handle, CURLOPT_URL, request.url.c_str());
 
         stream_object so;
@@ -307,6 +326,11 @@ namespace
         curl_easy_setopt(handle, CURLOPT_ERRORBUFFER, (void*)errorBuf);
 
         curl_easy_setopt(handle, CURLOPT_CONNECTTIMEOUT, (long)io.networkConnectionTimeout.count());
+        curl_easy_setopt(handle, CURLOPT_LOW_SPEED_LIMIT, 1L);
+        curl_easy_setopt(handle, CURLOPT_LOW_SPEED_TIME, (long)io.networkReadTimeout.count());
+        curl_easy_setopt(handle, CURLOPT_NOPROGRESS, 0L);
+        curl_easy_setopt(handle, CURLOPT_XFERINFOFUNCTION, curl_progress);
+        curl_easy_setopt(handle, CURLOPT_XFERINFODATA, &io);
 
         CURLcode result = CURLE_OK;
         std::random_device device;
@@ -325,18 +349,37 @@ namespace
             if (attempts > 1)
             {
                 auto delay = 1000ms * std::pow(2, attempts + distribution(engine));
-                if (!io.canceled())
-                    std::this_thread::sleep_for(delay);
+                const auto deadline = std::chrono::steady_clock::now() + delay;
+                while (std::chrono::steady_clock::now() < deadline)
+                {
+                    if (io.canceled())
+                        return Failure_OperationCanceled;
+                    std::this_thread::sleep_for(50ms);
+                }
             }
 
+            if (io.canceled())
+                return Failure_OperationCanceled;
+
+            // A timed-out attempt can leave partial data and headers. Only publish the final attempt's response.
+            so.stream.str("");
+            so.stream.clear();
+            so.headers.clear();
+            response.status = 0;
+            errorBuf[0] = 0;
             result = curl_easy_perform(handle);
+
+            if (io.canceled())
+                return Failure_OperationCanceled;
 
             if (result == CURLE_COULDNT_CONNECT || result == CURLE_OPERATION_TIMEDOUT)
             {
                 continue;
             }
 
-            curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &response.status);
+            long status = 0;
+            curl_easy_getinfo(handle, CURLINFO_RESPONSE_CODE, &status);
+            response.status = static_cast<int>(status);
 
             if (response.status == 429) // TOO MANY REQUESTS (rate limiting)
             {
@@ -441,6 +484,7 @@ namespace
 
             // connection timeout
             client.set_connection_timeout((time_t)io.networkConnectionTimeout.count());
+            client.set_read_timeout((time_t)io.networkReadTimeout.count());
 
             unsigned max_attempts = std::max(1u, io.maxNetworkAttempts);
 

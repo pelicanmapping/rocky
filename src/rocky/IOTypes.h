@@ -123,6 +123,9 @@ namespace ROCKY_NAMESPACE
         //! Network connection timeout (in seconds; 0 = infinite)
         std::chrono::seconds networkConnectionTimeout = std::chrono::seconds(5);
 
+        //! Network read stall timeout (seconds; 0 = infinite). CURL allows transfers sustaining at least 1 byte/second.
+        std::chrono::seconds networkReadTimeout = std::chrono::seconds(30);
+
         //! Referring location for an operation using these options
         std::optional<std::string> referrer;
 
@@ -145,6 +148,8 @@ namespace ROCKY_NAMESPACE
         {
             Cancelable::operator=(rhs);
             maxNetworkAttempts = rhs.maxNetworkAttempts;
+            networkConnectionTimeout = rhs.networkConnectionTimeout;
+            networkReadTimeout = rhs.networkReadTimeout;
             referrer = std::move(rhs.referrer);
             _services = rhs._services;
             _cancelable = rhs._cancelable;
