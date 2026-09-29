@@ -37,7 +37,7 @@ namespace ROCKY_NAMESPACE
         //! to help mitigate depth fighting artifacts
         float depthOffset = 0.0f;
 
-        //! Entity hosting the (optional) MeshTexture to use
+        //! Entity supplying an optional ImageTexture or VSG Texture. Null disables texturing.
         entt::entity texture = entt::null;
 
         //! Whether to display only the edges of the mesh triangles
@@ -68,6 +68,11 @@ namespace ROCKY_NAMESPACE
         //! this to aid in blending different semi-transparent meshes across the
         //! entire scene.
         bool transparencyBin = false;
+
+        //! Tessellation resolution hint (in meters) when building mesh geometry
+        //! from polygon features. A value of 0.0 uses the builder's default
+        //! curvature-following resolution.
+        float resolution = 0.0f;
     };
 
     //! Mesh comonent

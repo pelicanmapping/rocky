@@ -4,8 +4,10 @@
  * MIT License
  */
 #include "LineSystem.h"
+#include "OverlayRenderContext.h"
 #include "ECSVisitors.h"
 #include "TransformDetail.h"
+#include <rocky/ecs/ProjectedTexture.h>
 #include "../ViewDependentState.h"
 #include "../ShaderDefines.h"
 
@@ -14,6 +16,97 @@ using namespace ROCKY_NAMESPACE::detail;
 
 #define LINE_VERT_SHADER "shaders/rocky.line.vert"
 #define LINE_FRAG_SHADER "shaders/rocky.line.frag"
+
+RenderTextureSourceStatus LineSystemNode::renderTextureSourceStatus(
+    entt::registry& reg, entt::entity entity) const
+{
+    auto* line = reg.try_get<Line>(entity);
+    if (!line)
+        return {};
+
+    auto* geometry = reg.try_get<LineGeometry>(line->geometry);
+    auto* detail = reg.try_get<LineGeometryDetail>(line->geometry);
+    if (!geometry || !detail)
+        return { RenderTextureSourceStatus::State::Waiting, "Waiting for line geometry", true };
+
+    bool hasViewGeometry = false;
+    for (const auto& view : detail->views)
+    {
+        if (!view.geomNode || !view.root)
+            continue;
+
+        hasViewGeometry = true;
+        const auto& node = view.geomNode;
+        if (!node->ready(_deviceID))
+            return { RenderTextureSourceStatus::State::Waiting, "Waiting for compiled line geometry", true };
+    }
+
+    return hasViewGeometry || geometry->points.empty() ? RenderTextureSourceStatus{} :
+        RenderTextureSourceStatus{ RenderTextureSourceStatus::State::Waiting, "Waiting for line view geometry", true };
+}
+
+void LineSystemNode::expandRenderTextureBounds(
+    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS& worldSRS, bool applySourceTransform)
+{
+    if (auto* line = reg.try_get<Line>(entity))
+    {
+        if (auto* geometry = reg.try_get<LineGeometry>(line->geometry))
+            for (const auto& point : geometry->points)
+                expandRenderTextureSourcePoint(reg, entity, bounds, geometry->srs, point, worldSRS, applySourceTransform);
+        double width = 2.0;
+        double outlineWidth = 0.0;
+        bool physical = false;
+        if (auto* style = reg.try_get<LineStyle>(line->style))
+        {
+            physical = style->widthUnits.isDistance();
+            if (physical)
+            {
+                width = std::abs(Distance(style->width, style->widthUnits).as(Units::METERS));
+                outlineWidth = std::max(
+                    0.0,
+                    Distance(style->outlineWidth, style->widthUnits).as(Units::METERS));
+            }
+            else
+            {
+                width = std::abs((double)style->width);
+                outlineWidth = std::max(0.0, (double)style->outlineWidth);
+            }
+        }
+        if (physical)
+        {
+            bounds.paddingMeters = std::max(
+                bounds.paddingMeters,
+                0.5 * width + outlineWidth);
+        }
+        else
+        {
+            bounds.paddingPixels = std::max(
+                bounds.paddingPixels,
+                0.5 * width + outlineWidth + 2.0);
+        }
+    }
+}
+
+void LineSystemNode::contributeRenderTextureRevision(
+    entt::registry& reg, entt::entity entity, RenderTextureRevision& revision)
+{
+    auto* line = reg.try_get<Line>(entity);
+    if (!line) return;
+
+    detail::combineRenderTextureComponentBoth(revision, line);
+    detail::combineRenderTextureEntity(revision.bounds, line->geometry);
+    detail::combineRenderTextureEntity(revision.bounds, line->style);
+    detail::combineRenderTextureEntity(revision.content, line->geometry);
+    detail::combineRenderTextureEntity(revision.content, line->style);
+
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<LineGeometry>(line->geometry));
+
+    // Width, units, and outline width affect auto-fit padding, so a LineStyle
+    // revision conservatively invalidates both bounds and content.
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<LineStyle>(line->style));
+}
 
 #define LINE_SET 0
 #define LINE_BINDING_UNIFORM  1 // layout(set=0, binding=1) in the shader
@@ -178,6 +271,8 @@ LineSystemNode::LineSystemNode(Registry& registry) :
 void
 LineSystemNode::initialize(VSGContext vsgcontext)
 {
+    _deviceID = vsgcontext->device()->deviceID;
+
     // Now create the pipeline and stategroup to bind it
     auto shaderSet = createLineShaderSet(vsgcontext);
 
@@ -234,7 +329,7 @@ LineSystemNode::initialize(VSGContext vsgcontext)
                 state.attachments = vsg::ColorBlendState::ColorBlendAttachments {
                     { true,
                       VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-                      VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                      VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
                       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
                 };
             }
@@ -258,16 +353,19 @@ LineSystemNode::initialize(VSGContext vsgcontext)
 void
 LineSystemNode::compile(vsg::Context& compileContext)
 {
-    // called during a compile traversal .. e.g., then adding a new View/RenderGraph.
-    _registry.read([&](entt::registry& reg)
-        {
-            reg.view<LineStyleDetail>().each([&](auto& styleDetail)
-                {
-                    if (styleDetail.bind)
-                        styleDetail.bind->compile(compileContext);
-                });
+    // Repeated Overlay render graphs share one View. Existing resources only
+    // need the registry-wide compile pass the first time that View is seen.
+    if (firstCompileForView(compileContext))
+    {
+        _registry.read([&](entt::registry& reg)
+            {
+                reg.view<LineStyleDetail>().each([&](auto& styleDetail)
+                    {
+                        if (styleDetail.bind)
+                            styleDetail.bind->compile(compileContext);
+                    });
 
-            reg.view<LineGeometryDetail>().each([&](auto& geomDetail)
+                reg.view<LineGeometryDetail>().each([&](auto& geomDetail)
                 {
                     for (auto& geomView : geomDetail.views)
                     {
@@ -275,7 +373,8 @@ LineSystemNode::compile(vsg::Context& compileContext)
                             geomView.geomNode->compile(compileContext);
                     }
                 });
-        });
+            });
+    }
 
     Inherit::compile(compileContext);
 }
@@ -468,21 +567,20 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
     _styleDetailBins.clear();
     _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
+    auto renderRequest = getRenderRequest(record);
+
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
 
-    auto& view = _viewInfo[rs.viewID];
+    auto geometryViewID = prepareGeometryView(
+        rs.viewID,
+        srs,
+        rs.frame,
+        renderRequest.purpose == RenderPurpose::RenderTexture);
 
-    // I'm alive
-    view.lastFrame = rs.frame;
-
-    // Did my SRS change? Because if it did, we need to regenerate
-    if (view.srsDef.empty() || view.srsDef != srs.definition())
-    {
-        view.srsDef = srs.definition();
-        view.dirty = true;
+    // A cache-owning view must wait for update() to generate its geometry.
+    if (geometryViewID == rs.viewID && _viewInfo[rs.viewID].dirty)
         return;
-    }
 
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
@@ -490,19 +588,29 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
             reg.view<LineStyle, LineStyleDetail>().each([&](auto& style, auto& styleDetail)
                 {
                     _styleDetailBins.emplace_back(&styleDetail);
-                    styleDetail.useTransparencyBin = style.transparencyBin;
+                    styleDetail.useTransparencyBin =
+                        style.transparencyBin && renderRequest.purpose == RenderPurpose::Main;
                 });
 
             int count = 0;
 
-            auto iter = reg.view<Line, ActiveState, Visibility>();
-            iter.each([&](auto entity, auto& line, auto& active, auto& visibility)
+            auto renderEntity = [&](auto entity, auto& line, auto& active, auto& visibility)
                 {
+                    if (!renderRequest.contains(entity))
+                        return;
+
+                    if (auto* participation = reg.try_get<RenderParticipation>(entity))
+                    {
+                        if ((renderRequest.purpose == RenderPurpose::Main && !participation->mainView) ||
+                            (renderRequest.purpose == RenderPurpose::RenderTexture && !participation->renderTexture))
+                            return;
+                    }
+
                     auto* geomDetail = reg.try_get<LineGeometryDetail>(line.geometry);
                     if (!geomDetail)
                         return;
 
-                    auto& geomView = geomDetail->views[rs.viewID];
+                    auto& geomView = geomDetail->views[geometryViewID];
 
                     if (geomView.root && visible(visibility, rs))
                     {
@@ -511,11 +619,18 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
                             styleDetail = &_defaultStyleDetail;
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
+                        bool useTransform = !(renderRequest.purpose == RenderPurpose::RenderTexture && renderRequest.ignoreSourceTransforms);
                         if (transformDetail)
                         {
-                            if (transformDetail->views[rs.viewID].passingCull)
+                            bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || transformDetail->views[rs.viewID].passingCull;
+                            if (useTransform && passes)
                             {
                                 styleDetail->drawList.emplace_back(geomView.root, transformDetail);
+                                ++count;
+                            }
+                            else if (!useTransform)
+                            {
+                                styleDetail->drawList.emplace_back(geomView.root, nullptr);
                                 ++count;
                             }
                         }
@@ -525,7 +640,24 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
                             ++count;
                         }
                     }
-                });
+                };
+
+            if (renderRequest.purpose == RenderPurpose::RenderTexture && !renderRequest.sources.empty())
+            {
+                for (auto source : renderRequest.sources)
+                {
+                    if (reg.all_of<Line, ActiveState, Visibility>(source))
+                    {
+                        auto&& [line, active, visibility] = reg.get<Line, ActiveState, Visibility>(source);
+                        renderEntity(source, line, active, visibility);
+                    }
+                }
+            }
+            else
+            {
+                auto iter = reg.view<Line, ActiveState, Visibility>();
+                iter.each(renderEntity);
+            }
 
             // Render collected data.
             if (count > 0)
@@ -603,9 +735,10 @@ LineSystemNode::update(VSGContext vsgcontext)
 
                 // Check for view expiration (no record traversal)
                 auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
-                if (view.lastFrame < frame - 1u)
+                if (!view.persistent && view.lastFrame < frame - 1u)
                 {
                     view.srsDef.clear();
+                    view.geometryViewID = std::numeric_limits<ViewIDType>::max();
                     view.dirty = true;
                     view.lastFrame = std::numeric_limits<FrameCountType>::max();
                 }

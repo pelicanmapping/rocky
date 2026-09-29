@@ -13,6 +13,7 @@
 #include <rocky/rtree.h>
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 DeclutterSystem::DeclutterSystem(Registry r) : System(r)
 {

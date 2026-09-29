@@ -9,6 +9,8 @@
 
 namespace ROCKY_NAMESPACE
 {
+    class RenderTextureParticipant;
+
     /**
     * Base class for an ECS system. And ECS system is typically responsible
     * for performing logic around a specific type of component.
@@ -29,6 +31,18 @@ namespace ROCKY_NAMESPACE
         virtual void update(VSGContext vsgcontext)
         {
             //nop
+        }
+
+        /**
+         * Return the node that participates in generic render-to-texture passes,
+         * or null when this system has no record traversal for them.
+         *
+         * This capability removes the central list of geometry system types;
+         * an extension opts in without modifying Application or Overlay code.
+         */
+        virtual RenderTextureParticipant* renderTextureParticipant()
+        {
+            return nullptr;
         }
 
     protected:

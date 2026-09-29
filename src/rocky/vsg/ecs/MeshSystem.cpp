@@ -5,8 +5,10 @@
  * MIT License
  */
 #include "MeshSystem.h"
+#include "OverlayRenderContext.h"
 #include "../ViewDependentState.h"
 #include "../ShaderDefines.h"
+#include <rocky/ecs/ProjectedTexture.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -19,6 +21,79 @@ using namespace ROCKY_NAMESPACE::detail;
 #define MESH_BINDING_TEXTURE   2 // layout(set=0, binding=2) in the shader
 
 #define USE_DYNAMIC_STATE
+
+RenderTextureSourceStatus MeshSystemNode::renderTextureSourceStatus(
+    entt::registry& reg, entt::entity entity) const
+{
+    auto* mesh = reg.try_get<Mesh>(entity);
+    if (!mesh)
+        return {};
+
+    if (const auto* style = reg.try_get<MeshStyle>(mesh->style); style && style->texture != entt::null)
+    {
+        const auto* texture = reg.try_get<TextureResource>(style->texture);
+        if (!texture || !texture->ready)
+            return { RenderTextureSourceStatus::State::Waiting, "Waiting for mesh texture", true };
+    }
+
+    auto* geometry = reg.try_get<MeshGeometry>(mesh->geometry);
+    auto* detail = reg.try_get<MeshGeometryDetail>(mesh->geometry);
+    if (!geometry || !detail)
+        return { RenderTextureSourceStatus::State::Waiting, "Waiting for mesh geometry", true };
+
+    bool hasViewGeometry = false;
+    for (const auto& view : detail->views)
+    {
+        if (!view.geomNode || !view.root)
+            continue;
+
+        hasViewGeometry = true;
+        if (!view.geomNode->ready(_deviceID))
+            return { RenderTextureSourceStatus::State::Waiting, "Waiting for compiled mesh geometry", true };
+    }
+
+    return hasViewGeometry || geometry->vertices.empty() ? RenderTextureSourceStatus{} :
+        RenderTextureSourceStatus{ RenderTextureSourceStatus::State::Waiting, "Waiting for mesh view geometry", true };
+}
+
+void MeshSystemNode::expandRenderTextureBounds(
+    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS& worldSRS, bool applySourceTransform)
+{
+    if (auto* mesh = reg.try_get<Mesh>(entity))
+        if (auto* geometry = reg.try_get<MeshGeometry>(mesh->geometry))
+            for (const auto& vertex : geometry->vertices)
+                expandRenderTextureSourcePoint(reg, entity, bounds, geometry->srs, vertex, worldSRS, applySourceTransform);
+}
+
+void MeshSystemNode::contributeRenderTextureRevision(
+    entt::registry& reg, entt::entity entity, RenderTextureRevision& revision)
+{
+    auto* mesh = reg.try_get<Mesh>(entity);
+    if (!mesh) return;
+
+    // Changing the referenced geometry or style is itself observable even if
+    // the newly referenced component happens to have the same generation.
+    detail::combineRenderTextureComponentBoth(revision, mesh);
+    detail::combineRenderTextureEntity(revision.bounds, mesh->geometry);
+    detail::combineRenderTextureEntity(revision.content, mesh->geometry);
+    detail::combineRenderTextureEntity(revision.content, mesh->style);
+
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<MeshGeometry>(mesh->geometry));
+
+    if (auto* style = reg.try_get<MeshStyle>(mesh->style))
+    {
+        // Mesh styles affect pixels, not the source's geometric bounds.
+        detail::combineRenderTextureComponent(revision.content, style);
+        detail::combineRenderTextureEntity(revision.content, style->texture);
+        if (const auto* texture = reg.try_get<TextureResource>(style->texture))
+        {
+            detail::combineRenderTextureComponent(revision.content, texture);
+            detail::combineRenderTextureRevision(revision.content, texture->revision);
+            detail::combineRenderTextureRevision(revision.content, texture->ready);
+        }
+    }
+}
 
 namespace
 {
@@ -117,11 +192,6 @@ void MeshSystemNode::on_construct_MeshGeometry(entt::registry& r, entt::entity e
     r.emplace<MeshGeometryDetail>(e);
     MeshGeometry::dirty(r, e);
 }
-void MeshSystemNode::on_construct_Texture(entt::registry& r, entt::entity e)
-{
-    (void)r.get_or_emplace<MeshTextureDetail>(e);
-    MeshTexture::dirty(r, e);
-}
 
 void MeshSystemNode::on_destroy_MeshStyle(entt::registry& r, entt::entity e)
 {
@@ -146,14 +216,6 @@ void MeshSystemNode::on_destroy_MeshGeometryDetail(entt::registry& r, entt::enti
         view = {};
     }
 }
-void MeshSystemNode::on_destroy_MeshTexture(entt::registry& r, entt::entity e)
-{
-    r.remove<MeshTextureDetail>(e);
-}
-void MeshSystemNode::on_destroy_MeshTextureDetail(entt::registry& r, entt::entity e)
-{
-    //nop
-}
 
 
 void MeshSystemNode::on_update_Mesh(entt::registry& r, entt::entity e)
@@ -168,10 +230,6 @@ void MeshSystemNode::on_update_MeshGeometry(entt::registry& r, entt::entity e)
 {
     MeshGeometry::dirty(r, e);
 }
-void MeshSystemNode::on_update_Texture(entt::registry& r, entt::entity e)
-{
-    MeshTexture::dirty(r, e);
-}
 
 
 MeshSystemNode::MeshSystemNode(Registry& registry) :
@@ -183,26 +241,21 @@ MeshSystemNode::MeshSystemNode(Registry& registry) :
             r.on_construct<Mesh>().connect<&MeshSystemNode::on_construct_Mesh>(*this);
             r.on_construct<MeshStyle>().connect<&MeshSystemNode::on_construct_MeshStyle>(*this);
             r.on_construct<MeshGeometry>().connect<&MeshSystemNode::on_construct_MeshGeometry>(*this);
-            r.on_construct<MeshTexture>().connect<&MeshSystemNode::on_construct_Texture>(*this);
 
             r.on_update<Mesh>().connect<&MeshSystemNode::on_update_Mesh>(*this);
             r.on_update<MeshStyle>().connect<&MeshSystemNode::on_update_MeshStyle>(*this);
             r.on_update<MeshGeometry>().connect<&MeshSystemNode::on_update_MeshGeometry>(*this);
-            r.on_update<MeshTexture>().connect<&MeshSystemNode::on_update_Texture>(*this);
 
             r.on_destroy<MeshStyle>().connect<&MeshSystemNode::on_destroy_MeshStyle>(*this);
             r.on_destroy<MeshStyleDetail>().connect<&MeshSystemNode::on_destroy_MeshStyleDetail>(*this);
             r.on_destroy<MeshGeometry>().connect<&MeshSystemNode::on_destroy_MeshGeometry>(*this);
             r.on_destroy<MeshGeometryDetail>().connect<&MeshSystemNode::on_destroy_MeshGeometryDetail>(*this);
-            r.on_destroy<MeshTexture>().connect<&MeshSystemNode::on_destroy_MeshTexture>(*this);
-            r.on_destroy<MeshTextureDetail>().connect<&MeshSystemNode::on_destroy_MeshTextureDetail>(*this);
 
             // Set up the dirty tracking.
             auto e = r.create();
             r.emplace<Mesh::Dirty>(e);
             r.emplace<MeshStyle::Dirty>(e);
             r.emplace<MeshGeometry::Dirty>(e);
-            r.emplace<MeshTexture::Dirty>(e);
         });
 }
 
@@ -210,6 +263,8 @@ MeshSystemNode::MeshSystemNode(Registry& registry) :
 void
 MeshSystemNode::initialize(VSGContext vsgcontext)
 {
+    _deviceID = vsgcontext->device()->deviceID;
+
     // make sure all required vulkan features are available:
     bool supported = false;
 
@@ -295,7 +350,7 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
                 state.attachments = vsg::ColorBlendState::ColorBlendAttachments{
                     { true,
                       VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-                      VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                      VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
                       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
                 };
             }
@@ -334,16 +389,17 @@ MeshSystemNode::compile(vsg::Context& compileContext)
 {
     if (status.failed()) return;
 
-    // called during a compile traversal .. e.g., then adding a new View/RenderGraph.
-    _registry.read([&](entt::registry& reg)
-        {
-            reg.view<MeshStyleDetail>().each([&](auto& styleDetail)
-                {
-                    if (styleDetail.bind)
-                        styleDetail.bind->compile(compileContext);
-                });
+    if (firstCompileForView(compileContext))
+    {
+        _registry.read([&](entt::registry& reg)
+            {
+                reg.view<MeshStyleDetail>().each([&](auto& styleDetail)
+                    {
+                        if (styleDetail.bind)
+                            styleDetail.bind->compile(compileContext);
+                    });
 
-            reg.view<MeshGeometryDetail>().each([&](auto& geomDetail)
+                reg.view<MeshGeometryDetail>().each([&](auto& geomDetail)
                 {
                     for (auto& geomView : geomDetail.views)
                     {
@@ -351,7 +407,8 @@ MeshSystemNode::compile(vsg::Context& compileContext)
                             geomView.geomNode->compile(compileContext);
                     }
                 });
-        });
+            });
+    }
 
     Inherit::compile(compileContext);
 }
@@ -469,6 +526,16 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     bool needsCompile = false;
     bool needsUpload = false;
 
+    const auto* texture = reg.try_get<TextureResource>(style.texture);
+    const auto* textureImage = texture && texture->ready ? texture->texture.get() : nullptr;
+    if (styleDetail.bind && textureImage != styleDetail.textureImage)
+    {
+        // Retire the old descriptor set as a whole. Never mutate an image binding
+        // that an in-flight draw may still use, or dispose another producer's image.
+        dispose(styleDetail.bind);
+        styleDetail.bind = {};
+    }
+
     if (!styleDetail.bind)
     {
         auto layout = getPipelineLayout(Mesh());
@@ -520,55 +587,26 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     }
 #endif
 
-    bool texChanged = style.texture != styleDetail.texture;
-
     // update the uniform for this style:
     MeshUniform& uniform = *static_cast<MeshUniform*>(styleDetail.styleUBOData->dataPointer());
-    uniform.style.populate(style);
+    uniform.style.populate(style, texture);
     needsUpload = !needsCompile;
 
-    if (texChanged)
+    if (needsCompile && textureImage)
     {
-        // texture changed
-        auto* tex = reg.try_get<MeshTexture>(style.texture);
-        if (tex)
-        {
-            // properly dispose of old texture
-            if (styleDetail.styleTexture->imageInfoList.size() > 0 &&
-                styleDetail.styleTexture->imageInfoList[0].valid())
-            {
-                dispose(styleDetail.styleTexture->imageInfoList[0]);
-            }
-
-            styleDetail.styleTexture->imageInfoList = vsg::ImageInfoList{ tex->imageInfo };
-            needsCompile = true;
-        }
+        styleDetail.styleTexture->imageInfoList = vsg::ImageInfoList{ texture->texture };
     }
+    styleDetail.texture = style.texture;
+    styleDetail.textureRevision = texture ? texture->revision : 0u;
+    styleDetail.textureComponentRevision = texture ? texture->componentRevision() : 0u;
+    styleDetail.textureImage = textureImage;
+    styleDetail.textureOrigin = texture ? texture->origin : TextureOrigin::LowerLeft;
+    styleDetail.textureAlphaMode = texture ? texture->alphaMode : TextureAlphaMode::Straight;
 
     if (needsCompile)
         requestCompile(styleDetail.bind);
     else if (needsUpload)
         requestUpload(styleDetail.styleUBO->bufferInfoList);
-}
-
-void
-MeshSystemNode::addOrUpdateTexture(const MeshTexture& tex, MeshTextureDetail& texDetail, entt::registry& reg)
-{
-    reg.view<MeshStyleDetail>().each([&](auto& styleDetail)
-        {
-            if (styleDetail.texture == tex.owner)
-            {
-                // dispose of old one
-                if (styleDetail.styleTexture->imageInfoList.size() > 0 &&
-                    styleDetail.styleTexture->imageInfoList[0].valid())
-                {
-                    dispose(styleDetail.styleTexture->imageInfoList[0]);
-                }
-
-                styleDetail.styleTexture->imageInfoList = vsg::ImageInfoList{ tex.imageInfo };
-                requestCompile(styleDetail.bind);
-            }
-        });
 }
 
 void
@@ -586,21 +624,20 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
     _styleDetailBins.clear();
     _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
+    auto renderRequest = getRenderRequest(record);
+
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
 
-    auto& view = _viewInfo[rs.viewID];
+    auto geometryViewID = prepareGeometryView(
+        rs.viewID,
+        srs,
+        rs.frame,
+        renderRequest.purpose == RenderPurpose::RenderTexture);
 
-    // I'm alive
-    view.lastFrame = rs.frame;
-
-    // Did my SRS change? Because if it did, we need to regenerate
-    if (view.srsDef.empty() || view.srsDef != srs.definition())
-    {
-        view.srsDef = srs.definition();
-        view.dirty = true;
+    // A cache-owning view must wait for update() to generate its geometry.
+    if (geometryViewID == rs.viewID && _viewInfo[rs.viewID].dirty)
         return;
-    }
 
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
@@ -608,19 +645,29 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
             reg.view<MeshStyle, MeshStyleDetail>().each([&](auto& style, auto& styleDetail)
                 {
                     _styleDetailBins.emplace_back(&styleDetail);
-                    styleDetail.useTransparencyBin = style.transparencyBin;
+                    styleDetail.useTransparencyBin =
+                        style.transparencyBin && renderRequest.purpose == RenderPurpose::Main;
                 });
 
             int count = 0;
 
-            auto iter = reg.view<Mesh, ActiveState, Visibility>();
-            iter.each([&](auto entity, auto& comp, auto& active, auto& visibility)
+            auto renderEntity = [&](auto entity, auto& comp, auto& active, auto& visibility)
                 {
+                    if (!renderRequest.contains(entity))
+                        return;
+
+                    if (auto* participation = reg.try_get<RenderParticipation>(entity))
+                    {
+                        if ((renderRequest.purpose == RenderPurpose::Main && !participation->mainView) ||
+                            (renderRequest.purpose == RenderPurpose::RenderTexture && !participation->renderTexture))
+                            return;
+                    }
+
                     auto* geomDetail = reg.try_get<MeshGeometryDetail>(comp.geometry);
                     if (!geomDetail)
                         return;
 
-                    auto& geomView = geomDetail->views[rs.viewID];
+                    auto& geomView = geomDetail->views[geometryViewID];
 
                     if (geomView.root && visible(visibility, rs))
                     {
@@ -629,11 +676,18 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                             styleDetail = &_defaultStyleDetail;
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
+                        bool useTransform = !(renderRequest.purpose == RenderPurpose::RenderTexture && renderRequest.ignoreSourceTransforms);
                         if (transformDetail)
                         {
-                            if (transformDetail->views[rs.viewID].passingCull)
+                            bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || transformDetail->views[rs.viewID].passingCull;
+                            if (useTransform && passes)
                             {
                                 styleDetail->drawList.emplace_back(geomView.root, transformDetail);
+                                ++count;
+                            }
+                            else if (!useTransform)
+                            {
+                                styleDetail->drawList.emplace_back(geomView.root, nullptr);
                                 ++count;
                             }
                         }
@@ -643,7 +697,24 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                             ++count;
                         }
                     }
-                });
+                };
+
+            if (renderRequest.purpose == RenderPurpose::RenderTexture && !renderRequest.sources.empty())
+            {
+                for (auto source : renderRequest.sources)
+                {
+                    if (reg.all_of<Mesh, ActiveState, Visibility>(source))
+                    {
+                        auto&& [mesh, active, visibility] = reg.get<Mesh, ActiveState, Visibility>(source);
+                        renderEntity(source, mesh, active, visibility);
+                    }
+                }
+            }
+            else
+            {
+                auto iter = reg.view<Mesh, ActiveState, Visibility>();
+                iter.each(renderEntity);
+            }
 
             // Render collected data.
             if (count > 0)
@@ -688,17 +759,22 @@ MeshSystemNode::update(VSGContext vsgcontext)
     // process any objects marked dirty
     _registry.read([&](entt::registry& reg)
         {
-            MeshTexture::eachDirty(reg, [&](entt::entity e)
-                {
-                    const auto& [tex, texDetail] = reg.get<MeshTexture, MeshTextureDetail>(e);
-                    addOrUpdateTexture(tex, texDetail, reg);
-                });
-
             MeshStyle::eachDirty(reg, [&](entt::entity e)
                 {
-                    const auto& [style, styleDetail] = reg.get<MeshStyle, MeshStyleDetail>(e);
-                    createOrUpdateStyle(style, styleDetail, reg, vsgcontext);
+                    if (reg.all_of<MeshStyle, MeshStyleDetail>(e))
+                    {
+                        const auto& [style, styleDetail] = reg.get<MeshStyle, MeshStyleDetail>(e);
+                        createOrUpdateStyle(style, styleDetail, reg, vsgcontext);
+                    }
                 });
+
+            // Texture publications may change without a style edit. Multiple
+            // consumers independently observe revisions; unchanged styles do no GPU work.
+            reg.view<MeshStyle, MeshStyleDetail>().each([&](auto& style, auto& detail)
+            {
+                if (!detail.textureMatches(style.texture, reg.try_get<TextureResource>(style.texture)))
+                    createOrUpdateStyle(style, detail, reg, vsgcontext);
+            });
 
             MeshGeometry::eachDirty(reg, [&](entt::entity e)
                 {
@@ -713,9 +789,10 @@ MeshSystemNode::update(VSGContext vsgcontext)
 
                 // Check for view expiration (no record traversal)
                 auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
-                if (view.lastFrame < frame - 1u)
+                if (!view.persistent && view.lastFrame < frame - 1u)
                 {
                     view.srsDef.clear();
+                    view.geometryViewID = std::numeric_limits<ViewIDType>::max();
                     view.dirty = true;
                     view.lastFrame = std::numeric_limits<FrameCountType>::max();
                 }

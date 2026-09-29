@@ -38,7 +38,8 @@ namespace ROCKY_NAMESPACE
                 double dt = 1e-9 * (double)(time - last_time).count();
 
                 // Join query all motions + transform pairs:
-                for (auto&& [entity, motion, transform, transform_detail] : reg.view<Motion, Transform, TransformDetail>().each())
+                for (auto&& [entity, motion, transform, transform_detail] :
+                    reg.view<Motion, Transform, detail::TransformDetail>().each())
                 {
                     if (motion.velocity != zero && transform.revision == transform_detail.sync.revision)
                     {
@@ -63,7 +64,8 @@ namespace ROCKY_NAMESPACE
                     motion.velocity += motion.acceleration * dt;
                 }
 
-                for (auto&& [entity, motion, transform, detail] : reg.view<MotionGreatCircle, Transform, TransformDetail>().each()) //[&](auto& motion, auto& transform, auto& detail)
+                for (auto&& [entity, motion, transform, detail] :
+                    reg.view<MotionGreatCircle, Transform, detail::TransformDetail>().each())
                 {
                     // Note. For this demo, we just use the length of the velocity and acceleration
                     // vectors and ignore direction.

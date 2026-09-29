@@ -1,44 +1,48 @@
+# Overview
+
+This project (Rocky) is a 3D geospatial rendering engine. In other words it renders 3D maps and globes complete with 
+imagery, elevation, and GIS feature data.
+
+The underlying rendering engine is VulkanSceneGraph (VSG) which itself is based on Vulkan.
+
+Performance and scalability (e.g., handling huge amounts of data) are of paramout importance.
+Geospatial accurancy and precision are also high priority.
+
+
 # Building
 
 This project uses CMake to build.
-Do not attempt to figure out how to build this project on your own.  Use these instructions explicitly.
-The build directory contains scripts you can use to build this project. Run them from the repo's root folder.
+Do not attempt to figure out how to build this project on your own.  Use these instructions.
 
-To configure this project, enter the repo's root directory, and run
+The build folder is (usually) in ../build (but the user MAY have overriden that with the bootstrap script).
+Out-of-source builds are preferred.
+
+To configure this project you can run this from the root folder:
 ```
 build/configure.bat
 ```
 This will create an out of source cmake build in a directory called "../build".
 
-To build the project run this command
+To build the project run this command from the root folder:
 ```
 build/build.bat
 ```
+Keep in mind that it could take a long time to build the project from scratch.
 
-# Running
 
-Before running any rocky commands you need to run the rocky_shell.bat script to setup your PATH correctly.
-Run it with the repo root as your working folder, i.e., "build/rocky_shell.bat".
+# Coding Standards
 
-Set the environment variable to get a reasonable window size:
-OSG_WINDOW=1920 1080 20 20
+Code shall be C++17 compliant.
+Code needs to build on various platforms, so don't write code for which MSVC has "relaxed rules".
+Indent with 4 spaces. No tabs. Line break at 128 characters.
+New code should use the same EOL style (CRLF versus LF) as the existing code in the same file. When in doubt, or for new files, prefer CRLF.
 
-On windows, the dependencies are in ../build/vcpkg_installed under both the x64-windows and x64-windows-release folders. Be sure to include those in your PATH. (These should be set in rocky_shell.bat)
+# Documentation
 
-To run unit tests run this command:
-```
-rocky_tests
-```
+Document every new function with a concise comment describing its purpose and,
+where relevant, its ownership, threading, preconditions, and failure behavior.
+Include new helpers and test/benchmark functions; explain non-obvious reasoning
+instead of merely restating the function name.
 
-To run the visual demo application, run this:
-```
-rocky_demo
-```
-
-# Coding
-
-Normalize all line endings to match the development platform's standard.
-
-Code indentation should use 4 spaces (no tabs).
-
-Use ASCII characters ONLY in all code and comments.
+Design documentation (e.g., Codex's md files) should be stored in docs/design. The agent should
+notify us of new design docs that need adding to git.

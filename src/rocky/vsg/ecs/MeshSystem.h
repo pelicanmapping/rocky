@@ -7,7 +7,10 @@
 #include <rocky/ecs/Mesh.h>
 #include <rocky/vsg/VSGContext.h>
 #include <rocky/vsg/ecs/ECSNode.h>
+#include <rocky/vsg/ecs/RenderTextureParticipant.h>
 #include <rocky/vsg/ecs/ECSTypes.h>
+#include <rocky/vsg/ecs/TextureResource.h>
+#include <algorithm>
 
 namespace ROCKY_NAMESPACE
 {
@@ -23,6 +26,40 @@ namespace ROCKY_NAMESPACE
         void reserve(size_t numVerts);
 
         void compile(vsg::Context&) override;
+
+        //! Whether all Vulkan resources needed to record this geometry exist.
+        bool ready(std::uint32_t deviceID) const
+        {
+            if (_verts.empty())
+                return true;
+
+            if (commands.empty() || !_drawCommand || _drawCommand->indexCount == 0 ||
+                !indices || !indices->buffer ||
+                indices->buffer->sizeVulkanData() <= deviceID ||
+                indices->buffer->vk(deviceID) == VK_NULL_HANDLE)
+                return false;
+
+            for (const auto& array : arrays)
+            {
+                if (!array || !array->buffer ||
+                    array->buffer->sizeVulkanData() <= deviceID ||
+                    array->buffer->vk(deviceID) == VK_NULL_HANDLE)
+                    return false;
+            }
+
+            const auto& vertexData = _vulkanData[deviceID];
+            if (vertexData.vkBuffers.size() != arrays.size())
+                return false;
+
+            return std::all_of(vertexData.vkBuffers.begin(), vertexData.vkBuffers.end(),
+                [](VkBuffer buffer) { return buffer != VK_NULL_HANDLE; });
+        }
+
+        void record(vsg::CommandBuffer& commandBuffer) const override
+        {
+            if (ready(commandBuffer.deviceID))
+                vsg::Geometry::record(commandBuffer);
+        }
 
         vsg::vec4 _defaultColor = { 1,1,1,1 };
         std::vector<vsg::vec3> _verts;
@@ -44,17 +81,21 @@ namespace ROCKY_NAMESPACE
             Color color;
             float depthOffset; // meters
             std::uint32_t stipplePattern = 0xFFFFFFFF; // Note, only uses lower 16 bits            
-            std::uint32_t featureMask = 0; // 1 = texture; 2 = lighting; 4 = per-vertex colors
+            // 1 = texture; 2 = lighting; 4 = vertex colors; 8 = upper-left; 16 = premultiplied
+            std::uint32_t featureMask = 0;
             std::uint32_t padding[1]; // pad to 16 bytes
 
-            inline void populate(const MeshStyle& in) {
+            //! Resolves texture readiness and sampling metadata without changing the caller's style.
+            inline void populate(const MeshStyle& in, const TextureResource* texture = nullptr) {
                 color = in.color;
                 depthOffset = in.depthOffset;
                 stipplePattern = in.stipplePattern;
                 featureMask =
-                    (in.texture != entt::null ? 0x01 : 0) |
+                    (texture && texture->ready && texture->texture ? 0x01 : 0) |
                     (in.lighting ? 0x02 : 0) |
-                    (in.useGeometryColors ? 0x04 : 0);
+                    (in.useGeometryColors ? 0x04 : 0) |
+                    (texture && texture->origin == TextureOrigin::UpperLeft ? 0x08 : 0) |
+                    (texture && texture->alphaMode == TextureAlphaMode::Premultiplied ? 0x10 : 0);
             }
         };
         static_assert(sizeof(MeshStyleUniform) % 16 == 0, "MeshStyleUniform must be 16-byte aligned");
@@ -71,7 +112,23 @@ namespace ROCKY_NAMESPACE
         // ECS component: internal data paired with MeshStyle
         struct MeshStyleDetail : public StyleDetail<MeshStyleDetail>
         {
-            entt::entity texture = entt::null; // last know texture entt, for change tracking
+            entt::entity texture = entt::null;
+            std::uint64_t textureRevision = 0u;
+            std::uint64_t textureComponentRevision = 0u;
+            const vsg::ImageInfo* textureImage = nullptr; // identity only; descriptor retains the image
+            TextureOrigin textureOrigin = TextureOrigin::LowerLeft;
+            TextureAlphaMode textureAlphaMode = TextureAlphaMode::Straight;
+
+            //! Detects publication, readiness, removal, and replacement without consuming producer dirty queues.
+            bool textureMatches(entt::entity entity, const TextureResource* resource) const
+            {
+                return texture == entity &&
+                    textureRevision == (resource ? resource->revision : 0u) &&
+                    textureComponentRevision == (resource ? resource->componentRevision() : 0u) &&
+                    textureImage == (resource && resource->ready ? resource->texture.get() : nullptr) &&
+                    textureOrigin == (resource ? resource->origin : TextureOrigin::LowerLeft) &&
+                    textureAlphaMode == (resource ? resource->alphaMode : TextureAlphaMode::Straight);
+            }
 
             vsg::ref_ptr<vsg::BindDescriptorSet> bind;
             vsg::ref_ptr<vsg::Data> styleUBOData;
@@ -91,22 +148,23 @@ namespace ROCKY_NAMESPACE
             };
             ViewLocal<View> views;
         };
-
-
-        // ECS component: internal data paired with MeshTexture
-        struct MeshTextureDetail
-        {
-            // nop
-            bool unused = true;
-        };
     }
 
     /**
     * VSG node that renders Mesh components.
     */
-    class ROCKY_EXPORT MeshSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, MeshSystemNode>
+    class ROCKY_EXPORT MeshSystemNode :
+        public vsg::Inherit<detail::SimpleSystemNodeBase, MeshSystemNode>,
+        public RenderTextureParticipant
     {
     public:
+        RenderTextureParticipant* renderTextureParticipant() override { return this; }
+        vsg::Node* renderTextureNode() override { return this; }
+        vsg::ref_ptr<vsg::Node> renderTextureCompileNode() override { return pipelineCompileNode(); }
+        int renderTextureOrder() const override { return RenderTextureOrder::Mesh; }
+        RenderTextureSourceStatus renderTextureSourceStatus(entt::registry&, entt::entity) const override;
+        void expandRenderTextureBounds(entt::registry&, entt::entity, RenderTextureBounds&, const SRS&, bool) override;
+        void contributeRenderTextureRevision(entt::registry&, entt::entity, RenderTextureRevision&) override;
         //! Construct the mesh renderer
         MeshSystemNode(Registry& registry);
 
@@ -130,6 +188,7 @@ namespace ROCKY_NAMESPACE
         // Default mesh style to use if a Mesh doesn't have one
         mutable detail::MeshStyleDetail _defaultStyleDetail;
         mutable std::vector<detail::MeshStyleDetail*> _styleDetailBins;
+        std::uint32_t _deviceID = 0u;
 
         // Called when a line geometry component is found in the dirty list
         void createOrUpdateGeometry(const MeshGeometry&, detail::MeshGeometryDetail&);
@@ -140,25 +199,16 @@ namespace ROCKY_NAMESPACE
         // Called when a line style is found in the dirty list
         void createOrUpdateStyle(const MeshStyle&, detail::MeshStyleDetail&, entt::registry&, VSGContext);
 
-        // Called when a new mesh texture shows up
-        void addOrUpdateTexture(const MeshTexture&, detail::MeshTextureDetail&, entt::registry&);
-
-
-
         void on_construct_Mesh(entt::registry& r, entt::entity e);
         void on_construct_MeshStyle(entt::registry& r, entt::entity e);
         void on_construct_MeshGeometry(entt::registry& r, entt::entity e);
-        void on_construct_Texture(entt::registry& r, entt::entity e);
         void on_destroy_MeshStyle(entt::registry& r, entt::entity e);
         void on_destroy_MeshStyleDetail(entt::registry& r, entt::entity e);
         void on_destroy_MeshGeometry(entt::registry& r, entt::entity e);
         void on_destroy_MeshGeometryDetail(entt::registry& r, entt::entity e);
-        void on_destroy_MeshTexture(entt::registry& r, entt::entity e);
-        void on_destroy_MeshTextureDetail(entt::registry& r, entt::entity e);
         void on_update_Mesh(entt::registry& r, entt::entity e);
         void on_update_MeshStyle(entt::registry& r, entt::entity e);
         void on_update_MeshGeometry(entt::registry& r, entt::entity e);
-        void on_update_Texture(entt::registry& r, entt::entity e);
     };
 }
 

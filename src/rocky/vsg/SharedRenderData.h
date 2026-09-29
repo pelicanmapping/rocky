@@ -6,6 +6,7 @@
 #pragma once
 
 #include <rocky/vsg/Common.h>
+#include <rocky/vsg/ShaderDefines.h>
 #include <rocky/vsg/ViewDependentState.h>
 #include <rocky/Rendering.h>
 
@@ -15,12 +16,31 @@ namespace ROCKY_NAMESPACE
     // VSGContextImpl creates and owns a unique instance of this.
     struct ROCKY_EXPORT SharedRenderData
     {
+        static constexpr std::uint32_t DEFAULT_PROJECTED_TEXTURE_CAPACITY = MAX_NUM_DECAL_TEXTURES;
+
         SharedRenderData();
 
         ViewLocal<vsg::ref_ptr<ViewDependentStateEx>> viewDependentState;
 
-        // descriptors shared by all views:
+        // Fixed-capacity descriptor arenas shared by all views. DecalSystem
+        // populates only slots demanded by recently visible projections and
+        // restores unused slots to valid typed fallback images.
         vsg::ref_ptr<vsg::DescriptorImage> decalTextures;
+
+#ifdef ROCKY_HAS_SLUGHORN
+        //! Per-overlay Slug atlas arenas. Matching curve/band entries always use
+        //! the same index, and every unused entry contains a typed fallback.
+        //! SlugLayerGPU records refer to this shared index through DecalGPU.
+        vsg::ref_ptr<vsg::DescriptorImage> slugCurveTexture;
+        vsg::ref_ptr<vsg::DescriptorImage> slugBandTexture;
+#endif
+
+        //! Rebuilds the fixed projected-texture descriptor array. Call this during
+        //! application startup, before any graphics pipelines are compiled.
+        void configureProjectedTextureCapacity(std::uint32_t capacity);
+
+        //! Number of unique projected textures that can be resident concurrently.
+        std::uint32_t projectedTextureCapacity() const;
 
         //! whether any of the shared descriptors (above) has changed
         //! since the last check:

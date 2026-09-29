@@ -1,6 +1,7 @@
 set(APP_NAME rocky_demo)
 
 find_package(ImGui REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 file(GLOB SOURCES *.cpp)
 file(GLOB HEADERS *.h)
@@ -12,7 +13,7 @@ assign_source_groups("Header Files" "${CMAKE_CURRENT_SOURCE_DIR}" ${HEADERS})
 
 add_executable(${APP_NAME} ${SOURCES} ${HEADERS})
 
-target_link_libraries(${APP_NAME} rocky imgui::imgui)
+target_link_libraries(${APP_NAME} rocky imgui::imgui nlohmann_json::nlohmann_json)
 
 install(TARGETS ${APP_NAME} RUNTIME DESTINATION bin)
 

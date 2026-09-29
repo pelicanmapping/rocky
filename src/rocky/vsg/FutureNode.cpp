@@ -18,33 +18,38 @@ FutureNode::FutureNode(Future<NodeResult> f, VSGContext v) :
 void
 FutureNode::traverse(vsg::RecordTraversal& record) const
 {
-    if (_future.available() && _future->ok())
-    {
-        _child = _future->value();
-
-        // compile our new node
-        if (_child && _vsgcontext)
-            _vsgcontext->compile(_child);
-
-        // Defer first draw until a subsequent frame so viewer update can
-        // integrate compile results (descriptor/image transitions, etc.).
-        if (_vsgcontext)
-            _vsgcontext->requestFrame();
-
-        _future = {};
-
+    const bool newlyResolved = !_child && resolve();
+    if (newlyResolved)
         return;
-    }
 
     if (_child)
-    {
         _child->accept(record);
-    }
+}
+
+bool FutureNode::resolve() const
+{
+    if (_child)
+        return true;
+    if (!_future.available())
+        return false;
+
+    if (_future->ok())
+        _child = _future->value();
+
+    _future = {};
+
+    if (_child && _vsgcontext)
+        _vsgcontext->compile(_child);
+    if (_vsgcontext)
+        _vsgcontext->requestFrame();
+
+    return _child.valid();
 }
 
 void
 FutureNode::traverse(vsg::Visitor& visitor) 
 {
+    resolve();
     if (_child)
     {
         _child->accept(visitor);
@@ -54,6 +59,7 @@ FutureNode::traverse(vsg::Visitor& visitor)
 void
 FutureNode::traverse(vsg::ConstVisitor& visitor) const 
 {
+    resolve();
     if (_child)
     {
         _child->accept(visitor);

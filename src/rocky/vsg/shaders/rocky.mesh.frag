@@ -12,6 +12,7 @@ layout(location = 1) in Varyings {
     float applyTexture;
     float applyLighting;
     flat uint stipplePattern;
+    flat uint texturePremultiplied;
 } vary;
 
 // outputs
@@ -37,7 +38,14 @@ void main()
 {
     outColor = vary.color;
 
-    outColor = mix(outColor, outColor * texture(u_meshTexture, vary.uv), vary.applyTexture);
+    if (vary.applyTexture > 0.0)
+    {
+        vec4 texel = texture(u_meshTexture, vary.uv);
+        // Mesh blending expects straight alpha, including when sampling RTT output.
+        if (vary.texturePremultiplied != 0u)
+            texel.rgb = texel.a > 0.0 ? texel.rgb / texel.a : vec3(0.0);
+        outColor *= texel;
+    }
 
     vec4 litColor = applyLighting(outColor, vary.vertexVs, vary.normal);
     outColor = mix(outColor, litColor, vary.applyLighting);

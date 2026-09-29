@@ -4,13 +4,82 @@
  * MIT License
  */
 #include "PointSystem.h"
+#include "OverlayRenderContext.h"
 #include "TransformDetail.h"
 #include "ECSVisitors.h"
+#include <rocky/ecs/ProjectedTexture.h>
 #include "../ViewDependentState.h"
 #include "../ShaderDefines.h"
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
+
+RenderTextureSourceStatus PointSystemNode::renderTextureSourceStatus(
+    entt::registry& reg, entt::entity entity) const
+{
+    auto* point = reg.try_get<Point>(entity);
+    if (!point)
+        return {};
+
+    auto* geometry = reg.try_get<PointGeometry>(point->geometry);
+    auto* detail = reg.try_get<PointGeometryDetail>(point->geometry);
+    if (!geometry || !detail)
+        return { RenderTextureSourceStatus::State::Waiting, "Waiting for point geometry", true };
+
+    bool hasViewGeometry = false;
+    for (const auto& view : detail->views)
+    {
+        if (!view.geomNode || !view.root)
+            continue;
+
+        hasViewGeometry = true;
+        if (!view.geomNode->ready(_deviceID))
+            return { RenderTextureSourceStatus::State::Waiting, "Waiting for compiled point geometry", true };
+    }
+
+    return hasViewGeometry || geometry->points.empty() ? RenderTextureSourceStatus{} :
+        RenderTextureSourceStatus{ RenderTextureSourceStatus::State::Waiting, "Waiting for point view geometry", true };
+}
+
+void PointSystemNode::expandRenderTextureBounds(
+    entt::registry& reg, entt::entity entity, RenderTextureBounds& bounds, const SRS& worldSRS, bool applySourceTransform)
+{
+    if (auto* point = reg.try_get<Point>(entity))
+    {
+        if (auto* geometry = reg.try_get<PointGeometry>(point->geometry))
+        {
+            for (const auto& p : geometry->points)
+                expandRenderTextureSourcePoint(reg, entity, bounds, geometry->srs, p, worldSRS, applySourceTransform);
+            if (auto* style = reg.try_get<PointStyle>(point->style); style && style->useGeometryWidths)
+                for (auto width : geometry->widths)
+                    bounds.paddingPixels = std::max(bounds.paddingPixels, 0.5 * std::abs((double)width) + 2.0);
+        }
+        double width = 3.0;
+        if (auto* style = reg.try_get<PointStyle>(point->style))
+            width = std::abs((double)style->width);
+        bounds.paddingPixels = std::max(bounds.paddingPixels, 0.5 * width + 2.0);
+    }
+}
+
+void PointSystemNode::contributeRenderTextureRevision(
+    entt::registry& reg, entt::entity entity, RenderTextureRevision& revision)
+{
+    auto* point = reg.try_get<Point>(entity);
+    if (!point) return;
+
+    detail::combineRenderTextureComponentBoth(revision, point);
+    detail::combineRenderTextureEntity(revision.bounds, point->geometry);
+    detail::combineRenderTextureEntity(revision.bounds, point->style);
+    detail::combineRenderTextureEntity(revision.content, point->geometry);
+    detail::combineRenderTextureEntity(revision.content, point->style);
+
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<PointGeometry>(point->geometry));
+
+    // Width and per-vertex-width selection affect auto-fit padding.
+    detail::combineRenderTextureComponentBoth(
+        revision, reg.try_get<PointStyle>(point->style));
+}
 
 #define VERT_SHADER "shaders/rocky.point.vert"
 #define FRAG_SHADER "shaders/rocky.point.frag"
@@ -173,6 +242,8 @@ PointSystemNode::PointSystemNode(Registry& registry) :
 void
 PointSystemNode::initialize(VSGContext vsgcontext)
 {
+    _deviceID = vsgcontext->device()->deviceID;
+
     // Now create the pipeline and stategroup to bind it
     auto shaderSet = createShaderSet(vsgcontext);
 
@@ -231,7 +302,7 @@ PointSystemNode::initialize(VSGContext vsgcontext)
                 state.attachments = vsg::ColorBlendState::ColorBlendAttachments {
                     { true,
                       VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
-                      VK_BLEND_FACTOR_SRC_ALPHA, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
+                      VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD,
                       VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT }
                 };
             }
@@ -255,16 +326,17 @@ PointSystemNode::initialize(VSGContext vsgcontext)
 void
 PointSystemNode::compile(vsg::Context& compileContext)
 {
-    // called during a compile traversal .. e.g., then adding a new View/RenderGraph.
-    _registry.read([&](entt::registry& reg)
-        {
-            reg.view<PointStyleDetail>().each([&](auto& styleDetail)
-                {
-                    if (styleDetail.bind)
-                        styleDetail.bind->compile(compileContext);
-                });
+    if (firstCompileForView(compileContext))
+    {
+        _registry.read([&](entt::registry& reg)
+            {
+                reg.view<PointStyleDetail>().each([&](auto& styleDetail)
+                    {
+                        if (styleDetail.bind)
+                            styleDetail.bind->compile(compileContext);
+                    });
 
-            reg.view<PointGeometryDetail>().each([&](auto& geomDetail)
+                reg.view<PointGeometryDetail>().each([&](auto& geomDetail)
                 {
                     for (auto& geomView : geomDetail.views)
                     {
@@ -272,7 +344,8 @@ PointSystemNode::compile(vsg::Context& compileContext)
                             geomView.geomNode->compile(compileContext);
                     }
                 });
-        });
+            });
+    }
 
     Inherit::compile(compileContext);
 }
@@ -456,21 +529,20 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
     _styleDetailBins.clear();
     _styleDetailBins.emplace_back(&_defaultStyleDetail);
 
+    auto renderRequest = getRenderRequest(record);
+
     SRS srs;
     record.getValue("rocky.worldsrs", srs);
 
-    auto& view = _viewInfo[rs.viewID];
+    auto geometryViewID = prepareGeometryView(
+        rs.viewID,
+        srs,
+        rs.frame,
+        renderRequest.purpose == RenderPurpose::RenderTexture);
 
-    // I'm alive
-    view.lastFrame = rs.frame;
-
-    // Did my SRS change? Because if it did, we need to regenerate
-    if (view.srsDef.empty() || view.srsDef != srs.definition())
-    {
-        view.srsDef = srs.definition();
-        view.dirty = true;
+    // A cache-owning view must wait for update() to generate its geometry.
+    if (geometryViewID == rs.viewID && _viewInfo[rs.viewID].dirty)
         return;
-    }
 
     // Collect render leaves while locking the registry
     _registry.read([&](entt::registry& reg)
@@ -478,19 +550,29 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
             reg.view<PointStyle, PointStyleDetail>().each([&](auto& style, auto& styleDetail)
                 {
                     _styleDetailBins.emplace_back(&styleDetail);
-                    styleDetail.useTransparencyBin = style.transparencyBin;
+                    styleDetail.useTransparencyBin =
+                        style.transparencyBin && renderRequest.purpose == RenderPurpose::Main;
                 });
 
             int count = 0;
 
-            auto iter = reg.view<Point, ActiveState, Visibility>();
-            iter.each([&](auto entity, auto& point, auto& active, auto& visibility)
+            auto renderEntity = [&](auto entity, auto& point, auto& active, auto& visibility)
                 {
+                    if (!renderRequest.contains(entity))
+                        return;
+
+                    if (auto* participation = reg.try_get<RenderParticipation>(entity))
+                    {
+                        if ((renderRequest.purpose == RenderPurpose::Main && !participation->mainView) ||
+                            (renderRequest.purpose == RenderPurpose::RenderTexture && !participation->renderTexture))
+                            return;
+                    }
+
                     auto* geomDetail = reg.try_get<PointGeometryDetail>(point.geometry);
                     if (!geomDetail)
                         return;
 
-                    auto& geomView = geomDetail->views[rs.viewID];
+                    auto& geomView = geomDetail->views[geometryViewID];
 
                     if (geomView.root && visible(visibility, rs))
                     {
@@ -502,11 +584,18 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
                         }
 
                         auto* transformDetail = reg.try_get<TransformDetail>(entity);
+                        bool useTransform = !(renderRequest.purpose == RenderPurpose::RenderTexture && renderRequest.ignoreSourceTransforms);
                         if (transformDetail)
                         {
-                            if (transformDetail->views[rs.viewID].passingCull)
+                            bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || transformDetail->views[rs.viewID].passingCull;
+                            if (useTransform && passes)
                             {
                                 styleDetail->drawList.emplace_back(geomView.root, transformDetail);
+                                ++count;
+                            }
+                            else if (!useTransform)
+                            {
+                                styleDetail->drawList.emplace_back(geomView.root, nullptr);
                                 ++count;
                             }
                         }
@@ -516,7 +605,24 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
                             ++count;
                         }
                     }
-                });
+                };
+
+            if (renderRequest.purpose == RenderPurpose::RenderTexture && !renderRequest.sources.empty())
+            {
+                for (auto source : renderRequest.sources)
+                {
+                    if (reg.all_of<Point, ActiveState, Visibility>(source))
+                    {
+                        auto&& [point, active, visibility] = reg.get<Point, ActiveState, Visibility>(source);
+                        renderEntity(source, point, active, visibility);
+                    }
+                }
+            }
+            else
+            {
+                auto iter = reg.view<Point, ActiveState, Visibility>();
+                iter.each(renderEntity);
+            }
 
             // Render collected data.
             // TODO: swap vectors into unprotected space to free up the readlock?
@@ -590,9 +696,10 @@ PointSystemNode::update(VSGContext vsgcontext)
 
                 // Check for view expiration (no record traversal)
                 auto frame = vsgcontext->viewer()->getFrameStamp()->frameCount;
-                if (view.lastFrame < frame - 1u)
+                if (!view.persistent && view.lastFrame < frame - 1u)
                 {
                     view.srsDef.clear();
+                    view.geometryViewID = std::numeric_limits<ViewIDType>::max();
                     view.dirty = true;
                     view.lastFrame = std::numeric_limits<FrameCountType>::max();
                 }

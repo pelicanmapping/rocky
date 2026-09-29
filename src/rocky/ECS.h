@@ -8,12 +8,16 @@
 #include <rocky/ecs/Registry.h>
 #include <rocky/ecs/Line.h>
 #include <rocky/ecs/Mesh.h>
+#include <rocky/ecs/Polygon.h>
 #include <rocky/ecs/Point.h>
 #include <rocky/ecs/Label.h>
 #include <rocky/ecs/Widget.h>
 #include <rocky/ecs/Model.h>
 #include <rocky/ecs/Decal.h>
+#include <rocky/ecs/Overlay.h>
+#include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/ecs/Optics.h>
+#include <rocky/ecs/TerrainAnchor.h>
 #include <rocky/ecs/Transform.h>
 #include <rocky/ecs/Visibility.h>
 #include <rocky/ecs/Declutter.h>

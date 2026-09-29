@@ -15,6 +15,7 @@
         { "name" : "openssl" },
         { "name" : "proj", "features": [ "tools" ]},
         { "name" : "spdlog" },
+        { "name" : "slughorn"},
         { "name" : "sqlite3" },
         { "name" : "vsg", "features" : [ "windowing" ] },
         { "name" : "vsgxchange", "features": [ "assimp", "freetype", "draco" ] },

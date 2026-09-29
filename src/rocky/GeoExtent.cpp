@@ -310,7 +310,18 @@ GeoExtent::contains(double x, double y, const SRS& xy_srs) const
 bool
 GeoExtent::contains(const GeoPoint& rhs) const
 {
-    return contains(rhs.x, rhs.y, rhs.srs);
+    if (!valid())
+        return false;
+
+    if (rhs.srs.valid() && rhs.srs != srs())
+    {
+        // Preserve all three coordinates until after the SRS conversion. In ECEF,
+        // zeroing Z changes latitude, so an XY-only conversion tests the wrong location.
+        auto local = rhs.transform(srs());
+        return local.valid() && contains(local.x, local.y);
+    }
+
+    return contains(rhs.x, rhs.y);
 }
 
 bool

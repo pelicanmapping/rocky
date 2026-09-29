@@ -53,7 +53,6 @@ If you would rather not use vcpkg, you can build and install the [dependencies](
 
 > *Note: Rocky requires ImGui version 1.92 or newer to get full dynamic font support.*
 
-
 ## Run the Demo
 Rocky is pretty good at finding its data files, but if you run into trouble, you might need to set a couple environment variables to help:
 ```bat
@@ -325,13 +324,14 @@ Spatial reference systems ensure that your map data aligns correctly, support ac
 
 Rocky has a set of built-in primitives for displaying objects on the map.
 
+* Polygon - a collection of 2D closed rings with optional holes
 * Line - a string of 2D line segments
-* Mesh - a collection of triangles
 * Point - a collection of points
+* Mesh - a collection of 3D triangles
 * Model - a 3D model
-* Widget - an interactive ImGui panel (for labels, icons, or custom UIs)
+* Widget - an interactive UI panel (for labels, icons, or custom UIs)
 * Label - a simple text label (based on Widget)
-* Decal - an image overlaid on the terrain
+* Decal - an image projected on the terrain or other geometry
 
 To create and manage these elements, Rocky uses an [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system) (ECS) driven by the popular [EnTT](https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. Suffice it to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
 
@@ -439,6 +439,22 @@ app.registry.write([&](entt::registry& registry)
     });
 ```
 
+### TerrainAnchor
+
+Pair `TerrainAnchor` with a `Transform` to keep an entity at the loaded terrain height without changing its horizontal
+location. Use `offset` to position it above the surface, in meters.
+
+```c++
+app.registry.write([&](entt::registry& r)
+    {
+        auto& xform = r.emplace<Transform>(entity);
+        xform.position = GeoPoint(SRS::WGS84, -76, 34, 0);
+
+        auto& anchor = r.emplace<TerrainAnchor>(entity);
+        anchor.offset = 10.0; // meters above the terrain
+    });
+```
+
 ### Visibility
 Use the `Visibility` component to toggle an entity's visibility. (Rocky automatically adds a `Visibility` whenever you create one of the built-in primitive types - you don't have to emplace it yourself.) The component is actually an array so you can control visibility on a per-view basis.
 ```c++
@@ -473,6 +489,25 @@ app.registry.write([&](entt::registry& r)
         pixelScale.maxPixels = 256.0f;
     });
 ```
+
+### Overlay
+Attach `Overlay` to an entity with a `Polygon`, `Line`, `Point`, or `Mesh` component to drape its geometry on the terrain.
+Use the default `OverlayMode::Vector` for resolution-independent rendering, or `OverlayMode::Raster` to render at a
+fixed image resolution.
+
+```c++
+app.registry.write([&](entt::registry& r)
+    {
+        // The entity already has a Polygon, Line, Point, or Mesh component.
+        auto& overlay = r.emplace<Overlay>(entity);
+        overlay.mode = OverlayMode::Vector; // default; or OverlayMode::Raster
+        overlay.color.a = 0.8f; // overlay opacity
+        overlay.resolution = { 1024u, 1024u }; // used by Raster mode and raster fallback
+    });
+```
+
+Georeferenced geometry is positioned automatically. For local geometry, pair the entity with a `Transform` to set its
+position and scale. Prefer `Polygon` for filled areas with boundaries and holes.
 
 Other control components include:
 * `ActiveState` (for the overall active state of an entity)
@@ -766,6 +801,7 @@ Thanks to these excellent open source projects that help make Rocky possible!
 * [nlohmann-json](https://github.com/nlohmann/json)
 * [openssl](https://github.com/openssl/openssl) (optional)
 * [proj](https://github.com/OSGeo/PROJ)
+* [slughorn](https://github.com/AlphaPixel/slughorn) (optional)
 * [spdlog](https://github.com/gabime/spdlog)
 * [sqlite3](https://github.com/sqlite/sqlite) (optional)
 * [vsgXchange](https://github.com/vsg-dev/vsgXchange) (optional)

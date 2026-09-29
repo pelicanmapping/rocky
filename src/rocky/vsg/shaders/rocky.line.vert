@@ -20,13 +20,15 @@ layout(location = 3) in vec4 in_color;
 // rocky::detail::LineStyleRecord
 struct LineStyle {
     vec4 color;
+    vec4 outlineColor;
     float width;
+    float outlineWidth;
     int stipplePattern;
     int stippleFactor;
     float depthOffset;
     uint perVertexMask; // 0x1 = color
     float devicePixelRatio;
-    uint padding[2];
+    uint widthIsPhysical;
 };
 
 // rocky::detail::LineStyleUniform
@@ -42,6 +44,8 @@ layout(set = 1, binding = 1) readonly buffer VSG_Viewports {
 // inter-stage interface block
 struct Varyings {
     vec4 color;
+    vec4 outlineColor;
+    float outlineRatio;
     vec2 stippleDir;
     int stipplePattern;
     int stippleFactor;
@@ -64,11 +68,10 @@ void main()
     bool perVertexColor = (u_line.style.perVertexMask & 0x1) != 0;
 
     vary.color = perVertexColor ? in_color : u_line.style.color;
+    vary.outlineColor = u_line.style.outlineColor;
     vary.stipplePattern = u_line.style.stipplePattern;
     vary.stippleFactor = u_line.style.stippleFactor;
 
-    float thickness = max(0.5, floor(u_line.style.width * u_line.style.devicePixelRatio));
-    float len = thickness;
     int code = (gl_VertexIndex + 2) & 3;
     bool is_start = code <= 1;
     bool is_right = code == 0 || code == 2;
@@ -111,6 +114,7 @@ void main()
     vec2 next_pixel = (next_clip.xy / next_clip.w) * viewport_size;
 
     vec2 dir;
+    float miterScale = 1.0;
 
     // The following vertex comparisons must be done in model 
     // space because the equivalency gets mashed after projection.
@@ -145,18 +149,52 @@ void main()
             vec2 perp = vec2(-dir_in.y, dir_in.x);
             vec2 miter = vec2(-tangent.y, tangent.x);
             dir = tangent;
-            len = thickness / dot(miter, perp);
+            miterScale = 1.0 / dot(miter, perp);
 
             // limit the length of a mitered corner, to prevent unsightly spikes
             const float LIMIT = 2.0;
-            if (len > thickness * LIMIT)
+            if (miterScale > LIMIT)
             {
-                len = thickness;
+                miterScale = 1.0;
                 dir = is_start ? dir_out : dir_in;
             }
         }
         vary.stippleDir = dir_out;
     }
+
+    float coreThickness;
+    float outlineThickness;
+    if (u_line.style.widthIsPhysical != 0u)
+    {
+        // Convert one view-space meter in the final extrusion direction to
+        // Rocky's doubled screen-coordinate convention. Half of that value
+        // converts a full physical line width into its screen-space radius.
+        vec2 screenNormal = vec2(-dir.y, dir.x);
+        vec2 projectionScale = vec2(pc.projection[0][0], pc.projection[1][1]);
+        vec2 magnitude = max(abs(projectionScale), vec2(1e-8));
+        vec2 safeScale = mix(magnitude, -magnitude, lessThan(projectionScale, vec2(0.0)));
+        vec2 viewNormal = normalize(screenNormal / (safeScale * viewport_size));
+        vec4 meterClip = pc.projection * vec4(
+            curr_view.xyz + vec3(viewNormal, 0.0),
+            curr_view.w);
+        vec2 meterPixel = (meterClip.xy / meterClip.w) * viewport_size;
+        float unitScale = 0.5 * length(meterPixel - curr_pixel);
+        coreThickness = max(1e-4, u_line.style.width * unitScale);
+        outlineThickness = max(0.0, u_line.style.outlineWidth * unitScale);
+    }
+    else
+    {
+        coreThickness = max(
+            0.5,
+            floor(u_line.style.width * u_line.style.devicePixelRatio));
+        outlineThickness = max(
+            0.0,
+            u_line.style.outlineWidth * u_line.style.devicePixelRatio);
+    }
+
+    float thickness = coreThickness + 2.0 * outlineThickness;
+    vary.outlineRatio = outlineThickness > 0.0 ? coreThickness / thickness : 1.0;
+    float len = thickness * miterScale;
 
     // calculate the extrusion vector in pixels
     // note: seems like it should be len/2, BUT remember we are in [-w..w] space

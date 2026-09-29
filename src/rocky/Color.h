@@ -105,6 +105,7 @@ namespace ROCKY_NAMESPACE
         const Color Fuchsia(0xff00ffff);
         const Color Purple(0x800080ff);
         const Color Orange(0xffa500ff);
+        const Color Pink(0xff69B4ff);
 
         // Others
         const Color Cyan(0x00ffffff);

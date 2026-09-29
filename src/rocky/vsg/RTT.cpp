@@ -1,7 +1,107 @@
 #include "RTT.h"
 
+#include <algorithm>
+
 using namespace ROCKY_NAMESPACE;
 
+namespace
+{
+    // VSG 1.1.15 computes MemoryBufferPools::minimumDeviceMemorySize but
+    // reserveMemory() allocates only the incoming image requirement. Prime a
+    // reusable block explicitly so a large set of small RTT attachments does
+    // not turn into one VkDeviceMemory allocation per image.
+    vsg::ref_ptr<vsg::ImageView> createPooledImageView(
+        vsg::Context& context,
+        vsg::ref_ptr<vsg::Image> image,
+        VkImageAspectFlags aspectFlags)
+    {
+        auto device = context.device;
+        image->compile(device);
+
+        auto requirements = image->getMemoryRequirements(context.deviceID);
+        auto& pools = *context.deviceMemoryBufferPools;
+
+        if (pools.computeMemoryTotalAvailable() < requirements.size)
+        {
+            auto blockRequirements = requirements;
+            blockRequirements.size = std::max(requirements.size, pools.minimumDeviceMemorySize);
+
+            auto [block, blockOffset] = pools.reserveMemory(
+                blockRequirements,
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+
+            if (block)
+            {
+                // Return the priming reservation immediately. The allocation
+                // remains in MemoryBufferPools and subsequent images suballocate it.
+                block->release(blockOffset, blockRequirements.size);
+            }
+        }
+
+        auto [memory, offset] = pools.reserveMemory(
+            requirements,
+            VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+        if (!memory)
+            throw vsg::Exception{ "Unable to allocate pooled RTT image memory", VK_ERROR_OUT_OF_DEVICE_MEMORY };
+
+        auto result = image->bind(memory, offset);
+        if (result != VK_SUCCESS)
+            throw vsg::Exception{ "Unable to bind pooled RTT image memory", result };
+
+        auto imageView = vsg::ImageView::create(image, aspectFlags);
+        imageView->compile(device);
+        return imageView;
+    }
+}
+
+
+vsg::RenderPass::Dependencies detail::makeRTTDependencies(bool color, bool depth)
+{
+    if (!color && !depth)
+        return {};
+
+    VkPipelineStageFlags attachmentStages = 0;
+    VkAccessFlags attachmentAccess = 0;
+    VkAccessFlags previousWrites = 0;
+    if (color)
+    {
+        attachmentStages |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        attachmentAccess |= VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        previousWrites |= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+    }
+    if (depth)
+    {
+        attachmentStages |= VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+        attachmentAccess |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        previousWrites |= VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+    }
+
+    vsg::RenderPass::Dependencies dependencies(color ? 2u : 1u);
+    // A rebake must wait for earlier sampling and attachment writes, even when
+    // initialLayout is UNDEFINED and the old contents will be discarded.
+    auto& incoming = dependencies[0];
+    incoming.srcSubpass = VK_SUBPASS_EXTERNAL;
+    incoming.dstSubpass = 0;
+    incoming.srcStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+    incoming.dstStageMask = attachmentStages;
+    incoming.srcAccessMask = previousWrites | (color ? VK_ACCESS_SHADER_READ_BIT : 0u);
+    incoming.dstAccessMask = attachmentAccess;
+    incoming.dependencyFlags = 0;
+
+    if (color)
+    {
+        auto& outgoing = dependencies[1];
+        outgoing.srcSubpass = 0;
+        outgoing.dstSubpass = VK_SUBPASS_EXTERNAL;
+        outgoing.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        outgoing.dstStageMask = VK_PIPELINE_STAGE_ALL_GRAPHICS_BIT;
+        outgoing.srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        outgoing.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        // Projective sampling is not framebuffer-local; BY_REGION is unsuitable.
+        outgoing.dependencyFlags = 0;
+    }
+    return dependencies;
+}
 
 // adapted from vsgExamples/vsgrendertotexture.cpp
 
@@ -9,7 +109,9 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
     vsg::Context& context,
     const VkExtent2D& extent,
     vsg::ref_ptr<vsg::ImageInfo> colorImageInfo,
-    vsg::ref_ptr<vsg::ImageInfo> depthImageInfo)
+    vsg::ref_ptr<vsg::ImageInfo> depthImageInfo,
+    const vsg::vec4& clearColor,
+    vsg::ref_ptr<vsg::RenderPass> compatibleRenderPass)
 {
     auto device = context.device;
 
@@ -40,7 +142,7 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
         colorImage->initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         colorImage->flags = 0;
         colorImage->sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        auto colorImageView = vsg::createImageView(context, colorImage, VK_IMAGE_ASPECT_COLOR_BIT);
+        auto colorImageView = createPooledImageView(context, colorImage, VK_IMAGE_ASPECT_COLOR_BIT);
 
         // Sampler for accessing attachment as a texture
         auto colorSampler = vsg::Sampler::create();
@@ -99,7 +201,7 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
 
         // XXX Does layout matter?
         depthImageInfo->sampler = nullptr;
-        depthImageInfo->imageView = vsg::createImageView(context, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
+        depthImageInfo->imageView = createPooledImageView(context, depthImage, VK_IMAGE_ASPECT_DEPTH_BIT);
         depthImageInfo->imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; // VK_IMAGE_LAYOUT_GENERAL;
 
         // Depth attachment
@@ -114,43 +216,22 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
         attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        vsg::AttachmentReference depthReference = { 1, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
+        vsg::AttachmentReference depthReference = {
+            static_cast<std::uint32_t>(attachments.size() - 1u),
+            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL };
         subpassDescription[0].depthStencilAttachments.emplace_back(depthReference);
 
         imageViews.push_back(depthImageInfo->imageView);
     }
 
 
-    vsg::RenderPass::Dependencies dependencies;
-#if 0
-    vsg::RenderPass::Dependencies dependencies(2);
+    auto dependencies = detail::makeRTTDependencies(colorImageInfo.valid(), depthImageInfo.valid());
 
-    // XXX This dependency is copied from the offscreenrender.cpp
-    // example. I don't completely understand it, but I think it's
-    // purpose is to create a barrier if some earlier render pass was
-    // using this framebuffer's attachment as a texture.
-    dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[0].dstSubpass = 0;
-    dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-    // This is the heart of what makes Vulkan offscreen rendering
-    // work: render passes that follow are blocked from using this
-    // passes' color attachment in their fragment shaders until all
-    // this pass' color writes are finished.
-    dependencies[1].srcSubpass = 0;
-    dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-    dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-    dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-    dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-    dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-#endif
-
-    auto renderPass = vsg::RenderPass::create(device, attachments, subpassDescription, dependencies);
+    // Framebuffers with the same attachment formats can share a render pass.
+    // Apart from reducing Vulkan objects, this lets graphics pipelines compiled
+    // for one offscreen target serve all compatible targets.
+    auto renderPass = compatibleRenderPass ? compatibleRenderPass :
+        vsg::RenderPass::create(device, attachments, subpassDescription, dependencies);
 
     // Framebuffer
     auto fbuf = vsg::Framebuffer::create(renderPass, imageViews, extent.width, extent.height, 1);
@@ -160,9 +241,18 @@ vsg::ref_ptr<vsg::RenderGraph> RTT::createOffScreenRenderGraph(
     rendergraph->renderArea.extent = extent;
     rendergraph->framebuffer = fbuf;
 
-    rendergraph->clearValues.resize(2);
-    rendergraph->clearValues[0].color = { {1.0f, 0.3f, 0.4f, 1.0f} };
-    rendergraph->clearValues[1].depthStencil = VkClearDepthStencilValue{ 0.0f, 0 };
+    if (colorImageInfo)
+    {
+        VkClearValue clearValue{};
+        clearValue.color = { {clearColor.r, clearColor.g, clearColor.b, clearColor.a} };
+        rendergraph->clearValues.push_back(clearValue);
+    }
+    if (depthImageInfo)
+    {
+        VkClearValue clearValue{};
+        clearValue.depthStencil = VkClearDepthStencilValue{ 0.0f, 0 };
+        rendergraph->clearValues.push_back(clearValue);
+    }
 
     return rendergraph;
 }

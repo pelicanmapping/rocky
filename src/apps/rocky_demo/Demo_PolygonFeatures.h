@@ -56,14 +56,14 @@ auto Demo_PolygonFeatures = [](Application& app)
 
 
             // a style for geometry creation:
-            MeshStyle style;
+            PolygonStyle style;
             style.depthOffset = 9000.0f;
             style.useGeometryColors = true;
 
             // a geometry to populate:
-            MeshGeometry workingGeom;
+            PolygonGeometry workingGeom;
 
-            // create our cbuilder and populate the geometry:
+            // Build polygon rings and holes; PolygonSystem handles tessellation.
             FeatureBuilder builder;
 
             std::uniform_real_distribution<float> frand(0.15f, 1.0f);
@@ -73,15 +73,15 @@ auto Demo_PolygonFeatures = [](Application& app)
                     return Color{ frand(re), frand(re), frand(re), 1.0f };
                 };
 
-            builder.buildMeshGeometry(features, style, workingGeom);
+            builder.buildPolygonGeometry(features, style, workingGeom);
 
             // create an entity and components to house the objects:
             app.registry.write([&](entt::registry& reg)
                 {
                     entity = reg.create();
-                    auto& meshStyle = reg.emplace<MeshStyle>(entity, style);
-                    auto& meshGeom = reg.emplace<MeshGeometry>(entity, workingGeom);
-                    reg.emplace<Mesh>(entity, meshGeom, meshStyle);
+                    auto& polygonStyle = reg.emplace<PolygonStyle>(entity, style);
+                    auto& polygonGeom = reg.emplace<PolygonGeometry>(entity, std::move(workingGeom));
+                    reg.emplace<rocky::Polygon>(entity, polygonGeom, polygonStyle);
                 });
 
             ready = true;
@@ -105,12 +105,11 @@ auto Demo_PolygonFeatures = [](Application& app)
                 setVisible(reg, entity, v);
             }
 
-            static bool wireframe = false;
-            if (ImGuiLTable::Checkbox("Wireframe", &wireframe))
+            auto& style = reg.get<PolygonStyle>(entity);
+            if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
             {
-                auto& style = reg.get<MeshStyle>(entity);
-                style.wireframe = wireframe;
                 style.dirty(reg);
+                app.vsgcontext->requestFrame();
             }
         }
         else

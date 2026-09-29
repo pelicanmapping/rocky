@@ -112,6 +112,9 @@ namespace ROCKY_NAMESPACE
         //! Synchronize the terrain state with the current settings
         void updateSettings(TerrainNode&);
 
+        //! Rebuilds the pipeline contract after changing startup render capacity.
+        void rebuildPipeline(VSGContext);
+
         //! Status of the factory.
         Status status;
 

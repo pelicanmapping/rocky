@@ -7,6 +7,7 @@
 
 #include <rocky/vsg/Common.h>
 #include <rocky/ecs/Component.h>
+#include <rocky/vsg/ecs/Texture.h>
 
 namespace ROCKY_NAMESPACE
 {
@@ -14,12 +15,5 @@ namespace ROCKY_NAMESPACE
     struct NodeGraph : public Component<NodeGraph>
     {
         vsg::ref_ptr<vsg::Node> node;
-    };
-
-
-    /** ECS Component that holds a VSG sampler/texture */
-    struct MeshTexture : public Component<MeshTexture>
-    {
-        vsg::ref_ptr<vsg::ImageInfo> imageInfo;
     };
 }

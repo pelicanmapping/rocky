@@ -1,20 +1,14 @@
 set(APP_NAME rocky_tests)
 
-set(SOURCES tests.cpp catch.hpp)
+set(SOURCES tests.cpp tests_projection_lifecycle.cpp tests_tessellation.cpp tests_slug_fallback.cpp
+    tests_terrain_anchor.cpp tests_overlay_depth.cpp tests_overlay_lifecycle.cpp tests_texture.cpp catch.hpp)
 
 add_executable(${APP_NAME} ${SOURCES})
 
 target_link_libraries(${APP_NAME} rocky)
 
-# Tests query PROJ directly to check whether optional datum grids are available.
-find_package(PROJ CONFIG QUIET)
-if (PROJ_FOUND)
-    target_link_libraries(${APP_NAME} PROJ::proj)
-else()
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(PROJ REQUIRED IMPORTED_TARGET proj)
-    target_link_libraries(${APP_NAME} PkgConfig::PROJ)
-endif()
+# Catch and the ECS templates can exceed the COFF section limit in MSVC debug-info builds.
+target_compile_options(${APP_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/bigobj>)
 
 # Tests use json.h, which relies on nlohmann_json, which is not a public dependency of rocky
 if (BUILD_WITH_JSON)

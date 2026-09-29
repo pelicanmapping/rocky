@@ -12,7 +12,7 @@
 #include <rocky/Ellipsoid.h>
 #include <rocky/Horizon.h>
 
-namespace ROCKY_NAMESPACE
+namespace ROCKY_NAMESPACE::detail
 {
     //! Internal data calculated from a Transform instance in the context of a specific camera.
     struct TransformViewDetail

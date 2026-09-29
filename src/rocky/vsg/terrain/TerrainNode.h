@@ -90,7 +90,19 @@ namespace ROCKY_NAMESPACE
     public:
         
         //! Intersect a point with the loaded terrain geometry.
+        //! On a globe, the query follows a radial line toward the center of the planet.
         Result<TerrainIntersection> intersect(const GeoPoint& input) const;
+
+        //! Intersect loaded terrain along geodetic vertical on a globe, or constant XY on a projected map.
+        //! Searches downward from +1,000,000 to -1,000,000 altitude (meters on a globe, map units otherwise),
+        //! independently of input altitude. Returns failure for invalid coordinates or no intersection.
+        //! Call while the terrain scene graph is not being modified.
+        Result<TerrainIntersection> intersectVertical(const GeoPoint& input) const;
+
+        //! Bounds the finest resident terrain tiles covering a footprint in a caller's local Z coordinates.
+        //! Uses elevation-aware tile boxes (including skirts), without fetching data. Fails if coverage is
+        //! incomplete or spans multiple terrain profiles. Call only while the terrain scene is not changing.
+        Result<glm::dvec2> localHeightRange(const GeoExtent& footprint, const glm::dmat4& worldToLocal) const;
 
     public:
         //! Construct a new terrain node
@@ -107,6 +119,9 @@ namespace ROCKY_NAMESPACE
 
         //! Clear out the terrain and rebuild it from the map model
         void reset(VSGContext context);
+
+        //! Rebuild the terrain pipeline after startup rendering configuration changes.
+        void rebuildRenderPipeline(VSGContext context);
 
         //! Updates the terrain periodically at a safe time.
         //! @return true if any updates were applied

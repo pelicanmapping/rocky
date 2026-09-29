@@ -11,6 +11,8 @@
 #include <rocky/IOTypes.h>
 #include <rocky/Map.h>
 #include <rocky/TileLayer.h>
+#include <cmath>
+#include <cfloat>
 
 using namespace ROCKY_NAMESPACE;
 
@@ -72,6 +74,7 @@ TerrainProfileNode::createRootTiles(VSGContext vsgcontext)
 
         // Add it to the scene graph
         this->addChild(tile);
+        terrain.onTileBoundsChanged.fire(key);
     }
 
     vsgcontext->compile(vsg::ref_ptr<TerrainProfileNode>(this));
@@ -252,6 +255,14 @@ TerrainNode::reset(VSGContext context)
 
     // update the state data with the (possibly new) profile:
     state->updateProfile(profile);
+    onTileBoundsChanged.fire(TileKey{});
+}
+
+void
+TerrainNode::rebuildRenderPipeline(VSGContext context)
+{
+    state->rebuildPipeline(context);
+    state->buildTerrainStateGroup(_profileNodes, context);
 }
 
 Result<>
@@ -312,54 +323,156 @@ TerrainProfileNode::activity()
     return terrain;
 }
 
+namespace
+{
+    //! Accumulates leaf tile boxes and covered map-space area, rejecting missing/invalid resident surfaces.
+    //! Descending the hierarchy avoids including enormous ancestor boxes in an otherwise local query.
+    bool accumulateHeightRange(
+        const TerrainTileNode& tile, const GeoExtent& footprint, const glm::dmat4& worldToLocal,
+        glm::dvec2& range, double& coveredArea)
+    {
+        const auto overlap = tile.key.extent().intersectionSameSRS(footprint);
+        if (!overlap.valid() || overlap.width() <= 0.0 || overlap.height() <= 0.0)
+            return true;
+
+        if (tile.children.size() > 1u)
+        {
+            auto* quad = tile.children[1]->cast<vsg::QuadGroup>();
+            if (!quad)
+                return false;
+            for (const auto& child : quad->children)
+            {
+                auto* childTile = child ? child->cast<TerrainTileNode>() : nullptr;
+                if (!childTile || !accumulateHeightRange(*childTile, footprint, worldToLocal, range, coveredArea))
+                    return false;
+            }
+            return true;
+        }
+
+        if (!tile.surface || !tile.surface->localbbox.valid())
+            return false;
+
+        const auto& box = tile.surface->localbbox;
+        const auto matrix = worldToLocal * to_glm(tile.surface->matrix);
+        for (unsigned corner = 0u; corner < 8u; ++corner)
+        {
+            const glm::dvec4 local(
+                (corner & 1u) ? box.max.x : box.min.x,
+                (corner & 2u) ? box.max.y : box.min.y,
+                (corner & 4u) ? box.max.z : box.min.z, 1.0);
+            const auto point = matrix * local;
+            if (!std::isfinite(point.z))
+                return false;
+            range.x = std::min(range.x, point.z);
+            range.y = std::max(range.y, point.z);
+        }
+        coveredArea += overlap.width() * overlap.height();
+        return true;
+    }
+
+    //! Rejects invalid transforms and non-finite coordinates before constructing an intersection ray.
+    bool finitePoint(const GeoPoint& point)
+    {
+        return point.valid() && std::isfinite(point.x) && std::isfinite(point.y) && std::isfinite(point.z);
+    }
+
+    //! Finds the first loaded terrain triangle along a world-space segment; callers synchronize scene changes.
+    Result<TerrainIntersection> intersectSegment(
+        const TerrainNode& terrain, const vsg::dvec3& start, const vsg::dvec3& end)
+    {
+        vsg::LineSegmentIntersector lsi(start, end);
+        terrain.accept(lsi);
+
+        if (lsi.intersections.empty())
+            return Failure{};
+
+        auto closest = std::min_element(
+            lsi.intersections.begin(), lsi.intersections.end(),
+            [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
+
+        // Terrain geometry stores float vertices in a local frame, with a double-precision world transform.
+        auto verts = closest->get()->arrays.front()->cast<vsg::vec3Array>();
+        auto& indices = closest->get()->indexRatios;
+        vsg::vec3 normal = vsg::normalize(vsg::cross(
+            verts->at(indices[1].index) - verts->at(indices[0].index),
+            verts->at(indices[2].index) - verts->at(indices[0].index)));
+
+        auto worldNormal = glm::dmat3(to_glm(closest->get()->localToWorld)) * glm::dvec3(to_glm(normal));
+
+        TerrainIntersection result;
+        result.point = GeoPoint(terrain.renderingSRS, closest->get()->worldIntersection);
+        result.normal = glm::normalize(worldNormal);
+        return result;
+    }
+}
+
+Result<glm::dvec2>
+TerrainNode::localHeightRange(const GeoExtent& footprint, const glm::dmat4& worldToLocal) const
+{
+    if (!footprint.valid() || !renderingSRS.valid() || !_profileNodes)
+        return Failure{};
+    for (unsigned column = 0; column < 4u; ++column)
+        for (unsigned row = 0; row < 4u; ++row)
+            if (!std::isfinite(worldToLocal[column][row]))
+                return Failure{};
+
+    for (const auto& child : _profileNodes->children)
+    {
+        auto* profileNode = child->cast<TerrainProfileNode>();
+        if (!profileNode)
+            continue;
+        const auto query = footprint.transform(profileNode->profile.srs());
+        if (!query.valid() || !profileNode->profile.extent().contains(query))
+            continue;
+
+        glm::dvec2 range(DBL_MAX, -DBL_MAX);
+        double coveredArea = 0.0;
+        for (const auto& root : profileNode->children)
+        {
+            auto* tile = root->cast<TerrainTileNode>();
+            if (!tile || !accumulateHeightRange(*tile, query, worldToLocal, range, coveredArea))
+                return Failure{};
+        }
+        const double queryArea = query.width() * query.height();
+        if (queryArea > 0.0 && std::isfinite(queryArea) &&
+            coveredArea >= queryArea * (1.0 - 1e-9) && range.x <= range.y)
+            return range;
+    }
+    return Failure{};
+}
+
 Result<TerrainIntersection>
 TerrainNode::intersect(const GeoPoint& input) const
 {
-    if (!input)
-        return Failure{};
-
-    // world vector from earth's center to the input point:
     GeoPoint world = input.transform(renderingSRS);
-
-    vsg::dvec3 start, end;
-    if (renderingSRS.isGeocentric())
-    {
-        start = to_vsg(world) * 2.0;
-        end.set(0, 0, 0);
-    }
-    else
-    {
-        start.set(world.x, world.y, 1e6);
-        end.set(world.x, world.y, -1e6);
-    }
-
-    vsg::LineSegmentIntersector lsi(start, end);
-
-    this->accept(lsi);
-
-    if (lsi.intersections.empty())
+    if (!finitePoint(world))
         return Failure{};
 
-    // there should be only one, but we will take the closest one anyway:
-    auto closest = std::min_element(
-        lsi.intersections.begin(), lsi.intersections.end(),
-        [](const auto& lhs, const auto& rhs) { return lhs->ratio < rhs->ratio; });
+    if (renderingSRS.isGeocentric())
+        return intersectSegment(*this, to_vsg(world) * 2.0, vsg::dvec3(0.0, 0.0, 0.0));
+    else
+        return intersectSegment(*this, { world.x, world.y, 1e6 }, { world.x, world.y, -1e6 });
+}
 
-    // given the intersection object, calcluate the normal vector at the intersection point:
-    auto verts = closest->get()->arrays.front()->cast<vsg::vec3Array>();
-    auto& indices = closest->get()->indexRatios;
-    vsg::vec3 normal = vsg::normalize(vsg::cross(
-        verts->at(indices[1].index) - verts->at(indices[0].index),
-        verts->at(indices[2].index) - verts->at(indices[0].index)));
+Result<TerrainIntersection>
+TerrainNode::intersectVertical(const GeoPoint& input) const
+{
+    if (!finitePoint(input) || !renderingSRS.valid())
+        return Failure{};
 
-    // transform the normal into world space:
-    auto worldNormal = glm::dmat3(to_glm(closest->get()->localToWorld)) * glm::dvec3(to_glm(normal));
+    // On an ellipsoid, varying geodetic height follows the surface normal, not the center-to-point radius.
+    // On a projected map, keep map XY fixed instead. Neither ray depends on the anchor's current altitude.
+    const auto querySRS = renderingSRS.isGeocentric() ? renderingSRS.geodeticSRS() : renderingSRS;
+    auto location = input.transform(querySRS);
+    if (!finitePoint(location))
+        return Failure{};
 
-    TerrainIntersection result;
-    result.point = GeoPoint(renderingSRS, closest->get()->worldIntersection);
-    result.normal = glm::normalize(worldNormal);
+    location.z = 1e6;
+    auto start = location.transform(renderingSRS);
+    location.z = -1e6;
+    auto end = location.transform(renderingSRS);
+    if (!finitePoint(start) || !finitePoint(end))
+        return Failure{};
 
-    return result;
-
-    //return GeoPoint(renderingSRS, closest->get()->worldIntersection);
+    return intersectSegment(*this, to_vsg(start), to_vsg(end));
 }

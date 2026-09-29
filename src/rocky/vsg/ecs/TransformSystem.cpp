@@ -5,8 +5,10 @@
  */
 #include "TransformSystem.h"
 #include "TransformDetail.h"
+#include "OverlayRenderContext.h"
 
 using namespace ROCKY_NAMESPACE;
+using namespace ROCKY_NAMESPACE::detail;
 
 
 void TransformSystemNode::on_construct_Transform(entt::registry& r, entt::entity e)
@@ -71,7 +73,30 @@ TransformSystemNode::traverse(vsg::RecordTraversal& record) const
 
     bool at_least_one_transform_changed = false;
 
-    registry.view<TransformDetail, PixelScale>().each([&](auto& transform_detail, auto& pixel_scale)
+    auto request = detail::getRenderRequest(record);
+
+    if (request.purpose == detail::RenderPurpose::RenderTexture)
+    {
+        if (!request.ignoreSourceTransforms)
+        {
+            for (auto source : request.sources)
+            {
+                if (auto* transformDetail = registry.try_get<TransformDetail>(source))
+                {
+                    if (srs_changed)
+                        transformDetail->reset(viewID);
+
+                    auto* pixelScale = registry.try_get<PixelScale>(source);
+                    at_least_one_transform_changed = transformDetail->traverse(record, pixelScale)
+                        || at_least_one_transform_changed;
+                }
+            }
+        }
+    }
+    else
+    {
+
+        registry.view<TransformDetail, PixelScale>().each([&](auto& transform_detail, auto& pixel_scale)
         {
             if (srs_changed)
                 transform_detail.reset(viewID);
@@ -80,7 +105,7 @@ TransformSystemNode::traverse(vsg::RecordTraversal& record) const
                 || at_least_one_transform_changed;
         });
 
-    registry.view<TransformDetail>(entt::exclude<PixelScale>).each([&](auto& transform_detail)
+        registry.view<TransformDetail>(entt::exclude<PixelScale>).each([&](auto& transform_detail)
         {
             if (srs_changed)
                 transform_detail.reset(viewID);
@@ -88,6 +113,7 @@ TransformSystemNode::traverse(vsg::RecordTraversal& record) const
             at_least_one_transform_changed = transform_detail.traverse(record, nullptr)
                 || at_least_one_transform_changed;
         });
+    }
 
     if (at_least_one_transform_changed && onChanges)
     {

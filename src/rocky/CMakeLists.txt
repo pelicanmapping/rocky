@@ -27,6 +27,10 @@ rocky_glob(SOURCES_CONTRIB contrib/*.cpp)
 
 rocky_glob(HEADERS_ECS ecs/*.h)
 rocky_glob(SOURCES_ECS ecs/*.cpp)
+list(APPEND HEADERS_ECS
+    ${CMAKE_CURRENT_SOURCE_DIR}/ecs/ProjectedTexture.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/ecs/Texture.h)
+list(REMOVE_DUPLICATES HEADERS_ECS)
 
 # data files to install
 list(APPEND DATA_FILES "${PROJECT_SOURCE_DIR}/data/fonts/times.vsgb")
@@ -197,13 +201,24 @@ if(ROCKY_RENDERER_VSG)
     rocky_glob(SOURCES_VSG_TERRAIN vsg/terrain/*.cpp)
     
     rocky_glob(HEADERS_VSG_ECS vsg/ecs/*.h)
+    list(APPEND HEADERS_VSG_ECS ${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/Texture.h)
+    list(REMOVE_DUPLICATES HEADERS_VSG_ECS)
     rocky_glob(SOURCES_VSG_ECS vsg/ecs/*.cpp)
+    
+    if(NOT ROCKY_SUPPORTS_SLUGHORN)
+        remove_items(HEADERS_VSG_ECS
+            vsg/ecs/SlugResource.h
+            vsg/ecs/SlugSystem.h)
+        remove_items(SOURCES_VSG_ECS
+            vsg/ecs/SlugSystem.cpp)
+    endif()
 
     if(ImGui_FOUND)
         rocky_glob(HEADERS_VSG_IMGUI vsg/imgui/*.h)
         rocky_glob(SOURCES_VSG_IMGUI vsg/imgui/*.cpp)
     endif()
     
+    # Includes diagnostic stages and the shared GLSL record headers they depend on.
     rocky_glob(SHADERS_VSG vsg/shaders/*)
 
     find_package(vsg CONFIG REQUIRED)
@@ -227,6 +242,33 @@ if(ROCKY_RENDERER_VSG)
     endif()
     if (ROCKY_MAX_NUMBER_OF_VIEWS LESS 1)
         message(FATAL_ERROR "Nice try. ROCKY_MAX_NUMBER_OF_VIEWS must be greater than zero.")
+    endif()
+
+    if(ROCKY_SUPPORTS_SLUGHORN)
+        set(ROCKY_HAS_SLUGHORN TRUE)
+
+        include(ResolveSlughorn)
+        rocky_resolve_slughorn()
+
+        # A PRIVATE dependency of this static adapter becomes link-only for its
+        # consumers. Slughorn's PUBLIC cxx_std_20 therefore applies to the adapter,
+        # not to Rocky or applications linking Rocky (including static installs).
+        set(ROCKY_SLUGHORN_ADAPTER_DIR "${CMAKE_CURRENT_SOURCE_DIR}/vsg/ecs/slug")
+        add_library(rocky_slughorn_adapter STATIC
+            "${ROCKY_SLUGHORN_ADAPTER_DIR}/SlugAdapter.cpp"
+            "${ROCKY_SLUGHORN_ADAPTER_DIR}/SlugAdapter.h")
+        target_link_libraries(rocky_slughorn_adapter PRIVATE slughorn::slughorn)
+        set_target_properties(rocky_slughorn_adapter PROPERTIES
+            CXX_STANDARD 20
+            CXX_STANDARD_REQUIRED ON
+            CXX_EXTENSIONS OFF
+            POSITION_INDEPENDENT_CODE ON
+            FOLDER "third_party")
+        list(APPEND PRIVATE_LIBS rocky_slughorn_adapter)
+        if(NOT ROCKY_BUILD_SHARED_LIBS)
+            install(TARGETS rocky_slughorn_adapter EXPORT rockyTargets
+                ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+        endif()
     endif()
 endif()
 
@@ -256,6 +298,11 @@ add_library(rocky ${BUILD_TYPE}
     ${HEADERS_VSG_IMGUI} ${SOURCES_VSG_IMGUI}
     ${SHADERS_VSG}
 )
+
+if(ROCKY_RENDERER_VSG AND ROCKY_SUPPORTS_SLUGHORN)
+    target_include_directories(rocky PRIVATE
+        "${ROCKY_SLUGHORN_ADAPTER_DIR}")
+endif()
 
 # For windows import/export
 if(NOT ROCKY_BUILD_SHARED_LIBS)
@@ -321,4 +368,8 @@ if(ROCKY_RENDERER_VSG)
     install(FILES ${HEADERS_VSG_ECS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/vsg/ecs)
     install(FILES ${HEADERS_VSG_IMGUI} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/rocky/vsg/imgui)
     install(FILES ${SHADERS_VSG} ${SPIRV_SHADERS} DESTINATION ${CMAKE_INSTALL_DATADIR}/rocky/shaders)
+    if(ROCKY_SUPPORTS_SLUGHORN)
+        install(FILES "${PROJECT_SOURCE_DIR}/cmake/licenses/slughorn-LICENSE"
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/rocky/licenses/slughorn RENAME LICENSE)
+    endif()
 endif()

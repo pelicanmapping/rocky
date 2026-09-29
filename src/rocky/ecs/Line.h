@@ -6,6 +6,7 @@
 #pragma once
 #include <rocky/Color.h>
 #include <rocky/SRS.h>
+#include <rocky/Units.h>
 #include <rocky/ecs/Component.h>
 #include <vector>
 
@@ -16,7 +17,21 @@ namespace ROCKY_NAMESPACE
     {
         // if alpha is zero, use the line's per-vertex color instead
         Color color = StockColor::White;
-        float width = 2.0f; // pixels
+        float width = 2.0f;
+
+        //! Units shared by width and outlineWidth. Screen pixels preserve a
+        //! constant apparent size; distance units preserve a physical size.
+        //! Only screen-size and distance unit domains are supported.
+        UnitsType widthUnits = Units::PIXELS;
+
+        //! Color of the optional outline drawn around the line.
+        Color outlineColor = StockColor::Black;
+
+        //! Visible outline thickness outside each edge of the line, expressed
+        //! in widthUnits.
+        //! A value less than or equal to zero disables outlining.
+        float outlineWidth = 0.0f;
+
         std::uint16_t stipplePattern = 0xFFFF;
         int stippleFactor = 1;
         float resolution = 100000.0f; // meters

@@ -18,11 +18,16 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Map.h"
 #include "Demo_Line.h"
 #include "Demo_Mesh.h"
+#include "Demo_Polygon.h"
 #include "Demo_Point.h"
 #include "Demo_Model.h"
 #include "Demo_Label.h"
 #include "Demo_Widget.h"
 #include "Demo_Decal.h"
+#include "Demo_Overlay.h"
+#ifdef ROCKY_HAS_SLUGHORN
+#include "Demo_SlugOverlay.h"
+#endif
 #include "Demo_LineFeatures.h"
 #include "Demo_PolygonFeatures.h"
 #include "Demo_LabelFeatures.h"
@@ -49,6 +54,8 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_Synchro.h"
 #include "Demo_OrderedRendering.h"
 #include "Demo_FrustumGrid.h"
+#include "Demo_Clamping.h"
+
 
 template<class T>
 int layerError(T layer)
@@ -92,6 +99,7 @@ std::vector<Demo> demos =
             Demo{ "Mesh - Blending", Demo_Mesh_Blending },
             Demo{ "Mesh - Lighting", Demo_Mesh_Lighting }
         } },
+        Demo{ "Polygon", Demo_Polygon },
         Demo{ "Point", Demo_Point },
         //Demo{ "Icon", Demo_Icon },
         Demo{ "Label", Demo_Label },
@@ -103,11 +111,6 @@ std::vector<Demo> demos =
             Demo{ "Projector", Demo_Decal_Projector },
             Demo{ "Stamper", Demo_Decal_Stamper }
         } }
-    } },
-    Demo{ "VSG Nodes", {},
-    {
-        Demo{ "GeoTransform", Demo_GeoTransform },
-        Demo{ "NodePager", Demo_NodePager }
     } },
     Demo{ "GIS", {},
     {
@@ -128,18 +131,31 @@ std::vector<Demo> demos =
     Demo{ "Camera", Demo_Camera },
     Demo{ "Views", Demo_Views },
     Demo{ "Terrain", Demo_Terrain },
+    Demo{ "VSG Nodes", {},
+    {
+        Demo{ "GeoTransform", Demo_GeoTransform },
+        Demo{ "NodePager", Demo_NodePager }
+    } },
     Demo{ "Sandbox", {},
     {
+        Demo{ "Clamping", Demo_Clamping },
         Demo{ "Drawing", Demo_Draw },
         Demo{ "Forward+", Demo_FrustumGrid },
         Demo{ "Geocoding", Demo_Geocoder },
         Demo{ "Ordered rendering", Demo_OrderedRendering },
+        Demo{ "Overlays", {}, {
+            Demo{ "Overlay geometry (absolute)", Demo_Overlay_Absolute },
+            Demo{ "Overlay geometry (relative)", Demo_Overlay_Relative },
+#ifdef ROCKY_HAS_SLUGHORN
+            Demo{ "Raster vs Vector", Demo_SlugOverlay },
+#endif
+        } },
         Demo{ "Render to texture", Demo_RTT },
         Demo{ "Scene graph inspector", Demo_SceneGraphInspector },
         Demo{ "Screenshot", Demo_Screenshot },
         Demo{ "Serialization", Demo_Serialization },
         Demo{ "Sky", Demo_Environment },
-        Demo{ "Synchronization", Demo_Synchro }
+        Demo{ "Synchronization", Demo_Synchro },
     } },
     Demo{ "Stats", Demo_Stats },
     Demo{ "About", Demo_About }
@@ -242,7 +258,7 @@ int main(int argc, char** argv)
     }
 
     // Create the main window:
-    auto traits = vsg::WindowTraits::create(1920, 1080, "Main Window");
+    auto traits = vsg::WindowTraits::create(10, 10, 1920, 1080, "Main Window");
     auto& window = app.display.addWindow(traits);
 
     // Attach our GUI in the main view:

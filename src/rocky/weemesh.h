@@ -221,23 +221,18 @@ namespace weemesh
             return -1;
         }
 
-        inline bool get_barycentric(const vert_t& p, vert_t& out, vert_t::value_type epsilon) const
+        // Compute XY weights from signed areas to avoid cancellation on long,
+        // thin triangles. Return false only when the XY vertices are collinear.
+        inline bool get_barycentric(const vert_t& p, vert_t& out, vert_t::value_type /*epsilon*/) const
         {
-            vert_t v0 = p1 - p0, v1 = p2 - p0, v2 = p - p0;
-            vert_t::value_type d00 = v0.dot2d(v0);
-            vert_t::value_type d01 = v0.dot2d(v1);
-            vert_t::value_type d11 = v1.dot2d(v1);
-            vert_t::value_type d20 = v2.dot2d(v0);
-            vert_t::value_type d21 = v2.dot2d(v1);
-            vert_t::value_type denom = d00 * d11 - d01 * d01;
+            const auto denom = (p1 - p0).cross2d(p2 - p0);
 
-            // means that one of more of the triangles points are coincident:
-            if (equivalent(denom, 0.0, epsilon))
+            if (denom == 0.0)
                 return false;
 
-            out.y = (d11 * d20 - d01 * d21) / denom;
-            out.z = (d00 * d21 - d01 * d20) / denom;
-            out.x = 1.0 - out.y - out.z;
+            out.x = (p1 - p).cross2d(p2 - p) / denom;
+            out.y = (p2 - p).cross2d(p0 - p) / denom;
+            out.z = (p0 - p).cross2d(p1 - p) / denom;
 
             return true;
         }
@@ -343,15 +338,14 @@ namespace weemesh
             tri.a_max[1] = std::max(tri.p0.y, std::max(tri.p1.y, tri.p2.y));
             tri.centroid = (tri.p0 + tri.p1 + tri.p2) * one_third;
 
-            // "2d_degenerate" means that either a) at least 2 points are coincident, or
-            // b) at least two edges are basically coincident (in the XY plane)
+            // Only coincident or collinear XY vertices are degenerate. A small
+            // angle can still enclose a large area on a long triangle; skipping
+            // its boundary cuts leaves spikes outside detailed polygons.
             tri.is_2d_degenerate =
                 same_vert(tri.p0, tri.p1, epsilon) ||
                 same_vert(tri.p1, tri.p2, epsilon) ||
                 same_vert(tri.p2, tri.p0, epsilon) ||
-                same_vert((tri.p1 - tri.p0).normalize2d(), (tri.p2 - tri.p0).normalize2d(), epsilon) ||
-                same_vert((tri.p2 - tri.p1).normalize2d(), (tri.p0 - tri.p1).normalize2d(), epsilon) ||
-                same_vert((tri.p0 - tri.p2).normalize2d(), (tri.p1 - tri.p2).normalize2d(), epsilon);
+                (tri.p1 - tri.p0).cross2d(tri.p2 - tri.p0) == 0.0;
 
             triangles.emplace(uid, tri);
             _spatial_index.Insert(tri.a_min, tri.a_max, uid);
@@ -386,7 +380,8 @@ namespace weemesh
         }
 
         // Add a new vertex (or lookup a matching one) and return its index.
-        // If the vertex already exists, update its marker if necessary.
+        // If the vertex already exists, update its marker if necessary. Return
+        // -1 if the signed index range is exhausted; indices are not 16-bit.
         int get_or_create_vertex(const vert_t& input, int marker)
         {
             int index;
@@ -396,7 +391,7 @@ namespace weemesh
                 index = i->second;
                 markers[i->second] |= marker;
             }
-            else if (verts.size() + 1 < 0xFFFF)
+            else if (verts.size() < static_cast<std::size_t>(INT_MAX))
             {
                 verts.push_back(input);
                 markers.push_back(marker);
@@ -700,7 +695,9 @@ namespace weemesh
             if (tri.get_barycentric(p, bary, epsilon) == false)
                 return false;
 
-            if (!equivalent(bary[2], 0.0, epsilon)) {
+            // A small nonzero weight still represents real area. Discarding
+            // it creates a gap whenever an inserted point is close to an edge.
+            if (bary[2] != 0.0) {
                 new_uid = add_triangle(tri.i0, tri.i1, new_i);
                 if (new_uid >= 0) {
                     markers[tri.i0] |= _constraint_marker;
@@ -711,7 +708,7 @@ namespace weemesh
                 }
             }
 
-            if (!equivalent(bary[0], 0.0, epsilon)) {
+            if (bary[0] != 0.0) {
                 new_uid = add_triangle(tri.i1, tri.i2, new_i);
                 if (new_uid >= 0) {
                     markers[tri.i1] |= _constraint_marker;
@@ -722,7 +719,7 @@ namespace weemesh
                 }
             }
 
-            if (!equivalent(bary[1], 0.0, epsilon)) {
+            if (bary[1] != 0.0) {
                 new_uid = add_triangle(tri.i2, tri.i0, new_i);
                 if (new_uid >= 0) {
                     markers[tri.i2] |= _constraint_marker;

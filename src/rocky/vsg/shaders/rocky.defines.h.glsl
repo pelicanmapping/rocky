@@ -23,19 +23,47 @@
 #define BINDING_VDS_FRUSTUMS                12
 #define BINDING_VDS_DECALS                  13
 #define BINDING_VDS_DECAL_TILES             14
+#define BINDING_VDS_SLUG_LAYERS             15
 
 // map global state (in descriptor set 2):
 #define DESCRIPTOR_SET_GLOBAL                2
 
 #define BINDING_TERRAIN_SETTINGS             1
 #define BINDING_DECAL_TEXTURES               2
+#define BINDING_SLUG_CURVE_TEXTURE           3
+#define BINDING_SLUG_BAND_TEXTURE            4
+
+
+// Decal payload flags (Decal::payloadFlags):
+#define DECAL_FLAG_UPPER_LEFT_TEXTURE_ORIGIN 1
+#define DECAL_FLAG_PREMULTIPLIED_ALPHA       2
+#define DECAL_FLAG_SLUG                      4
+
+// The culler packs this bit into a tile-list index so the outline pass can
+// reject ordinary/core-only decals without first loading their Decal record.
+#define DECAL_TILE_HAS_OUTLINE_BIT   0x80000000u
+#define DECAL_TILE_INDEX_MASK        0x7fffffffu
+
+// Each Slug atlas's width is packed into the decal flags word so the shader
+// can wrap texture addresses without changing the Decal SSBO layout.
+#define DECAL_SLUG_TEXTURE_WIDTH_LOG2_SHIFT   8
+#define DECAL_SLUG_TEXTURE_WIDTH_LOG2_MASK   31
+#define SLUG_INDIRECTION_SIZE                32
 
 
 // configuration and limits:
 #define FRUSTUM_GRID_TILE_SIZE_PIXELS       16
 #define FRUSTUM_GRID_TILES_PER_THREAD_GROUP 16
-#define MAX_DECALS_PER_TILE                  7
-#define MAX_NUM_DECAL_TEXTURES              64
+
+// One count plus these indices keeps each CPU/GPU tile record 16-byte aligned.
+// If more than this number of decals intersect a tile, not all will render.
+#define MAX_DECALS_PER_TILE                 15
+
+// Default descriptor capacity. TerrainState overrides it at startup to match
+// the requested capacity after clamping to the Vulkan device limits.
+#ifndef MAX_NUM_DECAL_TEXTURES
+#define MAX_NUM_DECAL_TEXTURES             128
+#endif
 
 
 #ifdef __cplusplus
@@ -46,7 +74,10 @@
 
 #define TYPE_VDS_DECALS               VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
 #define TYPE_VDS_DECAL_TILES          VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
+#define TYPE_VDS_SLUG_LAYERS          VK_DESCRIPTOR_TYPE_STORAGE_BUFFER
 #define TYPE_DECAL_TEXTURES           VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+#define TYPE_SLUG_CURVE_TEXTURE       VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
+#define TYPE_SLUG_BAND_TEXTURE        VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER
 
 #define TYPE_TERRAIN_SETTINGS         VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER
 #define TYPE_TERRAIN_TILE             VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER

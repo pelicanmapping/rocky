@@ -8,6 +8,12 @@
 // clamping it beyond the near clip plane if necessary.
 vec4 applyDepthOffset(in vec4 vertex, in float offset, in mat4 projection)
 {
+    // In overlay bake passes, style depth offsets cause geometry to leave the
+    // bake camera frustum and produce empty/incorrect projections.
+    // ViewDependentState encodes this in u_renderParams.renderDomain.
+    if (u_renderParams.renderDomain > 0.5)
+        offset = 0.0;
+
     vertex.xyz /= vertex.w;
     float n = projection[3][3] == 0 ?
         -projection[3][2] / (projection[2][2] + 1.0) : // perspective

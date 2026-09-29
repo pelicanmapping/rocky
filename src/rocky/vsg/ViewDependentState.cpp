@@ -7,6 +7,7 @@
 #include "ViewDependentState.h"
 #include "ShaderDefines.h"
 #include "MapNode.h"
+#include "ecs/OverlayRenderContext.h"
 
 using namespace ROCKY_NAMESPACE;
 
@@ -20,6 +21,11 @@ ViewDependentStateEx::ViewDependentStateEx(vsg::ref_ptr<vsg::View> vsgView, vsg:
 void
 ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 {
+    // VSG can collect requirements again when a view is compiled dynamically.
+    // Match the base class's one-time initialization without duplicating Rocky bindings.
+    if (renderParamsBuf)
+        return;
+
     Inherit::init(req);
 
     BufferAccess<RenderParamsGPU> renderParams(
@@ -57,6 +63,10 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
     BufferAccess<DecalGPU> decals(decalsBuf,
         BINDING_VDS_DECALS, TYPE_VDS_DECALS);
 
+    // A newly added view can render before the next DecalSystem update/compute pass.
+    // Its header must describe an empty list, not DecalGPU's default texture index (-1).
+    decals->count = 0;
+
     this->descriptorSet->descriptors.emplace_back(decalsBuf);
 
     this->descriptorSetLayout->addBinding(BINDING_VDS_DECALS,
@@ -71,6 +81,16 @@ ViewDependentStateEx::init(vsg::ResourceRequirements& req)
 
     this->descriptorSetLayout->addBinding(BINDING_VDS_DECAL_TILES,
         TYPE_VDS_DECAL_TILES, 1, VK_SHADER_STAGE_ALL);
+
+#ifdef ROCKY_HAS_SLUGHORN
+    BufferAccess<SlugLayerGPU> slugLayers(slugLayersBuf,
+        BINDING_VDS_SLUG_LAYERS, TYPE_VDS_SLUG_LAYERS);
+
+    this->descriptorSet->descriptors.emplace_back(slugLayersBuf);
+
+    this->descriptorSetLayout->addBinding(BINDING_VDS_SLUG_LAYERS,
+        TYPE_VDS_SLUG_LAYERS, 1, VK_SHADER_STAGE_ALL);
+#endif
 #endif // ROCKY_HAS_DECALS
 }
 
@@ -80,8 +100,12 @@ ViewDependentStateEx::traverse(vsg::RecordTraversal& rt) const
     // todo: update custom descriptors
     BufferAccess<RenderParamsGPU> renderParams(renderParamsBuf);
 
+    auto [renderDomain, overlayTarget] = detail::getRenderDomainAndOverlayTarget(rt);
+    (void)overlayTarget;
+
     renderParams->viewMatrix = to_glm(view->camera->viewMatrix->transform());
     renderParams->inverseViewMatrix = to_glm(view->camera->viewMatrix->inverse());
+    renderParams->renderDomain = (renderDomain == detail::RenderDomain::OverlayBake) ? 1.0f : 0.0f;
 
     // ellipsoid params (TODO: don't need to update these constantly!)
     if (!_mapNode)
@@ -158,6 +182,15 @@ ROCKY_NAMESPACE::addViewDependentStateToShaderSet(vsg::ShaderSet* shaderSet, VkS
         BINDING_VDS_DECAL_TILES,
         TYPE_VDS_DECAL_TILES, 1,
         stageFlags, {});
+
+#ifdef ROCKY_HAS_SLUGHORN
+    shaderSet->addDescriptorBinding(
+        "rockyvds_slug_layers", "",
+        DESCRIPTOR_SET_VDS,
+        BINDING_VDS_SLUG_LAYERS,
+        TYPE_VDS_SLUG_LAYERS, 1,
+        stageFlags, {});
+#endif
 #endif
 }
 
@@ -174,5 +207,8 @@ ROCKY_NAMESPACE::enableViewDependentStateUniforms(vsg::GraphicsPipelineConfigura
 #ifdef ROCKY_HAS_DECALS
     gpc->enableDescriptor("rockyvds_decals");
     gpc->enableDescriptor("rockyvds_decal_tiles");
+#ifdef ROCKY_HAS_SLUGHORN
+    gpc->enableDescriptor("rockyvds_slug_layers");
+#endif
 #endif
 }

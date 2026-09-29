@@ -8,6 +8,8 @@
 // inter-stage interface block
 struct Varyings {
     vec4 color;
+    vec4 outlineColor;
+    float outlineRatio;
     vec2 stippleDir;
     int stipplePattern;
     int stippleFactor;
@@ -21,9 +23,21 @@ layout(location = 0) out vec4 outColor;
 
 void main()
 {
+    float L = abs(lateral);
     outColor = vary.color;
 
-    if (vary.color.a == 0.0)
+    if (vary.outlineRatio < 1.0)
+    {
+        // Blend across approximately one fragment at the core/outline edge.
+        float aa = max(fwidth(L), 1e-6);
+        float outlineMix = smoothstep(
+            vary.outlineRatio - aa,
+            vary.outlineRatio + aa,
+            L);
+        outColor = mix(vary.color, vary.outlineColor, outlineMix);
+    }
+
+    if (outColor.a == 0.0)
     {
         discard; // signal to not draw a segment
     }
@@ -41,13 +55,14 @@ void main()
 
         // sample the stippling pattern (16-bits repeating)
         int cx = int(coord_proj.x);
-        int ci = (cx % (16 * vary.stippleFactor)) / vary.stippleFactor;
+        int period = 16 * max(1, vary.stippleFactor);
+        int wrapped = ((cx % period) + period) % period;
+        int ci = wrapped / max(1, vary.stippleFactor);
         int pattern16 = 0xffff & (vary.stipplePattern & (1 << ci));
         if (pattern16 == 0)
             discard;
     }
 
     //anti-aliasing (requires blending state be set)
-    float L = abs(lateral);
     outColor.a *= smoothstep(0.0, 1.0, 1.0 - (L * L));
 }

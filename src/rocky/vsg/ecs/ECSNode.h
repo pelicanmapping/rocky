@@ -9,6 +9,8 @@
 #include <rocky/vsg/ecs/System.h>
 #include <rocky/vsg/ecs/TransformDetail.h>
 #include <rocky/vsg/ecs/ECSVisitors.h>
+#include <rocky/vsg/ecs/OverlayRenderContext.h>
+#include <unordered_set>
 
 namespace ROCKY_NAMESPACE
 {
@@ -36,6 +38,8 @@ namespace ROCKY_NAMESPACE
             //static_assert(std::is_base_of<SystemNodeBase, T>::value, "T must be a subclass of SystemNodeBase");
             addChild(system);
             systems.emplace_back(system.get());
+            if (_vsgcontext)
+                system->initialize(_vsgcontext);
         }
 
         //! Add a non-node system to the group. This is a System instance that does not
@@ -45,6 +49,8 @@ namespace ROCKY_NAMESPACE
         {
             non_node_systems.emplace_back(system);
             systems.emplace_back(system.get());
+            if (_vsgcontext)
+                system->initialize(_vsgcontext);
         }
 
         //! Gets a pointer to the first typed system found, or null if not found.
@@ -62,6 +68,9 @@ namespace ROCKY_NAMESPACE
         std::vector<System*> systems;
         std::vector<std::shared_ptr<System>> non_node_systems;
         Registry registry;
+
+    private:
+        VSGContext _vsgcontext = nullptr;
     };
 
     // inline 
@@ -112,6 +121,26 @@ namespace ROCKY_NAMESPACE
                 _imagesToUpload.insert(_imagesToUpload.end(), bil.begin(), bil.end());
             }
 
+            //! Returns true the first time this system is compiled for a View.
+            //! Dynamic resources created later use requestCompile(), so repeated
+            //! RenderGraph compilation for the same shared View need not rescan
+            //! every ECS resource already in the registry.
+            bool firstCompileForView(vsg::Context&) const;
+
+            //! A lightweight compilable containing only this system's pipelines.
+            vsg::ref_ptr<vsg::Node> pipelineCompileNode() const;
+
+            /**
+             * Register an active rendering view and return the view whose
+             * geometry cache should be used. Views with the same world SRS can
+             * share geometry because their localized vertex data is identical.
+             */
+            ViewIDType prepareGeometryView(
+                ViewIDType viewID,
+                const SRS& worldSRS,
+                FrameCountType frame,
+                bool persistent) const;
+
         public: // vsg::Compilable
 
             virtual void compile(vsg::Context& cc) override {
@@ -147,6 +176,14 @@ namespace ROCKY_NAMESPACE
                 // cached SRS definition for this view.
                 // We do not store an actual SRS (SIOF hazard)
                 std::string srsDef;
+
+                // View ID owning the geometry cache used by this view. Multiple
+                // cameras in the same SRS share one set of localized vertices.
+                ViewIDType geometryViewID = std::numeric_limits<ViewIDType>::max();
+
+                // Shared render-to-texture views are intentionally long-lived,
+                // even when no bake graph records them for a few frames.
+                bool persistent = false;
             };
             mutable ViewLocal<ViewInfo> _viewInfo;
 
@@ -160,11 +197,18 @@ namespace ROCKY_NAMESPACE
             template<class GEOM_DETAIL_T>
             void handleVisitor(vsg::Visitor& visitor);
 
+            //! Read the normalized render request from the visitor.
+            detail::RenderRequest getRenderRequest(vsg::RecordTraversal& visitor) const;
+
+            //! Compatibility helper for older system implementations.
+            std::tuple<detail::RenderDomain, entt::entity> getRenderDomainAndOverlayTarget(vsg::RecordTraversal& visitor) const;
+
         private:
             mutable vsg::ref_ptr<vsg::Objects> _toCompile;
             mutable vsg::ref_ptr<vsg::Objects> _toDispose;
             mutable vsg::BufferInfoList _buffersToUpload;
             mutable vsg::ImageInfoList _imagesToUpload;
+            mutable std::unordered_set<const vsg::View*> _compiledViews;
         };
 
 

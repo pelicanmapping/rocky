@@ -32,22 +32,104 @@ namespace
 
         return vsg::ImageInfo::create(sampler, imageData, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
     }
+
+#ifdef ROCKY_HAS_SLUGHORN
+    vsg::ref_ptr<vsg::Sampler> makeSlugAtlasSampler()
+    {
+        auto sampler = vsg::Sampler::create();
+        sampler->minFilter = VK_FILTER_NEAREST;
+        sampler->magFilter = VK_FILTER_NEAREST;
+        sampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+        sampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+        sampler->minLod = 0.0f;
+        sampler->maxLod = 0.0f;
+        return sampler;
+    }
+
+    vsg::ref_ptr<vsg::ImageInfo> makeDefaultSlugCurveImageInfo(
+        vsg::ref_ptr<vsg::Sampler> sampler)
+    {
+        auto data = vsg::vec4Array2D::create(
+            1, 1,
+            vsg::vec4(0.0f, 0.0f, 0.0f, 0.0f),
+            vsg::Data::Properties{ VK_FORMAT_R32G32B32A32_SFLOAT });
+        return vsg::ImageInfo::create(
+            sampler, data, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+
+    vsg::ref_ptr<vsg::ImageInfo> makeDefaultSlugBandImageInfo(
+        vsg::ref_ptr<vsg::Sampler> sampler)
+    {
+        auto data = vsg::usvec2Array2D::create(
+            1, 1,
+            vsg::usvec2(0u, 0u),
+            vsg::Data::Properties{ VK_FORMAT_R16G16_UINT });
+        return vsg::ImageInfo::create(
+            sampler, data, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    }
+#endif
 }
 
 SharedRenderData::SharedRenderData()
 {
 #ifdef ROCKY_HAS_DECALS
+    configureProjectedTextureCapacity(DEFAULT_PROJECTED_TEXTURE_CAPACITY);
+#endif
+}
 
-    // arena to hold all decal textures (shared by all views).
-    // All entries are initialized to a valid fallback image.
+void
+SharedRenderData::configureProjectedTextureCapacity(std::uint32_t capacity)
+{
+#ifdef ROCKY_HAS_DECALS
+    capacity = std::max(1u, capacity);
+    if (decalTextures && decalTextures->imageInfoList.size() == capacity
+#ifdef ROCKY_HAS_SLUGHORN
+        &&
+        slugCurveTexture && slugCurveTexture->imageInfoList.size() == capacity &&
+        slugBandTexture && slugBandTexture->imageInfoList.size() == capacity
+#endif
+        )
+        return;
+
+    // Arena shared by all views. Every entry must contain a valid descriptor,
+    // even when no projected texture currently owns the slot.
     auto fallback = makeDefaultImageInfo();
-    vsg::ImageInfoList arena(MAX_NUM_DECAL_TEXTURES, fallback);
-
+    vsg::ImageInfoList arena(capacity, fallback);
     decalTextures = vsg::DescriptorImage::create(
         arena,
         BINDING_DECAL_TEXTURES,
-        0, // array element
+        0,
         TYPE_DECAL_TEXTURES);
+
+#ifdef ROCKY_HAS_SLUGHORN
+    auto slugSampler = makeSlugAtlasSampler();
+    auto curveFallback = makeDefaultSlugCurveImageInfo(slugSampler);
+    auto bandFallback = makeDefaultSlugBandImageInfo(slugSampler);
+    slugCurveTexture = vsg::DescriptorImage::create(
+        vsg::ImageInfoList(capacity, curveFallback),
+        BINDING_SLUG_CURVE_TEXTURE,
+        0,
+        TYPE_SLUG_CURVE_TEXTURE);
+    slugBandTexture = vsg::DescriptorImage::create(
+        vsg::ImageInfoList(capacity, bandFallback),
+        BINDING_SLUG_BAND_TEXTURE,
+        0,
+        TYPE_SLUG_BAND_TEXTURE);
+#endif
+#else
+    (void)capacity;
+#endif
+}
+
+std::uint32_t
+SharedRenderData::projectedTextureCapacity() const
+{
+#ifdef ROCKY_HAS_DECALS
+    return decalTextures ? static_cast<std::uint32_t>(decalTextures->imageInfoList.size()) : 0u;
+#else
+    return 0u;
 #endif
 }
 
@@ -68,6 +150,9 @@ SharedRenderData::rebuildVdsDescriptorSet(ViewIDType viewID, ObjectLifecycle* li
     auto numRockyDescriptors = 3; // renderParams, frustumParams, frustums
 #ifdef ROCKY_HAS_DECALS
     numRockyDescriptors += 2; // decals, decalTiles
+#ifdef ROCKY_HAS_SLUGHORN
+    ++numRockyDescriptors; // slugLayers
+#endif
 #endif
 
     vsg::Descriptors newDescriptors;
@@ -80,6 +165,9 @@ SharedRenderData::rebuildVdsDescriptorSet(ViewIDType viewID, ObjectLifecycle* li
 #ifdef ROCKY_HAS_DECALS
     newDescriptors.emplace_back(vds->decalsBuf);
     newDescriptors.emplace_back(vds->decalTilesBuf);
+#ifdef ROCKY_HAS_SLUGHORN
+    newDescriptors.emplace_back(vds->slugLayersBuf);
+#endif
 #endif
 
     vds->descriptorSet = vsg::DescriptorSet::create(old_ds->setLayout, newDescriptors);

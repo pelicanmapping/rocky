@@ -53,3 +53,4 @@
 #cmakedefine ROCKY_HAS_VSG
 #cmakedefine ROCKY_HAS_VSGXCHANGE
 #cmakedefine ROCKY_HAS_ENTT
+#cmakedefine ROCKY_HAS_SLUGHORN

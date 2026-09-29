@@ -6,11 +6,11 @@
 #pragma once
 #include <rocky/ecs/Line.h>
 #include <rocky/vsg/ecs/ECSNode.h>
+#include <rocky/vsg/ecs/RenderTextureParticipant.h>
+#include <algorithm>
 
 namespace ROCKY_NAMESPACE
 {
-    struct TransformDetail;
-
     /**
     * Renders a line or linestring geometry.
     */
@@ -43,9 +43,36 @@ namespace ROCKY_NAMESPACE
 
         void calcBound(vsg::dsphere& out, const vsg::dmat4& matrix) const;
 
+        //! Whether all Vulkan resources needed to record this geometry exist.
+        bool ready(std::uint32_t deviceID) const
+        {
+            if (_drawCommand->indexCount == 0)
+                return true;
+
+            if (!indices || !indices->buffer ||
+                indices->buffer->sizeVulkanData() <= deviceID ||
+                indices->buffer->vk(deviceID) == VK_NULL_HANDLE)
+                return false;
+
+            for (const auto& array : arrays)
+            {
+                if (!array || !array->buffer ||
+                    array->buffer->sizeVulkanData() <= deviceID ||
+                    array->buffer->vk(deviceID) == VK_NULL_HANDLE)
+                    return false;
+            }
+
+            const auto& vertexData = _vulkanData[deviceID];
+            if (vertexData.vkBuffers.size() != arrays.size())
+                return false;
+
+            return std::all_of(vertexData.vkBuffers.begin(), vertexData.vkBuffers.end(),
+                [](VkBuffer buffer) { return buffer != VK_NULL_HANDLE; });
+        }
+
         void record(vsg::CommandBuffer& commandBuffer) const override
         {
-            if (_drawCommand->indexCount > 0)
+            if (_drawCommand->indexCount > 0 && ready(commandBuffer.deviceID))
                 vsg::Geometry::record(commandBuffer);
         }
     };
@@ -56,17 +83,30 @@ namespace ROCKY_NAMESPACE
         struct LineStyleRecord
         {
             Color color;
+            Color outlineColor;
             float width;
+            float outlineWidth;
             std::int32_t stipplePattern;
             std::int32_t stippleFactor;
             float depthOffset;
             std::uint32_t perVertexMask = 0; // 0x01 = colors
             float devicePixelRatio = 1.0f;
-            std::uint32_t padding[2]; // pad to 16 bytes
+            std::uint32_t widthIsPhysical = 0u;
 
             inline void populate(const LineStyle& in) {
                 color = in.color;
-                width = in.width;
+                outlineColor = in.outlineColor;
+                widthIsPhysical = in.widthUnits.isDistance() ? 1u : 0u;
+                if (widthIsPhysical != 0u)
+                {
+                    width = static_cast<float>(Distance(in.width, in.widthUnits).as(Units::METERS));
+                    outlineWidth = static_cast<float>(Distance(in.outlineWidth, in.widthUnits).as(Units::METERS));
+                }
+                else
+                {
+                    width = in.width;
+                    outlineWidth = in.outlineWidth;
+                }
                 stipplePattern = in.stipplePattern;
                 stippleFactor = in.stippleFactor;
                 depthOffset = in.depthOffset;
@@ -74,7 +114,7 @@ namespace ROCKY_NAMESPACE
                     (in.useGeometryColors ? 0x1 : 0x0);
             }
         };
-        static_assert(sizeof(LineStyleRecord) % 16 == 0, "LineStyleRecord must be 16-byte aligned");
+        static_assert(sizeof(LineStyleRecord) == 64, "LineStyleRecord must match its std140 shader layout");
 
 
         // "line" in the shader
@@ -113,9 +153,18 @@ namespace ROCKY_NAMESPACE
     /**
      * ECS system that handles LineString components
      */
-    class ROCKY_EXPORT LineSystemNode : public vsg::Inherit<detail::SimpleSystemNodeBase, LineSystemNode>
+    class ROCKY_EXPORT LineSystemNode :
+        public vsg::Inherit<detail::SimpleSystemNodeBase, LineSystemNode>,
+        public RenderTextureParticipant
     {
     public:
+        RenderTextureParticipant* renderTextureParticipant() override { return this; }
+        vsg::Node* renderTextureNode() override { return this; }
+        vsg::ref_ptr<vsg::Node> renderTextureCompileNode() override { return pipelineCompileNode(); }
+        int renderTextureOrder() const override { return RenderTextureOrder::Line; }
+        RenderTextureSourceStatus renderTextureSourceStatus(entt::registry&, entt::entity) const override;
+        void expandRenderTextureBounds(entt::registry&, entt::entity, RenderTextureBounds&, const SRS&, bool) override;
+        void contributeRenderTextureRevision(entt::registry&, entt::entity, RenderTextureRevision&) override;
         //! Construct the system
         LineSystemNode(Registry& registry);
 
@@ -144,6 +193,7 @@ namespace ROCKY_NAMESPACE
         mutable std::vector<detail::LineStyleDetail*> _styleDetailBins;
         mutable detail::LineStyleDetail _defaultStyleDetail;
         mutable float _devicePixelRatio = 1.0f;
+        std::uint32_t _deviceID = 0u;
 
         inline vsg::PipelineLayout* getPipelineLayout(const Line& line) {
             return _pipelines[0].config->layout;
@@ -239,12 +289,15 @@ namespace ROCKY_NAMESPACE
                 if (!first)
                 {
                     auto e = (i - 1) * 4 + 2;
+                    // Vulkan uses the first vertex as the provoking vertex.
+                    // Both triangles must therefore start with the beginning
+                    // of the segment so flat stipple data uses its direction.
+                    (_indices->data())[i_ptr++] = e + 0; // provoking vertex
                     (_indices->data())[i_ptr++] = e + 3;
                     (_indices->data())[i_ptr++] = e + 1;
                     (_indices->data())[i_ptr++] = e + 0; // provoking vertex
                     (_indices->data())[i_ptr++] = e + 2;
                     (_indices->data())[i_ptr++] = e + 3;
-                    (_indices->data())[i_ptr++] = e + 0; // provoking vertex
                 }
             }
         }
@@ -276,12 +329,14 @@ namespace ROCKY_NAMESPACE
                 if (even)
                 {
                     auto e = (i) * 4 + 2;
+                    // Keep the segment beginning first for Vulkan's flat
+                    // interpolation provoking-vertex convention.
+                    indicies[i_ptr++] = e + 0; // provoking vertex
                     indicies[i_ptr++] = e + 3;
                     indicies[i_ptr++] = e + 1;
                     indicies[i_ptr++] = e + 0; // provoking vertex
                     indicies[i_ptr++] = e + 2;
                     indicies[i_ptr++] = e + 3;
-                    indicies[i_ptr++] = e + 0; // provoking vertex
                 }
             }
         }
