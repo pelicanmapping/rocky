@@ -3391,6 +3391,44 @@ TEST_CASE("HTTP error cache permits recovery from temporary failures", "[io][htt
 #endif
 
 #if defined(ROCKY_HAS_CURL) && !defined(ROCKY_HAS_HTTPLIB)
+//! Redirects and informational responses must not supply headers for the final response body.
+TEST_CASE("CURL publishes only final response headers", "[io][curl][http-headers]")
+{
+    const std::string redirect =
+        "HTTP/1.1 302 Found\r\nLocation: /final\r\nContent-Length: 0\r\nContent-Type: text/html\r\n\r\n";
+    std::vector<TestHTTPServer::Reply> replies;
+    std::string prefix;
+    std::string body = "{}";
+    std::string finalHeader = "cOnTeNt-TyPe: application/json\r\n";
+    std::string expectedType = "application/json";
+    SECTION("redirect content type is replaced") { replies.push_back({ redirect, {}, {} }); }
+    SECTION("multiple redirects")
+    {
+        replies.push_back({ redirect, {}, {} });
+        replies.push_back({ redirect, {}, {} });
+    }
+    SECTION("absent final header is inferred from the body")
+    {
+        replies.push_back({ redirect, {}, {} });
+        finalHeader.clear();
+        body = "<?xml version=\"1.0\"?><root/>";
+        expectedType = "text/xml";
+    }
+    SECTION("informational headers are discarded")
+    {
+        prefix = "HTTP/1.1 103 Early Hints\r\nContent-Type: text/html\r\n\r\n";
+    }
+    replies.push_back({ prefix + "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(body.size()) +
+        "\r\n" + finalHeader + "\r\n" + body, {}, {} });
+    TestHTTPServer server(std::move(replies));
+    IOOptions io;
+    io.maxNetworkAttempts = 1;
+    const auto response = URI(server.url).read(io);
+    REQUIRE(response.ok());
+    CHECK(response->content.data == body);
+    CHECK(response->content.type == expectedType);
+}
+
 //! Canceling an active URI job must stop stalled headers, stalled bodies, and retry backoff before worker shutdown.
 TEST_CASE("CURL cancellation releases network workers", "[io][curl]")
 {

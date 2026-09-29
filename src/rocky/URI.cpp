@@ -212,6 +212,12 @@ namespace
         void writeHeader(const char* ptr, size_t realsize)
         {
             std::string header(ptr, realsize);
+            // CURL reports every redirect and interim response. Keep only the latest header block.
+            if (header.compare(0, 5, "HTTP/") == 0)
+            {
+                headers.clear();
+                return;
+            }
             std::size_t colon = header.find_first_of(':');
             if (colon != std::string::npos && colon > 0 && colon < header.length() - 1)
             {
