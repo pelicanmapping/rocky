@@ -1,4 +1,4 @@
-name: linux-x64-Release-minimal
+name: linux-x64
 
 on: [push, pull_request, workflow_dispatch]
 

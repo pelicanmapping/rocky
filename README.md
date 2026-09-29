@@ -324,13 +324,14 @@ Spatial reference systems ensure that your map data aligns correctly, support ac
 
 Rocky has a set of built-in primitives for displaying objects on the map.
 
+* Polygon - a collection of 2D closed rings with optional holes
 * Line - a string of 2D line segments
-* Mesh - a collection of triangles
 * Point - a collection of points
+* Mesh - a collection of 3D triangles
 * Model - a 3D model
-* Widget - an interactive ImGui panel (for labels, icons, or custom UIs)
+* Widget - an interactive UI panel (for labels, icons, or custom UIs)
 * Label - a simple text label (based on Widget)
-* Decal - an image overlaid on the terrain
+* Decal - an image projected on the terrain or other geometry
 
 To create and manage these elements, Rocky uses an [Entity Component System](https://en.wikipedia.org/wiki/Entity_component_system) (ECS) driven by the popular [EnTT](https://github.com/skypjack/entt) SDK. We will not delve into the benefits of an ECS for data management here. Suffice it to say that it is a very popular mechanism used in modern gaming and graphics engine with excellent performance and scalability benefits.
 
@@ -490,20 +491,23 @@ app.registry.write([&](entt::registry& r)
 ```
 
 ### Overlay
-
-Attach `Overlay` to an entity with geometry to drape it on the terrain. The default `Vector` mode provides
-resolution-independent rendering; `Raster` renders into a texture at the specified resolution.
+Attach `Overlay` to an entity with a `Polygon`, `Line`, `Point`, or `Mesh` component to drape its geometry on the terrain.
+Use the default `OverlayMode::Vector` for resolution-independent rendering, or `OverlayMode::Raster` to render at a
+fixed image resolution.
 
 ```c++
 app.registry.write([&](entt::registry& r)
     {
         // The entity already has a Polygon, Line, Point, or Mesh component.
         auto& overlay = r.emplace<Overlay>(entity);
-        overlay.mode = OverlayMode::Vector; // or OverlayMode::Raster
-        overlay.color.a = 0.8f;
+        overlay.mode = OverlayMode::Vector; // default; or OverlayMode::Raster
+        overlay.color.a = 0.8f; // overlay opacity
         overlay.resolution = { 1024u, 1024u }; // used by Raster mode and raster fallback
     });
 ```
+
+Georeferenced geometry is positioned automatically. For local geometry, pair the entity with a `Transform` to set its
+position and scale. Prefer `Polygon` for filled areas with boundaries and holes.
 
 Other control components include:
 * `ActiveState` (for the overall active state of an entity)
