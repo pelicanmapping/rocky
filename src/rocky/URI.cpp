@@ -40,9 +40,11 @@ using namespace std::chrono_literals;
 
 bool URI::supportsHTTPS()
 {
-    //todo: query CURL for the same info?
 #ifdef CPPHTTPLIB_OPENSSL_SUPPORT
     return true;
+#elif defined(ROCKY_HAS_CURL) && !defined(ROCKY_HAS_HTTPLIB)
+    const auto* info = curl_version_info(CURLVERSION_NOW);
+    return info && (info->features & CURL_VERSION_SSL) != 0;
 #else
     return false;
 #endif
@@ -281,24 +283,33 @@ namespace
             if (!handle)
                 return Failure(Failure::ServiceUnavailable, "Failed to initialize CURL");
 
-            curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, stream_object_write_function);
-            curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, stream_object_header_function);
-            curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, (void*)1);
-            curl_easy_setopt(handle, CURLOPT_MAXREDIRS, (void*)5);
-            curl_easy_setopt(handle, CURLOPT_FILETIME, true);
-            curl_easy_setopt(handle, CURLOPT_USERAGENT, "rocky/" ROCKY_VERSION_STRING);
-
-            // Enable automatic CURL decompression of known types.
-            // An empty string will automatically add all supported encoding types that are built into CURL.
-            // Note that you must have CURL built against zlib to support gzip or deflate encoding.
-            curl_easy_setopt(handle, CURLOPT_ENCODING, "");
-
-            // Disable peer certificate verification to allow us to access  https servers
-            // where the peer certificate cannot be verified.
-            curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, (void*)0);
-
             basket.handle = handle;
         }
+
+        // Restore default options (including CA paths) between requests while retaining cached connections.
+        curl_easy_reset(handle);
+        curl_easy_setopt(handle, CURLOPT_WRITEFUNCTION, stream_object_write_function);
+        curl_easy_setopt(handle, CURLOPT_HEADERFUNCTION, stream_object_header_function);
+        curl_easy_setopt(handle, CURLOPT_FOLLOWLOCATION, 1L);
+        curl_easy_setopt(handle, CURLOPT_MAXREDIRS, 5L);
+        curl_easy_setopt(handle, CURLOPT_FILETIME, 1L);
+        curl_easy_setopt(handle, CURLOPT_USERAGENT, "rocky/" ROCKY_VERSION_STRING);
+
+        // Request automatic decompression for all encodings supported by this CURL build.
+        curl_easy_setopt(handle, CURLOPT_ENCODING, "");
+        curl_easy_setopt(handle, CURLOPT_SSL_VERIFYPEER, 1L);
+        curl_easy_setopt(handle, CURLOPT_SSL_VERIFYHOST, 2L);
+        if (!io.networkCAFile.empty())
+        {
+            curl_easy_setopt(handle, CURLOPT_CAINFO, io.networkCAFile.c_str());
+        }
+#ifdef CURLSSLOPT_NATIVE_CA
+        else
+        {
+            // Also use platform roots where supported, including OpenSSL builds on Windows.
+            curl_easy_setopt(handle, CURLOPT_SSL_OPTIONS, static_cast<long>(CURLSSLOPT_NATIVE_CA));
+        }
+#endif
 
         CURLRequestState state{ handle };
 
@@ -465,19 +476,24 @@ namespace
             // use thread-local clients so we can do keep-alive for high performance
             static thread_local httplib::Client client("");
             static thread_local std::string last_proto_host_port;
+            static thread_local std::string last_ca_file;
 
-            if (proto_host_port != last_proto_host_port)
+            if (proto_host_port != last_proto_host_port || io.networkCAFile != last_ca_file)
             {
                 client = httplib::Client(proto_host_port);
                 last_proto_host_port = proto_host_port;
+                last_ca_file = io.networkCAFile;
             }
 
             // follow redirects
             client.set_follow_location(true);
 
-            // disable cert verification
-            client.enable_server_certificate_verification(false);
-            //client.enable_server_hostname_verification(false);
+#ifdef CPPHTTPLIB_OPENSSL_SUPPORT
+            client.enable_server_certificate_verification(true);
+            client.enable_server_hostname_verification(true);
+            if (!io.networkCAFile.empty())
+                client.set_ca_cert_path(io.networkCAFile);
+#endif
 
             // ask the server to keep the connection alive
             client.set_keep_alive(true);

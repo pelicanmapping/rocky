@@ -126,6 +126,9 @@ namespace ROCKY_NAMESPACE
         //! Network read stall timeout (seconds; 0 = infinite). CURL allows transfers sustaining at least 1 byte/second.
         std::chrono::seconds networkReadTimeout = std::chrono::seconds(30);
 
+        //! Optional PEM CA bundle for HTTPS verification. Empty uses the HTTP backend's default trust stores.
+        std::string networkCAFile;
+
         //! Referring location for an operation using these options
         std::optional<std::string> referrer;
 
@@ -150,6 +153,7 @@ namespace ROCKY_NAMESPACE
             maxNetworkAttempts = rhs.maxNetworkAttempts;
             networkConnectionTimeout = rhs.networkConnectionTimeout;
             networkReadTimeout = rhs.networkReadTimeout;
+            networkCAFile = std::move(rhs.networkCAFile);
             referrer = std::move(rhs.referrer);
             _services = rhs._services;
             _cancelable = rhs._cancelable;

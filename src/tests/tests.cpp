@@ -49,6 +49,7 @@
 #include <cfloat>
 #include <chrono>
 #include <condition_variable>
+#include <cstdlib>
 #include <filesystem>
 #include <fstream>
 #include <future>
@@ -3084,11 +3085,67 @@ TEST_CASE("IO options preserve network timeouts", "[io]")
     IOOptions source;
     source.networkConnectionTimeout = std::chrono::seconds(2);
     source.networkReadTimeout = std::chrono::seconds(7);
+    source.networkCAFile = "private-ca.pem";
     IOOptions copy(source);
     IOOptions moved;
     moved = std::move(copy);
     CHECK(moved.networkConnectionTimeout == source.networkConnectionTimeout);
     CHECK(moved.networkReadTimeout == source.networkReadTimeout);
+    CHECK(moved.networkCAFile == source.networkCAFile);
+}
+
+//! Opt-in TLS integration: TLS_URL serves "OK" with a localhost-only certificate signed by the supplied TLS_CA PEM.
+//! Run with "[.tls]" and set ROCKY_TEST_TLS_URL and ROCKY_TEST_TLS_CA; no system trust changes are needed.
+TEST_CASE("HTTPS verifies peer trust and hostname", "[.tls]")
+{
+    const char* endpoint = std::getenv("ROCKY_TEST_TLS_URL");
+    const char* caFile = std::getenv("ROCKY_TEST_TLS_CA");
+    REQUIRE(endpoint != nullptr);
+    REQUIRE(caFile != nullptr);
+    REQUIRE(URI::supportsHTTPS());
+    IOOptions io;
+    io.maxNetworkAttempts = 1;
+    std::string url = endpoint;
+    SECTION("untrusted issuer is rejected by default")
+    {
+        auto response = URI(url).read(io);
+        REQUIRE(response.failed());
+        CHECK(response.error().type == Failure::ServiceUnavailable);
+    }
+    SECTION("explicit CA bundle accepts the trusted hostname")
+    {
+        io.networkCAFile = caFile;
+        auto response = URI(url).read(io);
+        INFO((response.failed() ? response.error().message : "TLS accepted"));
+        REQUIRE(response.ok());
+        CHECK(response->content.data == "OK");
+    }
+    SECTION("trusted issuer does not bypass hostname validation")
+    {
+        io.networkCAFile = caFile;
+        REQUIRE(url.find("localhost") != std::string::npos);
+        url.replace(url.find("localhost"), 9, "127.0.0.1");
+        CHECK(URI(url).read(io).failed());
+    }
+    SECTION("custom trust does not leak into the next request on the same thread")
+    {
+        io.networkCAFile = caFile;
+        REQUIRE(URI(url).read(io).ok());
+        io.networkCAFile.clear();
+        CHECK(URI(url).read(io).failed());
+    }
+    SECTION("missing CA bundle fails closed")
+    {
+        io.networkCAFile = std::string(caFile) + ".missing";
+        CHECK(URI(url).read(io).failed());
+    }
+    SECTION("default platform trust accepts a public HTTPS site")
+    {
+        auto response = URI("https://example.com/").read(io);
+        INFO((response.failed() ? response.error().message : "TLS accepted"));
+        REQUIRE(response.ok());
+        CHECK(response->content.data.find("Example Domain") != std::string::npos);
+    }
 }
 
 TEST_CASE("IO")
