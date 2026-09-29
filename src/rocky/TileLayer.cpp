@@ -320,7 +320,7 @@ TileLayer::getOrCreateTile(const TileKey& key, const IOOptions& io, std::functio
 {
     if (io.services().residentImageCache)
     {
-        auto cacheKey = key.str() + '-' + std::to_string(key.profile.hash()) + '-' + std::to_string(uid()) + "-" + std::to_string(revision());
+        const TileLayerCacheKey cacheKey{ key, uid(), revision() };
 
         auto cached = io.services().residentImageCache->get(cacheKey);
 

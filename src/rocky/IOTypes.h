@@ -9,6 +9,7 @@
 #include <rocky/Threading.h>
 #include <rocky/Cache.h>
 #include <rocky/Units.h>
+#include <rocky/TileKey.h>
 #include <optional>
 #include <string>
 #include <cstdint>
@@ -84,7 +85,7 @@ namespace ROCKY_NAMESPACE
         std::shared_ptr<ContentCache> contentCache;
 
         //! Provides fast access to Image data that is resident somwehere in memory
-        std::shared_ptr<detail::ResidentCache<std::string, Image, GeoExtent>> residentImageCache;
+        std::shared_ptr<detail::ResidentCache<TileLayerCacheKey, Image, GeoExtent>> residentImageCache;
 
         //! URI deadpool; URI will use this if available.
         std::shared_ptr<DealpoolService> deadpool;

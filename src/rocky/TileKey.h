@@ -78,7 +78,7 @@ namespace ROCKY_NAMESPACE
             if (x > rhs.x) return false;
             if (y < rhs.y) return true;
             if (y > rhs.y) return false;
-            return profile.hash() < rhs.profile.hash();
+            return profile < rhs.profile;
         }
 
         //! Gets the string representation of the key, formatted like:
@@ -154,12 +154,35 @@ namespace ROCKY_NAMESPACE
             return seed;
         }
     };
+
+    //! Identifies a resident tile image by its full tile key, owning layer, and layer revision.
+    struct TileLayerCacheKey
+    {
+        TileKey tile;
+        UID layer;
+        Revision revision;
+
+        //! Resolves hash collisions using complete tile and layer identity.
+        bool operator == (const TileLayerCacheKey& rhs) const {
+            return layer == rhs.layer && revision == rhs.revision && tile == rhs.tile;
+        }
+    };
 }
 
 namespace std {
     template<> struct hash<rocky::TileKey> {
         inline size_t operator()(const rocky::TileKey& value) const {
             return value.hash();
+        }
+    };
+
+    template<> struct hash<rocky::TileLayerCacheKey> {
+        //! Combines the tile hash with layer identity and revision; equality resolves profile collisions.
+        size_t operator()(const rocky::TileLayerCacheKey& value) const {
+            auto seed = value.tile.hash();
+            rocky::detail::hashCombine(seed, std::hash<rocky::UID>()(value.layer));
+            rocky::detail::hashCombine(seed, std::hash<rocky::Revision>()(value.revision));
+            return seed;
         }
     };
 }

@@ -254,7 +254,7 @@ TileKey::intersectingKeys(const Profile& targetProfile) const
     // very simple per-thread last-query cache, since in practice this gets
     // called multiple times per thread during terrain creation
     static thread_local struct {
-        std::size_t profileHash;
+        Profile profile;
         TileKey key;
         std::vector<TileKey> result;
     } s_previous;
@@ -262,7 +262,7 @@ TileKey::intersectingKeys(const Profile& targetProfile) const
     if (profile == targetProfile)
         return { *this };
 
-    if (*this == s_previous.key && targetProfile.hash() == s_previous.profileHash)
+    if (*this == s_previous.key && targetProfile == s_previous.profile)
         return s_previous.result;
     
     std::vector<TileKey> output;
@@ -353,7 +353,7 @@ TileKey::intersectingKeys(const Profile& targetProfile) const
     }
 
     s_previous.key = *this;
-    s_previous.profileHash = targetProfile.hash();
+    s_previous.profile = targetProfile;
     s_previous.result = output;
 
     return output;

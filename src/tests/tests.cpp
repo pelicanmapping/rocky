@@ -76,6 +76,13 @@ namespace
             return ResultVoidOK;
         }
     };
+
+    //! Exposes the tile cache path without opening a data source or requiring a graphics device.
+    class TestCachedTileLayer : public TileLayer
+    {
+    public:
+        using TileLayer::getOrCreateTile;
+    };
 }
 
 TEST_CASE("strings")
@@ -2611,6 +2618,129 @@ TEST_CASE("Geographic extent expansion preserves wide intervals", "[geoextent]")
     REQUIRE(empty.expandToInclude(projected));
     CHECK(empty == projected);
     CHECK_FALSE(empty.expandToInclude(GeoExtent()));
+}
+
+//! Equivalent profile representations must remain interchangeable as hashed and ordered tile keys.
+TEST_CASE("Profile hashes agree with equality", "[profile][tilekey]")
+{
+    const Profile named("global-geodetic");
+    const Box world(-180.0, -90.0, 180.0, 90.0);
+    const std::vector<Profile> equivalents = {
+        named, Profile(SRS::WGS84, world, 2, 1), Profile(SRS("EPSG:4326"), world, 2, 1),
+        Profile(SRS("EPSG:4979"), world, 2, 1), Profile(SRS("EPSG:4326+5773"), world, 2, 1)
+    };
+    std::unordered_map<Profile, int> profiles;
+    std::unordered_map<TileKey, int> tiles;
+    std::map<TileKey, int> ordered;
+    profiles.emplace(named, 7);
+    tiles.emplace(TileKey(2, 3, 1, named), 7);
+    ordered.emplace(TileKey(2, 3, 1, named), 7);
+    for (const auto& profile : equivalents)
+    {
+        REQUIRE(profile.valid());
+        REQUIRE(profile == named);
+        CHECK(profile.hash() == named.hash());
+        const TileKey key(2, 3, 1, profile);
+        CHECK(profiles.count(profile) == 1u);
+        CHECK(tiles.count(key) == 1u);
+        CHECK(ordered.count(key) == 1u);
+        profiles.emplace(profile, 9);
+        tiles.emplace(key, 9);
+        ordered.emplace(key, 9);
+    }
+    CHECK(profiles.size() == 1u);
+    CHECK(tiles.size() == 1u);
+    CHECK(ordered.size() == 1u);
+
+    // Equality's coordinate tolerance must not be broken by hashing rounded coordinates into different bins.
+    const Profile a(SRS::WGS84, Box(10.123456, 5.234567, 20.123456, 15.234567), 2, 1);
+    const Profile b(SRS::WGS84, Box(10.1234565, 5.2345675, 20.1234565, 15.2345675), 2, 1);
+    REQUIRE(a == b);
+    CHECK(a.hash() == b.hash());
+    std::unordered_map<Profile, int> approximate;
+    approximate.emplace(a, 1);
+    CHECK(approximate.count(b) == 1u);
+
+    const std::vector<Profile> different = {
+        a, Profile(SRS::MOON, world, 2, 1), Profile(SRS::WGS84, world, 1, 1),
+        Profile(SRS::WGS84, world, 2, 1, Box(-180.0, -80.0, 180.0, 80.0))
+    };
+    for (const auto& profile : different)
+    {
+        REQUIRE(profile.valid());
+        REQUIRE(profile != named);
+        profiles.emplace(profile, 10);
+        tiles.emplace(TileKey(2, 3, 1, profile), 10);
+        ordered.emplace(TileKey(2, 3, 1, profile), 10);
+    }
+    CHECK(profiles.size() == 5u);
+    CHECK(tiles.size() == 5u);
+    CHECK(ordered.size() == 5u);
+    const Profile mercator("spherical-mercator");
+    const Profile explicitMercator(SRS("EPSG:3857"), mercator.extent().bounds(), 1, 1);
+    REQUIRE(mercator == explicitMercator);
+    CHECK(mercator.hash() == explicitMercator.hash());
+}
+
+//! Resident tile caching compares full keys, sharing equivalent profiles and separating hash collisions and layers.
+TEST_CASE("Resident tile caches resolve profile hash collisions", "[profile][tilekey]")
+{
+    IOOptions io;
+    io.services().residentImageCache = std::make_shared<ResidentCache<TileLayerCacheKey, Image, GeoExtent>>();
+    TestCachedTileLayer layer;
+    TestCachedTileLayer otherLayer;
+    const Profile named("global-geodetic");
+    const Profile equivalent(SRS::WGS84, named.extent().bounds(), 2, 1);
+    const Profile different(SRS::WGS84, Box(10.0, 10.0, 20.0, 20.0), 2, 1);
+    REQUIRE(named.hash() == different.hash());
+    REQUIRE(named != different);
+    unsigned creations = 0;
+    // Keep each generated image resident so subsequent reads exercise cache hits.
+    auto firstImage = Image::create(Image::R32_SFLOAT, 2, 2);
+    const TileKey firstKey(0, 0, 0, named);
+    const auto first = layer.getOrCreateTile(firstKey, io, [&]() -> Result<GeoImage> {
+        ++creations;
+        return GeoImage(firstImage, firstKey.extent());
+    });
+    REQUIRE(first.ok());
+    const auto second = layer.getOrCreateTile(TileKey(0, 0, 0, equivalent), io, [&]() -> Result<GeoImage> {
+        ++creations;
+        return Failure_ResourceUnavailable;
+    });
+    REQUIRE(second.ok());
+    CHECK(second->image() == firstImage);
+    CHECK(creations == 1u);
+    const TileKey differentKey(0, 0, 0, different);
+    auto differentImage = Image::create(Image::R32_SFLOAT, 2, 2);
+    const auto third = layer.getOrCreateTile(differentKey, io, [&]() -> Result<GeoImage> {
+        ++creations;
+        return GeoImage(differentImage, differentKey.extent());
+    });
+    REQUIRE(third.ok());
+    CHECK(third->image() == differentImage);
+    CHECK(creations == 2u);
+    const auto other = otherLayer.getOrCreateTile(firstKey, io, [&]() -> Result<GeoImage> {
+        ++creations;
+        return GeoImage(differentImage, firstKey.extent());
+    });
+    REQUIRE(other.ok());
+    CHECK(other->image() == differentImage);
+    CHECK(creations == 3u);
+    CHECK_FALSE(io.services().residentImageCache->get({ firstKey, layer.uid(), layer.revision() + 1 }).has_value());
+}
+
+//! Repeated intersection queries must compare target profiles instead of reusing a colliding target's cached result.
+TEST_CASE("Tile intersection cache resolves profile hash collisions", "[profile][tilekey]")
+{
+    const TileKey source(2, 4, 1, Profile("global-geodetic"));
+    const Profile inside(SRS::WGS84, Box(0.0, 0.0, 20.0, 20.0), 1, 1);
+    const Profile outside(SRS::WGS84, Box(100.0, 0.0, 120.0, 20.0), 1, 1);
+    REQUIRE(inside.hash() == outside.hash());
+    REQUIRE(inside != outside);
+    const auto first = source.intersectingKeys(inside);
+    REQUIRE_FALSE(first.empty());
+    CHECK(source.intersectingKeys(outside).empty());
+    CHECK(source.intersectingKeys(inside) == first);
 }
 
 //! Encoding preserves bilinear no-data behavior for every missing-sample pattern, including flat tiles.

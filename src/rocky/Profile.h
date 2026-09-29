@@ -104,6 +104,9 @@ namespace ROCKY_NAMESPACE
             return !equivalentTo(rhs);
         }
 
+        //! Orders profiles by hash and then geometry/SRS, keeping equivalent profiles together despite hash collisions.
+        bool operator < (const Profile& rhs) const;
+
         //! Gets the tile dimensions at the given lod, in the profile's SRS units.
         using TileDims = struct { double x, y; };
         TileDims tileDimensions(unsigned lod) const;
@@ -139,7 +142,7 @@ namespace ROCKY_NAMESPACE
         inline std::vector<Profile>& subprofiles();
         inline const std::vector<Profile>& subprofiles() const;
 
-        //! Get the hash code for this profile
+        //! Get a hash compatible with equivalence; collisions must be resolved with operator==.
         inline std::size_t hash() const;
 
     protected:

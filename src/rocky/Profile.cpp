@@ -8,6 +8,7 @@
 #include "Math.h"
 #include "Utils.h"
 #include "json.h"
+#include <tuple>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -73,9 +74,13 @@ Profile::setup(const SRS& srs, const Box& bounds, unsigned width0, unsigned heig
                 _shared->extent.transform(srs.geodeticSRS());
         }
 
-        // make a profile sig (sans srs) and an srs sig for quick comparisons.
-        std::string temp = to_json();
-        _shared->hash = std::hash<std::string>()(temp);
+        // Extent equality is tolerant and SRS definitions can have equivalent spellings.
+        // Hash only exact invariants; TileKey adds level/x/y to distribute tiles within each profile.
+        _shared->hash = 0;
+        hashCombine(_shared->hash, std::hash<unsigned>()(tx));
+        hashCombine(_shared->hash, std::hash<unsigned>()(ty));
+        hashCombine(_shared->hash, std::hash<bool>()(srs.isGeodetic()));
+        hashCombine(_shared->hash, std::hash<bool>()(srs.isGeocentric()));
 
         _shared->subprofiles = subprofiles;
     }
@@ -96,11 +101,8 @@ Profile::equivalentTo(const Profile& rhs) const
     if (_shared == rhs._shared)
         return true;
 
-    if (_shared->hash == rhs._shared->hash)
-        return true;
-
-    if (!_shared->wellKnownName.empty() && _shared->wellKnownName == rhs._shared->wellKnownName)
-        return true;
+    if (_shared->hash != rhs._shared->hash)
+        return false;
 
     if (_shared->numTilesBaseY != rhs._shared->numTilesBaseY)
         return false;
@@ -115,6 +117,26 @@ Profile::equivalentTo(const Profile& rhs) const
         return false;
 
     return _shared->extent.srs().horizontallyEquivalentTo(rhs._shared->extent.srs());
+}
+
+bool
+Profile::operator < (const Profile& rhs) const
+{
+    if (hash() != rhs.hash())
+        return hash() < rhs.hash();
+    if (equivalentTo(rhs))
+        return false;
+
+    // Break collisions without allocating serialized profiles on tile-sorting paths.
+    const auto orderKey = [](const Profile& p)
+    {
+        const auto& e = p.extent();
+        const auto& g = p.geodeticExtent();
+        const auto tiles = p.numTiles(0);
+        return std::make_tuple(e.xmin(), e.ymin(), e.width(), e.height(),
+            g.xmin(), g.ymin(), g.width(), g.height(), tiles.x, tiles.y, std::cref(p.srs().definition()));
+    };
+    return orderKey(*this) < orderKey(rhs);
 }
 
 Profile::Profile(const std::string& wellKnownName)
