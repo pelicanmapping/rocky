@@ -2425,6 +2425,38 @@ TEST_CASE("Heightfield")
     }
 }
 
+//! Encoding preserves bilinear no-data behavior for every missing-sample pattern, including flat tiles.
+TEST_CASE("Encoded heightfields preserve missing samples", "[heightfield]")
+{
+    for (unsigned mask = 0; mask < 16; ++mask)
+    {
+        auto hf = Heightfield::create(2, 2);
+        for (unsigned i = 0; i < 4; ++i)
+            hf.heightAt(i % 2, i / 2) = (mask & (1u << i)) ? NO_DATA_VALUE : -100.0f + 200.0f * i;
+        SECTION("varying heights") {}
+        SECTION("flat heights")
+        {
+            hf.forEachHeight([](float& h) { if (h != NO_DATA_VALUE) h = 42.0f; });
+        }
+        hf.computeAndSetMinMax();
+        const auto encoded = hf.encode();
+        for (unsigned y = 0; y <= 4; ++y)
+        {
+            for (unsigned x = 0; x <= 4; ++x)
+            {
+                const float u = x * 0.25f, v = y * 0.25f;
+                const float expected = hf.heightAtUV(u, v);
+                const float actual = encoded.heightAtUV(u, v);
+                INFO("missing mask: " << mask << ", UV: " << u << ", " << v);
+                if (expected == NO_DATA_VALUE)
+                    CHECK(actual == NO_DATA_VALUE);
+                else
+                    CHECK(std::abs(actual - expected) < 0.02f);
+            }
+        }
+    }
+}
+
 TEST_CASE("Map")
 {
     auto map = Map::create();

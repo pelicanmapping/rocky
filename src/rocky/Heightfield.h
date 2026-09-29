@@ -187,6 +187,8 @@ namespace ROCKY_NAMESPACE
         auto outImage = Image::create(HF_ENCODED_FORMAT, image->width(), image->height(), 1);
         outImage->_minValue = image->_minValue;
         outImage->_maxValue = image->_maxValue;
+        // R16_UNORM reserves its largest value for missing samples, including during interpolation.
+        outImage->_noDataValue = 1.0f;
 
         auto* ptr = outImage->data<EncodedDataType>();
 
@@ -196,7 +198,9 @@ namespace ROCKY_NAMESPACE
             {
                 EncodedDataType value =
                     (h == NO_DATA_VALUE) ? noDataEncodedValue :
-                    static_cast<EncodedDataType>(((h - image->_minValue) / (image->_maxValue - image->_minValue)) * (noDataEncodedValue-1));
+                    (image->_minValue == image->_maxValue) ? 0 :
+                    static_cast<EncodedDataType>(
+                        ((h - image->_minValue) / (image->_maxValue - image->_minValue)) * (noDataEncodedValue - 1));
 
                 *ptr++ = value;
             });
