@@ -9,6 +9,7 @@
 #include <rocky/vsg/ecs/DecalSystem.h>
 #include <rocky/vsg/ecs/MeshSystem.h>
 #include <rocky/vsg/ecs/OpticsSystem.h>
+#include <rocky/vsg/ShaderDefines.h>
 #include <atomic>
 #include <filesystem>
 #include <thread>

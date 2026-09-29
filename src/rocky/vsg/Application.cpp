@@ -197,13 +197,6 @@ Application::ctor(int& argc, char** argv)
     // new display manager
     display.initialize(vsgcontext, commandLine);
 
-    int requestedProjectedTextures = static_cast<int>(projectedTextureCapacity);
-    if (commandLine.read("--projected-textures", requestedProjectedTextures))
-    {
-        projectedTextureCapacity =
-            static_cast<std::uint32_t>(std::max(1, requestedProjectedTextures));
-    }
-
     // intercept the window-close event so we can remove the window from our tracking tables.
     auto& handlers = vsgcontext->viewer()->getEventHandlers();
     handlers.insert(handlers.begin(), CloseWindowEventHandler::create(this));
@@ -238,7 +231,6 @@ Application::ctor(int& argc, char** argv)
             << "    [--earth-file <filename>] // import an osgEarth earth file" << std::endl
             << "    [--no-vsync]              // disable vertical sync" << std::endl
             << "    [--continuous]            // render frames continuously (instead of only when needed)" << std::endl
-            << "    [--projected-textures <n>]// maximum concurrent Overlay/Decal textures" << std::endl
             << "    [--log-level <level>]     // set the log level (debug, info, warn, error, critical, off)" << std::endl
             << "    [--sky]                   // install a rudimentary lighting model" << std::endl
             << "    [--version]               // print the version" << std::endl

@@ -72,6 +72,8 @@ namespace
 #endif
 }
 
+const std::uint32_t SharedRenderData::DEFAULT_PROJECTED_TEXTURE_CAPACITY = MAX_NUM_DECAL_TEXTURES;
+
 SharedRenderData::SharedRenderData()
 {
 #ifdef ROCKY_HAS_DECALS

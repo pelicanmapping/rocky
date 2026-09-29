@@ -5,6 +5,7 @@
  */
 #pragma once
 
+// Implementation-only shader definitions. Never include this file from a public-facing header.
 #include <rocky/Math.h>
 #include <cstddef>
 

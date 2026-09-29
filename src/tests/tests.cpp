@@ -25,6 +25,12 @@
 #include <rocky/vsg/ecs/OpticsSystem.h>
 #include <rocky/vsg/ecs/TransformDetail.h>
 #include <rocky/vsg/ecs/FeatureBuilder.h>
+
+// Public headers must not expose implementation-only shader definitions, even transitively.
+#ifdef ROCKY_DEFINES
+#error "Public Rocky headers must not include ShaderDefines.h"
+#endif
+
 #include <atomic>
 #include <chrono>
 #include <filesystem>

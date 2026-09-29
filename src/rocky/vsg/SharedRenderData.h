@@ -6,7 +6,6 @@
 #pragma once
 
 #include <rocky/vsg/Common.h>
-#include <rocky/vsg/ShaderDefines.h>
 #include <rocky/vsg/ViewDependentState.h>
 #include <rocky/Rendering.h>
 
@@ -16,7 +15,8 @@ namespace ROCKY_NAMESPACE
     // VSGContextImpl creates and owns a unique instance of this.
     struct ROCKY_EXPORT SharedRenderData
     {
-        static constexpr std::uint32_t DEFAULT_PROJECTED_TEXTURE_CAPACITY = MAX_NUM_DECAL_TEXTURES;
+        //! Default number of concurrently resident projected textures.
+        static const std::uint32_t DEFAULT_PROJECTED_TEXTURE_CAPACITY;
 
         SharedRenderData();
 

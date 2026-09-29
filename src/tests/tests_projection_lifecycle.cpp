@@ -6,6 +6,7 @@
 #include "catch.hpp"
 #include <rocky/vsg/ecs/DecalSystem.h>
 #include <rocky/vsg/ecs/TextureSystem.h>
+#include <rocky/vsg/ShaderDefines.h>
 #include <vsg/utils/ShaderCompiler.h>
 #include <filesystem>
 #include <thread>
