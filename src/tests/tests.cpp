@@ -76,6 +76,73 @@ TEST_CASE("strings")
     CHECK(detail::trimInPlace(s1) == "Hello, Rocky!");
 }
 
+//! Dirty queues discard removed components and destroyed entities while retaining a re-added component's current state.
+TEST_CASE("dirty component queues handle removal and replacement", "[ecs][dirty]")
+{
+    entt::registry registry;
+    registry.emplace<Model::Dirty>(registry.create());
+    const auto entity = registry.create();
+    registry.emplace<Model>(entity).radius = 1.0f;
+    Model::dirty(registry, entity);
+    registry.remove<Model>(entity);
+
+    bool replaced = false;
+    SECTION("component removed but entity retained")
+    {
+        REQUIRE(registry.valid(entity));
+    }
+    SECTION("entity destroyed")
+    {
+        registry.destroy(entity);
+    }
+    SECTION("component removed and re-added before the queue drains")
+    {
+        registry.emplace<Model>(entity).radius = 42.0f;
+        Model::dirty(registry, entity);
+        replaced = true;
+    }
+
+    std::vector<entt::entity> visited;
+    Model::eachDirty(registry, [&](entt::entity dirtyEntity)
+    {
+        visited.push_back(dirtyEntity);
+        REQUIRE(registry.valid(dirtyEntity));
+        REQUIRE(registry.all_of<Model>(dirtyEntity));
+        CHECK(dirtyEntity == entity);
+        CHECK(registry.get<Model>(dirtyEntity).radius == Approx(42.0f));
+    });
+    CHECK(visited.empty() == !replaced);
+
+    Model::eachDirty(registry, [](entt::entity)
+    {
+        FAIL("Drained dirty entries must not be delivered again");
+    });
+}
+
+//! Exercises the crashing system update after removal of a newly queued Model without destroying its entity.
+TEST_CASE("model system skips a removed dirty component", "[ecs][dirty][model]")
+{
+    Registry registry = Registry::create();
+    auto context = VSGContextFactory::create(vsg::Viewer::create());
+    auto models = ModelSystemNode::create(registry);
+    entt::entity entity = entt::null;
+    registry.write([&](entt::registry& reg)
+    {
+        entity = reg.create();
+        reg.emplace<Model>(entity);
+        reg.remove<Model>(entity);
+    });
+
+    models->update(context.get());
+
+    CHECK(models->status.ok());
+    registry.read([&](entt::registry& reg)
+    {
+        CHECK(reg.valid(entity));
+        CHECK_FALSE((reg.any_of<Model, ModelDetail>(entity)));
+    });
+}
+
 TEST_CASE("mesh feature default tessellation is curvature bounded", "[featurebuilder]")
 {
     Feature building(

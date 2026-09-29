@@ -78,7 +78,8 @@ namespace ROCKY_NAMESPACE
             r.get<DERIVED>(e).dirty(r);
         }
 
-        //! Iterate over all dirty components of this type, invoking the given callable
+        //! Invokes the callable for dirty components that still exist, using replacements in their current state.
+        //! The caller must prevent concurrent component removal while callbacks run.
         template<class CALLABLE>
         inline static void eachDirty(entt::registry& r, CALLABLE&& func)
         {
@@ -93,9 +94,9 @@ namespace ROCKY_NAMESPACE
 
             for (auto e : entities)
             {
-                // must check validity since it is possible the entity was destroyed
-                // after being put on the dirty list.
-                if (r.valid(e))
+                // An entity can survive removal of the component that queued it.
+                // Check both before handing it to consumers that dereference the component.
+                if (r.valid(e) && r.all_of<DERIVED>(e))
                 {
                     func(e);
                 }
