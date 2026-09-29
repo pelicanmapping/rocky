@@ -1,5 +1,5 @@
 #include <rocky/Version.h>
-#if defined(ROCKY_HAS_CURL) && !defined(ROCKY_HAS_HTTPLIB)
+#if defined(ROCKY_HAS_CURL) || defined(ROCKY_HAS_HTTPLIB)
 #ifdef _WIN32
 #ifndef NOMINMAX
 #define NOMINMAX
@@ -2879,7 +2879,7 @@ TEST_CASE("SRS")
     }
 }
 
-#if defined(ROCKY_HAS_CURL) && !defined(ROCKY_HAS_HTTPLIB)
+#if defined(ROCKY_HAS_CURL) || defined(ROCKY_HAS_HTTPLIB)
 namespace
 {
     //! Serves scripted loopback responses on one thread; destruction interrupts stalls and joins the server.
@@ -3039,6 +3039,40 @@ namespace
     };
 }
 
+//! Temporary HTTP failures can recover with the same IO services; a missing resource remains cached.
+TEST_CASE("HTTP error cache permits recovery from temporary failures", "[io][http-cache]")
+{
+    std::string status;
+    bool permanent = false;
+    SECTION("service unavailable") { status = "503 Service Unavailable"; }
+    SECTION("server error") { status = "500 Internal Server Error"; }
+    SECTION("rate limited") { status = "429 Too Many Requests"; }
+    SECTION("missing resource") { status = "404 Not Found"; permanent = true; }
+    const std::string failure = "HTTP/1.1 " + status + "\r\nContent-Length: 0\r\n\r\n";
+    const std::string success = "HTTP/1.1 200 OK\r\nContent-Length: 2\r\nContent-Type: text/plain\r\n\r\nOK";
+    TestHTTPServer server({ { failure, {}, {} }, { success, {}, {} } });
+    IOOptions io;
+    io.maxNetworkAttempts = 1;
+    io.services().deadpool = std::make_shared<DealpoolService>(16);
+    const URI uri(server.url);
+    auto first = uri.read(io);
+    REQUIRE(first.failed());
+    CHECK(first.error().type == (permanent ? Failure::ResourceUnavailable : Failure::ServiceUnavailable));
+    CHECK(io.services().deadpool->get(uri.full()).has_value() == permanent);
+    auto second = uri.read(io);
+    if (permanent)
+    {
+        REQUIRE(second.failed());
+        CHECK(second.error().type == Failure::ResourceUnavailable);
+        io.services().deadpool->clear();
+        second = uri.read(io);
+    }
+    REQUIRE(second.ok());
+    CHECK(second->content.data == "OK");
+}
+#endif
+
+#if defined(ROCKY_HAS_CURL) && !defined(ROCKY_HAS_HTTPLIB)
 //! Canceling an active URI job must stop stalled headers, stalled bodies, and retry backoff before worker shutdown.
 TEST_CASE("CURL cancellation releases network workers", "[io][curl]")
 {

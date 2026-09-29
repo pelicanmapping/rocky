@@ -430,7 +430,8 @@ namespace
                 }
                 else
                 {
-                    return Failure(Failure::ResourceUnavailable, std::to_string(response.status));
+                    // Only missing resources belong in the permanent error cache.
+                    return Failure(Failure::ServiceUnavailable, std::to_string(response.status));
                 }
             }
         }
@@ -559,12 +560,12 @@ namespace
                         else
                         {
                             Log()->info(LC + std::string("Retries exhausted with ") + proto_host_port + path);
-                            return Failure(Failure::ResourceUnavailable, httplib::status_message(res->status));
+                            return Failure(Failure::ServiceUnavailable, httplib::status_message(res->status));
                         }
                     }
                     else if (res->status != 200)
                     {
-                        return Failure(Failure::GeneralError, httplib::status_message(res->status));
+                        return Failure(Failure::ServiceUnavailable, httplib::status_message(res->status));
                     }
 
                     response.status = res->status;
