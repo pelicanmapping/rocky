@@ -2545,6 +2545,74 @@ TEST_CASE("Raster coordinates wrap across the antimeridian", "[geoimage][heightf
     CHECK(projected.read(185.0, 0.0)->r == Approx(31.0f));
 }
 
+//! Extent containment accounts for complete longitude arcs, including the full globe and wide wrapped regions.
+TEST_CASE("Geographic extent containment uses full intervals", "[geoextent]")
+{
+    const GeoExtent world(SRS::WGS84, -180.0, -90.0, 180.0, 90.0);
+    const GeoExtent hemisphere(SRS::WGS84, 0.0, -90.0, 180.0, 90.0);
+    CHECK(world.contains(world));
+    CHECK(world.contains(hemisphere));
+    CHECK_FALSE(hemisphere.contains(world));
+    CHECK_FALSE(hemisphere.contains(world.bounds()));
+    const GeoExtent crossing(SRS::WGS84, 170.0, -10.0, -170.0, 10.0);
+    CHECK(crossing.contains(GeoExtent(SRS::WGS84, 175.0, -5.0, -175.0, 5.0)));
+    CHECK_FALSE(crossing.contains(GeoExtent(SRS::WGS84, -175.0, -5.0, 175.0, 5.0)));
+    CHECK_FALSE(crossing.contains(GeoExtent(SRS::WGS84, 175.0, -15.0, -175.0, 5.0)));
+    CHECK_FALSE(crossing.contains(GeoExtent(SRS::WGS84, 175.0, -5.0, -175.0, 15.0)));
+    CHECK_FALSE(GeoExtent(SRS::WGS84, 10.0, -90.0, -10.0, 90.0).contains(
+        GeoExtent(SRS::WGS84, -175.0, -90.0, 175.0, 90.0)));
+    const GeoExtent local(SRS::WGS84, 8.0, 8.0, 12.0, 12.0);
+    const auto projected = GeoExtent(SRS::WGS84, 9.0, 9.0, 11.0, 11.0).transform(SRS::SPHERICAL_MERCATOR);
+    REQUIRE(projected.valid());
+    CHECK(local.contains(projected));
+    CHECK_FALSE(projected.contains(local));
+    CHECK_FALSE(local.contains(GeoExtent()));
+    CHECK_FALSE(GeoExtent().contains(local));
+}
+
+//! Expanding extents must cover both input areas, in either order, using the smallest enclosing longitude arc.
+TEST_CASE("Geographic extent expansion preserves wide intervals", "[geoextent]")
+{
+    struct Case { double westA, eastA, westB, eastB, width; };
+    const Case cases[] = {
+        { 170.0, 175.0, -180.0, 180.0, 360.0 },
+        { -170.0, 100.0, 80.0, -150.0, 360.0 },
+        { -170.0, 100.0, -100.0, 80.0, 270.0 },
+        { -170.0, -160.0, 160.0, 170.0, 40.0 },
+        { 170.0, -170.0, 175.0, -160.0, 30.0 },
+        { -20.0, -10.0, 10.0, 20.0, 40.0 },
+        { -180.0, 0.0, 0.0, 180.0, 360.0 }
+    };
+    for (const auto& c : cases)
+    {
+        const GeoExtent a(SRS::WGS84, c.westA, -10.0, c.eastA, 10.0);
+        const GeoExtent b(SRS::WGS84, c.westB, -20.0, c.eastB, 20.0);
+        for (bool reverse : { false, true })
+        {
+            auto result = reverse ? b : a;
+            REQUIRE(result.expandToInclude(reverse ? a : b));
+            INFO("inputs: " << a.toString() << " and " << b.toString());
+            CHECK(result.width() == Approx(c.width));
+            CHECK(result.south() == Approx(-20.0));
+            CHECK(result.north() == Approx(20.0));
+            CHECK(result.contains(a));
+            CHECK(result.contains(b));
+            for (int step = 0; step <= 36; ++step)
+            {
+                CHECK(result.contains(a.west() + a.width() * step / 36.0, 0.0));
+                CHECK(result.contains(b.west() + b.width() * step / 36.0, 0.0));
+            }
+        }
+    }
+    GeoExtent projected(SRS::SPHERICAL_MERCATOR, 0.0, 0.0, 10.0, 10.0);
+    REQUIRE(projected.expandToInclude(GeoExtent(SRS::SPHERICAL_MERCATOR, -5.0, 5.0, 15.0, 20.0)));
+    CHECK(projected == GeoExtent(SRS::SPHERICAL_MERCATOR, -5.0, 0.0, 15.0, 20.0));
+    GeoExtent empty;
+    REQUIRE(empty.expandToInclude(projected));
+    CHECK(empty == projected);
+    CHECK_FALSE(empty.expandToInclude(GeoExtent()));
+}
+
 //! Encoding preserves bilinear no-data behavior for every missing-sample pattern, including flat tiles.
 TEST_CASE("Encoded heightfields preserve missing samples", "[heightfield]")
 {

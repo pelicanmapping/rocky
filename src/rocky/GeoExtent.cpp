@@ -344,23 +344,27 @@ GeoExtent::contains(const GeoPoint& rhs) const
 bool
 GeoExtent::contains(const Box& rhs) const
 {
-    return
-        valid() &&
-        rhs.valid() &&
-        contains(rhs.xmin, rhs.ymin) &&
-        contains(rhs.xmax, rhs.ymax) &&
-        contains(rhs.center().x, rhs.center().y);
+    return valid() && rhs.valid() && contains(GeoExtent(_srs, rhs));
 }
 
 bool
 GeoExtent::contains(const GeoExtent& rhs) const
 {
-    return
-        valid() &&
-        rhs.valid() &&
-        contains(rhs.west(), rhs.south(), rhs.srs()) &&
-        contains(rhs.east(), rhs.north(), rhs.srs()) &&
-        contains(rhs.centroid().x, rhs.centroid().y, rhs.srs());   // this accounts for the antimeridian
+    if (!valid() || !rhs.valid())
+        return false;
+
+    if (!_srs.horizontallyEquivalentTo(rhs.srs()))
+        return contains(rhs.transform(_srs));
+
+    if (rhs.south() < south() - EPSILON || rhs.north() > north() + EPSILON)
+        return false;
+
+    if (_srs.isGeodetic() && _width == 360.0)
+        return true;
+
+    // Both the start and the entire span must fit; coincident wrapped endpoints are insufficient.
+    const double offset = xOffset(rhs.west());
+    return offset >= -EPSILON && offset + rhs.width() <= _width + EPSILON;
 }
 
 #undef  OVERLAPS
@@ -567,13 +571,29 @@ GeoExtent::expandToInclude(const GeoExtent& rhs)
         return true;
     }
 
-    // For simplicity and correctness, expand to include the four corners
-    // and centroid of the RHS extent. This handles antimeridian cases properly.
-    expandToInclude(rhs.west(), rhs.south());
-    expandToInclude(rhs.east(), rhs.south());  
-    expandToInclude(rhs.east(), rhs.north());
-    expandToInclude(rhs.west(), rhs.north());
-    expandToInclude(rhs.centroid().x, rhs.centroid().y);
+    double west = std::min(_west, rhs._west);
+    double east = std::max(xmax(), rhs.xmax());
+    if (_srs.isGeodetic())
+    {
+        // Choose the smallest enclosing interval among adjacent longitude frames.
+        // Preserve each input's full span, even when it covers more than a hemisphere.
+        west = -180.0;
+        double width = 360.0;
+        for (double shift : { -360.0, 0.0, 360.0 })
+        {
+            const double candidateWest = std::min(_west, rhs._west + shift);
+            const double candidateEast = std::max(xmax(), rhs.xmax() + shift);
+            if (candidateEast - candidateWest < width)
+            {
+                west = candidateWest;
+                width = candidateEast - candidateWest;
+            }
+        }
+        east = west + width;
+    }
+    const double south = std::min(_south, rhs._south);
+    const double north = std::max(ymax(), rhs.ymax());
+    setOriginAndSize(normalizeX(west), south, east - west, north - south);
 
     return true;
 }
