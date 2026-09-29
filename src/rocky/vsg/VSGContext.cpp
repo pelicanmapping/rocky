@@ -721,8 +721,11 @@ VSGContextImpl::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, v
 
     ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
 
-    // add this rendergraph's view to the viewer's compile manager.
-    viewer()->compileManager->add(*window, vsg::ref_ptr<vsg::View>(view));
+    // Keep later resource compilation compatible with this view's render target.
+    if (renderGraph->framebuffer)
+        viewer()->compileManager->add(*renderGraph->framebuffer, vsg::ref_ptr<vsg::View>(view));
+    else
+        viewer()->compileManager->add(*window, vsg::ref_ptr<vsg::View>(view));
 
     // Compile the new render pass for this view.
     // The lambda idiom is taken from vsgexamples/dynamicviews

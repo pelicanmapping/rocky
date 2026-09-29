@@ -19,6 +19,7 @@
 #endif
 #include <rocky/vsg/ecs/OpticsSystem.h>
 #include <rocky/vsg/ecs/TerrainAnchorSystem.h>
+#include <charconv>
 
 #ifdef ROCKY_HAS_IMGUI
 #include <rocky/rocky_imgui.h>
@@ -230,6 +231,7 @@ Application::ctor(int& argc, char** argv)
             << "    [--map <filename>]        // load a JSON map file" << std::endl
             << "    [--earth-file <filename>] // import an osgEarth earth file" << std::endl
             << "    [--no-vsync]              // disable vertical sync" << std::endl
+            << "    [--msaa <samples>]        // request 1, 2, 4, 8, 16, 32, or 64 samples per pixel" << std::endl
             << "    [--continuous]            // render frames continuously (instead of only when needed)" << std::endl
             << "    [--log-level <level>]     // set the log level (debug, info, warn, error, critical, off)" << std::endl
             << "    [--sky]                   // install a rudimentary lighting model" << std::endl
@@ -241,6 +243,27 @@ Application::ctor(int& argc, char** argv)
             ;
 
         exit(0);
+    }
+
+    std::string msaa;
+    if (commandLine.read("--msaa", msaa))
+    {
+        std::uint32_t samples = 0;
+        auto result = std::from_chars(msaa.data(), msaa.data() + msaa.size(), samples);
+        if (result.ec != std::errc{} || result.ptr != msaa.data() + msaa.size() ||
+            samples < 1u || samples > 64u || (samples & (samples - 1u)) != 0u)
+        {
+            commandLineStatus = Failure(Failure::ConfigurationError,
+                "--msaa requires 1, 2, 4, 8, 16, 32, or 64 samples");
+        }
+        else
+        {
+            vsgcontext->msaaSamples = samples;
+        }
+    }
+    else if (commandLine.read("--msaa"))
+    {
+        commandLineStatus = Failure(Failure::ConfigurationError, "--msaa requires a sample count, for example --msaa 4");
     }
 
     scene = vsg::Group::create();

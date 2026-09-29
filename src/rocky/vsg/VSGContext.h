@@ -59,6 +59,10 @@ namespace ROCKY_NAMESPACE
         //! Whether rendering is enabled in the current frame.
         bool renderingEnabled = true;
 
+        //! Requested samples for new DisplayManager windows; zero preserves the caller's traits.
+        //! Set before creating windows. VSG selects the supported count for each render pass.
+        VkSampleCountFlags msaaSamples = 0;
+
         //! Shared shader compile settings. Use this to insert shader defines
         //! that should be used throughout the application; things like enabling
         //! lighting, debug visuals, etc.

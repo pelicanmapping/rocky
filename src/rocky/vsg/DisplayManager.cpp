@@ -101,6 +101,8 @@ View::dirty()
     vsg::UpdateGraphicsPipelines u;
     u.context = vsg::Context::create(renderGraph->getRenderPass()->device);
     u.context->renderPass = renderGraph->getRenderPass();
+    u.context->overridePipelineStates.emplace_back(
+        vsg::MultisampleState::create(u.context->renderPass->maxSamples));
     renderGraph->accept(u);
 }
 
@@ -282,6 +284,8 @@ DisplayManager::configureTraits(vsg::WindowTraits* traits)
 
     traits->debugLayer = _debuglayer;
     traits->apiDumpLayer = _apilayer;
+    if (vsgcontext->msaaSamples != 0)
+        traits->samples = vsgcontext->msaaSamples;
     if (!_vsync)
     {
         traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
