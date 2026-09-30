@@ -115,7 +115,7 @@ namespace ROCKY_NAMESPACE
 
         //! Units of measure for the horizontal components
         //! @return Units of measure
-        UnitsType units() const;
+        Units units() const;
 
         //! Underlying reference ellipsoid
         //! @return Reference ellipsoid
@@ -194,7 +194,7 @@ namespace ROCKY_NAMESPACE
         //! @param latitude Latitude to use in the transformation if neccesary
         double transformDistance(
             const Distance& distance,
-            const UnitsType& output_units,
+            Units output_units,
             const Angle& latitude = {}) const;
 
         //! If the event of an error, return the last error message

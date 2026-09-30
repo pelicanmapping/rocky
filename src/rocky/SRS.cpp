@@ -724,7 +724,7 @@ SRS::wkt() const
     return g_srs_factory().get_wkt(definition());
 }
 
-UnitsType
+Units
 SRS::units() const
 {
     return isGeodetic() ? Units::DEGREES : Units::METERS;
@@ -795,7 +795,7 @@ SRS::transformUnits(double input, const SRS& inSRS, const SRS& outSRS, const Ang
 
     if (inSRS.isProjected() && outSRS.isGeodetic())
     {
-        return Units::DEGREES.convertTo(
+        return Units::convert(Units::DEGREES,
             outSRS.units(),
             outSRS.ellipsoid().metersToLongitudinalDegrees(
                 inSRS.units().convertTo(Units::METERS, input),
@@ -803,13 +803,13 @@ SRS::transformUnits(double input, const SRS& inSRS, const SRS& outSRS, const Ang
     }
     else if (inSRS.isGeocentric() && outSRS.isGeodetic())
     {
-        return Units::DEGREES.convertTo(
+        return Units::convert(Units::DEGREES,
             outSRS.units(),
             outSRS.ellipsoid().metersToLongitudinalDegrees(input, latitude.as(Units::DEGREES)));
     }
     else if (inSRS.isGeodetic() && outSRS.isProjected())
     {
-        return Units::METERS.convertTo(
+        return Units::convert(Units::METERS,
             outSRS.units(),
             outSRS.ellipsoid().longitudinalDegreesToMeters(
                 inSRS.units().convertTo(Units::DEGREES, input),
@@ -835,7 +835,7 @@ SRS::transformUnits(const Distance& distance, const SRS& outSRS, const Angle& la
 
     if (distance.units().isDistance() && outSRS.isGeodetic())
     {
-        return Units::DEGREES.convertTo(
+        return Units::convert(Units::DEGREES,
             outSRS.units(),
             outSRS.ellipsoid().metersToLongitudinalDegrees(
                 distance.as(Units::METERS),
@@ -843,7 +843,7 @@ SRS::transformUnits(const Distance& distance, const SRS& outSRS, const Angle& la
     }
     else if (distance.units().isAngle() && outSRS.isProjected())
     {
-        return Units::METERS.convertTo(
+        return Units::convert(Units::METERS,
             outSRS.units(),
             outSRS.ellipsoid().longitudinalDegreesToMeters(
                 distance.as(Units::DEGREES),
@@ -856,7 +856,7 @@ SRS::transformUnits(const Distance& distance, const SRS& outSRS, const Angle& la
 }
 
 double
-SRS::transformDistance(const Distance& input, const UnitsType& outputUnits, const Angle& referenceLatitude) const
+SRS::transformDistance(const Distance& input, Units outputUnits, const Angle& referenceLatitude) const
 {
     auto inputUnits = input.units();
 

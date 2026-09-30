@@ -2888,14 +2888,37 @@ TEST_CASE("SRS")
     SECTION("Plate Carree SRS")
     {
         auto pc = SRS("plate-carree");
+        REQUIRE(pc.valid());
         REQUIRE(pc == SRS::PLATE_CARREE);
         CHECK(pc.isProjected() == true);
         CHECK(pc.isGeodetic() == false);
         CHECK(pc.isGeocentric() == false);
+
+        // EPSG:32663 uses ellipsoidal EQC. PROJ 9.8 corrected its formerly spherical northing calculation.
+        // https://github.com/OSGeo/PROJ/pull/4656
+        std::istringstream projVersion(SRS::projVersion());
+        int major = 0, minor = 0;
+        char separator = 0;
+        REQUIRE(static_cast<bool>(projVersion >> major >> separator >> minor));
+        REQUIRE(separator == '.');
+        const bool ellipsoidalEQC = major > 9 || (major == 9 && minor >= 8);
+        const double polarNorthing = ellipsoidalEQC ? 10001965.729 : 10018754.171;
+
         auto b = pc.bounds();
-        CHECK((b.valid() &&
-            glm::epsilonEqual(b.xmin, -20037508.342, E) && glm::epsilonEqual(b.xmax, 20037508.342, E) &&
-            glm::epsilonEqual(b.ymin, -10018754.171, E) && glm::epsilonEqual(b.ymax, 10018754.171, E)));
+        REQUIRE(b.valid());
+        CHECK(glm::epsilonEqual(b.xmin, -20037508.342, E));
+        CHECK(glm::epsilonEqual(b.xmax, 20037508.342, E));
+        CHECK(glm::epsilonEqual(b.ymin, -polarNorthing, E));
+        CHECK(glm::epsilonEqual(b.ymax, polarNorthing, E));
+
+        // The projected bounds must still cover the full world under either PROJ implementation.
+        auto toGeodetic = pc.to(SRS::WGS84);
+        REQUIRE(toGeodetic.valid());
+        glm::dvec3 southwest, northeast;
+        REQUIRE(toGeodetic.transform(glm::dvec3(b.xmin, b.ymin, 0.0), southwest));
+        REQUIRE(toGeodetic.transform(glm::dvec3(b.xmax, b.ymax, 0.0), northeast));
+        CHECK(glm::all(glm::epsilonEqual(southwest, glm::dvec3(-180.0, -90.0, 0.0), 1e-8)));
+        CHECK(glm::all(glm::epsilonEqual(northeast, glm::dvec3(180.0, 90.0, 0.0), 1e-8)));
     }
 
     SECTION("UTM SRS")
@@ -3098,7 +3121,7 @@ TEST_CASE("SRS")
         auto ellipsoid = SRS::WGS84.ellipsoid();
         REQUIRE(ellipsoid.semiMajorAxis() == 6378137.0);
 
-        UnitsType units;
+        Units units;
         units = SRS::WGS84.units();
         CHECK(units == Units::DEGREES);
         units = SRS::SPHERICAL_MERCATOR.units();

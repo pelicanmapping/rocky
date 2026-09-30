@@ -22,7 +22,7 @@ namespace ROCKY_NAMESPACE
         //! Units shared by width and outlineWidth. Screen pixels preserve a
         //! constant apparent size; distance units preserve a physical size.
         //! Only screen-size and distance unit domains are supported.
-        UnitsType widthUnits = Units::PIXELS;
+        Units widthUnits = Units::PIXELS;
 
         //! Color of the optional outline drawn around the line.
         Color outlineColor = StockColor::Black;

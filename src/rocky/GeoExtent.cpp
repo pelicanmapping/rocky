@@ -153,7 +153,7 @@ GeoExtent::xOffset(double x) const
 }
 
 double
-GeoExtent::width(const UnitsType& units) const
+GeoExtent::width(Units units) const
 {
     if (!valid())
         return 0.0;
@@ -168,7 +168,7 @@ GeoExtent::width(const UnitsType& units) const
 }
 
 double
-GeoExtent::height(const UnitsType& units) const
+GeoExtent::height(Units units) const
 {
     if (!valid())
         return 0.0;
