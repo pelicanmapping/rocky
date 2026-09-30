@@ -17,6 +17,8 @@ namespace ROCKY_NAMESPACE
     {
         // if alpha is zero, use the line's per-vertex color instead
         Color color = StockColor::White;
+
+        //! Width of the line in "widthUnits" units.
         float width = 2.0f;
 
         //! Units shared by width and outlineWidth. Screen pixels preserve a
@@ -32,11 +34,23 @@ namespace ROCKY_NAMESPACE
         //! A value less than or equal to zero disables outlining.
         float outlineWidth = 0.0f;
 
+        //! Bitmask pattern for stippled lines. 0xFFFF is solid, 0xAAAA is dashed, etc.
         std::uint16_t stipplePattern = 0xFFFF;
+
+        //! Factor to multiply the stipple pattern by. A value of 1 means the pattern is used as-is; a value of 2 means each bit in the pattern is repeated twice, etc.
         int stippleFactor = 1;
+
+        //! Resolution of the line in meters. This is used to determine how many segments to use when
+        //! tessellating a line into geometry.
         float resolution = 100000.0f; // meters
+
+        //! Depth offset in meters to apply to the line geometry. This can be used to avoid z-fighting
         float depthOffset = 0.0f; // meters
+
+        //! If true, the line geometry's per-vertex colors will be used instead of the style's color.
         bool useGeometryColors = false;
+
+        //! If true, the line will be rendered in the transparency bin
         bool transparencyBin = false;
     };
 
