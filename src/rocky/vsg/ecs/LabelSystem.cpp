@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <cfloat>
 
-#if IMGUI_VERSION_NUM >= 19200 && defined(_WIN32)
+#if IMGUI_VERSION_NUM >= 19200
 #define USE_DYNAMIC_FONTS
 #endif
 
