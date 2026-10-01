@@ -1106,7 +1106,8 @@ MapManipulator::apply(vsg::ScrollWheelEvent& scrollEvent)
         dir,
         _keyPress.has_value() ? _keyPress->keyModifier : 0);
 
-    handleScrollAction(
+    // Prevent overlapping views from acting on the same scroll after this view accepts it.
+    scrollEvent.handled = handleScrollAction(
         _lastAction,
         scrollEvent.time,
         _lastAction.getDoubleOption(OPTION_DURATION, 0.2));
