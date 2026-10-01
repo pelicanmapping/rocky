@@ -37,6 +37,11 @@ Code needs to build on various platforms, so don't write code for which MSVC has
 Indent with 4 spaces. No tabs. Line break at 128 characters.
 New code should use the same EOL style (CRLF versus LF) as the existing code in the same file. When in doubt, or for new files, prefer CRLF.
 
+# Tests
+
+Only add or update tests for code utilities or fundamental features. Ask become committing them.
+When creating tests for regression testing on bugs, it's OK to write and use these, but keep them transient unless told otherwise.
+
 # Documentation
 
 Document every new function with a concise comment describing its purpose and,
