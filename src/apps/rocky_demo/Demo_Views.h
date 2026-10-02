@@ -213,7 +213,7 @@ auto Demo_Views = [](Application& app)
                     vsgView = vsg::View::create(camera, group);
                 }
 
-                if (ImGui::Button("Add an shared inset"))
+                if (ImGui::Button("Add a shared inset"))
                 {
                     static std::mt19937 rng;
                     std::uniform_int_distribution next_int;
