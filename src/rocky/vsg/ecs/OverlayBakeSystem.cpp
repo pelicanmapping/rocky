@@ -637,9 +637,9 @@ void OverlayBakeSystemNode::initialize(VSGContext vsgcontext)
 
         if (!_sharedViews[i] && bakeScene)
         {
-            _sharedViews[i] = vsg::View::create(_sharedCameras[i], bakeScene);
+            _sharedViews[i] = vsgcontext->createView(_sharedCameras[i], bakeScene);
 
-            if (i == 0u)
+            if (_sharedViews[i] && i == 0u)
             {
                 auto noDepth = vsg::DepthStencilState::create();
                 noDepth->depthTestEnable = VK_FALSE;

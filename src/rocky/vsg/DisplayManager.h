@@ -162,9 +162,11 @@ namespace ROCKY_NAMESPACE
         Window(const Window& rhs) = default;
 
         //! Adds a new View to the window with the given camera and scene graph.
+        //! Returns an invalid View if its VSG ID is outside ROCKY_MAX_NUMBER_OF_VIEWS.
         View& addView(vsg::ref_ptr<vsg::Camera>, vsg::ref_ptr<vsg::Node>);
 
-        //! Adds a new View using an pre-populated VSG view
+        //! Adds a new View using a pre-populated VSG view.
+        //! Returns an invalid View if its VSG ID is outside ROCKY_MAX_NUMBER_OF_VIEWS.
         View& addView(vsg::ref_ptr<vsg::View>);
 
         //! Removes a view from ths Window
@@ -249,7 +251,8 @@ namespace ROCKY_NAMESPACE
         //! @param traits Window traits used to create the new window
         Window& addWindow(vsg::ref_ptr<vsg::WindowTraits>);
 
-        //! Creates a new window and adds it to the display, with an existing view
+        //! Creates a new window and adds it to the display, with an existing view.
+        //! Returns an invalid Window if the supplied view's VSG ID is outside ROCKY_MAX_NUMBER_OF_VIEWS.
         Window& addWindow(vsg::ref_ptr<vsg::Window>, vsg::ref_ptr<vsg::View>);
 
         //! Removes a window from the display.

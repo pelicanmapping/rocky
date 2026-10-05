@@ -9,6 +9,7 @@
 #include <rocky/URI.h>
 #include <rocky/GeoExtent.h>
 #include <filesystem>
+#include <set>
 
 #include <spdlog/sinks/stdout_color_sinks.h>
 
@@ -28,6 +29,37 @@ using namespace ROCKY_NAMESPACE::detail;
 
 namespace
 {
+    //! Removes a view's compile contexts while CompileManager exclusively owns its compile traversal.
+    struct RemoveViewCompileContexts : public vsg::Inherit<vsg::Object, RemoveViewCompileContexts>
+    {
+        std::set<const vsg::View*> views;
+        bool completed = false;
+
+        //! Collects the retiring view and its owned shadow views; the caller keeps them alive during removal.
+        void add(const vsg::View* view)
+        {
+            if (view && views.insert(view).second && view->viewDependentState)
+            {
+                for (const auto& shadow : view->viewDependentState->shadowMaps)
+                    add(shadow.view);
+            }
+        }
+
+        //! Prunes contexts only during compilation; resource collection requires no additional resources.
+        void accept(vsg::Visitor& visitor) override
+        {
+            if (auto* compile = dynamic_cast<vsg::CompileTraversal*>(&visitor))
+            {
+                compile->contexts.remove_if([&](const vsg::ref_ptr<vsg::Context>& context)
+                    {
+                        auto view = context->view.ref_ptr();
+                        return views.count(view.get()) != 0 || (!view && context->viewDependentState);
+                    });
+                completed = true;
+            }
+        }
+    };
+
     // custom VSG logger that redirects to spdlog.
     class VSG_to_Spdlog_Logger : public vsg::Inherit<vsg::Logger, VSG_to_Spdlog_Logger>
     {
@@ -494,6 +526,60 @@ VSGContextImpl::~VSGContextImpl()
 #endif
 }
 
+vsg::ref_ptr<vsg::View>
+VSGContextImpl::createView(vsg::ref_ptr<vsg::Camera> camera, vsg::ref_ptr<vsg::Node> scene)
+{
+    auto view = vsg::View::create(camera, scene);
+    return trackView(view) ? view : vsg::ref_ptr<vsg::View>{};
+}
+
+bool
+VSGContextImpl::trackView(vsg::View* view)
+{
+    if (!view)
+        return false;
+
+    // VSG IDs are global, so a local view count alone cannot validate this array index.
+    if (view->viewID >= ROCKY_MAX_NUMBER_OF_VIEWS)
+    {
+        Log()->warn("Cannot use view {}: ROCKY_MAX_NUMBER_OF_VIEWS is {}",
+            view->viewID, ROCKY_MAX_NUMBER_OF_VIEWS);
+        return false;
+    }
+
+    std::scoped_lock lock(_viewsMutex);
+    for (auto i = _viewsInUse.begin(); i != _viewsInUse.end();)
+    {
+        auto live = i->ref_ptr();
+        if (live.get() == view)
+            return true;
+        if (!live)
+            i = _viewsInUse.erase(i);
+        else
+            ++i;
+    }
+    _viewsInUse.emplace_back(view);
+    return true;
+}
+
+std::size_t
+VSGContextImpl::numViewsInUse() const
+{
+    std::scoped_lock lock(_viewsMutex);
+    std::array<bool, ROCKY_MAX_NUMBER_OF_VIEWS> used{};
+    std::size_t count = 0;
+    for (auto& observer : _viewsInUse)
+    {
+        auto view = observer.ref_ptr();
+        if (view && view->viewID < used.size() && !used[view->viewID])
+        {
+            used[view->viewID] = true;
+            ++count;
+        }
+    }
+    return count;
+}
+
 vsg::ref_ptr<vsg::Device>
 VSGContextImpl::device()
 {
@@ -539,6 +625,9 @@ VSGContextImpl::compile(vsg::ref_ptr<vsg::Object> compilable)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(compilable.valid(), {});
     ROCKY_SOFT_ASSERT_AND_RETURN(_viewer && _viewer->compileManager, {});
+
+    // Guard view retirement through result publication without blocking ordinary frame updates.
+    std::shared_lock viewLock(_viewCompileMutex);
 
     // note: this can block (with a fence) until a compile traversal is available.
     // Be sure to group as many compiles together as possible for maximum performance.
@@ -676,17 +765,18 @@ VSGContextImpl::update()
     _priorityUpdateQueue->run();
 
     // Merge compilation results
-    if (_compileResult)
     {
         std::unique_lock lock(_compileMutex);
-
-        if (_compileResult.requiresViewerUpdate())
+        if (_compileResult)
         {
-            vsg::updateViewer(*_viewer, _compileResult);
-        }
-        _compileResult.reset();
+            if (_compileResult.requiresViewerUpdate())
+            {
+                vsg::updateViewer(*_viewer, _compileResult);
+            }
+            _compileResult.reset();
 
-        requestFrame();
+            requestFrame();
+        }
     }
 
     // process the garbage collector
@@ -740,6 +830,35 @@ VSGContextImpl::compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, v
     {
         vsg::updateViewer(*viewer(), result);
     }
+}
+
+bool
+VSGContextImpl::removeViewCompileContexts(vsg::View* view)
+{
+    if (!view)
+        return true;
+
+    std::unique_lock viewLock(_viewCompileMutex);
+    auto removal = RemoveViewCompileContexts::create();
+    removal->add(view);
+
+    if (_viewer && _viewer->compileManager && _viewer->status->active())
+    {
+        // VSG currently owns one compile traversal and has no remove API. Run through its manager
+        // so removal waits for in-flight compilation and also applies to later background compiles.
+        auto result = _viewer->compileManager->compile(removal);
+        if (!removal->completed)
+        {
+            Log()->warn("Cannot remove view {} compile contexts: {}", view->viewID, result.message);
+            return false;
+        }
+    }
+
+    std::unique_lock lock(_compileMutex);
+    for (auto* removed : removal->views)
+        _compileResult.views.erase(removed);
+
+    return true;
 }
 
 void

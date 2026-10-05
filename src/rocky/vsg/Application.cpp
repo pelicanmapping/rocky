@@ -900,8 +900,14 @@ Application::onAddView(Window& window, View& view)
 
     // We still need to process ImGui events even if we're not rendering the frame,
     // so install this "idle" function:
-    auto idle = [vsgView(view.vsgView), vsgcontext(vsgcontext), imguiContext]() -> void
+    // Idle callbacks outlive their subscriptions; observe the view so removal can release its ID.
+    vsg::observer_ptr<vsg::View> view_weak(view.vsgView);
+    auto idle = [view_weak, vsgcontext(vsgcontext), imguiContext]() -> void
         {
+            auto vsgView = view_weak.ref_ptr();
+            if (!vsgView)
+                return;
+
             auto vp = vsgView->camera->getViewport();
 
             RenderingState rs{

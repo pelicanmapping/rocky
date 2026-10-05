@@ -190,6 +190,9 @@ auto Demo_Views = [](Application& app)
                 static std::mt19937 rng;
                 std::uniform_int_distribution next_int;
 
+                const bool viewLimitReached = app.vsgcontext->numViewsInUse() >= ROCKY_MAX_NUMBER_OF_VIEWS;
+                ImGui::BeginDisabled(viewLimitReached);
+
                 if (ImGui::Button("Add a mini-map inset"))
                 {
                     // First make a camera for the new view
@@ -210,7 +213,7 @@ auto Demo_Views = [](Application& app)
                     group->addChild(app.systemsNode);
 
                     // create the new view:
-                    vsgView = vsg::View::create(camera, group);
+                    vsgView = app.vsgcontext->createView(camera, group);
                 }
 
                 if (ImGui::Button("Add a shared inset"))
@@ -234,8 +237,12 @@ auto Demo_Views = [](Application& app)
                         vsg::ViewportState::create(x, y, width, height));
 
                     // create the new view:
-                    vsgView = vsg::View::create(camera, app.scene);
+                    vsgView = app.vsgcontext->createView(camera, app.scene);
                 }
+
+                ImGui::EndDisabled();
+                if (viewLimitReached)
+                    ImGui::TextDisabled("View limit reached (%d, including internal views).", ROCKY_MAX_NUMBER_OF_VIEWS);
 
                 if (vsgView)
                 {
@@ -243,6 +250,8 @@ auto Demo_Views = [](Application& app)
                         {
                             std::uniform_int_distribution next_int;
                             View& view = window.addView(vsgView);
+                            if (!view)
+                                return;
                             auto rg = view.renderGraph;
                             auto& color = rg->clearValues[0].color.float32;
                             color[0] = float(next_int(rng) % 64) / 255.0f;

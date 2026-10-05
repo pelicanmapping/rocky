@@ -14,6 +14,7 @@
 #include <vsg/all.h>
 #include <deque>
 #include <vector>
+#include <shared_mutex>
 
 namespace ROCKY_NAMESPACE
 {
@@ -40,6 +41,18 @@ namespace ROCKY_NAMESPACE
     public:
         //! VSG viewer
         inline const vsg::ref_ptr<vsg::Viewer>& viewer() const;
+
+        //! Creates and weakly tracks a view, including views used for offscreen rendering.
+        //! Thread-safe; returns null if VSG assigns an ID outside Rocky's per-view storage.
+        vsg::ref_ptr<vsg::View> createView(vsg::ref_ptr<vsg::Camera> camera = {}, vsg::ref_ptr<vsg::Node> scene = {});
+
+        //! Weakly tracks an externally created view. Repeated registration is harmless.
+        //! Thread-safe; returns false for null views or unsupported IDs, without retaining the view.
+        bool trackView(vsg::View* view);
+
+        //! Counts distinct live tracked IDs, including internal views and pending additions.
+        //! Thread-safe; a slot remains in use until the last owner releases its view.
+        std::size_t numViewsInUse() const;
 
         //! VSG object sharing
         vsg::ref_ptr<vsg::SharedObjects> sharedObjects;
@@ -72,7 +85,7 @@ namespace ROCKY_NAMESPACE
         //! By default Runtime uses its own round-robin object disposer
         std::function<void(vsg::ref_ptr<vsg::Object>)> disposer;
 
-        //! List of viewIDs that are active.
+        //! Active display view IDs for main-view rendering/compute; excludes internal offscreen views.
         std::vector<std::uint32_t> activeViewIDs = { 0 };
 
         //! Callback fired during each update pass.
@@ -137,6 +150,10 @@ namespace ROCKY_NAMESPACE
         //! Utility to compile a new rendergraph before adding it to a scene.
         void compileRenderGraph(vsg::ref_ptr<vsg::RenderGraph> renderGraph, vsg::ref_ptr<vsg::Window> window);
 
+        //! Removes compiler references before destroying a display view and its owned shadow views.
+        //! Call on the update thread while the view is alive. Waits for compilation; returns false on failure.
+        bool removeViewCompileContexts(vsg::View* view);
+
         //! Utility to safely recompile a descriptor set.
         void recompileDescriptorSet(vsg::ref_ptr<vsg::DescriptorSet> descriptorSet);
 
@@ -150,6 +167,10 @@ namespace ROCKY_NAMESPACE
     private:
         vsg::ref_ptr<vsg::Viewer> _viewer;
 
+        mutable std::mutex _viewsMutex;
+        std::vector<vsg::observer_ptr<vsg::View>> _viewsInUse;
+
+        mutable std::shared_mutex _viewCompileMutex;
         mutable std::mutex _compileMutex;
         vsg::CompileResult _compileResult;
 

@@ -63,6 +63,12 @@ auto Demo_RTT = [](Application& app)
 
     if (entity == entt::null)
     {
+        if (app.vsgcontext->numViewsInUse() >= ROCKY_MAX_NUMBER_OF_VIEWS)
+        {
+            ImGui::TextUnformatted("No view slot available for render to texture.");
+            return;
+        }
+
         // Find the main window and view:
         auto& window = app.display.window(0);
         auto& view = window.view(0);
@@ -83,7 +89,12 @@ auto Demo_RTT = [](Application& app)
         // Set up the RTT camera and view.
         VkExtent2D size{ 256, 256 };
         auto rtt_cam = make_rtt_camera(rtt_node, size);
-        auto rtt_view = vsg::View::create(rtt_cam, rtt_node);
+        auto rtt_view = app.vsgcontext->createView(rtt_cam, rtt_node);
+        if (!rtt_view)
+        {
+            ImGui::TextUnformatted("No view slot available for render to texture.");
+            return;
+        }
 
         // This is the render graph that will execute the RTT.
         auto context = vsg::Context::create(window.vsgWindow->getOrCreateDevice());

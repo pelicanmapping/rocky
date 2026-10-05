@@ -125,6 +125,9 @@ Window::addView(vsg::ref_ptr<vsg::View> vsgView)
     auto& vsgcontext = _display->vsgcontext;
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext, s_nullView);
 
+    if (!vsgcontext->trackView(vsgView))
+        return s_nullView;
+
     // install the custom VDS:
     auto vds = ViewDependentStateEx::create(vsgView, vsgWindow->getOrCreateDevice());
     vsgView->viewDependentState = vds;
@@ -182,6 +185,10 @@ Window::removeView(View& view)
     {
         // wait until the device is idle to avoid changing state while it's being used.
         vsgcontext->viewer()->deviceWaitIdle();
+
+        // Retire compiler references before disposing of the view-dependent state they point to.
+        if (!vsgcontext->removeViewCompileContexts(view.vsgView))
+            return;
 
         // callback before we actually do anything:
         _display->onRemoveView.fire(*this, view);
@@ -435,6 +442,9 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> vsgWindow, vsg::ref_ptr<vsg:
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgWindow, s_nullWindow);
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), s_nullWindow);
+
+    if (vsgView && !vsgcontext->trackView(vsgView))
+        return s_nullWindow;
 
     // wait until the device is idle to avoid changing state while it's being used.
     if (isCompiled(vsgcontext->viewer()))
@@ -700,7 +710,10 @@ DisplayManager::removeWindow(Window& window)
     // remove all the views first:
     while (!window.views().empty())
     {
+        auto count = window.views().size();
         window.removeView(window.views().front());
+        if (window.views().size() == count)
+            return;
     }
 
     // and remove it from our tracker:
