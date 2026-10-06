@@ -20,10 +20,11 @@ namespace ROCKY_NAMESPACE
         //! Construct a new line string geometry node
         LineGeometryNode();
 
-        //! Populate the geometry arrays
+        //! Populate the geometry arrays, reserving at least initialCapacity points on first allocation.
+        //! Defaults to the input vector capacity; oversized updates are rejected without changing the arrays.
         template<typename VEC3_T, typename VEC4_T>
         inline void set(const std::vector<VEC3_T>& verts, 
-            const std::vector<VEC4_T>& colors, LineTopology topology);
+            const std::vector<VEC4_T>& colors, LineTopology topology, std::size_t initialCapacity = 0);
 
         //! First vertex in the line string to render
         void setFirst(unsigned value);
@@ -226,7 +227,7 @@ namespace ROCKY_NAMESPACE
 
     template<typename VEC3_T, typename VEC4_T>
     void LineGeometryNode::set(const std::vector<VEC3_T>& t_verts, 
-        const std::vector<VEC4_T>& t_colors, LineTopology topology)
+        const std::vector<VEC4_T>& t_colors, LineTopology topology, std::size_t initialCapacity)
     {
         const vsg::vec4 defaultColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
@@ -235,12 +236,10 @@ namespace ROCKY_NAMESPACE
 
         bool colorPerVert = (colors.size() == verts.size());
 
-        // always allocate space for a minimum of 4 verts.
-        std::size_t requiredCapacity = std::max((std::size_t)4, verts.capacity());
-
         if (!_current)
         {
-            // this should only happen on a new LineGeometry
+            // Preserve the source vector's growth headroom when verts is a transformed copy.
+            const auto requiredCapacity = std::max({ std::size_t(4), verts.capacity(), initialCapacity });
             _current = vsg::vec3Array::create(requiredCapacity * 4);
             _previous = vsg::vec3Array::create(requiredCapacity * 4);
             _next = vsg::vec3Array::create(requiredCapacity * 4);
@@ -261,7 +260,7 @@ namespace ROCKY_NAMESPACE
         }
         else
         {
-            ROCKY_SOFT_ASSERT_AND_RETURN(requiredCapacity * 4 <= _current->size(), void(), "LineGeometry overflow");
+            ROCKY_SOFT_ASSERT_AND_RETURN(verts.size() <= allocatedCapacity, void(), "LineGeometry overflow");
         }
 
         auto* current = (_current->data());

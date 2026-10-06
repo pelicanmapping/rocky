@@ -381,7 +381,7 @@ PointSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const PointGeo
         reallocate ||
         geomView.root == nullptr ||
         geomView.geomNode == nullptr ||
-        geomView.geomNode->allocatedCapacity < geom.points.capacity();
+        geomView.geomNode->allocatedCapacity < geom.points.size();
 
     if (reallocate)
     {
@@ -409,7 +409,7 @@ PointSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const PointGeo
                 for (auto& point : copy)
                     point -= precisionOffset;
 
-                geomView.geomNode->set(copy, geom.colors, geom.widths);
+                geomView.geomNode->set(copy, geom.colors, geom.widths, geom.points.capacity());
             }
             else
             {

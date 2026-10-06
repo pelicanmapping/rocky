@@ -412,7 +412,7 @@ LineSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const LineGeome
     }
     else
     {
-        if (geomView.geomNode && geom.points.capacity() > geomView.geomNode->allocatedCapacity)
+        if (geomView.geomNode && geom.points.size() > geomView.geomNode->allocatedCapacity)
         {
             reallocate = true;
         }
@@ -445,7 +445,7 @@ LineSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const LineGeome
                 for (auto& point : copy)
                     point -= precisionOffset;
 
-                geomView.geomNode->set(copy, geom.colors, geom.topology);
+                geomView.geomNode->set(copy, geom.colors, geom.topology, geom.points.capacity());
             }
             else
             {
