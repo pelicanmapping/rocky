@@ -246,6 +246,13 @@ namespace ROCKY_NAMESPACE
             // it might be an ECS visitor, in which case we'll communicate the entity being visited
             auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&visitor);
             std::uint32_t viewID = ecsVisitor ? ecsVisitor->viewID : 0;
+            if (viewID >= _viewInfo.size())
+                return;
+
+            // Match rendering's shared geometry cache, but retain the requested view's transforms below.
+            // Before a view has recorded, preserve the existing lookup in its own geometry slot.
+            const auto cachedViewID = _viewInfo[viewID].geometryViewID;
+            const auto geometryViewID = cachedViewID < _viewInfo.size() ? cachedViewID : viewID;
 
             // ArrayState visitors read pipeline state from a StateGroup, not
             // standalone commands. Scope the topology and vertex bindings to
@@ -266,7 +273,7 @@ namespace ROCKY_NAMESPACE
                             auto* geomDetail = reg.try_get<GEOM_DETAIL_T>(comp.geometry);
                             if (geomDetail)
                             {
-                                auto& geomView = geomDetail->views[viewID];
+                                auto& geomView = geomDetail->views[geometryViewID];
                                 if (geomView.root)
                                 {
                                     if (ecsVisitor)
