@@ -478,6 +478,19 @@ namespace
             for (auto* participant : participants)
                 participant->contributeRenderTextureRevision(reg, source, revision);
 
+            // Highlight is value-observed, so edits/removal invalidate pixels without refitting bounds.
+            // Models deliberately do not participate in highlighting.
+            if (reg.any_of<Polygon, Mesh, Line, Point>(source))
+            {
+                if (const auto* highlight = reg.try_get<Highlight>(source))
+                {
+                    detail::combineRenderTextureRevision(revision.content, entt::type_hash<Highlight>::value());
+                    for (int i = 0; i < 4; ++i)
+                        detail::combineRenderTextureRevision(
+                            revision.content, std::hash<float>{}(highlight->color[i]));
+                }
+            }
+
             const bool active = reg.any_of<ActiveState>(source);
             detail::combineRenderTextureRevision(revision.bounds, active ? 1u : 0u);
             detail::combineRenderTextureRevision(revision.content, active ? 1u : 0u);

@@ -153,6 +153,9 @@ namespace
         // We need VSG's view-dependent data:
         rocky::addViewDependentStateToShaderSet(shaderSet);
 
+        shaderSet->addDescriptorBinding("u_highlight", "", 2, 0,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
 
@@ -307,6 +310,7 @@ LineSystemNode::initialize(VSGContext vsgcontext)
         c.config->enableDescriptor("u_line");
 
         // for VDS:
+        c.config->enableDescriptor("u_highlight");
         enableViewDependentStateUniforms(c.config);
 
         struct SetPipelineStates : public vsg::Visitor
@@ -346,6 +350,7 @@ LineSystemNode::initialize(VSGContext vsgcontext)
     }
 
     // Set up our default style detail, which is used when a MeshStyle is missing.
+    initializeHighlights(getPipelineLayout(Line()));
     initializeStyleDetail(getPipelineLayout(Line()), _defaultStyleDetail);
     requestCompile(_defaultStyleDetail.bind);
 }
@@ -625,18 +630,18 @@ LineSystemNode::traverse(vsg::RecordTraversal& record) const
                             bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || transformDetail->views[rs.viewID].passingCull;
                             if (useTransform && passes)
                             {
-                                styleDetail->drawList.emplace_back(geomView.root, transformDetail);
+                                styleDetail->drawList.emplace_back(geomView.root, transformDetail, highlightBinding(entity));
                                 ++count;
                             }
                             else if (!useTransform)
                             {
-                                styleDetail->drawList.emplace_back(geomView.root, nullptr);
+                                styleDetail->drawList.emplace_back(geomView.root, nullptr, highlightBinding(entity));
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(geomView.root, nullptr);
+                            styleDetail->drawList.emplace_back(geomView.root, nullptr, highlightBinding(entity));
                             ++count;
                         }
                     }
@@ -713,6 +718,8 @@ LineSystemNode::update(VSGContext vsgcontext)
             }
 
             // check for dirty styles
+            updateHighlights<Line>(reg);
+
             LineStyle::eachDirty(reg, [&](entt::entity e)
                 {
                     const auto [style, styleDetail] = reg.try_get<LineStyle, LineStyleDetail>(e);

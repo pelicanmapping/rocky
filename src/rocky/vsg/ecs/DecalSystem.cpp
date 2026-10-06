@@ -1193,10 +1193,18 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         // pass followed by the ordinary/core pass.
                         const auto firstLayer =
                             static_cast<std::uint32_t>(slugLayerRecords.size());
+                        const auto* highlight = reg.try_get<Highlight>(e_texture);
                         auto appendLayer = [&](const SlugLayerResource& layer)
                         {
                             SlugLayerGPU layerRecord;
                             layerRecord.color = layer.color;
+                            if (highlight)
+                            {
+                                const float strength = std::clamp(highlight->color.a, 0.0f, 1.0f);
+                                for (int i = 0; i < 3; ++i)
+                                    layerRecord.color[i] =
+                                        layer.color[i] * (1.0f - strength) + highlight->color[i] * strength;
+                            }
                             layerRecord.uvToEmX = layer.uvToEmX;
                             layerRecord.uvToEmY = layer.uvToEmY;
                             layerRecord.bandTransform = layer.bandTransform;

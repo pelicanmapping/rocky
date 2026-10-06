@@ -15,6 +15,8 @@ layout(location = 1) in Varyings {
     flat uint texturePremultiplied;
 } vary;
 
+#include "rocky.highlight.glsl"
+
 // outputs
 layout(location = 0) out vec4 outColor;
 
@@ -52,4 +54,5 @@ void main()
 
     if (!stipple(ivec2(gl_FragCoord.xy)))
         discard;
+    outColor = applyHighlight(outColor);
 }
