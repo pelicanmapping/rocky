@@ -10,6 +10,7 @@
 #if defined(ROCKY_HAS_IMGUI)
 #include <rocky/vsg/ecs/System.h>
 #include <rocky/ecs/Registry.h>
+#include <rocky/Rendering.h>
 #include <unordered_set>
 
 namespace ROCKY_NAMESPACE
@@ -32,7 +33,8 @@ namespace ROCKY_NAMESPACE
 
     private:
 
-        std::unordered_set<entt::entity> _focusedEntities;
+        // Each view records hover state in its own ImGui context.
+        ViewLocal<std::unordered_set<entt::entity>> _focusedEntities;
 
 
         void on_construct_Widget(entt::registry& r, entt::entity e);

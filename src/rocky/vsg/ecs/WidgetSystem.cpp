@@ -83,7 +83,8 @@ WidgetSystemNode::initialize(VSGContext context)
 #endif
                 ;
 
-            _focusedEntities.clear();
+            auto& focusedEntities = _focusedEntities[rs.viewID];
+            focusedEntities.clear();
 
             // widgets with a Transform:
             auto iter = reg.view<Widget, WidgetDetail, TransformDetail, Visibility, ActiveState>();
@@ -119,7 +120,7 @@ WidgetSystemNode::initialize(VSGContext context)
                     // remember any widgets that want focus.
                     if (i.hasFocus)
                     {
-                        _focusedEntities.emplace(entity);
+                        focusedEntities.emplace(entity);
                     }
                 }
             }
@@ -149,7 +150,7 @@ WidgetSystemNode::initialize(VSGContext context)
                     // remember any widgets that want focus.
                     if (i.hasFocus)
                     {
-                        _focusedEntities.emplace(entity);
+                        focusedEntities.emplace(entity);
                     }
                 }
             }
@@ -164,9 +165,9 @@ WidgetSystemNode::traverse(vsg::ConstVisitor& v) const
     // it might be an ECS visitor, in which case we'll communicate the entity being visited
     auto* ecsVisitor = dynamic_cast<ECSVisitor*>(&v);
 
-    if (ecsVisitor)
+    if (ecsVisitor && ecsVisitor->viewID < _focusedEntities.size())
     {
-        for (auto entity : _focusedEntities)
+        for (auto entity : _focusedEntities[ecsVisitor->viewID])
             ecsVisitor->collectedEntities.emplace(entity);
     }
 
