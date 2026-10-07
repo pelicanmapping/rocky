@@ -145,15 +145,14 @@ auto Demo_Intersect = [](Application& app)
             });
     }
 
-    ImGui::TextWrapped("Create objects in the geometry demos, then hover over them. "
-        "Hover stays enabled until unchecked. Vector overlays use precise terrain coverage; Buffer applies to geometry. "
-        "Models and raster overlays are excluded. Vector picking does not test scene-object occlusion. "
-        "Hover color alpha controls tint strength; Pulse animates that strength.");
+    ImGui::TextWrapped("Create ECS geometries, the hover to pick. "
+        "Models and raster overlays are excluded.");
+
     if (ImGuiLTable::Begin("Entity Intersect"))
     {
-        bool changed = ImGuiLTable::Checkbox("Highlight hovered entities", &handler->highlightHovered);
+        bool changed = ImGuiLTable::Checkbox("Highlight", &handler->highlightHovered);
         changed |= ImGuiLTable::Checkbox("Pulse", &handler->pulse);
-        changed |= ImGuiLTable::ColorEdit4("Hover color", &handler->hoverColor[0]);
+        changed |= ImGuiLTable::ColorEdit4("Highlight color", &handler->hoverColor[0]);
         if (changed)
             handler->refreshHighlights();
         ImGuiLTable::SliderInt("Buffer", &handler->buffer, 0, 20);

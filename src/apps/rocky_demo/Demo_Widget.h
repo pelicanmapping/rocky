@@ -63,6 +63,7 @@ auto Demo_Widget = [](Application& app)
                 {
                     // respond to intersections and highlighting
                     i.checkFocus();
+                    i.drawHighlight();
 
                     ImGui::TextUnformatted("I am a widget.");
                     ImGui::SliderFloat("Slider", &some_float, 0.0f, 1.0f);

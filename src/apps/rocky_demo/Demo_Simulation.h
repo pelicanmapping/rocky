@@ -84,6 +84,7 @@ namespace
                 {
                     // respond to intersections and highlighting
                     i.checkFocus();
+                    i.drawHighlight();
 
                     // calculate the bearing for our icon:
                     auto& motion = i.registry.get<MotionGreatCircle>(i.entity);

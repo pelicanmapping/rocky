@@ -44,6 +44,7 @@ auto Demo_Icon = [](Application& app)
 
             // respond to intersections and highlighting
             i.checkFocus();
+            i.drawHighlight();
 
             icon.iconImage.render(ImVec2{ icon.sizePixels, icon.sizePixels }, icon.rotationDegrees);
 

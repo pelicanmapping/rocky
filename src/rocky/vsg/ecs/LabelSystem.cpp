@@ -186,6 +186,7 @@ LabelSystem::LabelSystem(Registry& registry) :
 
             // respond to intersections and highlighting
             i.checkFocus();
+            i.drawHighlight();
 
             if (hasIcon)
             {
