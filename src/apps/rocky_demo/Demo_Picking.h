@@ -15,18 +15,18 @@ using namespace ROCKY_NAMESPACE;
 
 namespace
 {
-    //! VSG event handler that runs an intersection.
-    class DemoIntersectMouseHandler : public vsg::Inherit<vsg::Visitor, DemoIntersectMouseHandler>
+    //! VSG event handler that picks entities and updates hover highlights.
+    class DemoPickingMouseHandler : public vsg::Inherit<vsg::Visitor, DemoPickingMouseHandler>
     {
     public:
         //! Retains the application used for picking; it must outlive this event handler.
-        DemoIntersectMouseHandler(Application& in_app) : app(in_app) {}
+        DemoPickingMouseHandler(Application& in_app) : app(in_app) {}
 
         int buffer = 3;
         bool highlightHovered = true;
         bool pulse = false;
         Color hoverColor = Highlight{}.color;
-        Callback<std::unordered_set<entt::entity>> onIntersect;
+        Callback<std::unordered_set<entt::entity>> onPick;
 
         //! Stores the latest pick result and immediately updates demo-owned hover highlights.
         void highlight(const std::unordered_set<entt::entity>& hits)
@@ -122,24 +122,24 @@ namespace
                 }
             }
             highlight(hits);
-            onIntersect.fire(std::move(hits));
+            onPick.fire(std::move(hits));
         }
     };
 }
 
-auto Demo_Intersect = [](Application& app)
+auto Demo_Picking = [](Application& app)
 {
     static CallbackSubs subs;
     static std::unordered_set<entt::entity> entities;
-    static vsg::ref_ptr<DemoIntersectMouseHandler> handler;
+    static vsg::ref_ptr<DemoPickingMouseHandler> handler;
 
     if (subs.empty())
     {
         // install our mouse handler:
-        handler = DemoIntersectMouseHandler::create(app);
+        handler = DemoPickingMouseHandler::create(app);
         app.viewer->getEventHandlers().emplace_back(handler);
 
-        subs += handler->onIntersect([&](std::unordered_set<entt::entity>&& in_entities)
+        subs += handler->onPick([&](std::unordered_set<entt::entity>&& in_entities)
             {
                 entities = std::move(in_entities);
             });
@@ -149,7 +149,7 @@ auto Demo_Intersect = [](Application& app)
         "Hover stays enabled until unchecked. Vector overlays use precise terrain coverage; Buffer applies to geometry. "
         "Models and raster overlays are excluded. Vector picking does not test scene-object occlusion. "
         "Hover color alpha controls tint strength; Pulse animates that strength.");
-    if (ImGuiLTable::Begin("Entity Intersect"))
+    if (ImGuiLTable::Begin("Entity Picking"))
     {
         bool changed = ImGuiLTable::Checkbox("Highlight hovered entities", &handler->highlightHovered);
         changed |= ImGuiLTable::Checkbox("Pulse", &handler->pulse);
