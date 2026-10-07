@@ -17,6 +17,8 @@ struct Varyings {
 layout(location = 1) in float lateral;
 layout(location = 2) flat in Varyings vary;
 
+#include "rocky.highlight.glsl"
+
 // outputs
 layout(location = 0) out vec4 outColor;
 
@@ -65,4 +67,5 @@ void main()
 
     //anti-aliasing (requires blending state be set)
     outColor.a *= smoothstep(0.0, 1.0, 1.0 - (L * L));
+    outColor = applyHighlight(outColor);
 }

@@ -145,6 +145,9 @@ namespace
         // We need VSG's view-dependent data for lighting support
         addViewDependentStateToShaderSet(shaderSet);
 
+        shaderSet->addDescriptorBinding("u_highlight", "", 2, 0,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
 
@@ -330,6 +333,7 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
         c.config->enableArray("in_color", VK_VERTEX_INPUT_RATE_VERTEX, 16);
         c.config->enableArray("in_uv", VK_VERTEX_INPUT_RATE_VERTEX, 8);
 
+        c.config->enableDescriptor("u_highlight");
         enableViewDependentStateUniforms(c.config);
         
         struct SetPipelineStates : public vsg::Visitor
@@ -380,6 +384,7 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
     }
 
     // Set up our default style detail, which is used when a MeshStyle is missing.
+    initializeHighlights(getPipelineLayout(Mesh()));
     initializeStyleDetail(getPipelineLayout(Mesh()), _defaultStyleDetail);
     requestCompile(_defaultStyleDetail.bind);
 }
@@ -682,18 +687,18 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                             bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || transformDetail->views[rs.viewID].passingCull;
                             if (useTransform && passes)
                             {
-                                styleDetail->drawList.emplace_back(geomView.root, transformDetail);
+                                styleDetail->drawList.emplace_back(geomView.root, transformDetail, highlightBinding(entity));
                                 ++count;
                             }
                             else if (!useTransform)
                             {
-                                styleDetail->drawList.emplace_back(geomView.root, nullptr);
+                                styleDetail->drawList.emplace_back(geomView.root, nullptr, highlightBinding(entity));
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(geomView.root, nullptr);
+                            styleDetail->drawList.emplace_back(geomView.root, nullptr, highlightBinding(entity));
                             ++count;
                         }
                     }
@@ -759,6 +764,8 @@ MeshSystemNode::update(VSGContext vsgcontext)
     // process any objects marked dirty
     _registry.read([&](entt::registry& reg)
         {
+            updateHighlights<Mesh>(reg);
+
             MeshStyle::eachDirty(reg, [&](entt::entity e)
                 {
                     if (reg.all_of<MeshStyle, MeshStyleDetail>(e))

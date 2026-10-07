@@ -68,6 +68,31 @@ SimpleSystemNodeBase::firstCompileForView(vsg::Context& context) const
     return _compiledViews.emplace(view.get()).second;
 }
 
+void SimpleSystemNodeBase::initializeHighlights(vsg::PipelineLayout* layout)
+{
+    for (auto& entry : _highlights)
+        dispose(entry.second.bind);
+    _highlights.clear();
+    dispose(_neutralHighlight);
+    _highlightLayout = layout;
+    _neutralHighlight = createHighlightBinding(vsg::vec4Value::create(vsg::vec4(0.0f, 0.0f, 0.0f, 0.0f)));
+}
+
+vsg::ref_ptr<vsg::BindDescriptorSet> SimpleSystemNodeBase::createHighlightBinding(vsg::ref_ptr<vsg::vec4Value> data)
+{
+    auto uniform = vsg::DescriptorBuffer::create(data, 0, 0, VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER);
+    auto descriptor = vsg::DescriptorSet::create(_highlightLayout->setLayouts[2], vsg::Descriptors{ uniform });
+    auto bind = vsg::BindDescriptorSet::create(VK_PIPELINE_BIND_POINT_GRAPHICS, _highlightLayout, 2, descriptor);
+    requestCompile(bind);
+    return bind;
+}
+
+vsg::BindDescriptorSet* SimpleSystemNodeBase::highlightBinding(entt::entity entity) const
+{
+    auto it = _highlights.find(entity);
+    return it == _highlights.end() ? _neutralHighlight.get() : it->second.bind.get();
+}
+
 vsg::ref_ptr<vsg::Node>
 SimpleSystemNodeBase::pipelineCompileNode() const
 {

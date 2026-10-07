@@ -42,10 +42,10 @@ auto Demo_Icon = [](Application& app)
 
             ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
 
-            icon.iconImage.render(ImVec2{ icon.sizePixels, icon.sizePixels }, icon.rotationDegrees);
-
-            // respond to intersections:
+            // respond to intersections and highlighting
             i.checkFocus();
+
+            icon.iconImage.render(ImVec2{ icon.sizePixels, icon.sizePixels }, icon.rotationDegrees);
 
             ImGui::End();
             ImGui::PopStyleVar(2);

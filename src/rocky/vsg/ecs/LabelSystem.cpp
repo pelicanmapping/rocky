@@ -184,6 +184,9 @@ LabelSystem::LabelSystem(Registry& registry) :
             auto windowFlags = i.windowFlags & ~ImGuiWindowFlags_AlwaysAutoResize;
             ImGui::Begin(i.uid.c_str(), nullptr, windowFlags);
 
+            // respond to intersections and highlighting
+            i.checkFocus();
+
             if (hasIcon)
             {
                 ImGui::SetCursorScreenPos(iconDrawPos);
@@ -204,8 +207,6 @@ LabelSystem::LabelSystem(Registry& registry) :
 #endif
 
             auto size = ImGui::GetWindowSize();
-
-            i.checkFocus();
 
             ImGui::End();
             ImGui::PopStyleColor(3);

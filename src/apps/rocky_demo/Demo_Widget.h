@@ -58,14 +58,17 @@ auto Demo_Widget = [](Application& app)
                 ImGui::SetNextWindowBgAlpha(1.0f);
 
                 ImGui::SetNextWindowPos(ImVec2{ i.position.x, i.position.y }, ImGuiCond_Always, ImVec2{ 0.5f, 0.5f });
+
                 ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
                 {
+                    // respond to intersections and highlighting
+                    i.checkFocus();
+
                     ImGui::TextUnformatted("I am a widget.");
                     ImGui::SliderFloat("Slider", &some_float, 0.0f, 1.0f);
                     ImGui::Checkbox("Show me a fixed-position window", &fixed_window_open);
                 }
-
-                i.hasFocus = ImGui::IsWindowHovered();
+                
                 ImGui::End();
 
                 ImGui::PopStyleVar();
