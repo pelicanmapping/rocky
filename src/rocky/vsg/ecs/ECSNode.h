@@ -325,6 +325,13 @@ namespace ROCKY_NAMESPACE
                 {
                     reg.view<COMPONENT_T, ActiveState>().each([&](auto entity, auto& comp, auto& active)
                         {
+                            // Main-view picking must not intersect artwork hidden by its projection facade.
+                            if (ecsVisitor)
+                            {
+                                const auto* participation = reg.try_get<RenderParticipation>(entity);
+                                if (reg.any_of<Overlay>(entity) || (participation && !participation->mainView))
+                                    return;
+                            }
                             auto* geomDetail = reg.try_get<GEOM_DETAIL_T>(comp.geometry);
                             if (geomDetail)
                             {

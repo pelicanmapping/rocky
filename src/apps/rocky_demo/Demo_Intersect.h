@@ -5,7 +5,6 @@
  */
 #pragma once
 
-#include <rocky/vsg/ecs/ECSNode.h>
 #include "helpers.h"
 #include <chrono>
 #include <cmath>
@@ -61,8 +60,7 @@ namespace
                         it = highlighted.erase(it);
                         continue;
                     }
-                    if (!highlightHovered || hovered.count(entity) == 0u ||
-                        !reg.any_of<Mesh, Line, Point, Polygon>(entity) || reg.any_of<Overlay>(entity))
+                    if (!highlightHovered || hovered.count(entity) == 0u)
                     {
                         reg.remove<Highlight>(entity);
                         changed = true;
@@ -81,8 +79,7 @@ namespace
                 {
                     for (auto entity : hovered)
                     {
-                        if (reg.valid(entity) && reg.any_of<Mesh, Line, Point, Polygon>(entity) &&
-                            !reg.any_of<Overlay, Highlight>(entity))
+                        if (reg.valid(entity) && !reg.any_of<Highlight>(entity))
                         {
                             reg.emplace<Highlight>(entity).color = color;
                             highlighted.emplace(entity, color);
@@ -98,6 +95,7 @@ namespace
 
     protected:
         Application& app;
+        ECSIntersector intersector;
         std::unordered_set<entt::entity> hovered;
         std::unordered_map<entt::entity, Color> highlighted;
         const std::chrono::steady_clock::time_point pulseEpoch = std::chrono::steady_clock::now();
@@ -109,7 +107,7 @@ namespace
                 refreshHighlights();
         }
 
-        //! Picks ordinary scene geometry and clears hover when the pointer leaves a view or enters UI.
+        //! Combines buffered geometry picks with a precise vector coverage pick; clears hover outside the view or over UI.
         void apply(vsg::MoveEvent& e) override
         {
             std::unordered_set<entt::entity> hits;
@@ -119,10 +117,7 @@ namespace
                 {
                     if (auto& view = window.viewAtCoords((float)e.x, (float)e.y))
                     {
-                        auto i = ECSPolytopeIntersector::create(
-                            view.vsgView, e.x - buffer, e.y - buffer, e.x + buffer, e.y + buffer);
-                        app.scene->accept(*i);
-                        hits = std::move(i->collectedEntities);
+                        hits = intersector.intersect(view, e.x, e.y, buffer);
                     }
                 }
             }
@@ -150,19 +145,19 @@ auto Demo_Intersect = [](Application& app)
             });
     }
 
-    ImGui::TextWrapped(
-        "Create objects in the ECS components demos, then hover over them. "
-        "(Models with pick but not highlight. Decals/Overlays are excluded.)");
-
+    ImGui::TextWrapped("Create objects in the geometry demos, then hover over them. "
+        "Hover stays enabled until unchecked. Vector overlays use precise terrain coverage; Buffer applies to geometry. "
+        "Models and raster overlays are excluded. Vector picking does not test scene-object occlusion. "
+        "Hover color alpha controls tint strength; Pulse animates that strength.");
     if (ImGuiLTable::Begin("Entity Intersect"))
     {
-        bool changed = ImGuiLTable::Checkbox("Highlight", &handler->highlightHovered);
+        bool changed = ImGuiLTable::Checkbox("Highlight hovered entities", &handler->highlightHovered);
         changed |= ImGuiLTable::Checkbox("Pulse", &handler->pulse);
-        changed |= ImGuiLTable::ColorEdit4("Highlight color", &handler->hoverColor[0]);
+        changed |= ImGuiLTable::ColorEdit4("Hover color", &handler->hoverColor[0]);
         if (changed)
             handler->refreshHighlights();
-        ImGuiLTable::SliderInt("Mouse buffer", &handler->buffer, 0, 20);
-        ImGuiLTable::Text("Found", "%u", entities.size());
+        ImGuiLTable::SliderInt("Buffer", &handler->buffer, 0, 20);
+        ImGuiLTable::Text("Found:", "%u", entities.size());
         
         app.registry.read([&](entt::registry& reg)
             {
@@ -173,13 +168,12 @@ auto Demo_Intersect = [](Application& app)
 
                     if (reg.try_get<Widget>(e)) types += "Widget ";
                     if (reg.try_get<Label>(e)) types += "Label ";
+                    if (reg.try_get<NodeGraph>(e)) types += "NodeGraph ";
                     if (reg.try_get<Mesh>(e)) types += "Mesh ";
                     if (reg.try_get<Line>(e)) types += "Line ";
                     if (reg.try_get<Point>(e)) types += "Point ";
                     if (reg.try_get<Polygon>(e)) types += "Polygon ";
-                    if (reg.try_get<Decal>(e)) types += "Decal ";
-                    if (reg.try_get<Model>(e)) types += "Model ";
-                    if (reg.try_get<NodeGraph>(e)) types += "NodeGraph ";
+                    if (reg.try_get<Overlay>(e)) types += "(Overlay) ";
 
                     ImGuiLTable::TextUnformatted(std::to_string((std::uint32_t)e).c_str(), types.c_str());
                 }

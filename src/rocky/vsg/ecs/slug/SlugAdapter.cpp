@@ -3,6 +3,8 @@
 
 #include <slughorn/canvas.hpp>
 #include <slughorn/serial.hpp>
+#include <slughorn/render.hpp>
+#include <unordered_map>
 
 #include <algorithm>
 #include <cmath>
@@ -31,6 +33,37 @@ namespace rocky::detail
         using slughorn::canvas::LineCap;
         using slughorn::canvas::LineJoin;
         using slughorn::canvas::Path;
+
+        //! Owns an SDK sampler behind the C++17 boundary; sampling never mutates or allocates.
+        class DecodedCoverage final : public SlugCoverage
+        {
+        public:
+            //! Decodes packed textures once; SDK validation failures abort atlas publication.
+            DecodedCoverage(const Atlas& atlas, const Key& key) : sampler(slughorn::render::decode(atlas, key)) { }
+
+            //! Matches rocky.slug.glsl, including its rejection outside the indirection-table bounds.
+            float sample(float x, float y, float width, float height) const override
+            {
+                if (!std::isfinite(x) || !std::isfinite(y) || !std::isfinite(width) || !std::isfinite(height) ||
+                    width <= 0.0f || height <= 0.0f)
+                    return 0.0f;
+                const auto& s = sampler.shape;
+                const float bx = x * s.bandScaleX + s.bandOffsetX;
+                const float by = y * s.bandScaleY + s.bandOffsetY;
+                const float mx = 0.5f * std::abs(width * s.bandScaleX);
+                const float my = 0.5f * std::abs(height * s.bandScaleY);
+                if (bx < -mx || by < -my || bx > Atlas::INDIRECTION_SIZE + mx || by > Atlas::INDIRECTION_SIZE + my)
+                    return 0.0f;
+                const float ppeX = 1.0f / width, ppeY = 1.0f / height;
+                if (!std::isfinite(ppeX) || !std::isfinite(ppeY))
+                    return 0.0f;
+                const float value = sampler.renderSampleBanded(x, y, ppeX, ppeY).fill;
+                return std::isfinite(value) ? std::clamp(value, 0.0f, 1.0f) : 0.0f;
+            }
+
+        private:
+            slughorn::render::Sampler sampler;
+        };
 
         // Capacity recovery must not turn a complex shape into a near-global
         // curve scan per fragment. Already-fitting small shapes may still use
@@ -570,8 +603,8 @@ namespace rocky::detail
     {
         // This function is a transactional C++20 island. It authors every
         // requested Rocky shape into a fresh SDK Atlas, builds and optionally
-        // serializes it, then copies only POD texture/layer data across the
-        // C++17 boundary. Exceptions and partial atlas state never escape.
+        // serializes it, then publishes texture/layer data and immutable CPU
+        // coverage through the C++17 boundary. Exceptions and partial atlas state never escape.
         output = {};
         error.clear();
 
@@ -888,6 +921,7 @@ namespace rocky::detail
             result.exportSucceeded = exportSucceeded;
             result.exportMessage = std::move(exportMessage);
             result.layers.reserve(pending.size());
+            std::unordered_map<Key, std::shared_ptr<const SlugCoverage>, slughorn::KeyHash> decoded;
 
             for (const auto& pendingLayer : pending)
             {
@@ -901,7 +935,11 @@ namespace rocky::detail
                 const float inverseScale = pendingLayer.layer.scale != 0.0f ?
                     1.0f / pendingLayer.layer.scale : 1.0f;
 
+                auto& coverage = decoded[pendingLayer.layer.key];
+                if (!coverage)
+                    coverage = std::make_shared<DecodedCoverage>(atlas, pendingLayer.layer.key);
                 SlugLayerOutput out;
+                out.coverage = coverage;
                 out.owner = pendingLayer.owner;
                 out.isOutline = pendingLayer.isOutline;
                 out.color = {

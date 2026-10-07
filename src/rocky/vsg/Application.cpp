@@ -876,6 +876,9 @@ Application::onAddView(Window& window, View& view)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(window && view, void());
 
+    // The shared compute branch is outside the view's scene; resolve its picking dependencies once at assembly.
+    view.setComputeGraph(compute.get());
+
     // wait until the device is idle to avoid changing state while it's being used
     vsgcontext->viewer()->deviceWaitIdle();
 

@@ -14,6 +14,7 @@
 #include "../SharedRenderData.h"
 #include "../ShaderDefines.h"
 #include <rocky/ecs/Optics.h>
+#include <rocky/vsg/Application.h>
 #include <rocky/vsg/VSGUtils.h>
 #include <vsg/vk/State.h>
 #include <algorithm>
@@ -27,6 +28,100 @@ using namespace ROCKY_NAMESPACE::detail;
 
 namespace ROCKY_NAMESPACE::detail
 {
+    //! Submission snapshot: includes raster volumes for the shared cell limit, but only vectors have an owner.
+    struct VectorOverlayPickRecord
+    {
+        DecalGPU decal;
+        glm::dmat4 worldToLocal{ 1.0 };
+        entt::entity entity = entt::null;
+        entt::entity payload = entt::null;
+        std::uint64_t revision = 0u;
+    };
+
+    //! Reused per-view storage; updated and queried serially on the application thread.
+    struct VectorOverlayPickView
+    {
+        FrustumGridParamsGPU grid;
+        VkViewport viewport{};
+        glm::dmat4 viewMatrix{ 1.0 };
+        glm::dmat4 projectionMatrix{ 1.0 };
+        std::vector<VectorOverlayPickRecord> records;
+    };
+
+    //! Reproduces the compute shader's cell frustum in float precision, including viewport offsets.
+    //! Returns false outside the viewport or before the grid is ready.
+    static bool pickCellBounds(const FrustumGridParamsGPU& grid, int x, int y, glm::vec4& bounds)
+    {
+        const glm::ivec2 pixel = glm::ivec2(x, y) - glm::ivec2(grid.viewport);
+        if (grid.viewport.z <= 0 || grid.viewport.w <= 0 || grid.pixelsPerTile == 0u ||
+            pixel.x < 0 || pixel.y < 0 || pixel.x >= grid.viewport.z || pixel.y >= grid.viewport.w)
+            return false;
+        const glm::uvec2 tile = glm::uvec2(pixel) / unsigned(FRUSTUM_GRID_TILE_SIZE_PIXELS);
+        if (tile.x >= grid.numTiles.x || tile.y >= grid.numTiles.y)
+            return false;
+        const glm::vec2 lo = glm::vec2(tile * grid.pixelsPerTile);
+        const glm::vec2 hi = glm::min(lo + float(grid.pixelsPerTile), glm::vec2(grid.viewport.z, grid.viewport.w));
+        for (unsigned i = 0; i < 4; ++i)
+        {
+            const glm::vec2 uv = glm::vec2(i & 1u ? hi.x : lo.x, i & 2u ? hi.y : lo.y) /
+                glm::vec2(grid.viewport.z, grid.viewport.w);
+            auto v = grid.invProjMatrix * glm::vec4(uv * 2.0f - 1.0f, 0.0f, 1.0f);
+            v /= v.w;
+            const glm::vec2 q = grid.projIsOrtho ? glm::vec2(v) : glm::vec2(v) / -v.z;
+            if (!std::isfinite(q.x) || !std::isfinite(q.y))
+                return false;
+            if (i == 0u)
+                bounds = { q.x, q.x, q.y, q.y };
+            else
+                bounds = { std::min(bounds.x, q.x), std::max(bounds.y, q.x),
+                    std::min(bounds.z, q.y), std::max(bounds.w, q.y) };
+        }
+        return true;
+    }
+
+    //! Mirrors rocky.decal.cull.comp, so nonpickable raster volumes still consume their submitted cell slots.
+    static bool pickCellIntersects(const DecalGPU& decal, const glm::vec4& bounds, bool ortho)
+    {
+        const auto& m = decal.mvm;
+        const bool sphere = decal.distance > 0.0f;
+        const glm::vec3 center = sphere ? glm::vec3(m * glm::vec4(0, 0, (decal.zMin + decal.zMax) * 0.5f, 1)) :
+            glm::vec3(m[3]);
+        const glm::vec3 axes[] = { glm::vec3(m[0]) * 0.5f, glm::vec3(m[1]) * 0.5f, glm::vec3(m[2]) * 0.5f };
+        const glm::vec3 normals[] = {
+            { 1, 0, ortho ? 0.0f : bounds.x }, { -1, 0, ortho ? 0.0f : -bounds.y },
+            { 0, 1, ortho ? 0.0f : bounds.z }, { 0, -1, ortho ? 0.0f : -bounds.w } };
+        const float offsets[] = { bounds.x, -bounds.y, bounds.z, -bounds.w };
+        for (unsigned i = 0; i < 4; ++i)
+        {
+            const auto& n = normals[i];
+            const float radius = sphere ? decal.cullingRadius * glm::length(n) :
+                std::abs(glm::dot(n, axes[0])) + std::abs(glm::dot(n, axes[1])) + std::abs(glm::dot(n, axes[2]));
+            if (glm::dot(n, center) - (ortho ? offsets[i] : 0.0f) < -radius)
+                return false;
+        }
+        return true;
+    }
+
+    //! Intersects a pixel ray with the receiver's tangent plane in double precision.
+    //! Finite interior clip depths support reversed depth and infinite-far perspective cameras.
+    static bool pickPlanePoint(const glm::dmat4& inverseVP, const VkViewport& vp, double x, double y,
+        const glm::dvec3& origin, const glm::dvec3& normal, glm::dvec3& out)
+    {
+        const double nx = (x - vp.x) / vp.width * 2.0 - 1.0;
+        const double ny = (y - vp.y) / vp.height * 2.0 - 1.0;
+        auto a = inverseVP * glm::dvec4(nx, ny, 0.25, 1.0);
+        auto b = inverseVP * glm::dvec4(nx, ny, 0.75, 1.0);
+        if (a.w == 0.0 || b.w == 0.0)
+            return false;
+        const glm::dvec3 start = glm::dvec3(a) / a.w;
+        const glm::dvec3 direction = glm::dvec3(b) / b.w - start;
+        const double denominator = glm::dot(normal, direction);
+        if (!std::isfinite(denominator) || std::abs(denominator) <= 1e-12 * glm::length(direction))
+            return false;
+        out = start + direction * (glm::dot(normal, origin - start) / denominator);
+        return std::isfinite(out.x) && std::isfinite(out.y) && std::isfinite(out.z);
+    }
+
     //! Main-pass-only diagnostic renderer. Two reusable pipeline variants share the existing per-view
     //! decal buffer; a procedural 12-edge box needs no per-decal geometry or copied transforms.
     //! The weak render-data reference avoids a cycle through its views and their scene graph.
@@ -950,10 +1045,18 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
     {
         auto& view = _views[viewID];
         auto& vds = _sharedRenderData->viewDependentState[viewID];
+        if (!view.picks)
+            view.picks = std::make_shared<VectorOverlayPickView>();
+        view.picks->records.clear();
 
         if (view.commands && vds)
         {
             auto vm = to_glm(vds->view->camera->viewMatrix->transform());
+            BufferAccess<FrustumGridParamsGPU> grid(vds->frustumParamsBuf);
+            view.picks->grid = *grid.operator->();
+            view.picks->viewport = vds->view->camera->getViewport();
+            view.picks->viewMatrix = vm;
+            view.picks->projectionMatrix = to_glm(vds->view->camera->projectionMatrix->transform());
 
             BufferAccess<DecalGPU> gpudecal(vds->decalsBuf);
             const auto gpuCapacity = gpudecal.capacity();
@@ -1020,7 +1123,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     entt::entity e_projector,
                     const glm::dmat4& projectorWorld,
                     const ProjectedTexture& projected,
-                    DecalGPU& out) -> bool
+                    DecalGPU& out, glm::dmat4& effectiveWorld) -> bool
                 {
                     auto* optics = reg.try_get<Optics>(e_projector);
                     auto* projectionDetails = reg.try_get<ProjectionDetail>(e_projection);
@@ -1031,7 +1134,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         if (projected.requireOptics)
                             return false;
 
-                        auto effectiveWorld = projectorWorld;
+                        effectiveWorld = projectorWorld;
                         if (projected.placement == ProjectionPlacement::Terrain &&
                             projectionDetail && projectionDetail->focalPointValid)
                         {
@@ -1117,6 +1220,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         out.distance = 0.0f; // zero means orthographic
                     }
 
+                    effectiveWorld = opticsModel;
                     return true;
                 };
 
@@ -1139,8 +1243,9 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
                     auto modelWorld = to_glm(transformView.model);
                     DecalGPU pending{};
+                    glm::dmat4 effectiveWorld(1.0);
 
-                    if (!applyProjection(entity, e_projector, modelWorld, projected, pending))
+                    if (!applyProjection(entity, e_projector, modelWorld, projected, pending, effectiveWorld))
                         return;
 
                     if (pending.distance == 0.0f)
@@ -1153,9 +1258,17 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                             const float xLength = glm::length(glm::fvec3(pending.mvm[0]));
                             const float yLength = glm::length(glm::fvec3(pending.mvm[1]));
                             if (dimensions.x > 0.0 && xLength > 0.0f)
-                                pending.mvm[0] *= static_cast<float>(dimensions.x) / xLength;
+                            {
+                                const float scale = static_cast<float>(dimensions.x) / xLength;
+                                pending.mvm[0] *= scale;
+                                effectiveWorld[0] *= double(scale);
+                            }
                             if (dimensions.y > 0.0 && yLength > 0.0f)
-                                pending.mvm[1] *= static_cast<float>(dimensions.y) / yLength;
+                            {
+                                const float scale = static_cast<float>(dimensions.y) / yLength;
+                                pending.mvm[1] *= scale;
+                                effectiveWorld[1] *= double(scale);
+                            }
                         }
                     }
 
@@ -1193,7 +1306,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         // pass followed by the ordinary/core pass.
                         const auto firstLayer =
                             static_cast<std::uint32_t>(slugLayerRecords.size());
-                        const auto* highlight = reg.try_get<Highlight>(e_texture);
+                        const auto* highlight = reg.try_get<Highlight>(entity);
                         auto appendLayer = [&](const SlugLayerResource& layer)
                         {
                             SlugLayerGPU layerRecord;
@@ -1230,6 +1343,8 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 
                         pending.slugLayerRange = {
                             firstLayer, outlineCount, layerCount, 0u };
+                        view.picks->records.push_back({ pending, glm::inverse(effectiveWorld),
+                            entity, e_texture, resource->revision });
                         decalRecords.emplace_back(std::move(pending));
                         return;
                     }
@@ -1239,6 +1354,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     if (!applyTexture(e_texture, projected.color, pending, texturePayloadFlags))
                         return;
                     pending.payloadFlags = texturePayloadFlags;
+                    view.picks->records.push_back({ pending });
                     decalRecords.emplace_back(std::move(pending));
                 };
 
@@ -1396,4 +1512,134 @@ DecalSystemNode::traverse(vsg::Visitor& v)
 {
     //TODO
     Inherit::traverse(v);
+}
+
+#ifdef ROCKY_HAS_SLUGHORN
+namespace ROCKY_NAMESPACE::detail
+{
+    //! Samples only resident vector candidates, in reverse compositing order, under the registry read lock.
+    //! The receiver and screen differentials share the submitted projection's world coordinate system.
+    static entt::entity sampleVectorCandidates(entt::registry& reg,
+        const std::array<const VectorOverlayPickRecord*, MAX_DECALS_PER_TILE>& candidates, unsigned count,
+        const glm::dvec3& world, const glm::dvec3& dx, const glm::dvec3& dy,
+        const RenderingState& rs, float minAlpha)
+    {
+        // Reverse both global passes and the submitted layer order. A core from any instance is
+        // above every outline; alpha is a contribution threshold, not a scene visibility test.
+        for (int pass = 1; pass >= 0; --pass)
+        {
+            for (unsigned index = count; index > 0u; --index)
+            {
+                const auto& record = *candidates[index - 1u];
+                if (!reg.valid(record.entity) || !reg.valid(record.payload) ||
+                    !reg.all_of<ActiveState, Visibility>(record.entity))
+                    continue;
+                const auto* projected = reg.try_get<ProjectedTexture>(record.entity);
+                const auto* overlay = reg.try_get<Overlay>(record.payload);
+                const auto* resource = reg.try_get<SlugResource>(record.payload);
+                const auto* slot = reg.try_get<SlugSlotDetail>(record.payload);
+                if (!projected || (projected->texture == entt::null ? record.entity : projected->texture) != record.payload ||
+                    !overlay || resolveOverlayMode(reg, record.payload, overlay->mode) != OverlayMode::Vector ||
+                    !resource || !resource->ready || resource->revision != record.revision || !slot ||
+                    !slot->readyForDraw || slot->descriptorImageIndex < 0 || slot->resourceRevision != record.revision)
+                    continue;
+                if (!visible(reg.get<Visibility>(record.entity), rs))
+                    continue;
+                const glm::dvec3 local = record.worldToLocal * glm::dvec4(world, 1.0);
+                if (!std::isfinite(local.x) || !std::isfinite(local.y) || !std::isfinite(local.z) ||
+                    glm::any(glm::greaterThan(glm::abs(local), glm::dvec3(0.5))))
+                    continue;
+                const glm::dvec2 uv = glm::dvec2(local) + 0.5;
+                const glm::dvec2 localDx = record.worldToLocal * glm::dvec4(dx, 0.0);
+                const glm::dvec2 localDy = record.worldToLocal * glm::dvec4(dy, 0.0);
+                for (auto layer = resource->layers.rbegin(); layer != resource->layers.rend(); ++layer)
+                {
+                    const float alpha = layer->color.a * record.decal.color.a;
+                    if (layer->isOutline != (pass == 0) || !layer->coverage || !std::isfinite(alpha) || alpha < minAlpha)
+                        continue;
+                    const glm::dvec2 rowX(layer->uvToEmX);
+                    const glm::dvec2 rowY(layer->uvToEmY);
+                    const double emX = glm::dot(uv, rowX) + layer->uvToEmX.z;
+                    const double emY = glm::dot(uv, rowY) + layer->uvToEmY.z;
+                    const double width = std::abs(glm::dot(localDx, rowX)) + std::abs(glm::dot(localDy, rowX));
+                    const double height = std::abs(glm::dot(localDx, rowY)) + std::abs(glm::dot(localDy, rowY));
+                    if (layer->coverage->sample(float(emX), float(emY), float(width), float(height)) * alpha >= minAlpha)
+                    {
+                        return record.entity;
+                    }
+                }
+            }
+        }
+        return entt::null;
+    }
+}
+#endif
+
+// The SDK remains behind SlugCoverage; all world/projector and pixel-ray math here is C++17 and double precision.
+entt::entity
+DecalSystemNode::intersectVectorOverlay(View& view, int x, int y, float minAlpha)
+{
+#ifdef ROCKY_HAS_SLUGHORN
+    if (!view || !view.vsgView->camera || status.failed() ||
+        !std::isfinite(minAlpha) || minAlpha <= 0.0f || minAlpha > 1.0f)
+        return entt::null;
+    const auto viewID = view.vsgView->viewID;
+    if (viewID >= _views.size())
+        return entt::null;
+    const auto& picks = _views[viewID].picks;
+    if (!picks || picks->records.empty())
+        return entt::null;
+    auto& camera = *view.vsgView->camera;
+    const auto vp = camera.getViewport();
+    const auto& submittedViewport = picks->viewport;
+    if (vp.width <= 0.0f || vp.height <= 0.0f ||
+        vp.x != submittedViewport.x || vp.y != submittedViewport.y ||
+        vp.width != submittedViewport.width || vp.height != submittedViewport.height ||
+        vp.minDepth != submittedViewport.minDepth || vp.maxDepth != submittedViewport.maxDepth)
+        return entt::null;
+    // Camera changes need a new submission before its cell lists can be queried consistently.
+    if (to_glm(camera.viewMatrix->transform()) != picks->viewMatrix ||
+        to_glm(camera.projectionMatrix->transform()) != picks->projectionMatrix)
+        return entt::null;
+    glm::vec4 bounds;
+    if (!pickCellBounds(picks->grid, x, y, bounds))
+        return entt::null;
+
+    std::array<const VectorOverlayPickRecord*, MAX_DECALS_PER_TILE> candidates{};
+    unsigned count = 0u;
+    for (const auto& record : picks->records)
+    {
+        if (pickCellIntersects(record.decal, bounds, picks->grid.projIsOrtho != 0u))
+        {
+            candidates[count++] = &record;
+            if (count == candidates.size())
+                break;
+        }
+    }
+    if (count == 0u)
+        return entt::null;
+    auto hit = geoPointAtWindowCoords(view, x, y);
+    if (!hit)
+        return entt::null;
+    const glm::dvec3 world = hit->point;
+    const glm::dvec3 normal = hit->normal;
+    const auto inverseVP = glm::inverse(picks->projectionMatrix * picks->viewMatrix);
+    glm::dvec3 center, right, down;
+    if (!pickPlanePoint(inverseVP, vp, x, y, world, normal, center) ||
+        !pickPlanePoint(inverseVP, vp, x + 1.0, y, world, normal, right) ||
+        !pickPlanePoint(inverseVP, vp, x, y + 1.0, world, normal, down))
+        return entt::null;
+    const glm::dvec3 dx = right - center;
+    const glm::dvec3 dy = down - center;
+    entt::entity result = entt::null;
+    _registry.read([&](entt::registry& reg)
+    {
+        const RenderingState rs{ viewID, (FrameCountType)~0,
+            { float(vp.x), float(vp.y), float(vp.width), float(vp.height) } };
+        result = sampleVectorCandidates(reg, candidates, count, world, dx, dy, rs, minAlpha);
+    });
+    return result;
+#else
+    return entt::null;
+#endif
 }
