@@ -51,6 +51,17 @@ namespace
             bool changed = false;
             app.registry.write([&](entt::registry& reg)
             {
+                // Projected instances may have no geometry of their own; shared payloads remain independent.
+                // auto supportsHighlight = [&](entt::entity entity)
+                // {
+                //     if (const auto* projected = reg.try_get<ProjectedTexture>(entity))
+                //     {
+                //         const auto payload = projected->texture == entt::null ? entity : projected->texture;
+                //         const auto* overlay = reg.valid(payload) ? reg.try_get<Overlay>(payload) : nullptr;
+                //         return overlay && detail::resolveOverlayMode(reg, payload, overlay->mode) == OverlayMode::Vector;
+                //     }
+                //     return reg.any_of<Mesh, Line, Point, Polygon>(entity) && !reg.any_of<Overlay>(entity);
+                // };
                 for (auto it = highlighted.begin(); it != highlighted.end();)
                 {
                     const auto entity = it->first;
@@ -61,8 +72,7 @@ namespace
                         it = highlighted.erase(it);
                         continue;
                     }
-                    if (!highlightHovered || hovered.count(entity) == 0u ||
-                        !reg.any_of<Mesh, Line, Point, Polygon>(entity) || reg.any_of<Overlay>(entity))
+                    if (!highlightHovered || hovered.count(entity) == 0u) // || !supportsHighlight(entity))
                     {
                         reg.remove<Highlight>(entity);
                         changed = true;
@@ -81,8 +91,8 @@ namespace
                 {
                     for (auto entity : hovered)
                     {
-                        if (reg.valid(entity) && reg.any_of<Mesh, Line, Point, Polygon>(entity) &&
-                            !reg.any_of<Overlay, Highlight>(entity))
+                        //if (reg.valid(entity) && supportsHighlight(entity) && !reg.any_of<Highlight>(entity))
+                        if (reg.valid(entity) && !reg.any_of<Highlight>(entity))
                         {
                             reg.emplace<Highlight>(entity).color = color;
                             highlighted.emplace(entity, color);
@@ -170,6 +180,7 @@ auto Demo_Intersect = [](Application& app)
                     ImGui::Separator();
                     std::string types;
 
+                    //if (reg.try_get<ProjectedTexture>(e)) types += "Vector overlay ";
                     if (reg.try_get<Widget>(e)) types += "Widget ";
                     if (reg.try_get<Label>(e)) types += "Label ";
                     if (reg.try_get<NodeGraph>(e)) types += "NodeGraph ";
