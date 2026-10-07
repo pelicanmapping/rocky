@@ -54,7 +54,7 @@ separate intersection results. The polytope visitor is an implementation detail 
 `rocky::detail`, declared in ECSVisitors.h; the line-segment visitor remains public.
 The overlay-specific helper remains a private implementation detail of DecalSystemNode.
 
-The Intersection demo stores one intersector and its picking call is only
+The Picking demo stores one intersector and its picking call is only
 `hits = intersector.intersect(view, e.x, e.y, buffer);`. Existing hover tint, Pulse,
 and color controls remain intact. Highlights belong to the returned projected
 instance, including when multiple instances share a payload or projector.
