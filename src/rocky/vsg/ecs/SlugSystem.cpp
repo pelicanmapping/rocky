@@ -1337,6 +1337,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         for (const auto& source : atlas.layers)
         {
             SlugLayerResource layer;
+            layer.coverage = source.coverage;
             layer.isOutline = source.isOutline;
             layer.color = Color(
                 source.color[0], source.color[1], source.color[2], source.color[3]);

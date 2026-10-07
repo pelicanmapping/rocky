@@ -5,7 +5,6 @@
  */
 #pragma once
 
-#include <rocky/vsg/ecs/ECSNode.h>
 #include "helpers.h"
 #include <chrono>
 #include <cmath>
@@ -51,17 +50,6 @@ namespace
             bool changed = false;
             app.registry.write([&](entt::registry& reg)
             {
-                // Projected instances may have no geometry of their own; shared payloads remain independent.
-                // auto supportsHighlight = [&](entt::entity entity)
-                // {
-                //     if (const auto* projected = reg.try_get<ProjectedTexture>(entity))
-                //     {
-                //         const auto payload = projected->texture == entt::null ? entity : projected->texture;
-                //         const auto* overlay = reg.valid(payload) ? reg.try_get<Overlay>(payload) : nullptr;
-                //         return overlay && detail::resolveOverlayMode(reg, payload, overlay->mode) == OverlayMode::Vector;
-                //     }
-                //     return reg.any_of<Mesh, Line, Point, Polygon>(entity) && !reg.any_of<Overlay>(entity);
-                // };
                 for (auto it = highlighted.begin(); it != highlighted.end();)
                 {
                     const auto entity = it->first;
@@ -72,7 +60,7 @@ namespace
                         it = highlighted.erase(it);
                         continue;
                     }
-                    if (!highlightHovered || hovered.count(entity) == 0u) // || !supportsHighlight(entity))
+                    if (!highlightHovered || hovered.count(entity) == 0u)
                     {
                         reg.remove<Highlight>(entity);
                         changed = true;
@@ -91,7 +79,6 @@ namespace
                 {
                     for (auto entity : hovered)
                     {
-                        //if (reg.valid(entity) && supportsHighlight(entity) && !reg.any_of<Highlight>(entity))
                         if (reg.valid(entity) && !reg.any_of<Highlight>(entity))
                         {
                             reg.emplace<Highlight>(entity).color = color;
@@ -108,6 +95,7 @@ namespace
 
     protected:
         Application& app;
+        ECSIntersector intersector;
         std::unordered_set<entt::entity> hovered;
         std::unordered_map<entt::entity, Color> highlighted;
         const std::chrono::steady_clock::time_point pulseEpoch = std::chrono::steady_clock::now();
@@ -119,7 +107,7 @@ namespace
                 refreshHighlights();
         }
 
-        //! Picks ordinary scene geometry and clears hover when the pointer leaves a view or enters UI.
+        //! Combines buffered geometry picks with a precise vector coverage pick; clears hover outside the view or over UI.
         void apply(vsg::MoveEvent& e) override
         {
             std::unordered_set<entt::entity> hits;
@@ -129,10 +117,7 @@ namespace
                 {
                     if (auto& view = window.viewAtCoords((float)e.x, (float)e.y))
                     {
-                        auto i = ECSPolytopeIntersector::create(
-                            view.vsgView, e.x - buffer, e.y - buffer, e.x + buffer, e.y + buffer);
-                        app.scene->accept(*i);
-                        hits = std::move(i->collectedEntities);
+                        hits = intersector.intersect(view, e.x, e.y, buffer);
                     }
                 }
             }
@@ -161,7 +146,8 @@ auto Demo_Intersect = [](Application& app)
     }
 
     ImGui::TextWrapped("Create objects in the geometry demos, then hover over them. "
-        "Hover stays enabled until unchecked. Models and projected overlays are excluded. "
+        "Hover stays enabled until unchecked. Vector overlays use precise terrain coverage; Buffer applies to geometry. "
+        "Models and raster overlays are excluded. Vector picking does not test scene-object occlusion. "
         "Hover color alpha controls tint strength; Pulse animates that strength.");
     if (ImGuiLTable::Begin("Entity Intersect"))
     {
@@ -180,7 +166,6 @@ auto Demo_Intersect = [](Application& app)
                     ImGui::Separator();
                     std::string types;
 
-                    //if (reg.try_get<ProjectedTexture>(e)) types += "Vector overlay ";
                     if (reg.try_get<Widget>(e)) types += "Widget ";
                     if (reg.try_get<Label>(e)) types += "Label ";
                     if (reg.try_get<NodeGraph>(e)) types += "NodeGraph ";
@@ -188,6 +173,7 @@ auto Demo_Intersect = [](Application& app)
                     if (reg.try_get<Line>(e)) types += "Line ";
                     if (reg.try_get<Point>(e)) types += "Point ";
                     if (reg.try_get<Polygon>(e)) types += "Polygon ";
+                    if (reg.try_get<Overlay>(e)) types += "(Overlay) ";
 
                     ImGuiLTable::TextUnformatted(std::to_string((std::uint32_t)e).c_str(), types.c_str());
                 }

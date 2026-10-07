@@ -5,6 +5,7 @@
  */
 #pragma once
 
+#include <rocky/vsg/ecs/SlugCoverage.h>
 #include <rocky/Color.h>
 #include <rocky/ecs/Component.h>
 #include <vsg/state/ImageInfo.h>
@@ -22,6 +23,9 @@ namespace ROCKY_NAMESPACE::detail
      */
     struct SlugLayerResource
     {
+        //! Decoded once per unique shape in this atlas generation; shared by all instances.
+        std::shared_ptr<const SlugCoverage> coverage;
+
         //! Shape color before Overlay/ProjectedTexture modulation.
         Color color = StockColor::White;
 

@@ -6,6 +6,7 @@
 #include "DisplayManager.h"
 #include "MapManipulator.h"
 #include "ViewDependentState.h"
+#include "ecs/DecalSystem.h"
 
 #include <vsg/vk/Instance.h>
 
@@ -75,15 +76,28 @@ View::View(vsg::ref_ptr<vsg::View> v, vsg::ref_ptr<vsg::RenderGraph> rg, Display
     renderGraph(rg),
     _display(dm)
 {
-    // todo
+    setComputeGraph(nullptr);
 }
 
+void
+View::setComputeGraph(vsg::Node* graph)
+{
+    _computeGraph = graph;
+    _decalSystem = graph ? detail::find<DecalSystemNode>(graph) : nullptr;
+    _ecs = vsgView ? detail::find<ECSNode>(vsgView) : nullptr;
+    _pickingView = vsgView;
+}
 
 void
 View::dirty()
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(*this, void());
 
+    // Refresh associations even for a standalone View that has no DisplayManager or Vulkan device.
+    auto compute = _computeGraph.ref_ptr();
+    setComputeGraph(compute.get());
+    if (!_display)
+        return;
     auto vsgcontext = _display->vsgcontext;
     ROCKY_SOFT_ASSERT_AND_RETURN(vsgcontext && vsgcontext->viewer(), void());
 

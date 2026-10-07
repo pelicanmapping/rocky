@@ -12,8 +12,12 @@
 
 namespace ROCKY_NAMESPACE
 {
+    class View;
+
     namespace detail
     {
+        struct VectorOverlayPickView;
+
         /**
          * Consumer-side residency for a TextureResource, not image ownership.
          * Removing this component queues its slot for release during update.
@@ -63,12 +67,18 @@ namespace ROCKY_NAMESPACE
         void traverse(vsg::Visitor&) override;
 
     private:
+        friend class ECSIntersector;
+
+        //! Internal receiver-coverage query for ECSIntersector; returns an instance or null.
+        //! Requires the application thread without a registry lock; ignores scene/raster occlusion.
+        entt::entity intersectVectorOverlay(View&, int x, int y, float minAlpha);
 
         //! Per-view compute commands. The commands cull logical decals into
         //! that view's screen-tile lists before terrain fragments consume them.
         struct ViewDetail
         {
             vsg::ref_ptr<vsg::Commands> commands;
+            std::shared_ptr<detail::VectorOverlayPickView> picks;
         };
         mutable ViewLocal<ViewDetail> _views;
         std::shared_ptr<SharedRenderData> _sharedRenderData;

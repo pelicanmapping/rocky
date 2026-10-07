@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../SlugCoverage.h"
 #include <array>
 #include <cstddef>
 #include <cstdint>
@@ -137,6 +138,7 @@ namespace rocky::detail
 
     struct SlugLayerOutput
     {
+        std::shared_ptr<const SlugCoverage> coverage;
         std::uint32_t owner = 0u;
         std::array<float, 4> color = { 1.0f, 1.0f, 1.0f, 1.0f };
 

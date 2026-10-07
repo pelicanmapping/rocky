@@ -14,6 +14,9 @@ namespace ROCKY_NAMESPACE
     class DisplayManager;
     class MapManipulator;
     class Window;
+    class ECSNode;
+    class DecalSystemNode;
+    class ECSIntersector;
 
 
     /**
@@ -37,7 +40,14 @@ namespace ROCKY_NAMESPACE
             return detail::find<T>(vsgView);
         }
 
+        //! Associates the compute branch that renders this view and caches its decal system and the scene's ECS node.
+        //! Stores observers only. Call during setup/update after replacing the scene or compute systems, even when
+        //! reusing the same graph. Null detaches compute picking while retaining ordinary scene picking.
+        //! Application wires this automatically for every added view; standalone clients call it during graph assembly.
+        void setComputeGraph(vsg::Node* graph);
+
         //! Call this when you resize or change the properties of the underlying VSG view.
+        //! Also refreshes cached picking associations after scene or compute-branch edits.
         void dirty();
 
         //! Validity operator
@@ -75,6 +85,14 @@ namespace ROCKY_NAMESPACE
 
         const DisplayManager* _display = nullptr;
 
+    private:
+        // Setup-time observations; queries promote these only for their synchronous duration.
+        vsg::observer_ptr<vsg::Node> _computeGraph;
+        vsg::observer_ptr<DecalSystemNode> _decalSystem;
+        vsg::observer_ptr<ECSNode> _ecs;
+        vsg::observer_ptr<vsg::View> _pickingView;
+
+        friend class ECSIntersector;
         friend class Window;
         friend class DisplayManager;
         friend class Application;
