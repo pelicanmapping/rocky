@@ -7,7 +7,6 @@
 #pragma once
 #include "helpers.h"
 #include <rocky/ecs/Polygon.h>
-#include <rocky/vsg/ecs/OverlayBakeSystem.h>
 #include <algorithm>
 #include <utility>
 

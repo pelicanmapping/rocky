@@ -55,6 +55,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_OrderedRendering.h"
 #include "Demo_FrustumGrid.h"
 #include "Demo_Clamping.h"
+#include "Demo_WindowHUD.h"
 
 
 template<class T>
@@ -155,6 +156,7 @@ std::vector<Demo> demos =
         Demo{ "Serialization", Demo_Serialization },
         Demo{ "Sky", Demo_Environment },
         Demo{ "Synchronization", Demo_Synchro },
+        Demo{ "Window HUD", Demo_WindowHUD },
     } },
     Demo{ "Stats", Demo_Stats },
     Demo{ "About", Demo_About }
@@ -263,7 +265,15 @@ int main(int argc, char** argv)
     // Attach our GUI in the main view:
     auto imguiRenderer = ImGuiRenderer::create(window.vsgWindow);
     app.install(imguiRenderer, window.view(0).vsgView);
-    imguiRenderer->add(MainGUI::create(app));
+    auto mainGUI = MainGUI::create(app);
+    imguiRenderer->add(mainGUI);
+
+    // Application-owned final overlay; declared after app so its resources are detached before app shuts down.
+    WindowImGuiOverlay windowHUD(app, window, [mainGUI](ImGuiContext* context, const ImVec2& mouse)
+        {
+            drawWindowHUD(context, mouse, mainGUI->asize.y);
+        });
+    app.viewer->setObject("demo.window-hud", windowHUD.state());
 
     // Add a general purpose handler for mouse events:
     auto geomouse = GeoMouseHandler::create(app);
