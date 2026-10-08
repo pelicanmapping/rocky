@@ -21,15 +21,10 @@ jobs:
       packages: write
 
     strategy:
-      fail-fast: false
       matrix:
-        os: ['ubuntu-latest', 'ubuntu-26.04']
+        os: ['ubuntu-latest']
         include:
           - os: 'ubuntu-latest'
-            triplet: 'x64-linux'
-            mono: ''
-            VCPKG_WORKSPACE: '~/vcpkg_own'
-          - os: 'ubuntu-26.04'
             triplet: 'x64-linux'
             mono: ''
             VCPKG_WORKSPACE: '~/vcpkg_own'
@@ -38,15 +33,6 @@ jobs:
     - uses: actions/checkout@v4
       with:
         submodules: recursive
-
-    - name: Identify runner image
-      id: runner-image
-      shell: bash
-      run: |
-        . /etc/os-release
-        # ubuntu-latest changes releases during a rollout; key caches by the actual image.
-        echo "cache-key=${ID}-${VERSION_ID}-${{ runner.arch }}" >> "$GITHUB_OUTPUT"
-        cat /etc/os-release
 
     - name: Install system dependencies
       run: |
@@ -66,7 +52,7 @@ jobs:
           libxxf86vm-dev \
           libxcb1-dev \
           libx11-xcb-dev \
-          mono-devel \
+          mono-complete \
           autoconf \
           autoconf-archive \
           automake \
@@ -86,7 +72,7 @@ jobs:
       id: vcpkg-repo-cache
       with:
         path: ${{ matrix.VCPKG_WORKSPACE }}/vcpkg
-        key: ${{ steps.runner-image.outputs.cache-key }}-vcpkg-repo-${{ env.VCPKG_VERSION }}
+        key: ${{ runner.os }}-vcpkg-repo-${{ env.VCPKG_VERSION }}
 
     - name: Installing vcpkg (linux)
       if: steps.vcpkg-repo-cache.outputs.cache-hit != 'true'
@@ -137,10 +123,10 @@ jobs:
         path: |
           ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/installed
           ${{ matrix.VCPKG_WORKSPACE }}/vcpkg/downloads
-        key: ${{ steps.runner-image.outputs.cache-key }}-vcpkg-deps-${{ steps.vcpkg-commit.outputs.hash }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json', 'vcpkg-ports/**/vcpkg.json') }}
+        key: ${{ runner.os }}-vcpkg-deps-${{ steps.vcpkg-commit.outputs.hash }}-${{ matrix.triplet }}-${{ hashFiles('vcpkg.json', 'vcpkg-ports/**/vcpkg.json') }}
         restore-keys: |
-          ${{ steps.runner-image.outputs.cache-key }}-vcpkg-deps-${{ steps.vcpkg-commit.outputs.hash }}-${{ matrix.triplet }}-
-          ${{ steps.runner-image.outputs.cache-key }}-vcpkg-deps-${{ steps.vcpkg-commit.outputs.hash }}-
+          ${{ runner.os }}-vcpkg-deps-${{ steps.vcpkg-commit.outputs.hash }}-${{ matrix.triplet }}-
+          ${{ runner.os }}-vcpkg-deps-${{ steps.vcpkg-commit.outputs.hash }}-
 
     - name: Create Build Environment
       run: |
@@ -155,7 +141,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: ${{ failure() }}
       with:
-        name: cmake-log-${{ matrix.os }}
+        name: cmake-log
         path: ${{ runner.workspace }}/build/CMakeCache.txt
         retention-days: 1
 
