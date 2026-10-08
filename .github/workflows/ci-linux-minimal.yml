@@ -58,6 +58,15 @@ jobs:
           automake \
           libtool
 
+    - name: Configure Mono certificate trust
+      shell: bash
+      run: |
+        # Ubuntu 26.04's Mono package omits cert-sync and the CA-store installation hook.
+        if ! command -v cert-sync >/dev/null; then
+          mkdir -p "$HOME/.config/.mono/new-certs"
+          ln -s /etc/ssl/certs "$HOME/.config/.mono/new-certs/Trust"
+        fi
+
     - name: Cache vcpkg repository
       uses: actions/cache@v4
       id: vcpkg-repo-cache
