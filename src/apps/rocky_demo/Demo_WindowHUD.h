@@ -4,7 +4,7 @@
  * MIT License
  */
 #pragma once
-#include "WindowImGuiOverlay.h"
+#include "WindowImGuiHUD.h"
 #include <cstdio>
 
 //! Draws passive corner annotations; bottomInset leaves room for the demo's map attribution.
@@ -38,7 +38,7 @@ inline void drawWindowHUD(ImGuiContext* context, const ImVec2& mouse, float bott
 //! Controls the application-owned HUD without attaching it to a map view.
 inline void Demo_WindowHUD(rocky::Application& app)
 {
-    auto* state = app.viewer->getObject<WindowImGuiOverlay::State>("demo.window-hud");
+    auto* state = app.viewer->getObject<WindowImGuiHUD::State>("demo.window-hud");
     if (!state)
         return;
 

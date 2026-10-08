@@ -3,7 +3,7 @@
  * Copyright 2026 Pelican Mapping
  * MIT License
  */
-#include "WindowImGuiOverlay.h"
+#include "WindowImGuiHUD.h"
 #include <imgui_impl_vulkan.h>
 #include <algorithm>
 #include <chrono>
@@ -22,7 +22,7 @@ namespace
     };
 
     //! Preserves the resolved scene color and synchronizes blending after all preceding views.
-    vsg::ref_ptr<vsg::RenderPass> createOverlayPass(vsg::Device* device, VkFormat format)
+    vsg::ref_ptr<vsg::RenderPass> createHUDPass(vsg::Device* device, VkFormat format)
     {
         auto color = vsg::defaultColorAttachment(format);
         color.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
@@ -46,15 +46,15 @@ namespace
 
 // Owns a separate ImGui backend in the executable, avoiding context switches across Rocky's DLL boundary.
 // Records directly into the window command buffer, without allocating a VSG View or traversing the scene.
-class WindowImGuiOverlay::OverlayNode : public vsg::Inherit<vsg::Node, OverlayNode>
+class WindowImGuiHUD::HUDNode : public vsg::Inherit<vsg::Node, HUDNode>
 {
 public:
     //! Retains the target window and callback; Vulkan resources are created on the first visible frame.
-    OverlayNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<State> state, DrawFunction draw) :
+    HUDNode(vsg::ref_ptr<vsg::Window> window, vsg::ref_ptr<State> state, DrawFunction draw) :
         _window(window), _state(state), _draw(std::move(draw)) { }
 
     //! Releases backend resources after the installation has waited for GPU completion.
-    ~OverlayNode() override
+    ~HUDNode() override
     {
         ContextScope scope;
         release();
@@ -64,10 +64,10 @@ public:
     void accept(vsg::RecordTraversal& traversal) const override
     {
         if (_state->visible)
-            const_cast<OverlayNode*>(this)->record(traversal);
+            const_cast<HUDNode*>(this)->record(traversal);
     }
 
-    //! Waits for this overlay's buffers without bypassing VSG's queue synchronization.
+    //! Waits for this HUD's buffers without bypassing VSG's queue synchronization.
     void waitForIdle()
     {
         if (_queue)
@@ -103,7 +103,7 @@ private:
             waitForIdle();
         release();
 
-        _pass = createOverlayPass(device, swapchain->getImageFormat());
+        _pass = createHUDPass(device, swapchain->getImageFormat());
         auto extent = swapchain->getExtent();
         for (auto& imageView : swapchain->getImageViews())
             _framebuffers.push_back(vsg::Framebuffer::create(
@@ -264,7 +264,7 @@ private:
     std::chrono::steady_clock::time_point _lastFrame = std::chrono::steady_clock::now();
 };
 
-class WindowImGuiOverlay::MouseObserver : public vsg::Inherit<vsg::Visitor, MouseObserver>
+class WindowImGuiHUD::MouseObserver : public vsg::Inherit<vsg::Visitor, MouseObserver>
 {
 public:
     //! Observes mouse events, even when a view consumed them, without changing event handling.
@@ -288,9 +288,9 @@ private:
     rocky::VSGContext _context;
 };
 
-WindowImGuiOverlay::WindowImGuiOverlay(rocky::Application& app, const rocky::Window& window, DrawFunction draw) :
+WindowImGuiHUD::WindowImGuiHUD(rocky::Application& app, const rocky::Window& window, DrawFunction draw) :
     _app(app), _window(window), _state(State::create()),
-    _node(OverlayNode::create(window.vsgWindow, _state, std::move(draw))),
+    _node(HUDNode::create(window.vsgWindow, _state, std::move(draw))),
     _events(MouseObserver::create(window.vsgWindow, _state, app.vsgcontext))
 {
     moveToEnd();
@@ -307,19 +307,19 @@ WindowImGuiOverlay::WindowImGuiOverlay(rocky::Application& app, const rocky::Win
         });
 }
 
-WindowImGuiOverlay::~WindowImGuiOverlay()
+WindowImGuiHUD::~WindowImGuiHUD()
 {
     detach();
 }
 
-void WindowImGuiOverlay::moveToEnd()
+void WindowImGuiHUD::moveToEnd()
 {
     auto& children = _window.commandGraph->children;
     children.erase(std::remove(children.begin(), children.end(), _node), children.end());
     children.push_back(_node);
 }
 
-void WindowImGuiOverlay::detach()
+void WindowImGuiHUD::detach()
 {
     _subscriptions.clear();
     if (!_node)

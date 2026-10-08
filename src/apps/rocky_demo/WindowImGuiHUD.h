@@ -10,9 +10,9 @@
 #include <cfloat>
 #include <functional>
 
-// Application-owned, passive ImGui overlay. The application must outlive this helper.
+// Application-owned, passive ImGui HUD. The application must outlive this helper.
 // Construct/destroy during setup/update or after run(), never during record traversal.
-class WindowImGuiOverlay
+class WindowImGuiHUD
 {
 public:
     struct State : public vsg::Inherit<vsg::Object, State>
@@ -24,20 +24,20 @@ public:
     using DrawFunction = std::function<void(ImGuiContext*, const ImVec2&)>;
 
     //! Attaches a final pass and a non-consuming mouse observer to one managed window.
-    //! The draw callback runs with this overlay's context current, inside an ImGui frame.
-    WindowImGuiOverlay(rocky::Application&, const rocky::Window&, DrawFunction);
+    //! The draw callback runs with this HUD's context current, inside an ImGui frame.
+    WindowImGuiHUD(rocky::Application&, const rocky::Window&, DrawFunction);
 
-    //! Detaches callbacks and waits for outstanding GPU work before releasing the overlay.
-    ~WindowImGuiOverlay();
+    //! Detaches callbacks and waits for outstanding GPU work before releasing the HUD.
+    ~WindowImGuiHUD();
 
-    WindowImGuiOverlay(const WindowImGuiOverlay&) = delete;
-    WindowImGuiOverlay& operator=(const WindowImGuiOverlay&) = delete;
+    WindowImGuiHUD(const WindowImGuiHUD&) = delete;
+    WindowImGuiHUD& operator=(const WindowImGuiHUD&) = delete;
 
     //! Returns the controls shared with the demo UI; change them only in the application's frame loop.
     vsg::ref_ptr<State> state() const { return _state; }
 
 private:
-    class OverlayNode;
+    class HUDNode;
     class MouseObserver;
 
     //! Restores final rendering order after a new view is appended during an update.
@@ -49,7 +49,7 @@ private:
     rocky::Application& _app;
     rocky::Window _window;
     vsg::ref_ptr<State> _state;
-    vsg::ref_ptr<OverlayNode> _node;
+    vsg::ref_ptr<HUDNode> _node;
     vsg::ref_ptr<MouseObserver> _events;
     rocky::CallbackSubscriptions _subscriptions;
 };

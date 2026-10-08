@@ -268,8 +268,8 @@ int main(int argc, char** argv)
     auto mainGUI = MainGUI::create(app);
     imguiRenderer->add(mainGUI);
 
-    // Application-owned final overlay; declared after app so its resources are detached before app shuts down.
-    WindowImGuiOverlay windowHUD(app, window, [mainGUI](ImGuiContext* context, const ImVec2& mouse)
+    // Application-owned final HUD; declared after app so its resources are detached before app shuts down.
+    WindowImGuiHUD windowHUD(app, window, [mainGUI](ImGuiContext* context, const ImVec2& mouse)
         {
             drawWindowHUD(context, mouse, mainGUI->asize.y);
         });
