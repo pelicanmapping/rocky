@@ -82,6 +82,10 @@ namespace
 
                 ImGui::Begin(i.uid.c_str(), nullptr, i.windowFlags);
                 {
+                    // respond to intersections and highlighting
+                    i.checkFocus();
+                    i.drawHighlight();
+
                     // calculate the bearing for our icon:
                     auto& motion = i.registry.get<MotionGreatCircle>(i.entity);
                     auto heading = pointECEF.srs.ellipsoid().heading(pointECEF, motion.normalAxis);
@@ -113,9 +117,6 @@ namespace
                 auto size = ImGui::GetWindowSize();
                 auto& dc = i.registry.get<Declutter>(i.entity);
                 dc.rect = Rect(0, 0, size.x, size.y);
-
-                // respond to intersections:
-                i.checkFocus();
 
                 ImGui::End();
 

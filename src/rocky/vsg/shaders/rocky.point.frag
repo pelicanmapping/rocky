@@ -9,6 +9,8 @@ layout(location = 1) in Varyings {
     flat float antialias;
 } vary;
 
+#include "rocky.highlight.glsl"
+
 // outputs
 layout(location = 0) out vec4 outColor;
 
@@ -22,4 +24,5 @@ void main()
 
     if (outColor.a < 0.01)
         discard;
+    outColor = applyHighlight(outColor);
 }

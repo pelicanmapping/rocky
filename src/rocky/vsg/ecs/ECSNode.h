@@ -11,6 +11,7 @@
 #include <rocky/vsg/ecs/ECSVisitors.h>
 #include <rocky/vsg/ecs/OverlayRenderContext.h>
 #include <unordered_set>
+#include <unordered_map>
 
 namespace ROCKY_NAMESPACE
 {
@@ -153,6 +154,47 @@ namespace ROCKY_NAMESPACE
             virtual void traverse(vsg::ConstVisitor&) const override;
 
         protected:
+            //! Creates the neutral tint binding for an initialized primitive pipeline, before recording.
+            void initializeHighlights(vsg::PipelineLayout* layout);
+
+            //! Snapshots only highlighted primitives under the registry lock during update.
+            //! Tint edits dirty CPU data for VSG's synchronized transfer; bindings remain stable until removal.
+            //! Requires initializeHighlights() and no concurrent record traversal.
+            template<class COMPONENT_T>
+            void updateHighlights(entt::registry& reg)
+            {
+                for (auto it = _highlights.begin(); it != _highlights.end();)
+                {
+                    if (!reg.valid(it->first) || !reg.all_of<Highlight, COMPONENT_T>(it->first))
+                    {
+                        dispose(it->second.bind);
+                        it = _highlights.erase(it);
+                    }
+                    else
+                        ++it;
+                }
+                reg.view<Highlight, COMPONENT_T>().each([&](auto entity, const auto& highlight, const auto&)
+                {
+                    auto& entry = _highlights[entity];
+                    const auto color = vsg::vec4(highlight.color.r, highlight.color.g, highlight.color.b, highlight.color.a);
+                    if (!entry.bind)
+                    {
+                        entry.data = vsg::vec4Value::create(color);
+                        entry.data->properties.dataVariance = vsg::DYNAMIC_DATA;
+                        entry.bind = createHighlightBinding(entry.data);
+                    }
+                    else if (entry.data->value() != color)
+                    {
+                        // Update CPU storage only. TransferTask stages the copy and synchronizes with rendering.
+                        entry.data->value() = color;
+                        entry.data->dirty();
+                    }
+                });
+            }
+
+            //! Returns the update snapshot's binding, or neutral tint, without modifying render resources.
+            vsg::BindDescriptorSet* highlightBinding(entt::entity entity) const;
+
             struct Pipeline
             {
                 vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> config;
@@ -204,6 +246,19 @@ namespace ROCKY_NAMESPACE
             std::tuple<detail::RenderDomain, entt::entity> getRenderDomainAndOverlayTarget(vsg::RecordTraversal& visitor) const;
 
         private:
+            struct HighlightEntry
+            {
+                vsg::ref_ptr<vsg::vec4Value> data;
+                vsg::ref_ptr<vsg::BindDescriptorSet> bind;
+            };
+            vsg::ref_ptr<vsg::PipelineLayout> _highlightLayout;
+            vsg::ref_ptr<vsg::BindDescriptorSet> _neutralHighlight;
+            std::unordered_map<entt::entity, HighlightEntry> _highlights;
+
+            //! Binds caller-owned CPU tint data and queues compilation, registering dynamic data for transfer.
+            //! Call only during initialize/update; set dataVariance before calling. Does not map GPU memory.
+            vsg::ref_ptr<vsg::BindDescriptorSet> createHighlightBinding(vsg::ref_ptr<vsg::vec4Value> data);
+
             mutable vsg::ref_ptr<vsg::Objects> _toCompile;
             mutable vsg::ref_ptr<vsg::Objects> _toDispose;
             mutable vsg::BufferInfoList _buffersToUpload;
@@ -270,6 +325,13 @@ namespace ROCKY_NAMESPACE
                 {
                     reg.view<COMPONENT_T, ActiveState>().each([&](auto entity, auto& comp, auto& active)
                         {
+                            // Main-view picking must not intersect artwork hidden by its projection facade.
+                            if (ecsVisitor)
+                            {
+                                const auto* participation = reg.try_get<RenderParticipation>(entity);
+                                if (reg.any_of<Overlay>(entity) || (participation && !participation->mainView))
+                                    return;
+                            }
                             auto* geomDetail = reg.try_get<GEOM_DETAIL_T>(comp.geometry);
                             if (geomDetail)
                             {
@@ -305,9 +367,12 @@ namespace ROCKY_NAMESPACE
 
         struct StyleDrawable
         {
-            StyleDrawable(vsg::Node* a, TransformDetail* b) : node(a), xformDetail(b) {}
+            //! Captures geometry, transform, and optional entity tint for immediate or deferred rendering.
+            StyleDrawable(vsg::Node* a, TransformDetail* b, vsg::BindDescriptorSet* tint = nullptr) :
+                node(a), xformDetail(b), highlight(tint) {}
             vsg::Node* node = nullptr;
             TransformDetail* xformDetail = nullptr;
+            vsg::ref_ptr<vsg::BindDescriptorSet> highlight;
         };
 
         using StyleDrawList = std::vector<StyleDrawable>;
@@ -319,15 +384,12 @@ namespace ROCKY_NAMESPACE
             T* styleDetail = nullptr;
             vsg::ref_ptr<vsg::Commands> pipeline;
             vsg::ref_ptr<vsg::DepthSorted> depthSorted;
-            vsg::ref_ptr<vsg::Group> depthSortedGroup;
+            mutable std::vector<vsg::ref_ptr<vsg::Group>> depthSortedGroups;
 
             StyleRenderer()
             {
-                depthSortedGroup = vsg::Group::create();
-
                 depthSorted = vsg::DepthSorted::create();
                 depthSorted->binNumber = 1; // Positive number means descending sort order (farthest first)
-                depthSorted->child = depthSortedGroup;
             }
 
             void traverse(vsg::RecordTraversal& record) const
@@ -338,26 +400,35 @@ namespace ROCKY_NAMESPACE
                 // VSG will process that bin *after* recording the rest of the View.
                 if (styleDetail->useTransparencyBin)
                 {
+                    std::size_t index = 0u;
                     for (auto& drawable : styleDetail->drawList)
                     {
                         if (drawable.xformDetail)
                             drawable.xformDetail->push(record);
 
                         // depthsorted node with state and drawable:
+                        // The bin retains each child until it drains, so each draw needs its own packet.
+                        if (index == depthSortedGroups.size())
+                            depthSortedGroups.emplace_back(vsg::Group::create());
+                        auto& depthSortedGroup = depthSortedGroups[index++];
                         depthSortedGroup->children.clear();
                         depthSortedGroup->children.emplace_back(pipeline);
                         
                         for (auto& pass : styleDetail->passes)
                         {
                             depthSortedGroup->children.emplace_back(pass);
+                            if (drawable.highlight)
+                                depthSortedGroup->children.emplace_back(drawable.highlight);
                             depthSortedGroup->children.emplace_back(drawable.node);
                         }
 
+                        depthSorted->child = depthSortedGroup;
                         depthSorted->accept(record);
 
                         if (drawable.xformDetail)
                             drawable.xformDetail->pop(record);
                     }
+                    depthSortedGroups.resize(index);
                 }
 
                 else
@@ -370,9 +441,15 @@ namespace ROCKY_NAMESPACE
                     for (auto& pass : styleDetail->passes)
                     {
                         pass->accept(record);
+                        vsg::BindDescriptorSet* previousHighlight = nullptr;
 
                         for (auto& drawable : styleDetail->drawList)
                         {
+                            if (drawable.highlight && drawable.highlight.get() != previousHighlight)
+                            {
+                                drawable.highlight->accept(record);
+                                previousHighlight = drawable.highlight.get();
+                            }
                             if (drawable.xformDetail)
                                 drawable.xformDetail->push(record);
 

@@ -20,6 +20,7 @@
 #include <rocky/ecs/TerrainAnchor.h>
 #include <rocky/ecs/Transform.h>
 #include <rocky/ecs/Visibility.h>
+#include <rocky/ecs/Highlight.h>
 #include <rocky/ecs/Declutter.h>
 #include <rocky/ecs/PixelScale.h>
 #include <rocky/ecs/EntityCollectionLayer.h>

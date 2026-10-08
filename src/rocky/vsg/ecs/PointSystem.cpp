@@ -126,6 +126,9 @@ namespace
         // We need VSG's view-dependent data:
         addViewDependentStateToShaderSet(shaderSet, VK_SHADER_STAGE_VERTEX_BIT);
 
+        shaderSet->addDescriptorBinding("u_highlight", "", 2, 0,
+            VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+
         // Note: 128 is the maximum size required by the Vulkan spec so don't increase it
         shaderSet->addPushConstantRange("pc", "", VK_SHADER_STAGE_VERTEX_BIT, 0, 128);
 
@@ -277,6 +280,7 @@ PointSystemNode::initialize(VSGContext vsgcontext)
         c.config->enableDescriptor("u_point");
 
         // always both
+        c.config->enableDescriptor("u_highlight");
         enableViewDependentStateUniforms(c.config);
 
         struct SetPipelineStates : public vsg::Visitor
@@ -319,6 +323,7 @@ PointSystemNode::initialize(VSGContext vsgcontext)
     }
 
     // Set up our default style detail, which is used when a style is missing.
+    initializeHighlights(getPipelineLayout(Point()));
     initializeStyleDetail(getPipelineLayout(Point()), _defaultStyleDetail);
     requestCompile(_defaultStyleDetail.bind);
 }
@@ -590,18 +595,18 @@ PointSystemNode::traverse(vsg::RecordTraversal& record) const
                             bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || transformDetail->views[rs.viewID].passingCull;
                             if (useTransform && passes)
                             {
-                                styleDetail->drawList.emplace_back(geomView.root, transformDetail);
+                                styleDetail->drawList.emplace_back(geomView.root, transformDetail, highlightBinding(entity));
                                 ++count;
                             }
                             else if (!useTransform)
                             {
-                                styleDetail->drawList.emplace_back(geomView.root, nullptr);
+                                styleDetail->drawList.emplace_back(geomView.root, nullptr, highlightBinding(entity));
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(geomView.root, nullptr);
+                            styleDetail->drawList.emplace_back(geomView.root, nullptr, highlightBinding(entity));
                             ++count;
                         }
                     }
@@ -676,6 +681,8 @@ PointSystemNode::update(VSGContext vsgcontext)
                 for (auto&& [e, style] : reg.view<PointStyle>().each())
                     style.dirty(reg);
             }
+
+            updateHighlights<Point>(reg);
 
             PointStyle::eachDirty(reg, [&](entt::entity e)
                 {

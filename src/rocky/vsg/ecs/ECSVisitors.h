@@ -30,37 +30,45 @@ namespace ROCKY_NAMESPACE
         }
     };
 
-    /**
-    * Specializes the VSG polytope intersector to locate entity components.
-    */
-    class ROCKY_EXPORT ECSPolytopeIntersector : public vsg::Inherit<vsg::PolytopeIntersector, ECSPolytopeIntersector>,
-        public ECSVisitor
+    namespace detail
     {
-    public:
-        /// create intersector for a polytope with window space dimensions, projected into world coords using the Camera's projection and view matrices.
-        ECSPolytopeIntersector(vsg::View* view, double xMin, double yMin, double xMax, double yMax, vsg::ref_ptr<vsg::ArrayState> initialArrayData = {}) :
-            Inherit(*view->camera, xMin, yMin, xMax, yMax, initialArrayData),
-            ECSVisitor(view->viewID)
+        /**
+        * Specializes the VSG polytope intersector to locate entity components.
+        */
+        class ROCKY_EXPORT ECSPolytopeIntersector : public vsg::Inherit<vsg::PolytopeIntersector, ECSPolytopeIntersector>,
+            public ECSVisitor
         {
-            //nop
-        }
+        public:
+            //! Creates a window-space polytope query; requires a view with a valid camera and its matrices.
+            ECSPolytopeIntersector(vsg::View* view, double xMin, double yMin, double xMax, double yMax,
+                vsg::ref_ptr<vsg::ArrayState> initialArrayData = {}) :
+                Inherit(*view->camera, xMin, yMin, xMax, yMax, initialArrayData),
+                ECSVisitor(view->viewID)
+            {
+                //nop
+            }
 
-        bool intersectDraw(uint32_t firstVertex, uint32_t vertexCount, uint32_t firstInstance, uint32_t instanceCount) override
-        {
-            bool intersects = Inherit::intersectDraw(firstVertex, vertexCount, firstInstance, instanceCount);
-            if (intersects && currentEntity != entt::null)
-                collectedEntities.emplace(currentEntity);
-            return intersects;
-        }
+            //! Collects the current entity when a non-indexed draw intersects the query.
+            bool intersectDraw(
+                uint32_t firstVertex, uint32_t vertexCount, uint32_t firstInstance, uint32_t instanceCount) override
+            {
+                bool intersects = Inherit::intersectDraw(firstVertex, vertexCount, firstInstance, instanceCount);
+                if (intersects && currentEntity != entt::null)
+                    collectedEntities.emplace(currentEntity);
+                return intersects;
+            }
 
-        bool intersectDrawIndexed(uint32_t firstIndex, uint32_t indexCount, uint32_t firstInstance, uint32_t instanceCount) override
-        {
-            bool intersects = Inherit::intersectDrawIndexed(firstIndex, indexCount, firstInstance, instanceCount);
-            if (intersects && currentEntity != entt::null)
-                collectedEntities.emplace(currentEntity);
-            return intersects;
-        }
-    };
+            //! Collects the current entity when an indexed draw intersects the query.
+            bool intersectDrawIndexed(
+                uint32_t firstIndex, uint32_t indexCount, uint32_t firstInstance, uint32_t instanceCount) override
+            {
+                bool intersects = Inherit::intersectDrawIndexed(firstIndex, indexCount, firstInstance, instanceCount);
+                if (intersects && currentEntity != entt::null)
+                    collectedEntities.emplace(currentEntity);
+                return intersects;
+            }
+        };
+    }
 
     /**
     * Specializes the VSG line segment intersector to locate entity components.
@@ -94,5 +102,5 @@ namespace ROCKY_NAMESPACE
     };
 }
 
-EVSG_type_name(rocky::ECSPolytopeIntersector)
+EVSG_type_name(rocky::detail::ECSPolytopeIntersector)
 EVSG_type_name(rocky::ECSLineSegmentIntersector)

@@ -49,7 +49,7 @@ using namespace ROCKY_NAMESPACE;
 #include "Demo_MVTFeatures.h"
 #include "Demo_DrawComponent.h"
 #include "Demo_ElevationSampler.h"
-#include "Demo_Intersect.h"
+#include "Demo_Picking.h"
 #include "Demo_Screenshot.h"
 #include "Demo_Synchro.h"
 #include "Demo_OrderedRendering.h"
@@ -101,7 +101,6 @@ std::vector<Demo> demos =
         } },
         Demo{ "Polygon", Demo_Polygon },
         Demo{ "Point", Demo_Point },
-        //Demo{ "Icon", Demo_Icon },
         Demo{ "Label", Demo_Label },
         Demo{ "Widget", Demo_Widget },
         Demo{ "Model", Demo_Model },
@@ -127,7 +126,7 @@ std::vector<Demo> demos =
     } },
     Demo{ "Decluttering", Demo_Decluttering },
     Demo{ "Elevation query", Demo_ElevationSampler },
-    Demo{ "Intersection", Demo_Intersect },
+    Demo{ "Picking", Demo_Picking },
     Demo{ "Camera", Demo_Camera },
     Demo{ "Views", Demo_Views },
     Demo{ "Terrain", Demo_Terrain },
