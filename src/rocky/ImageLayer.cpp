@@ -208,7 +208,7 @@ ImageLayer::assembleTile(const TileKey& key, const IOOptions& io) const
                     return Failure_ResourceUnavailable;
                 };
 
-            auto localTile = getOrCreateTile(localKey, io, create);
+            auto localTile = getOrCreateTile(localKey, io, create, true); // raw source tile
 
             if (localTile.ok())
             {

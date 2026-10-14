@@ -105,8 +105,10 @@ namespace ROCKY_NAMESPACE
         void setDataExtents(const DataExtentList& dataExtents);
 
         // Checks a cache for an image, and if not found, calls the create function to generate it.
+        // Pass source=true for raw driver tiles fetched as mosaic inputs, so they never satisfy
+        // a lookup for a finished tile with the same key (and vice versa).
         Result<GeoImage> getOrCreateTile(const TileKey& key, const IOOptions& io,
-            std::function<Result<GeoImage>()>&& create) const;
+            std::function<Result<GeoImage>()>&& create, bool source = false) const;
 
     protected:
 
