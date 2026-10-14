@@ -173,7 +173,7 @@ GeoExtent::height(Units units) const
     if (!valid())
         return 0.0;
     else if (srs().isProjected()) {
-        return Units::convert(srs().units(), units, width());
+        return Units::convert(srs().units(), units, height());
     }
     else {
         return Distance(
