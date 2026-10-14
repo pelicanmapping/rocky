@@ -472,7 +472,9 @@ ElevationLayer::decodeRGB(std::shared_ptr<Image> image) const
             {
                 pixel = view.read(i.s(), i.t());
 
-                float height = -10000.f + ((pixel.r * 256.0f * 256.0f + pixel.g * 256.0f + pixel.b) * 256.0f * 0.1f);
+                // Channels are normalized [0..1]; recover the 0..255 integers before applying the Mapbox formula.
+                double R = std::round(pixel.r * 255.0f), G = std::round(pixel.g * 255.0f), B = std::round(pixel.b * 255.0f);
+                float height = (float)(-10000.0 + (R * 65536.0 + G * 256.0 + B) * 0.1);
 
                 if (height < -9999 || height > 999999)
                     height = NO_DATA_VALUE;
