@@ -508,7 +508,7 @@ MBTiles::Driver::getMetaData(const std::string& key, std::string& value)
     }
 
 
-    bool valid = true;
+    bool valid = false;
     std::string keyStr = std::string(key);
     rc = sqlite3_bind_text(select, 1, keyStr.c_str(), (int)keyStr.length(), SQLITE_STATIC);
     if (rc != SQLITE_OK)
@@ -520,7 +520,13 @@ MBTiles::Driver::getMetaData(const std::string& key, std::string& value)
     rc = sqlite3_step(select);
     if (rc == SQLITE_ROW)
     {
-        value = (char*)sqlite3_column_text(select, 0);
+        // a NULL value column yields a null pointer; treat it as missing.
+        auto text = (const char*)sqlite3_column_text(select, 0);
+        if (text)
+        {
+            value = text;
+            valid = true;
+        }
     }
 
     sqlite3_finalize(select);
