@@ -1231,6 +1231,13 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         return;
                     }
 
+                    // The SSBO was sized under an earlier registry lock; decals created since then
+                    // wait for next frame's resize instead of overflowing it. Record #0 holds the count.
+                    if (decalRecords.size() + 1u >= gpuCapacity)
+                    {
+                        return;
+                    }
+
                     auto e_projector = projected.projector != entt::null ? projected.projector : entity;
                     auto e_texture = projected.texture != entt::null ? projected.texture : entity;
                     auto* transformDetail = reg.try_get<TransformDetail>(e_projector);
@@ -1300,6 +1307,10 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                             ((static_cast<std::int32_t>(resource->textureWidthLog2) &
                                 DECAL_SLUG_TEXTURE_WIDTH_LOG2_MASK) <<
                                 DECAL_SLUG_TEXTURE_WIDTH_LOG2_SHIFT);
+
+                        // Same deferral for Slug layers that changed since the buffers were sized.
+                        if (slugLayerRecords.size() + resource->layers.size() > slugLayerCapacity)
+                            return;
 
                         // Reorder only the per-view metadata, not the atlas.
                         // The shader uses outlineCount to run a global casing
