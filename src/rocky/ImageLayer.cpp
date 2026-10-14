@@ -212,12 +212,14 @@ ImageLayer::assembleTile(const TileKey& key, const IOOptions& io) const
 
             if (localTile.ok())
             {
-                sources.emplace_back(std::move(localTile.value()));
-
-                if (actualKey.level == localKey.level)
+                // A cache hit skips create(), leaving actualKey untouched, so check the tile's own
+                // extent: an ancestor fallback is larger than the local key it was resolved for.
+                if (localTile.value().extent() == localKey.extent())
                 {
                     ++numSourcesAtFullResolution;
                 }
+
+                sources.emplace_back(std::move(localTile.value()));
             }
 
             if (io.canceled())
