@@ -87,16 +87,17 @@ MBTiles::Driver::open(
         ? (SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_NOMUTEX)
         : (SQLITE_OPEN_READONLY | SQLITE_OPEN_NOMUTEX);
 
-    sqlite3* database = (sqlite3*)_database;
-
     // close existing database if open
     close();
 
     sqlite3** dbptr = (sqlite3**)&_database;
     int rc = sqlite3_open_v2(fullFilename.c_str(), dbptr, flags, 0L);
-    if (rc != 0)
+    if (rc != SQLITE_OK)
     {
-        return Failure(Failure::ResourceUnavailable, "Database \"" + fullFilename + "\": " + sqlite3_errmsg(database));
+        // sqlite usually allocates a handle even on failure; read its message, then release it.
+        std::string message = *dbptr ? sqlite3_errmsg(*dbptr) : sqlite3_errstr(rc);
+        close();
+        return Failure(Failure::ResourceUnavailable, "Database \"" + fullFilename + "\": " + message);
     }
 
     // New database setup:
