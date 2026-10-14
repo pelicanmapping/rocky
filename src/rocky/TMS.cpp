@@ -440,9 +440,10 @@ TileMap::intersectsKey(const TileKey& tilekey) const
         xform(keyMin, keyMin);
         xform(keyMax, keyMax);
 
+        // compare against the key bounds in geodetic degrees, for TileMaps whose bounding box is lat/long.
         inter = intersects(
             minX, minY, maxX, maxY,
-            b.xmin, b.ymin, b.xmax, b.ymax);
+            keyMin.x, keyMin.y, keyMax.x, keyMax.y);
     }
 
     return inter;
