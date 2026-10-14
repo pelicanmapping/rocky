@@ -316,11 +316,12 @@ TileLayer::mayHaveData(const TileKey& key) const
 }
 
 Result<GeoImage>
-TileLayer::getOrCreateTile(const TileKey& key, const IOOptions& io, std::function<Result<GeoImage>()>&& create) const
+TileLayer::getOrCreateTile(const TileKey& key, const IOOptions& io, std::function<Result<GeoImage>()>&& create,
+    bool source) const
 {
     if (io.services().residentImageCache)
     {
-        const TileLayerCacheKey cacheKey{ key, uid(), revision() };
+        const TileLayerCacheKey cacheKey{ key, uid(), revision(), source };
 
         auto cached = io.services().residentImageCache->get(cacheKey);
 

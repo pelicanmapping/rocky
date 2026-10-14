@@ -162,9 +162,13 @@ namespace ROCKY_NAMESPACE
         UID layer;
         Revision revision;
 
+        //! True for raw driver tiles used as mosaic inputs; false for finished tiles returned by createTile().
+        //! The two forms share tile keys but differ in content (e.g., nodata normalization, encoding, cropping).
+        bool source = false;
+
         //! Resolves hash collisions using complete tile and layer identity.
         bool operator == (const TileLayerCacheKey& rhs) const {
-            return layer == rhs.layer && revision == rhs.revision && tile == rhs.tile;
+            return layer == rhs.layer && revision == rhs.revision && source == rhs.source && tile == rhs.tile;
         }
     };
 }
@@ -182,6 +186,7 @@ namespace std {
             auto seed = value.tile.hash();
             rocky::detail::hashCombine(seed, std::hash<rocky::UID>()(value.layer));
             rocky::detail::hashCombine(seed, std::hash<rocky::Revision>()(value.revision));
+            rocky::detail::hashCombine(seed, std::hash<bool>()(value.source));
             return seed;
         }
     };
