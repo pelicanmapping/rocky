@@ -225,7 +225,7 @@ Profile::setup(const std::string& in_name)
             SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=90"),
             Box(-6378137, -6378137, 6378137, 6378137),
             2, 2);
-        _shared->geodeticExtent = GeoExtent(SRS::WGS84, 45.0, -45.0, 125.0, 45.0);
+        _shared->geodeticExtent = GeoExtent(SRS::WGS84, 45.0, -45.0, 135.0, 45.0);
     }
     else if (ciEquals(name, "qsc-y"))
     {
@@ -251,7 +251,7 @@ Profile::setup(const std::string& in_name)
                 Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=90 +lon_0=0"), qscbox, 2, 2, Box(-180.0, 45.0, 180.0, 90.0)),
                 Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=-90 +lon_0=0"), qscbox, 2, 2, Box(-180.0, -90.0, 180.0, -45.0)),
                 Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=0"), qscbox, 2, 2, Box(-45.0, -45.0, 45.0, 45.0)),
-                Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=90"), qscbox, 2, 2, Box(45.0, -45.0, 125.0, 45.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=90"), qscbox, 2, 2, Box(45.0, -45.0, 135.0, 45.0)),
                 Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=180"), qscbox, 2, 2, Box(135.0, -45.0, 225.0, 45.0)),
                 Profile(SRS("+wktext +proj=qsc +units=m +ellps=WGS84 +lat_0=0 +lon_0=-90"), qscbox, 2, 2, Box(-135.0, -45.0, -45.0, 45.0))
             });
@@ -271,7 +271,7 @@ Profile::setup(const std::string& in_name)
                 Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=90 +lon_0=0"), qscbox, 2, 2, Box(-180.0, 45.0, 180.0, 90.0)),
                 Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=-90 +lon_0=0"), qscbox, 2, 2, Box(-180.0, -90.0, 180.0, -45.0)),
                 Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=0"), qscbox, 2, 2, Box(-45.0, -45.0, 45.0, 45.0)),
-                Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=90"), qscbox, 2, 2, Box(45.0, -45.0, 125.0, 45.0)),
+                Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=90"), qscbox, 2, 2, Box(45.0, -45.0, 135.0, 45.0)),
                 Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=180"), qscbox, 2, 2, Box(135.0, -45.0, 225.0, 45.0)),
                 Profile(SRS("+wktext +proj=qsc +units=m +R=1737400 +lat_0=0 +lon_0=-90"), qscbox, 2, 2, Box(-135.0, -45.0, -45.0, 45.0))
             });
