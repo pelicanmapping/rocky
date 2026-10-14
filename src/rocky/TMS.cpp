@@ -238,16 +238,18 @@ void TileMap::computeMinMaxLevel()
 
 void TileMap::computeNumTiles()
 {
-    numTilesWide = -1;
-    numTilesHigh = -1;
+    // zero means "unknown"; createProfile() treats it as a single tile.
+    numTilesWide = 0u;
+    numTilesHigh = 0u;
 
-    if (tileSets.size() > 0)
+    if (tileSets.size() > 0 && tileSets[0].unitsPerPixel > 0.0 && format.width > 0u)
     {
         unsigned int level = tileSets[0].order;
         double res = tileSets[0].unitsPerPixel;
+        unsigned tileHeight = format.height > 0u ? format.height : format.width;
 
-        numTilesWide = (int)((maxX - minX) / (res * format.width));
-        numTilesHigh = (int)((maxY - minY) / (res * format.width));
+        numTilesWide = (unsigned)((maxX - minX) / (res * format.width));
+        numTilesHigh = (unsigned)((maxY - minY) / (res * tileHeight));
 
         //In case the first level specified isn't level 0, compute the number of tiles at level 0
         for (unsigned int i = 0; i < level; i++)
