@@ -82,9 +82,9 @@ void newWindow(rocky::Application& app)
             qtWindow->setWindowTitle(name.c_str());
             qtWindow->setGeometry(50, 50, 800, 600);
 
-            // share the vk device with the main window:
+            // Apply Rocky's Vulkan requirements and share the main window's device.
             auto traits = vsg::WindowTraits::create();
-            traits->device = app.display.sharedDevice();
+            app.display.configureTraits(traits.get());
             auto vsgQtWindow = new vsgQt::Window(traits);
 
             // wrap the rocky view in a widget:
@@ -144,8 +144,12 @@ int main(int argc, char** argv)
 
     filemenu->addAction("E&xit", &qt_app, &QApplication::quit);
 
+    // Apply Rocky's Vulkan requirements before Qt creates the window and device.
+    auto traits = vsg::WindowTraits::create();
+    app.display.configureTraits(traits.get());
+
     // Create a Qt container for our Rocky widget, and add it to the layout.
-    auto rockyQtWindow = new vsgQt::Window();
+    auto rockyQtWindow = new vsgQt::Window(traits);
     auto rockyQtWidget = QWidget::createWindowContainer(rockyQtWindow);
     layout->addWidget(rockyQtWidget);
 

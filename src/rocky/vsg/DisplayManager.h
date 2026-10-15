@@ -264,6 +264,11 @@ namespace ROCKY_NAMESPACE
         std::vector<Window>& windows();
         const std::vector<Window>& windows() const;
 
+        //! Applies Rocky's required Vulkan features, extensions, display settings, and shared device to caller-owned traits.
+        //! Call once on non-null traits after initialize(), before creating an externally managed window (e.g., vsgQt).
+        //! Logs warnings for unavailable extensions; cannot enable features on an already-created device.
+        void configureTraits(vsg::WindowTraits* traits);
+
         //! Creates a new window and adds it to the display, and also creates a
         //! full-window View for the new window.
         //! @param traits Window traits used to create the new window
@@ -317,7 +322,5 @@ namespace ROCKY_NAMESPACE
         bool _vsync = true;
         bool _debuglayerUnique = false;
         VkDebugUtilsMessengerEXT _debugMessenger = VK_NULL_HANDLE;
-
-        void configureTraits(vsg::WindowTraits* traits);
     };
 }
