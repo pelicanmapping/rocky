@@ -46,7 +46,8 @@ namespace ROCKY_NAMESPACE
         //! Customized cull traversal
         void accept(vsg::RecordTraversal& visitor) const override;
 
-        //! Intersectors, etc.
+        //! Visits resident leaf surfaces, rejecting intersection rays outside their elevation-aware bounds.
+        //! Ancestor surface bounds cannot safely reject descendants with different elevation data.
         void accept(vsg::ConstVisitor& visitor) const override;
         
     protected:

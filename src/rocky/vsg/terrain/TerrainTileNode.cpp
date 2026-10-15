@@ -45,8 +45,15 @@ TerrainTileNode::accept(vsg::ConstVisitor& visitor) const
             children[i]->accept(visitor);
         }
     }
-    else
+    else if (!children.empty())
     {
+        // Only leaf bounds enclose the surface being queried. A parent's own surface bound may not enclose
+        // higher-resolution child elevations, so rejecting an entire subtree with that bound can miss terrain.
+        if (auto* intersector = visitor.cast<vsg::Intersector>())
+        {
+            if (bound.valid() && !intersector->intersects(bound))
+                return;
+        }
         children[0]->accept(visitor);
     }
 }
