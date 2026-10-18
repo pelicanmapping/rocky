@@ -114,9 +114,12 @@ namespace ROCKY_NAMESPACE
         return false;
     }
 
+    //! Deserializes any non-null JSON value (object, string, number, etc.) into "var"
+    //! using its from_json overload. Leaves "var" unchanged if the value is null or
+    //! the conversion throws.
     template<class T>
     inline void get_to(const json& obj, T& var) {
-        if (obj.is_object() && !obj.is_null()) {
+        if (!obj.is_null()) {
             JSON_TRY {
                 obj.get_to(var);
             }
