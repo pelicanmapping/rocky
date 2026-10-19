@@ -1,8 +1,8 @@
 @echo off
 setlocal
 
-REM Run from the repository root. BUILD_DIR selects an existing bootstrap build or a new build directory.
-if not defined BUILD_DIR set "BUILD_DIR=..\build"
+REM BUILD_DIR selects an existing bootstrap build or a new build directory.
+if not defined BUILD_DIR set "BUILD_DIR=%~dp0..\build"
 
 REM Respect the bootstrap variable, the standard vcpkg variable, then the existing CMake configuration.
 if defined VCPKG_DIR goto toolchain_from_directory
@@ -28,8 +28,8 @@ if not exist "%ROCKY_TOOLCHAIN_FILE%" goto missing_toolchain
 REM Reconfiguration preserves generator, install prefix, triplet, and dependency paths from bootstrap.
 REM Additional CMake options can be passed through, e.g. -DVCPKG_MANIFEST_INSTALL=OFF.
 if exist "%BUILD_DIR%\CMakeCache.txt" goto reconfigure
-if not defined INSTALL_DIR set "INSTALL_DIR=..\install"
-cmake -S . -B "%BUILD_DIR%" -A x64 ^
+if not defined INSTALL_DIR set "INSTALL_DIR=%~dp0..\build\install"
+cmake -S "%~dp0.." -B "%BUILD_DIR%" -A x64 ^
     -DCMAKE_BUILD_TYPE=RelWithDebInfo ^
     -DCMAKE_INSTALL_PREFIX="%INSTALL_DIR%" ^
     -DCMAKE_TOOLCHAIN_FILE="%ROCKY_TOOLCHAIN_FILE%" ^
@@ -37,7 +37,7 @@ cmake -S . -B "%BUILD_DIR%" -A x64 ^
 exit /b %ERRORLEVEL%
 
 :reconfigure
-cmake -S . -B "%BUILD_DIR%" -DCMAKE_TOOLCHAIN_FILE="%ROCKY_TOOLCHAIN_FILE%" %*
+cmake -S "%~dp0.." -B "%BUILD_DIR%" -DCMAKE_TOOLCHAIN_FILE="%ROCKY_TOOLCHAIN_FILE%" %*
 exit /b %ERRORLEVEL%
 
 :missing_toolchain
