@@ -16,6 +16,7 @@ namespace ROCKY_NAMESPACE
         //! Separate arrays containing verts, colors, UVs, and indices.
         std::vector<glm::dvec3> vertices;
         std::vector<glm::fvec4> colors;
+        //! Leave empty to compute normals from triangles after conversion to each view's SRS.
         std::vector<glm::fvec3> normals;
         std::vector<glm::fvec2> uvs;
         std::vector<std::uint32_t> indices;

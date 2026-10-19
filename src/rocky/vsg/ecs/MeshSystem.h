@@ -11,6 +11,7 @@
 #include <rocky/vsg/ecs/ECSTypes.h>
 #include <rocky/vsg/ecs/TextureResource.h>
 #include <algorithm>
+#include <cmath>
 
 namespace ROCKY_NAMESPACE
 {
@@ -75,6 +76,45 @@ namespace ROCKY_NAMESPACE
 
     namespace detail
     {
+        //! Computes area-weighted normals from an indexed triangle list in its rendering coordinate frame.
+        //! Uses double precision before float conversion, preserving small edges at large world coordinates.
+        //! Skips invalid/incomplete/degenerate triangles; unused vertices receive a finite +Z normal.
+        template<typename VERTEX>
+        std::vector<vsg::vec3> generateTriangleNormals(
+            const std::vector<VERTEX>& vertices, const std::vector<std::uint32_t>& indices)
+        {
+            std::vector<glm::dvec3> accumulated(vertices.size(), glm::dvec3(0.0));
+            for (std::size_t i = 0; i + 2u < indices.size(); i += 3u)
+            {
+                const auto a = indices[i], b = indices[i + 1u], c = indices[i + 2u];
+                if (a >= vertices.size() || b >= vertices.size() || c >= vertices.size())
+                    continue;
+                const auto& va = vertices[a];
+                const auto& vb = vertices[b];
+                const auto& vc = vertices[c];
+                const glm::dvec3 origin(va.x, va.y, va.z);
+                const auto normal = glm::cross(
+                    glm::dvec3(vb.x, vb.y, vb.z) - origin, glm::dvec3(vc.x, vc.y, vc.z) - origin);
+                const auto lengthSquared = glm::dot(normal, normal);
+                if (lengthSquared > 0.0 && std::isfinite(lengthSquared))
+                {
+                    accumulated[a] += normal;
+                    accumulated[b] += normal;
+                    accumulated[c] += normal;
+                }
+            }
+
+            std::vector<vsg::vec3> result(vertices.size());
+            for (std::size_t i = 0; i < result.size(); ++i)
+            {
+                const auto lengthSquared = glm::dot(accumulated[i], accumulated[i]);
+                const auto normal = lengthSquared > 0.0 && std::isfinite(lengthSquared) ?
+                    accumulated[i] / std::sqrt(lengthSquared) : glm::dvec3(0.0, 0.0, 1.0);
+                result[i] = vsg::vec3(float(normal.x), float(normal.y), float(normal.z));
+            }
+            return result;
+        }
+
         // "mesh.style" in the shader
         struct MeshStyleUniform
         {
@@ -144,6 +184,8 @@ namespace ROCKY_NAMESPACE
             {
                 vsg::ref_ptr<vsg::Node> root;
                 vsg::ref_ptr<MeshGeometryNode> geomNode;
+                //! Bounds in root coordinates, before the owning entity's Transform.
+                vsg::dsphere bound;
                 std::size_t capacity = 0;
             };
             ViewLocal<View> views;

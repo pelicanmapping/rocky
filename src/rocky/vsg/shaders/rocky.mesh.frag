@@ -49,8 +49,12 @@ void main()
         outColor *= texel;
     }
 
-    vec4 litColor = applyLighting(outColor, vary.vertexVs, vary.normal);
-    outColor = mix(outColor, litColor, vary.applyLighting);
+    if (vary.applyLighting > 0.0)
+    {
+        // Two-sided fills shade the side facing the viewer.
+        vec3 normal = gl_FrontFacing ? vary.normal : -vary.normal;
+        outColor = applyLighting(outColor, vary.vertexVs, normal);
+    }
 
     if (!stipple(ivec2(gl_FragCoord.xy)))
         discard;

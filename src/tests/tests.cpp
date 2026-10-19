@@ -579,6 +579,11 @@ TEST_CASE("polygon render-state edits reuse colored geometry", "[polygon][projec
             {
                 auto& style = reg.get<PolygonStyle>(entity);
                 style.wireframe = enabled;
+                style.lighting = enabled;
+                style.writeDepth = !enabled;
+                style.drawBackfaces = enabled;
+                style.twoPassAlpha = enabled;
+                style.transparencyBin = enabled;
                 style.stipplePattern = enabled ? 0x00FFu : 0xFFFFu;
                 style.depthOffset = enabled ? 25.0f : 0.0f;
                 style.texture = enabled ? texture : entt::null;
@@ -594,6 +599,11 @@ TEST_CASE("polygon render-state edits reuse colored geometry", "[polygon][projec
                 CHECK(geometry.colors == originalColors);
                 const auto& style = reg.get<MeshStyle>(cache.style);
                 CHECK(style.wireframe == enabled);
+                CHECK(style.lighting == enabled);
+                CHECK(style.writeDepth == !enabled);
+                CHECK(style.drawBackfaces == enabled);
+                CHECK(style.twoPassAlpha == enabled);
+                CHECK(style.transparencyBin == enabled);
                 CHECK(style.stipplePattern == (enabled ? 0x00FFu : 0xFFFFu));
                 CHECK(style.depthOffset == (enabled ? 25.0f : 0.0f));
                 CHECK(style.texture == (enabled ? texture : entt::null));

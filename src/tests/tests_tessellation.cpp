@@ -5,6 +5,7 @@
  */
 #include "catch.hpp"
 #include <rocky/vsg/ecs/FeatureBuilder.h>
+#include <rocky/vsg/ecs/MeshSystem.h>
 #include <rocky/weemesh.h>
 #include <algorithm>
 #include <cmath>
@@ -141,4 +142,71 @@ TEST_CASE("tessellation preserves vertical triangles", "[tessellation]")
     REQUIRE(mesh.triangles.size() == 1u);
     CHECK(mesh.triangles.at(id).i2 == c);
     CHECK(mesh.verts[c].z == 100.0);
+}
+
+
+//! Lighting normals retain tiny tilted edges at large coordinates and respect triangle winding.
+TEST_CASE("triangle normals preserve double precision and winding", "[polygon][normals]")
+{
+    const glm::dvec3 origin(6000000.0, 2000000.0, 5000000.0);
+    const std::vector<glm::dvec3> vertices{
+        origin, origin + glm::dvec3(0.001, 0.0, 0.0), origin + glm::dvec3(0.0, 0.001, 0.001) };
+    const auto expected = glm::normalize(glm::dvec3(0.0, -1.0, 1.0));
+    for (bool reverse : { false, true })
+    {
+        const std::vector<std::uint32_t> indices = reverse ?
+            std::vector<std::uint32_t>{ 0, 2, 1 } : std::vector<std::uint32_t>{ 0, 1, 2 };
+        const auto normals = detail::generateTriangleNormals(vertices, indices);
+        REQUIRE(normals.size() == vertices.size());
+        for (const auto& normal : normals)
+        {
+            CHECK(vsg::length(normal) == Approx(1.0f));
+            const glm::dvec3 n(normal.x, normal.y, normal.z);
+            CHECK(glm::dot(n, expected) == Approx(reverse ? -1.0 : 1.0).epsilon(1e-6));
+        }
+    }
+}
+
+//! Bad or unused triangles must not produce NaNs or read beyond the index/vertex arrays.
+TEST_CASE("triangle normals tolerate degenerate and incomplete input", "[polygon][normals]")
+{
+    const std::vector<glm::dvec3> vertices{ {0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {2, 0, 0} };
+    const std::vector<std::uint32_t> indices{ 0, 1, 2, 0, 1, 3, 0, 1, 99, 0, 1 };
+    const auto normals = detail::generateTriangleNormals(vertices, indices);
+    REQUIRE(normals.size() == vertices.size());
+    for (const auto& normal : normals)
+        CHECK(normal == vsg::vec3(0.0f, 0.0f, 1.0f));
+    CHECK(detail::generateTriangleNormals(std::vector<glm::dvec3>{}, indices).empty());
+}
+
+//! Georeferenced polygons defer normals until projection, giving different correct normals in globe and flat views.
+TEST_CASE("polygon normals follow the rendering SRS", "[polygon][normals]")
+{
+    PolygonGeometry polygon;
+    polygon.srs = SRS::WGS84;
+    polygon.polygons.push_back(PolygonPart{
+        { {-.01, -.01, 100}, {.01, -.01, 100}, {.01, .01, 100}, {-.01, .01, 100} }, {} });
+    MeshGeometry geometry;
+    PolygonStyle style;
+    style.lighting = true;
+    FeatureBuilder builder;
+    builder.buildMeshGeometry(polygon, style, geometry);
+    REQUIRE_FALSE(geometry.vertices.empty());
+    CHECK(geometry.normals.empty());
+    for (const auto& target : { SRS::ECEF, SRS::SPHERICAL_MERCATOR })
+    {
+        auto vertices = geometry.vertices;
+        auto transform = geometry.srs.to(target);
+        REQUIRE(transform.transformArray(vertices.data(), vertices.size()));
+        const auto normals = detail::generateTriangleNormals(vertices, geometry.indices);
+        REQUIRE(normals.size() == vertices.size());
+        for (const auto& normal : normals)
+        {
+            CHECK(vsg::length(normal) == Approx(1.0f));
+            if (target.isGeocentric())
+                CHECK(normal.x > 0.999f);
+            else
+                CHECK(normal.z > 0.999f);
+        }
+    }
 }

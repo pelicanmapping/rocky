@@ -1281,4 +1281,10 @@ FeatureBuilder::buildMeshGeometry(const PolygonGeometry& polygons,
         compile_polygon_feature(
             feature, meshStyle, {}, no_clamper, polygons.srs, meshGeom);
     }
+
+    // Georeferenced tessellation uses placeholder normals in the source SRS.
+    // Leave these absent so each view computes normals after reprojection;
+    // normals generated in longitude/latitude cannot be used on a globe.
+    if (polygons.srs.valid())
+        meshGeom.normals.clear();
 }

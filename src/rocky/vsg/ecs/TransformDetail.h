@@ -72,11 +72,11 @@ namespace ROCKY_NAMESPACE::detail
         //! Return true if any updates were made due to a dirty Transform.
         bool traverse(vsg::RecordTraversal&, const PixelScale*);
 
-        //! Push the matrix associated with this transform onto the record stack
-        void push(vsg::RecordTraversal&) const;
+        //! Push the matrix onto the record stack; exported for header-defined style renderers.
+        ROCKY_EXPORT void push(vsg::RecordTraversal&) const;
 
-        //! Pop a matrix recorded with push(...)
-        void pop(vsg::RecordTraversal&) const;
+        //! Pop a matrix recorded with push(...); exported for header-defined style renderers.
+        ROCKY_EXPORT void pop(vsg::RecordTraversal&) const;
 
         //! True if this transform is visible in the provided view state
         inline bool passingCull(RenderingState) const;

@@ -58,8 +58,27 @@ namespace ROCKY_NAMESPACE
         //! Whether to display only the edges of the tessellated triangles. Ignored by vector overlays.
         bool wireframe = false;
 
+        //! Apply normal-based lighting to the fill. Ignored by vector overlays.
+        bool lighting = false;
+
         //! 4x4 stippling pattern (lower 16 bits only). Ignored by vector overlays.
         std::uint32_t stipplePattern = 0xFFFF;
+
+        //! Write to the depth buffer. Raster overlays also require Overlay::useDepthBuffer.
+        //! Ignored by vector overlays.
+        bool writeDepth = true;
+
+        //! Draw back-facing triangles as well as front-facing triangles.
+        //! Ignored by vector overlays.
+        bool drawBackfaces = false;
+
+        //! Render color without depth writes, then depth without color writes.
+        //! Requires writeDepth and a depth buffer. Ignored by vector overlays.
+        bool twoPassAlpha = false;
+
+        //! Sort polygon drawables far-to-near in the main view's transparency bin.
+        //! Does not sort triangles within a drawable. Ignored by overlays and render textures.
+        bool transparencyBin = false;
 
         //! Tessellation resolution hint, in meters, when building polygon
         //! geometry. A value of zero uses the default curvature-following

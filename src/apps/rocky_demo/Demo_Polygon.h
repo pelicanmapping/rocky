@@ -128,6 +128,21 @@ auto Demo_Polygon = [](Application& app)
             styleChanged |= ImGuiLTable::ColorEdit4("Color", reinterpret_cast<float*>(&style.color));
             styleChanged |= ImGuiLTable::Checkbox("Per-polygon colors", &style.useGeometryColors);
             styleChanged |= ImGuiLTable::Checkbox("Wireframe", &style.wireframe);
+            styleChanged |= ImGuiLTable::Checkbox("Lighting", &style.lighting);
+            if (ImGuiLTable::Checkbox("Write depth", &style.writeDepth))
+            {
+                if (!style.writeDepth)
+                    style.twoPassAlpha = false;
+                styleChanged = true;
+            }
+            styleChanged |= ImGuiLTable::Checkbox("Draw backfaces", &style.drawBackfaces);
+            if (ImGuiLTable::Checkbox("Two-pass alpha", &style.twoPassAlpha))
+            {
+                if (style.twoPassAlpha)
+                    style.writeDepth = true;
+                styleChanged = true;
+            }
+            styleChanged |= ImGuiLTable::Checkbox("Transparency sorting", &style.transparencyBin);
             styleChanged |= ImGuiLTable::SliderFloat(
                 "Depth offset (m)", &style.depthOffset, 0.0f, 1000.0f, "%.0f", ImGuiSliderFlags_AlwaysClamp);
 

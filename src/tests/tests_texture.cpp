@@ -359,3 +359,54 @@ TEST_CASE("default ECS systems include shared texture publication", "[texture][e
     auto systems = ECSNode::create(registry, true);
     REQUIRE(systems->get<TextureSystemNode>() != nullptr);
 }
+
+
+namespace
+{
+    //! Substitutes empty GPU state so the real deferred-bin traversal can run without a device.
+    struct PolygonTestCommands : public vsg::Inherit<vsg::Commands, PolygonTestCommands>
+    {
+        using Inherit::accept;
+        //! Bypasses Vulkan state recording while exercising CPU draw ordering.
+        void accept(vsg::RecordTraversal&) const override { }
+    };
+
+    //! Records CPU traversal order without issuing Vulkan commands.
+    struct SortedPolygonProbe : public vsg::Inherit<vsg::Node, SortedPolygonProbe>
+    {
+        std::vector<int>* order = nullptr;
+        int id = 0;
+        //! Appends this drawable's identity when its deferred bin is drained.
+        void traverse(vsg::RecordTraversal&) const override { order->push_back(id); }
+    };
+}
+
+//! Deferred transparency must use geometry bounds, preserve each drawable, and sort beyond insertion order.
+TEST_CASE("polygon transparency sorts using drawable bounds", "[polygon][transparency]")
+{
+    auto bin = vsg::Bin::create(1, vsg::Bin::DESCENDING);
+    auto record = vsg::RecordTraversal::create(vsg::Slots{}, std::set<vsg::Bin*>{ bin });
+    record->getState()->setProjectionAndViewMatrix(vsg::perspective(60.0, 1.0, 0.1, 1000.0), vsg::dmat4());
+    MeshStyleDetail style;
+    style.useTransparencyBin = true;
+    style.passes.push_back(PolygonTestCommands::create());
+    auto renderer = StyleRenderer<MeshStyleDetail>::create();
+    renderer->styleDetail = &style;
+    renderer->pipeline = PolygonTestCommands::create();
+    std::vector<int> order;
+    std::vector<vsg::ref_ptr<SortedPolygonProbe>> nodes;
+    for (int i : { 1, 3, 2 })
+    {
+        auto node = SortedPolygonProbe::create();
+        node->order = &order;
+        node->id = i;
+        style.drawList.emplace_back(node, nullptr, nullptr, vsg::dsphere(0.0, 0.0, -10.0 * i, 1.0));
+        nodes.push_back(node);
+    }
+    renderer->traverse(*record);
+    CHECK(order.empty());
+    CHECK(style.drawList.empty());
+    bin->accept(*record);
+    REQUIRE(order.size() == 3u);
+    CHECK((order == std::vector<int>{ 3, 2, 1 }));
+}

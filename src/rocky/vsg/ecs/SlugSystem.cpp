@@ -559,6 +559,8 @@ namespace
             build.warnings.emplace_back("Slug PolygonStyle does not support stippling; rendering solid fills");
         if (resolvedStyle.wireframe)
             build.warnings.emplace_back("Slug PolygonStyle does not support wireframe; rendering filled polygons");
+        if (resolvedStyle.lighting)
+            build.warnings.emplace_back("Slug PolygonStyle does not support lighting; rendering unlit fills");
 
         auto mapRing = [&](const PolygonPart::Ring& input, SlugContourInput& output)
         {

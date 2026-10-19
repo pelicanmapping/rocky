@@ -370,12 +370,14 @@ namespace ROCKY_NAMESPACE
 
         struct StyleDrawable
         {
-            //! Captures geometry, transform, and optional entity tint for immediate or deferred rendering.
-            StyleDrawable(vsg::Node* a, TransformDetail* b, vsg::BindDescriptorSet* tint = nullptr) :
-                node(a), xformDetail(b), highlight(tint) {}
+            //! Captures geometry, transform, tint, and root-coordinate bounds for immediate or deferred rendering.
+            StyleDrawable(vsg::Node* a, TransformDetail* b, vsg::BindDescriptorSet* tint = nullptr,
+                const vsg::dsphere& bounds = vsg::dsphere(0.0, 0.0, 0.0, 0.0)) :
+                node(a), xformDetail(b), highlight(tint), bound(bounds) {}
             vsg::Node* node = nullptr;
             TransformDetail* xformDetail = nullptr;
             vsg::ref_ptr<vsg::BindDescriptorSet> highlight;
+            vsg::dsphere bound;
         };
 
         using StyleDrawList = std::vector<StyleDrawable>;
@@ -426,6 +428,7 @@ namespace ROCKY_NAMESPACE
                         }
 
                         depthSorted->child = depthSortedGroup;
+                        depthSorted->bound = drawable.bound;
                         depthSorted->accept(record);
 
                         if (drawable.xformDetail)

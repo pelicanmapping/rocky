@@ -420,7 +420,12 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
                 meshStyle.resolution = resolvedStyle.resolution;
                 meshStyle.texture = resolvedStyle.texture;
                 meshStyle.wireframe = resolvedStyle.wireframe;
+                meshStyle.lighting = resolvedStyle.lighting;
                 meshStyle.stipplePattern = resolvedStyle.stipplePattern;
+                meshStyle.writeDepth = resolvedStyle.writeDepth;
+                meshStyle.drawBackfaces = resolvedStyle.drawBackfaces;
+                meshStyle.twoPassAlpha = resolvedStyle.twoPassAlpha;
+                meshStyle.transparencyBin = resolvedStyle.transparencyBin;
                 registry.emplace_or_replace<MeshStyle>(
                     data.style, std::move(meshStyle));
                 data.sourceStyle = sourceStyle;

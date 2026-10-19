@@ -470,17 +470,28 @@ MeshSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const MeshGeome
         {
             auto& gn = geomView.geomNode;
 
+            vsg::dbox bounds;
             gn->_verts.resize(verts.size());
             std::transform(verts.begin(), verts.end(), gn->_verts.begin(),
-                [](const glm::dvec3& v) { return to_vsg(v); });
+                [&](const glm::dvec3& v) { bounds.add(to_vsg(v)); return to_vsg(v); });
+            geomView.bound = vsg::dsphere(
+                (bounds.min + bounds.max) * 0.5, vsg::length(bounds.max - bounds.min) * 0.5);
 
             gn->_colors.resize(std::max(geom.colors.size(), verts.size()));
             std::transform(geom.colors.begin(), geom.colors.end(), gn->_colors.begin(),
                 [](const glm::fvec4& c) { return to_vsg(c); });
 
-            gn->_normals.resize(std::max(geom.normals.size(), verts.size()));
-            std::transform(geom.normals.begin(), geom.normals.end(), gn->_normals.begin(),
-                [](const glm::fvec3& n) { return to_vsg(n); });
+            if (geom.normals.size() >= verts.size())
+            {
+                gn->_normals.resize(geom.normals.size());
+                std::transform(geom.normals.begin(), geom.normals.end(), gn->_normals.begin(),
+                    [](const glm::fvec3& n) { return to_vsg(n); });
+            }
+            else
+            {
+                // Generate in the view's coordinates, before vertices lose double precision.
+                gn->_normals = generateTriangleNormals(verts, geom.indices);
+            }
 
             gn->_uvs.resize(std::max(geom.uvs.size(), verts.size()));
             std::transform(geom.uvs.begin(), geom.uvs.end(), gn->_uvs.begin(),
@@ -506,6 +517,7 @@ MeshSystemNode::createOrUpdateGeometryForView(ViewIDType viewID, const MeshGeome
                 point -= precisionOffset;
 
             copyArrays(copy);
+            geomView.bound.center += to_vsg(precisionOffset);
 
             auto localizer = vsg::MatrixTransform::create(vsg::translate(to_vsg(precisionOffset)));
             localizer->addChild(geomView.geomNode);
@@ -701,18 +713,21 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                             bool passes = (renderRequest.purpose == RenderPurpose::RenderTexture) || transformDetail->views[rs.viewID].passingCull;
                             if (useTransform && passes)
                             {
-                                styleDetail->drawList.emplace_back(geomView.root, transformDetail, highlightBinding(entity));
+                                styleDetail->drawList.emplace_back(
+                                    geomView.root, transformDetail, highlightBinding(entity), geomView.bound);
                                 ++count;
                             }
                             else if (!useTransform)
                             {
-                                styleDetail->drawList.emplace_back(geomView.root, nullptr, highlightBinding(entity));
+                                styleDetail->drawList.emplace_back(
+                                    geomView.root, nullptr, highlightBinding(entity), geomView.bound);
                                 ++count;
                             }
                         }
                         else
                         {
-                            styleDetail->drawList.emplace_back(geomView.root, nullptr, highlightBinding(entity));
+                            styleDetail->drawList.emplace_back(
+                                geomView.root, nullptr, highlightBinding(entity), geomView.bound);
                             ++count;
                         }
                     }
@@ -870,27 +885,7 @@ MeshGeometryNode::compile(vsg::Context& context)
 
         if (_normals.size() < _verts.size())
         {
-            _normals.assign(_verts.size(), vsg::vec3(0.0f, 0.0f, 0.0f));
-
-            for (size_t i = 0; i < _indices.size(); i += 3)
-            {
-                auto i0 = _indices[i];
-                auto i1 = _indices[i + 1];
-                auto i2 = _indices[i + 2];
-                auto v0 = _verts[i0];
-                auto v1 = _verts[i1];
-                auto v2 = _verts[i2];
-                auto edge1 = v1 - v0;
-                auto edge2 = v2 - v0;
-                auto faceNormal = vsg::cross(edge1, edge2);
-                _normals[i0] += faceNormal;
-                _normals[i1] += faceNormal;
-                _normals[i2] += faceNormal;
-            }
-            for (auto& n : _normals)
-            {
-                n = vsg::normalize(n);
-            }
+            _normals = generateTriangleNormals(_verts, _indices);
         }
 
         if (_colors.empty())

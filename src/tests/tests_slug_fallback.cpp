@@ -521,10 +521,11 @@ TEST_CASE("slug authoring errors do not activate capacity fallback", "[projectio
 //! Comparing atlas bytes before/after removing the unsupported flags verifies that only supported appearance is used.
 TEST_CASE("vector overlays omit unsupported styling and warn once per source build", "[projection][slug]")
 {
-    bool line = false, point = false, mesh = false;
+    bool line = false, point = false, mesh = false, polygon = false;
     SECTION("line appearance") { line = true; }
     SECTION("point appearance") { point = true; }
     SECTION("mesh appearance") { mesh = true; }
+    SECTION("polygon appearance") { polygon = true; }
     SECTION("all primitive warnings survive") { line = point = mesh = true; }
 
     LogCapture messages;
@@ -564,6 +565,20 @@ TEST_CASE("vector overlays omit unsupported styling and warn once per source bui
             expectedWarnings.emplace_back("Slug PointStyle does not support per-vertex colors; using PointStyle::color");
             expectedWarnings.emplace_back("Slug PointStyle does not support per-vertex widths; using PointStyle::width");
         }
+        if (polygon)
+        {
+            auto& geometry = reg.emplace<PolygonGeometry>(entity);
+            geometry.polygons.push_back(slottedPolygon(0u));
+            auto& style = reg.emplace<PolygonStyle>(entity);
+            style.color = StockColor::Yellow;
+            style.lighting = true;
+            style.writeDepth = false;
+            style.drawBackfaces = true;
+            style.twoPassAlpha = true;
+            style.transparencyBin = true;
+            reg.emplace<rocky::Polygon>(entity, geometry, style);
+            expectedWarnings.emplace_back("Slug PolygonStyle does not support lighting; rendering unlit fills");
+        }
         if (mesh)
         {
             auto& geometry = reg.emplace<MeshGeometry>(entity);
@@ -593,7 +608,7 @@ TEST_CASE("vector overlays omit unsupported styling and warn once per source bui
         const auto& resource = reg.get<SlugResource>(entity);
         REQUIRE(resource.ready);
         CHECK(resource.message.empty());
-        CHECK(resource.layers.size() == static_cast<std::size_t>(line + point + mesh));
+        CHECK(resource.layers.size() == static_cast<std::size_t>(line + point + mesh + polygon));
         for (const auto& layer : resource.layers)
             CHECK(layer.color == StockColor::Yellow);
         CHECK_FALSE(reg.any_of<OverlayVectorFallback>(entity));
@@ -616,6 +631,15 @@ TEST_CASE("vector overlays omit unsupported styling and warn once per source bui
             CHECK(style.stipplePattern == 0x00FFu);
             CHECK(style.wireframe);
             CHECK(style.lighting);
+        }
+        if (polygon)
+        {
+            const auto& style = reg.get<PolygonStyle>(entity);
+            CHECK(style.lighting);
+            CHECK_FALSE(style.writeDepth);
+            CHECK(style.drawBackfaces);
+            CHECK(style.twoPassAlpha);
+            CHECK(style.transparencyBin);
         }
         curves = resource.curveTexture->imageView->image->data;
         bands = resource.bandTexture->imageView->image->data;
@@ -649,6 +673,16 @@ TEST_CASE("vector overlays omit unsupported styling and warn once per source bui
             style.useGeometryColors = false;
             style.useGeometryWidths = false;
             PointStyle::dirty(reg, entity);
+        }
+        if (polygon)
+        {
+            auto& style = reg.get<PolygonStyle>(entity);
+            style.lighting = false;
+            style.writeDepth = true;
+            style.drawBackfaces = false;
+            style.twoPassAlpha = false;
+            style.transparencyBin = false;
+            PolygonStyle::dirty(reg, entity);
         }
         if (mesh)
         {
