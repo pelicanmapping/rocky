@@ -5,6 +5,7 @@
  * MIT License
  */
 #include "MeshSystem.h"
+#include "PolygonSystem.h"
 #include "OverlayRenderContext.h"
 #include "../ViewDependentState.h"
 #include "../ShaderDefines.h"
@@ -25,35 +26,48 @@ using namespace ROCKY_NAMESPACE::detail;
 RenderTextureSourceStatus MeshSystemNode::renderTextureSourceStatus(
     entt::registry& reg, entt::entity entity) const
 {
-    auto* mesh = reg.try_get<Mesh>(entity);
-    if (!mesh)
-        return {};
-
-    if (const auto* style = reg.try_get<MeshStyle>(mesh->style); style && style->texture != entt::null)
+    // Both primitives share GPU resources and readiness checks, but have independent caches.
+    auto sourceStatus = [&](const auto& primitive, const std::string& name) -> RenderTextureSourceStatus
     {
-        const auto* texture = reg.try_get<TextureResource>(style->texture);
-        if (!texture || !texture->ready)
-            return { RenderTextureSourceStatus::State::Waiting, "Waiting for mesh texture", true };
+        if (const auto* style = reg.try_get<MeshStyle>(primitive.style); style && style->texture != entt::null)
+        {
+            const auto* texture = reg.try_get<TextureResource>(style->texture);
+            if (!texture || !texture->ready)
+                return { RenderTextureSourceStatus::State::Waiting, "Waiting for " + name + " texture", true };
+        }
+
+        auto* geometry = reg.try_get<MeshGeometry>(primitive.geometry);
+        auto* detail = reg.try_get<MeshGeometryDetail>(primitive.geometry);
+        if (!geometry || !detail)
+            return { RenderTextureSourceStatus::State::Waiting, "Waiting for " + name + " geometry", true };
+
+        bool hasViewGeometry = false;
+        for (const auto& view : detail->views)
+        {
+            if (!view.geomNode || !view.root)
+                continue;
+
+            hasViewGeometry = true;
+            if (!view.geomNode->ready(_deviceID))
+                return { RenderTextureSourceStatus::State::Waiting, "Waiting for compiled " + name + " geometry", true };
+        }
+
+        return hasViewGeometry || geometry->vertices.empty() ? RenderTextureSourceStatus{} :
+            RenderTextureSourceStatus{
+                RenderTextureSourceStatus::State::Waiting, "Waiting for " + name + " view geometry", true };
+    };
+
+    if (const auto* mesh = reg.try_get<Mesh>(entity))
+    {
+        const auto status = sourceStatus(*mesh, "mesh");
+        if (status.state != RenderTextureSourceStatus::State::Ready)
+            return status;
     }
 
-    auto* geometry = reg.try_get<MeshGeometry>(mesh->geometry);
-    auto* detail = reg.try_get<MeshGeometryDetail>(mesh->geometry);
-    if (!geometry || !detail)
-        return { RenderTextureSourceStatus::State::Waiting, "Waiting for mesh geometry", true };
+    if (const auto* polygon = reg.try_get<PolygonRenderData>(entity); polygon && polygon->geometry != entt::null)
+        return sourceStatus(*polygon, "polygon");
 
-    bool hasViewGeometry = false;
-    for (const auto& view : detail->views)
-    {
-        if (!view.geomNode || !view.root)
-            continue;
-
-        hasViewGeometry = true;
-        if (!view.geomNode->ready(_deviceID))
-            return { RenderTextureSourceStatus::State::Waiting, "Waiting for compiled mesh geometry", true };
-    }
-
-    return hasViewGeometry || geometry->vertices.empty() ? RenderTextureSourceStatus{} :
-        RenderTextureSourceStatus{ RenderTextureSourceStatus::State::Waiting, "Waiting for mesh view geometry", true };
+    return {};
 }
 
 void MeshSystemNode::expandRenderTextureBounds(
@@ -713,12 +727,18 @@ MeshSystemNode::traverse(vsg::RecordTraversal& record) const
                         auto&& [mesh, active, visibility] = reg.get<Mesh, ActiveState, Visibility>(source);
                         renderEntity(source, mesh, active, visibility);
                     }
+                    if (reg.all_of<PolygonRenderData, ActiveState, Visibility>(source))
+                    {
+                        auto&& [polygon, active, visibility] = reg.get<PolygonRenderData, ActiveState, Visibility>(source);
+                        renderEntity(source, polygon, active, visibility);
+                    }
                 }
             }
             else
             {
                 auto iter = reg.view<Mesh, ActiveState, Visibility>();
                 iter.each(renderEntity);
+                reg.view<PolygonRenderData, ActiveState, Visibility>().each(renderEntity);
             }
 
             // Render collected data.
@@ -745,6 +765,7 @@ void
 MeshSystemNode::traverse(vsg::ConstVisitor& v) const
 {
     handleConstVisitor<Mesh, MeshGeometryDetail>(v);
+    handleConstVisitor<PolygonRenderData, MeshGeometryDetail>(v);
     Inherit::traverse(v);
 }
 
@@ -764,7 +785,7 @@ MeshSystemNode::update(VSGContext vsgcontext)
     // process any objects marked dirty
     _registry.read([&](entt::registry& reg)
         {
-            updateHighlights<Mesh>(reg);
+            updateHighlights<Mesh, PolygonRenderData>(reg);
 
             MeshStyle::eachDirty(reg, [&](entt::entity e)
                 {

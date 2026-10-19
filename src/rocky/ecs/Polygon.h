@@ -67,7 +67,7 @@ namespace ROCKY_NAMESPACE
         float resolution = 0.0f;
     };
 
-    /** Filled polygon primitive. */
+    /** Filled polygon primitive, independent of any Mesh on the same entity. */
     class ROCKY_EXPORT Polygon : public Component<Polygon>
     {
     public:

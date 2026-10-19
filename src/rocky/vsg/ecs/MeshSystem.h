@@ -151,7 +151,7 @@ namespace ROCKY_NAMESPACE
     }
 
     /**
-    * VSG node that renders Mesh components.
+    * Shared triangle renderer for Mesh components and private Polygon caches.
     */
     class ROCKY_EXPORT MeshSystemNode :
         public vsg::Inherit<detail::SimpleSystemNodeBase, MeshSystemNode>,

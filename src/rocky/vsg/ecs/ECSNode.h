@@ -160,12 +160,13 @@ namespace ROCKY_NAMESPACE
             //! Snapshots only highlighted primitives under the registry lock during update.
             //! Tint edits dirty CPU data for VSG's synchronized transfer; bindings remain stable until removal.
             //! Requires initializeHighlights() and no concurrent record traversal.
-            template<class COMPONENT_T>
+            template<class... COMPONENT_T>
             void updateHighlights(entt::registry& reg)
             {
                 for (auto it = _highlights.begin(); it != _highlights.end();)
                 {
-                    if (!reg.valid(it->first) || !reg.all_of<Highlight, COMPONENT_T>(it->first))
+                    if (!reg.valid(it->first) || !reg.all_of<Highlight>(it->first) ||
+                        !reg.any_of<COMPONENT_T...>(it->first))
                     {
                         dispose(it->second.bind);
                         it = _highlights.erase(it);
@@ -173,8 +174,10 @@ namespace ROCKY_NAMESPACE
                     else
                         ++it;
                 }
-                reg.view<Highlight, COMPONENT_T>().each([&](auto entity, const auto& highlight, const auto&)
+                reg.view<Highlight>().each([&](auto entity, const auto& highlight)
                 {
+                    if (!reg.any_of<COMPONENT_T...>(entity))
+                        return;
                     auto& entry = _highlights[entity];
                     const auto color = vsg::vec4(highlight.color.r, highlight.color.g, highlight.color.b, highlight.color.a);
                     if (!entry.bind)

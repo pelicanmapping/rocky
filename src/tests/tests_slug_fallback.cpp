@@ -676,9 +676,9 @@ TEST_CASE("vector overlays omit unsupported styling and warn once per source bui
     });
 }
 
-//! Tests the shared fallback decision's effect on derived meshes separately
+//! Tests the shared fallback decision's effect on cached triangles separately
 //! from the huge capacity fixture, keeping headless tessellation inexpensive.
-TEST_CASE("polygon raster fallback derives and retires its mesh without dirtying the source",
+TEST_CASE("polygon raster fallback derives and retires its triangles without dirtying the source",
     "[projection][slug][overlay-fallback]")
 {
     Registry registry = Registry::create();
@@ -708,10 +708,10 @@ TEST_CASE("polygon raster fallback derives and retires its mesh without dirtying
     entt::entity meshGeometry = entt::null, meshStyle = entt::null;
     registry.write([&](entt::registry& reg)
     {
-        REQUIRE(reg.any_of<Mesh>(entity));
-        const auto& mesh = reg.get<Mesh>(entity);
-        meshGeometry = mesh.geometry;
-        meshStyle = mesh.style;
+        CHECK_FALSE(reg.any_of<Mesh>(entity));
+        const auto& cache = reg.get<PolygonRenderData>(entity);
+        meshGeometry = cache.geometry;
+        meshStyle = cache.style;
         CHECK(reg.any_of<MeshGeometry>(meshGeometry));
         CHECK(reg.get<rocky::Polygon>(entity).componentRevision() == revision);
         reg.remove<OverlayVectorFallback>(entity);

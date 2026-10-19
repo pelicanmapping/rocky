@@ -17,14 +17,8 @@ using namespace ROCKY_NAMESPACE::detail;
 
 namespace ROCKY_NAMESPACE::detail
 {
-    /**
-     * Ownership record for the mesh resources derived from one Polygon.
-     *
-     * PolygonGeometry remains authoritative. The referenced entities are
-     * private caches consumed by MeshSystem and are destroyed whenever the
-     * polygon no longer needs ordinary or RTT rendering.
-     */
-    struct PolygonMeshAdapter
+    //! Owns disposable triangle resources and source revisions, including while a vector overlay has no triangles.
+    struct PolygonCache
     {
         entt::entity geometry = entt::null;
         entt::entity style = entt::null;
@@ -32,8 +26,6 @@ namespace ROCKY_NAMESPACE::detail
         entt::entity sourceStyle = entt::null;
         std::uint64_t sourceGeometryRevision = 0u;
         std::uint64_t sourceStyleRevision = 0u;
-        bool ownsMesh = false;
-        bool warnedAboutExistingMesh = false;
         bool overlayModeValid = false;
         OverlayMode overlayMode = OverlayMode::Raster;
     };
@@ -41,31 +33,28 @@ namespace ROCKY_NAMESPACE::detail
 
 namespace
 {
+    //! Resolves an explicit resource reference, falling back to the primitive owner.
     template<typename T>
     T* resolveComponent(entt::registry& registry, entt::entity reference, entt::entity owner)
     {
         return registry.try_get<T>(reference != entt::null ? reference : owner);
     }
 
-    bool needsDerivedMesh(entt::registry& registry, entt::entity entity)
+    //! Ordinary and raster rendering require triangles; vector overlays use the source rings.
+    bool needsTriangleCache(entt::registry& registry, entt::entity entity)
     {
         const auto* overlay = registry.try_get<Overlay>(entity);
         return !overlay || resolveOverlayMode(registry, entity, overlay->mode) != OverlayMode::Vector;
     }
 
-    void removeDerivedMesh(
-        entt::registry& registry,
-        entt::entity owner,
-        PolygonMeshAdapter& adapter)
+    //! Destroys only this polygon's private cache entities under the registry write lock.
+    void removeTriangleCache(entt::registry& registry, entt::entity owner, PolygonCache& data)
     {
-        if (adapter.ownsMesh && registry.any_of<Mesh>(owner))
-            registry.remove<Mesh>(owner);
-
-        const auto geometry = adapter.geometry;
-        const auto style = adapter.style;
-        adapter.geometry = entt::null;
-        adapter.style = entt::null;
-        adapter.ownsMesh = false;
+        registry.remove<PolygonRenderData>(owner);
+        const auto geometry = data.geometry;
+        const auto style = data.style;
+        data.geometry = entt::null;
+        data.style = entt::null;
 
         if (geometry != entt::null && registry.valid(geometry))
             registry.destroy(geometry);
@@ -73,6 +62,7 @@ namespace
             registry.destroy(style);
     }
 
+    //! Queues polygons referencing a changed or removed source resource for rebuilding.
     void markPolygonDependents(
         entt::registry& registry,
         entt::entity resource,
@@ -95,7 +85,7 @@ PolygonSystemNode::PolygonSystemNode(Registry& registry) :
         r.on_construct<Polygon>().connect<&PolygonSystemNode::on_construct_Polygon>(*this);
         r.on_update<Polygon>().connect<&PolygonSystemNode::on_update_Polygon>(*this);
         r.on_destroy<Polygon>().connect<&PolygonSystemNode::on_destroy_Polygon>(*this);
-        r.on_destroy<PolygonMeshAdapter>().connect<&PolygonSystemNode::on_destroy_PolygonMeshAdapter>(*this);
+        r.on_destroy<PolygonCache>().connect<&PolygonSystemNode::on_destroy_PolygonCache>(*this);
         r.on_construct<PolygonGeometry>().connect<&PolygonSystemNode::on_construct_PolygonGeometry>(*this);
         r.on_update<PolygonGeometry>().connect<&PolygonSystemNode::on_update_PolygonGeometry>(*this);
         r.on_destroy<PolygonGeometry>().connect<&PolygonSystemNode::on_destroy_PolygonGeometry>(*this);
@@ -142,12 +132,12 @@ void PolygonSystemNode::on_update_Polygon(entt::registry& r, entt::entity e)
 
 void PolygonSystemNode::on_destroy_Polygon(entt::registry& r, entt::entity e)
 {
-    r.remove<PolygonMeshAdapter>(e);
+    r.remove<PolygonCache>(e);
 }
 
-void PolygonSystemNode::on_destroy_PolygonMeshAdapter(entt::registry& r, entt::entity e)
+void PolygonSystemNode::on_destroy_PolygonCache(entt::registry& r, entt::entity e)
 {
-    removeDerivedMesh(r, e, r.get<PolygonMeshAdapter>(e));
+    removeTriangleCache(r, e, r.get<PolygonCache>(e));
 }
 
 void PolygonSystemNode::on_construct_PolygonGeometry(entt::registry& r, entt::entity e)
@@ -291,18 +281,18 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
 
         // Overlay fields are commonly edited in place and marked dirty rather
         // than patched through EnTT. Poll only polygon overlays for mode
-        // transitions so the derived mesh follows Raster/Vector switching reliably.
+        // transitions so the triangle cache follows Raster/Vector switching reliably.
         registry.view<Polygon, Overlay>().each(
             [&](auto entity, auto& polygon, const auto& overlay)
             {
-                auto* adapter = registry.try_get<PolygonMeshAdapter>(entity);
-                if (adapter &&
-                    (!adapter->overlayModeValid ||
-                        adapter->overlayMode != resolveOverlayMode(registry, entity, overlay.mode)))
+                auto* data = registry.try_get<PolygonCache>(entity);
+                if (data &&
+                    (!data->overlayModeValid ||
+                        data->overlayMode != resolveOverlayMode(registry, entity, overlay.mode)))
                 {
                     // A renderer mode transition changes the derived cache,
                     // not the source Polygon's revision. In particular, do not
-                    // invalidate a capacity fallback just by creating its mesh.
+                    // invalidate a capacity fallback just by creating its triangles.
                     changedPolygons.insert(entity);
                 }
             });
@@ -344,19 +334,19 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
             if (!polygon)
                 continue;
 
-            auto& adapter = registry.get_or_emplace<PolygonMeshAdapter>(entity);
+            auto& data = registry.get_or_emplace<PolygonCache>(entity);
             if (const auto* overlay = registry.try_get<Overlay>(entity))
             {
-                adapter.overlayMode = resolveOverlayMode(registry, entity, overlay->mode);
-                adapter.overlayModeValid = true;
+                data.overlayMode = resolveOverlayMode(registry, entity, overlay->mode);
+                data.overlayModeValid = true;
             }
             else
             {
-                adapter.overlayModeValid = false;
+                data.overlayModeValid = false;
             }
-            if (!needsDerivedMesh(registry, entity))
+            if (!needsTriangleCache(registry, entity))
             {
-                removeDerivedMesh(registry, entity, adapter);
+                removeTriangleCache(registry, entity, data);
                 continue;
             }
 
@@ -369,7 +359,7 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
 
             if (!geometry)
             {
-                removeDerivedMesh(registry, entity, adapter);
+                removeTriangleCache(registry, entity, data);
                 continue;
             }
 
@@ -380,35 +370,22 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
             const auto sourceGeometryRevision = geometry->componentRevision();
             const auto sourceStyleRevision = style ? style->componentRevision() : 0u;
 
-            if (registry.any_of<Mesh>(entity) && !adapter.ownsMesh)
-            {
-                if (!adapter.warnedAboutExistingMesh)
-                {
-                    Log()->warn(
-                        "PolygonSystemNode: entity {} already has a caller-owned Mesh; "
-                        "the Polygon will not create another normal-rendering primitive",
-                        entt::to_integral(entity));
-                    adapter.warnedAboutExistingMesh = true;
-                }
-                continue;
-            }
-
-            if (adapter.geometry == entt::null || !registry.valid(adapter.geometry))
-                adapter.geometry = registry.create();
-            if (adapter.style == entt::null || !registry.valid(adapter.style))
-                adapter.style = registry.create();
+            if (data.geometry == entt::null || !registry.valid(data.geometry))
+                data.geometry = registry.create();
+            if (data.style == entt::null || !registry.valid(data.style))
+                data.style = registry.create();
 
             const float effectiveDepthOffset = registry.any_of<Overlay>(entity) ?
                 0.0f : resolvedStyle.depthOffset;
             const auto* currentMeshStyle =
-                registry.try_get<MeshStyle>(adapter.style);
+                registry.try_get<MeshStyle>(data.style);
             const bool resolutionChanged =
                 !currentMeshStyle ||
                 currentMeshStyle->resolution != resolvedStyle.resolution;
             const bool styleChanged =
                 !currentMeshStyle ||
-                adapter.sourceStyle != sourceStyle ||
-                adapter.sourceStyleRevision != sourceStyleRevision ||
+                data.sourceStyle != sourceStyle ||
+                data.sourceStyleRevision != sourceStyleRevision ||
                 currentMeshStyle->depthOffset != effectiveDepthOffset;
             // Only color inputs baked into vertices require retessellation. Render-state
             // edits (such as wireframe) must reuse geometry even with per-polygon colors.
@@ -417,9 +394,9 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
                 currentMeshStyle->useGeometryColors != resolvedStyle.useGeometryColors ||
                 (resolvedStyle.useGeometryColors && currentMeshStyle->color != resolvedStyle.color);
             const bool geometryChanged =
-                !registry.any_of<MeshGeometry>(adapter.geometry) ||
-                adapter.sourceGeometry != sourceGeometry ||
-                adapter.sourceGeometryRevision != sourceGeometryRevision ||
+                !registry.any_of<MeshGeometry>(data.geometry) ||
+                data.sourceGeometry != sourceGeometry ||
+                data.sourceGeometryRevision != sourceGeometryRevision ||
                 resolutionChanged ||
                 colorsChanged;
 
@@ -429,9 +406,9 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
                 FeatureBuilder builder;
                 builder.buildMeshGeometry(*geometry, resolvedStyle, meshGeometry);
                 registry.emplace_or_replace<MeshGeometry>(
-                    adapter.geometry, std::move(meshGeometry));
-                adapter.sourceGeometry = sourceGeometry;
-                adapter.sourceGeometryRevision = sourceGeometryRevision;
+                    data.geometry, std::move(meshGeometry));
+                data.sourceGeometry = sourceGeometry;
+                data.sourceGeometryRevision = sourceGeometryRevision;
             }
 
             if (styleChanged)
@@ -445,26 +422,16 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
                 meshStyle.wireframe = resolvedStyle.wireframe;
                 meshStyle.stipplePattern = resolvedStyle.stipplePattern;
                 registry.emplace_or_replace<MeshStyle>(
-                    adapter.style, std::move(meshStyle));
-                adapter.sourceStyle = sourceStyle;
-                adapter.sourceStyleRevision = sourceStyleRevision;
+                    data.style, std::move(meshStyle));
+                data.sourceStyle = sourceStyle;
+                data.sourceStyleRevision = sourceStyleRevision;
             }
 
-            auto& generatedGeometry = registry.get<MeshGeometry>(adapter.geometry);
-            auto& generatedStyle = registry.get<MeshStyle>(adapter.style);
-
-            if (!adapter.ownsMesh)
-            {
-                registry.emplace<Mesh>(entity, generatedGeometry, generatedStyle);
-                adapter.ownsMesh = true;
-            }
-            else
-            {
-                auto& mesh = registry.get<Mesh>(entity);
-                mesh.geometry = adapter.geometry;
-                mesh.style = adapter.style;
-                mesh.dirty(registry);
-            }
+            // Publish only triangle-backed polygons so vector-only overlays do not
+            // enter the shared renderer's per-view draw and picking scans.
+            auto& renderData = registry.get_or_emplace<PolygonRenderData>(entity);
+            renderData.geometry = data.geometry;
+            renderData.style = data.style;
         }
     });
 

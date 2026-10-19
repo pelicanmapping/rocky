@@ -10,6 +10,20 @@
 
 namespace ROCKY_NAMESPACE
 {
+    namespace detail
+    {
+        /**
+         * Private draw references published only while a Polygon needs triangles.
+         * PolygonSystem owns these cache entities; the shared triangle renderer
+         * consumes them without creating or modifying a Mesh component.
+         */
+        struct PolygonRenderData
+        {
+            entt::entity geometry = entt::null;
+            entt::entity style = entt::null;
+        };
+    }
+
     /**
      * Maintains the ordinary-rendering representation of Polygon components
      * and exposes their source bounds to render-to-texture projector fitting.
@@ -38,8 +52,8 @@ namespace ROCKY_NAMESPACE
         void on_construct_Polygon(entt::registry&, entt::entity);
         void on_update_Polygon(entt::registry&, entt::entity);
         void on_destroy_Polygon(entt::registry&, entt::entity);
-        //! Retires derived resources even when whole-entity destruction removes the adapter before Polygon.
-        void on_destroy_PolygonMeshAdapter(entt::registry&, entt::entity);
+        //! Retires cached triangles even when whole-entity destruction removes the cache before Polygon.
+        void on_destroy_PolygonCache(entt::registry&, entt::entity);
         void on_construct_PolygonGeometry(entt::registry&, entt::entity);
         void on_update_PolygonGeometry(entt::registry&, entt::entity);
         void on_destroy_PolygonGeometry(entt::registry&, entt::entity);

@@ -949,9 +949,8 @@ namespace
                 registry, polygon->style, entity));
         }
 
-        // Polygon is authoritative for filled-area rendering when both are
-        // present, so a derived or redundant Mesh must not enter the atlas.
-        const auto* mesh = polygon ? nullptr : registry.try_get<Mesh>(entity);
+        // Polygon and Mesh are independent primitives, even on the same entity.
+        const auto* mesh = registry.try_get<Mesh>(entity);
         hashComponent(signature, mesh);
         if (mesh)
         {
@@ -1244,7 +1243,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
                 foundPrimitive = true;
                 addPolygon(registry, entity, worldSRS, *polygon, build);
             }
-            else if (const auto* mesh = registry.try_get<Mesh>(entity))
+            if (const auto* mesh = registry.try_get<Mesh>(entity); mesh && build.error.empty())
             {
                 foundPrimitive = true;
                 build.warnings.emplace_back(

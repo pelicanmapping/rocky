@@ -272,7 +272,7 @@ TEST_CASE("mesh texture readiness and sampling flags", "[texture][ecs]")
     CHECK_FALSE(cached.textureMatches(style.texture, nullptr));
 }
 
-//! Polygon adapters share the texture entity and retire only derived geometry/style, never the supplied texture.
+//! Polygon caches share the texture entity and retire only derived geometry/style, never the supplied texture.
 TEST_CASE("polygon forwards a shared texture without owning it", "[texture][polygon]")
 {
     Registry registry = Registry::create();
@@ -299,9 +299,10 @@ TEST_CASE("polygon forwards a shared texture without owning it", "[texture][poly
     RenderTextureRevision beforeMesh, beforePolygon;
     registry.write([&](entt::registry& reg)
     {
-        const auto& mesh = reg.get<Mesh>(polygon);
-        meshGeometry = mesh.geometry;
-        meshStyle = mesh.style;
+        CHECK_FALSE(reg.any_of<Mesh>(polygon));
+        const auto& cache = reg.get<PolygonRenderData>(polygon);
+        meshGeometry = cache.geometry;
+        meshStyle = cache.style;
         geometryRevision = reg.get<MeshGeometry>(meshGeometry).componentRevision();
         CHECK(reg.get<MeshStyle>(meshStyle).texture == texture);
         meshes->contributeRenderTextureRevision(reg, polygon, beforeMesh);
@@ -315,7 +316,7 @@ TEST_CASE("polygon forwards a shared texture without owning it", "[texture][poly
         RenderTextureRevision afterMesh, afterPolygon;
         meshes->contributeRenderTextureRevision(reg, polygon, afterMesh);
         polygons->contributeRenderTextureRevision(reg, polygon, afterPolygon);
-        CHECK(afterMesh.content != beforeMesh.content);
+        CHECK(afterMesh.content == beforeMesh.content);
         CHECK(afterPolygon.content != beforePolygon.content);
         CHECK(afterMesh.bounds == beforeMesh.bounds);
         CHECK(afterPolygon.bounds == beforePolygon.bounds);

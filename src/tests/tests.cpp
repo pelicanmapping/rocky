@@ -382,7 +382,7 @@ TEST_CASE("polygon geometry preserves rings and triangulates holes", "[featurebu
     CHECK(area == Approx(12.0).epsilon(1e-6));
 }
 
-TEST_CASE("polygon system owns only its derived mesh", "[polygon][projection]")
+TEST_CASE("polygon system owns only its private triangle cache", "[polygon][projection]")
 {
     Registry registry = Registry::create();
     auto polygonSystem = PolygonSystemNode::create(registry);
@@ -416,10 +416,11 @@ TEST_CASE("polygon system owns only its derived mesh", "[polygon][projection]")
     std::uint64_t firstGeometryRevision = 0u;
     registry.read([&](entt::registry& reg)
     {
-        REQUIRE(reg.any_of<Mesh>(entity));
-        const auto& mesh = reg.get<Mesh>(entity);
-        firstGeometry = mesh.geometry;
-        firstStyle = mesh.style;
+        CHECK_FALSE(reg.any_of<Mesh>(entity));
+        REQUIRE(reg.any_of<detail::PolygonRenderData>(entity));
+        const auto& cache = reg.get<detail::PolygonRenderData>(entity);
+        firstGeometry = cache.geometry;
+        firstStyle = cache.style;
         REQUIRE(reg.valid(firstGeometry));
         REQUIRE(reg.valid(firstStyle));
         CHECK_FALSE(reg.get<MeshGeometry>(firstGeometry).vertices.empty());
@@ -467,10 +468,11 @@ TEST_CASE("polygon system owns only its derived mesh", "[polygon][projection]")
 
     registry.read([&](entt::registry& reg)
     {
-        REQUIRE(reg.any_of<Mesh>(entity));
-        const auto& mesh = reg.get<Mesh>(entity);
-        CHECK(mesh.geometry == firstGeometry);
-        CHECK(mesh.style == firstStyle);
+        CHECK_FALSE(reg.any_of<Mesh>(entity));
+        REQUIRE(reg.any_of<detail::PolygonRenderData>(entity));
+        const auto& cache = reg.get<detail::PolygonRenderData>(entity);
+        CHECK(cache.geometry == firstGeometry);
+        CHECK(cache.style == firstStyle);
         CHECK(reg.get<MeshStyle>(firstStyle).depthOffset == Approx(0.0f));
     });
 
@@ -491,11 +493,12 @@ TEST_CASE("polygon system owns only its derived mesh", "[polygon][projection]")
         CHECK_FALSE(reg.valid(firstGeometry));
         CHECK_FALSE(reg.valid(firstStyle));
 #else
-        // Vector fallback keeps the mesh and its caches ready for Raster.
-        REQUIRE(reg.any_of<Mesh>(entity));
-        const auto& mesh = reg.get<Mesh>(entity);
-        CHECK(mesh.geometry == firstGeometry);
-        CHECK(mesh.style == firstStyle);
+        // Vector fallback keeps the triangle caches ready for Raster.
+        CHECK_FALSE(reg.any_of<Mesh>(entity));
+        REQUIRE(reg.any_of<detail::PolygonRenderData>(entity));
+        const auto& cache = reg.get<detail::PolygonRenderData>(entity);
+        CHECK(cache.geometry == firstGeometry);
+        CHECK(cache.style == firstStyle);
         CHECK(reg.get<MeshStyle>(firstStyle).depthOffset == Approx(0.0f));
 #endif
     });
@@ -513,10 +516,11 @@ TEST_CASE("polygon system owns only its derived mesh", "[polygon][projection]")
     entt::entity secondStyle = entt::null;
     registry.write([&](entt::registry& reg)
     {
-        REQUIRE(reg.any_of<Mesh>(entity));
-        const auto& mesh = reg.get<Mesh>(entity);
-        secondGeometry = mesh.geometry;
-        secondStyle = mesh.style;
+        CHECK_FALSE(reg.any_of<Mesh>(entity));
+        REQUIRE(reg.any_of<detail::PolygonRenderData>(entity));
+        const auto& cache = reg.get<detail::PolygonRenderData>(entity);
+        secondGeometry = cache.geometry;
+        secondStyle = cache.style;
         reg.remove<rocky::Polygon>(entity);
         CHECK_FALSE(reg.any_of<Mesh>(entity));
         CHECK_FALSE(reg.valid(secondGeometry));
@@ -557,7 +561,7 @@ TEST_CASE("polygon render-state edits reuse colored geometry", "[polygon][projec
     std::vector<glm::fvec4> originalColors;
     registry.read([&](entt::registry& reg)
     {
-        meshGeometry = reg.get<Mesh>(entity).geometry;
+        meshGeometry = reg.get<detail::PolygonRenderData>(entity).geometry;
         const auto& geometry = reg.get<MeshGeometry>(meshGeometry);
         geometryRevision = geometry.componentRevision();
         originalColors = geometry.colors;
@@ -567,7 +571,7 @@ TEST_CASE("polygon render-state edits reuse colored geometry", "[polygon][projec
         CHECK(originalColors.back() == StockColor::Yellow);
     });
 
-    SECTION("render state changes preserve the existing mesh in both directions")
+    SECTION("render state changes preserve the cached triangles in both directions")
     {
         for (bool enabled : { true, false })
         {
@@ -583,12 +587,12 @@ TEST_CASE("polygon render-state edits reuse colored geometry", "[polygon][projec
             polygonSystem->update(context.get());
             registry.read([&](entt::registry& reg)
             {
-                const auto& mesh = reg.get<Mesh>(entity);
-                CHECK(mesh.geometry == meshGeometry);
+                const auto& cache = reg.get<detail::PolygonRenderData>(entity);
+                CHECK(cache.geometry == meshGeometry);
                 const auto& geometry = reg.get<MeshGeometry>(meshGeometry);
                 CHECK(geometry.componentRevision() == geometryRevision);
                 CHECK(geometry.colors == originalColors);
-                const auto& style = reg.get<MeshStyle>(mesh.style);
+                const auto& style = reg.get<MeshStyle>(cache.style);
                 CHECK(style.wireframe == enabled);
                 CHECK(style.stipplePattern == (enabled ? 0x00FFu : 0xFFFFu));
                 CHECK(style.depthOffset == (enabled ? 25.0f : 0.0f));

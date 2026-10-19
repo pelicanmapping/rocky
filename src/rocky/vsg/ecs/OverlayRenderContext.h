@@ -16,7 +16,7 @@ namespace ROCKY_NAMESPACE
     namespace detail
     {
         //! Renderer-owned capacity fallback for one Overlay. SlugSystem keeps
-        //! this decision until the source signature changes; generated meshes
+        //! this decision until the source signature changes; cached triangles
         //! and automatic projector refits must not invalidate that signature.
         //! Contains no GPU resources and disappears with its owning Overlay.
         struct OverlayVectorFallback
@@ -26,7 +26,7 @@ namespace ROCKY_NAMESPACE
 
         // Resolve backend availability without modifying the requested mode.
         // All overlay producers and consumers must agree on this decision;
-        // in particular, Raster fallback still needs Polygon's derived mesh.
+        // in particular, Raster fallback still needs Polygon's cached triangles.
         // The facade adapter reports fallback once per Overlay instance.
         inline OverlayMode resolveOverlayMode(OverlayMode requested)
         {
