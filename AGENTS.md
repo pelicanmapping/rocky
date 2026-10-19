@@ -14,18 +14,18 @@ Geospatial accurancy and precision are also high priority.
 This project uses CMake to build.
 Do not attempt to figure out how to build this project on your own.  Use these instructions.
 In a worktree, put the build folder wherever you want.
-The build folder is (usually) in ../build (but the user MAY have overridden that with the bootstrap script).
+The build folder is (usually) in ./build (but the user MAY have overridden that with the bootstrap script).
 Out-of-source builds are preferred.
 
 To configure this project you can run this from the root folder:
 ```
-build/configure.bat
+scripts/configure.bat
 ```
-This will create an out of source cmake build in a directory called "../build".
+This will create an out of source cmake build in the root directory called "build".
 
 To build the project run this command from the root folder:
 ```
-build/build.bat
+scripts/build.bat
 ```
 Keep in mind that it could take a long time to build the project from scratch.
 
