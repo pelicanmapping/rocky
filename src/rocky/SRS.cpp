@@ -51,6 +51,46 @@ namespace
         return s.find(pattern) != std::string::npos;
     }
 
+    //! Classify a CRS through bound/compound wrappers without changing its datum operation.
+    //! Return whether the horizontal CRS is bound. The input is borrowed; temporary objects are destroyed.
+    //! Missing components leave types unchanged.
+    bool get_crs_types(PJ_CONTEXT* ctx, const PJ* pj, PJ_TYPE& horizontal, PJ_TYPE& vertical)
+    {
+        const auto type = proj_get_type(pj);
+        if (type == PJ_TYPE_BOUND_CRS)
+        {
+            PJ* source = proj_get_source_crs(ctx, pj);
+            if (source)
+            {
+                get_crs_types(ctx, source, horizontal, vertical);
+                proj_destroy(source);
+            }
+            return true;
+        }
+        else if (type == PJ_TYPE_COMPOUND_CRS)
+        {
+            PJ* horiz = proj_crs_get_sub_crs(ctx, pj, 0);
+            bool bound = false;
+            if (horiz)
+            {
+                bound = get_crs_types(ctx, horiz, horizontal, vertical);
+                proj_destroy(horiz);
+            }
+            PJ* vert = proj_crs_get_sub_crs(ctx, pj, 1);
+            if (vert)
+            {
+                vertical = proj_get_type(vert);
+                proj_destroy(vert);
+            }
+            return bound;
+        }
+        else
+        {
+            horizontal = type;
+        }
+        return false;
+    }
+
 
     //! Per thread proj threading context.
     thread_local PJ_CONTEXT* g_pj_thread_local_context = nullptr;
@@ -79,6 +119,7 @@ namespace
         SRS geodeticSRS;
         SRS geocentricSRS;
         bool isQSC = false;
+        bool isBound = false;
     };
 
     //! SRS data factory and PROJ main interface
@@ -215,23 +256,7 @@ namespace
                 {
                     // extract the type
                     new_entry.crs_type = proj_get_type(pj);
-
-                    if (new_entry.crs_type == PJ_TYPE_COMPOUND_CRS)
-                    {
-                        constexpr int HORIZONTAL = 0, VERTICAL = 1;
-
-                        PJ* horiz = proj_crs_get_sub_crs(ctx, pj, HORIZONTAL);
-                        if (horiz)
-                            new_entry.horiz_crs_type = proj_get_type(horiz);
-
-                        PJ* vert = proj_crs_get_sub_crs(ctx, pj, VERTICAL);
-                        if (vert)
-                            new_entry.vert_crs_type = proj_get_type(vert);
-                    }
-                    else
-                    {
-                        new_entry.horiz_crs_type = new_entry.crs_type;
-                    }
+                    new_entry.isBound = get_crs_types(ctx, pj, new_entry.horiz_crs_type, new_entry.vert_crs_type);
 
                     // extract the ellipsoid parameters.
                     // if this fails, the entry will contain the default WGS84 ellipsoid, and that is ok.
@@ -684,9 +709,6 @@ SRS::horizontallyEquivalentTo(const SRS& rhs) const
     if (definition().empty() || rhs.definition().empty())
         return false;
 
-    if (isGeodetic() && rhs.isGeodetic() && ellipsoid() == rhs.ellipsoid())
-        return true;
-
     auto& lhs_entry = g_srs_factory().get_or_create(definition());
     PJ* pj1 = lhs_entry.pj;
     if (!pj1)
@@ -696,6 +718,10 @@ SRS::horizontallyEquivalentTo(const SRS& rhs) const
     PJ* pj2 = rhs_entry.pj;
     if (!pj2)
         return false;
+
+    if (!lhs_entry.isBound && !rhs_entry.isBound &&
+        isGeodetic() && rhs.isGeodetic() && ellipsoid() == rhs.ellipsoid())
+        return true;
 
     if (lhs_entry.crs_type != rhs_entry.crs_type)
         return false;
