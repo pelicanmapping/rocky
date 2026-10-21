@@ -25,9 +25,10 @@ if [ ! -f "$VCPKG_TOOLCHAIN_FILE" ]; then
 fi
 
 # Default values
-SOURCE_DIR=.
+SCRIPT_PATH="$(dirname "$(realpath "$0")" )"
+SOURCE_DIR="$SCRIPT_PATH"
 KERNEL=`uname -s`
-BUILD_DIR="../rocky-build-$KERNEL"
+BUILD_DIR="$SCRIPT_PATH/rocky-build-$KERNEL"
 GENERATOR="Unix Makefiles"
 
 # Parse command-line arguments

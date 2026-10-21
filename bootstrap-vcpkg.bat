@@ -41,7 +41,7 @@ for %%A in (%*) do (
 
 :: Argument parser from: https://stackoverflow.com/a/8162578
 setlocal enableDelayedExpansion
-set "options=-S:. -B:..\build -I:..\install -G:"Visual Studio 17 2022" -A:x64"
+set "options=-S:%~dp0 -B:%~dp0\build -I:%~dp0\build\install -G:"Visual Studio 17 2022" -A:x64"
 for %%O in (%options%) do for /f "tokens=1,* delims=:" %%A in ("%%O") do set "%%A=%%~B"
 :loopArgs
     if not "%~1"=="" (
