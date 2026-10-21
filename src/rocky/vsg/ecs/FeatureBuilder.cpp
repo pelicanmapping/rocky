@@ -972,6 +972,10 @@ namespace
         const double padding = std::max(bounds.width(), bounds.height()) * 1e-6;
 
         weemesh::mesh_t mesh;
+        // Resolve boundary intersections at a tolerance well below the seed padding.
+        // The default mesh tolerance can merge distinct cuts on narrow seed triangles,
+        // leaving an exterior seed vertex connected to the polygon at the wrong Z.
+        mesh.epsilon = std::max(bounds.width(), bounds.height()) * 1e-12;
         const int marker = 0;
         const glm::dvec3 corners[] = {
             { bounds.xmin - padding, bounds.ymin - padding, average_z },
