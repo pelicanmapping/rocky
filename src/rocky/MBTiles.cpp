@@ -185,16 +185,19 @@ MBTiles::Driver::open(
             {
                 // try to parse it as a JSON config
                 auto j = parse_json(profileStr);
-                // todo: error check.
+                if (j.status.ok())
+                {
+                    // new style, as written by Profile::to_json(). e.g., "global-geodetic" (a JSON string)
+                    // or {"extent":{...},"tx":1,"ty":1}
+                    get_to(j, profile);
 
-                // new style. e.g., "global-geodetic"
-                get_to(j, profile);
+                    // old style. e.g., {"profile":"global-geodetic"}
+                    if (!profile.valid())
+                        get_to(j, "profile", profile);
+                }
 
-                // old style. e.g., {"profile":"global-geodetic"}
-                if (!profile.valid())
-                    get_to(j, "profile", profile);
-
-                // if that didn't work, try parsing it directly
+                // if that didn't work, try parsing it directly, e.g. a bare well-known name
+                // or the legacy osgEarth form {"profile":{"srs":...,"xmin":...}}
                 if (!profile.valid())
                     profile = Profile(profileStr);
             }
