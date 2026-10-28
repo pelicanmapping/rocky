@@ -47,7 +47,7 @@ auto Demo_Label = [](Application& app)
             style.iconSizePixels = (float)style.icon->height();
 
         // Label data to render in the widget
-        auto& label = reg.emplace<Label>(entity, "London", style);
+        auto& label = reg.emplace<Label>(entity, "London\nEngland\nUK", style);
         
         // Attach a transform to place and move the label:
         auto& transform = reg.emplace<Transform>(entity);
@@ -83,9 +83,14 @@ auto Demo_Label = [](Application& app)
             char buf[256];
             std::copy(label.text.begin(), label.text.end(), buf);
             buf[label.text.length()] = '\0';
-            if (ImGuiLTable::InputText("Text", &buf[0], 255))
+            ImGui::TableNextColumn();
+            ImGui::TextUnformatted("Text");
+            ImGui::TableNextColumn();
+            if (ImGui::InputTextMultiline("##LabelText", buf, sizeof(buf),
+                ImVec2(-1.0f, ImGui::GetTextLineHeight() * 4.0f)))
             {
                 label.text = std::string(buf);
+                app.vsgcontext->requestFrame();
             }
         }
 
@@ -102,6 +107,14 @@ auto Demo_Label = [](Application& app)
 
         if (ImGuiLTable::SliderFloat("Text outline size", &style.textOutlineSize, 0.0f, 3.0f, "%.0f"))
             app.vsgcontext->requestFrame();
+
+        const char* justifications[] = { "Left", "Center", "Right" };
+        int justify = static_cast<int>(style.textJustify);
+        if (ImGuiLTable::Combo("Multiline justify", &justify, justifications, 3))
+        {
+            style.textJustify = static_cast<LabelStyle::Justify>(justify);
+            app.vsgcontext->requestFrame();
+        }
 
         if (ImGuiLTable::SliderFloat("Text pivot X", &style.textPivot.x, 0.0f, 1.0f, "%.2f"))
             app.vsgcontext->requestFrame();

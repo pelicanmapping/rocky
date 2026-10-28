@@ -166,8 +166,14 @@ EVSG_type_name(rocky::detail::ImGuiDispatcher)
 
 namespace ImGuiEx
 {
+    //! Draw a bounded text view with an outline in the current ImGui window; empty views are a no-op.
     static bool TextOutlined(const ImVec4& outlineColor, unsigned outlinePixels, std::string_view text)
     {
+        if (text.empty())
+            return false;
+
+        const char* begin = text.data();
+        const char* end = begin + text.size();
         auto dl = ImGui::GetWindowDrawList();
         auto font = ImGui::GetFont();
         auto size = ImGui::GetFontSize();
@@ -181,20 +187,21 @@ namespace ImGuiEx
             for (int x = -(int)outlinePixels; x <= (int)outlinePixels; ++x)
                 if (x != 0 || y != 0) {
                     ImU32 alpha = 0x00FFFFFF | ((0xFF / (int)pow(2, std::max(0, std::max(std::abs(x) - 1, std::abs(y) - 1)))) << 24);
-                    dl->AddText(font, size, ImVec2(pos.x + x, pos.y + y), alpha & outline_col, &text.front());
+                    dl->AddText(font, size, ImVec2(pos.x + x, pos.y + y), alpha & outline_col, begin, end);
                 }
 
         // Center (fill) pass
-        dl->AddText(font, size, pos, text_col, &text.front());
+        dl->AddText(font, size, pos, text_col, begin, end);
 
         // Advance layout so subsequent widgets appear after the text
-        const ImVec2 sz = font->CalcTextSizeA(size, FLT_MAX, 0.0f, &text.front());
+        const ImVec2 sz = font->CalcTextSizeA(size, FLT_MAX, 0.0f, begin, end);
 
         ImGui::Dummy(ImVec2(sz.x, sz.y));
 
         return true;
     }
 
+    //! Draw a bounded text view with a one-pixel outline in the current ImGui window.
     static bool TextOutlined(const ImVec4& outlineColor, std::string_view text)
     {
         return TextOutlined(outlineColor, 1, text);

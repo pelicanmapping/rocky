@@ -17,6 +17,14 @@ namespace ROCKY_NAMESPACE
     */
     struct LabelStyle : public Component<LabelStyle>
     {
+        //! Horizontal alignment of lines within a multiline text block.
+        enum class Justify
+        {
+            Left,
+            Center,
+            Right
+        };
+
         //! Filename of the font to use
         std::string fontName;
 
@@ -32,11 +40,14 @@ namespace ROCKY_NAMESPACE
         //! Text outline color, when textOutlineSize > 0
         Color textOutlineColor = Color("#0f0f0f");
 
-        //! Unit location of the pivot point; for alignment.
+        //! Alignment of lines within the widest line's width; single-line text is unaffected.
+        Justify textJustify = Justify::Left;
+
+        //! Unit location of the pivot point in the whole text block, including its outline.
         //! Each dimension is [0..1] where 0 is upper-left, 1 is lower-right.
         glm::fvec2 textPivot = { 0.5f, 0.5f };
 
-        //! Screen offset of the label from its transformed position, in pixels
+        //! Screen offset of the text block's pivot from its transformed position, in pixels
         glm::ivec2 textOffset = { 0, 0 };
 
 

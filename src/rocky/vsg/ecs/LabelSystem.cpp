@@ -92,6 +92,7 @@ LabelSystem::LabelSystem(Registry& registry) :
             const bool hasIcon = styleDetail.iconImage && style.iconSizePixels > 0.0f;
 
             ImVec2 textDrawPos = anchor;
+            ImVec2 textSize{ 0.0f, 0.0f };
             ImVec2 iconDrawPos = anchor;
             ImVec2 rectMin{ FLT_MAX, FLT_MAX };
             ImVec2 rectMax{ -FLT_MAX, -FLT_MAX };
@@ -146,7 +147,7 @@ LabelSystem::LabelSystem(Registry& registry) :
             {
                 ImFont* imguiFont = ImGui::GetFont();
                 const float fontSize = ImGui::GetFontSize();
-                const ImVec2 textSize = imguiFont->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, label.text.c_str());
+                textSize = imguiFont->CalcTextSizeA(fontSize, FLT_MAX, 0.0f, label.text.c_str());
                 const float outlineSize = std::max(0.0f, style.textOutlineSize);
                 const ImVec2 labelSize{
                     textSize.x + 2.0f * outlineSize,
@@ -196,11 +197,43 @@ LabelSystem::LabelSystem(Registry& registry) :
 
             if (hasText)
             {
-                ImGui::SetCursorScreenPos(textDrawPos);
-                ImGuiEx::TextOutlined(
-                    ImVec4(style.textOutlineColor[0], style.textOutlineColor[1], style.textOutlineColor[2], style.textOutlineColor[3]),
-                    style.textOutlineSize,
-                    label.text.c_str());
+                const ImVec4 outlineColor{
+                    style.textOutlineColor[0], style.textOutlineColor[1],
+                    style.textOutlineColor[2], style.textOutlineColor[3] };
+                const auto outlinePixels = static_cast<unsigned>(std::max(0.0f, style.textOutlineSize));
+                std::string_view text(label.text.c_str());
+                if (style.textJustify == LabelStyle::Justify::Left || text.find('\n') == std::string_view::npos)
+                {
+                    ImGui::SetCursorScreenPos(textDrawPos);
+                    ImGuiEx::TextOutlined(outlineColor, outlinePixels, text);
+                }
+                else
+                {
+                    ImFont* font = ImGui::GetFont();
+                    const float fontSize = ImGui::GetFontSize();
+                    const float alignment = style.textJustify == LabelStyle::Justify::Right ? 1.0f : 0.5f;
+                    float y = textDrawPos.y;
+
+                    // Position lines inside the anchored block without allocating substrings.
+                    // Blank lines advance by one font height, matching ImGui's multiline layout.
+                    while (!text.empty())
+                    {
+                        const auto newline = text.find('\n');
+                        const auto line = text.substr(0, newline);
+                        if (!line.empty())
+                        {
+                            const float width = font->CalcTextSizeA(
+                                fontSize, FLT_MAX, 0.0f, line.data(), line.data() + line.size()).x;
+                            ImGui::SetCursorScreenPos(ImVec2{
+                                textDrawPos.x + (textSize.x - width) * alignment, y });
+                            ImGuiEx::TextOutlined(outlineColor, outlinePixels, line);
+                        }
+                        if (newline == std::string_view::npos)
+                            break;
+                        text.remove_prefix(newline + 1);
+                        y += fontSize;
+                    }
+                }
             }
 
 #ifdef USE_DYNAMIC_FONTS
