@@ -1,4 +1,2 @@
-build/vcpkg
-build/x64-windows
-build/install/
-imgui.ini
+build/**
+rocky-build-*/**
