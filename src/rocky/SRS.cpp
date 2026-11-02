@@ -220,9 +220,9 @@ namespace
                         to_try = "+proj=longlat +R=1737400 +no_defs +type=crs";
 
                     // if it's a PROJ string, be sure to add the +type=crs
-                    if (contains(ndef, "+proj"))
+                    if (::contains(ndef, "+proj"))
                     {
-                        if (!contains(ndef, "proj=pipeline") && !contains(ndef, "type=crs"))
+                        if (!::contains(ndef, "proj=pipeline") && !::contains(ndef, "type=crs"))
                         {
                             to_try += " +type=crs";
                         }
@@ -351,20 +351,20 @@ namespace
                             new_entry.bounds = Box(-180, -90, 180, 90);
                         }
 
-                        else if (contains(new_entry.proj, "proj=utm"))
+                        else if (::contains(new_entry.proj, "proj=utm"))
                         {
-                            if (contains(new_entry.proj, "+south"))
+                            if (::contains(new_entry.proj, "+south"))
                                 new_entry.bounds = Box(166000, 1116915, 834000, 10000000);
                             else
                                 new_entry.bounds = Box(166000, 0, 834000, 9330000);
                         }
 
-                        else if (contains(new_entry.proj, "proj=merc"))
+                        else if (::contains(new_entry.proj, "proj=merc"))
                         {
                             new_entry.bounds = Box(-20037508.34278925, -20037508.34278925, 20037508.34278925, 20037508.34278925);
                         }
 
-                        else if (contains(new_entry.proj, "proj=qsc"))
+                        else if (::contains(new_entry.proj, "proj=qsc"))
                         {
                             new_entry.bounds = Box(-6378137, -6378137, 6378137, 6378137);
                         }

@@ -356,13 +356,13 @@ VSGContextImpl::ctor(int& argc, char** argv)
         else if (log_level == "off") Log()->set_level(spdlog::level::off);
     }
 
-#ifdef ROCKY_HAS_GDAL
-    readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());
-#endif
-
 #ifdef ROCKY_HAS_VSGXCHANGE
     // Adds all the readerwriters in vsgxchange to the options data.
     readerWriterOptions->add(vsgXchange::all::create());
+#endif
+
+#ifdef ROCKY_HAS_GDAL
+    readerWriterOptions->add(GDAL_VSG_ReaderWriter::create());
 #endif
 
     // For system fonts
