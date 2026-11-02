@@ -22,8 +22,10 @@ namespace ROCKY_NAMESPACE
         glm::fvec2 ellipsoidAxes;
         glm::uint32_t stereographic; // bool
         glm::float32_t renderDomain; // 0 = normal, 1 = overlay bake
+        glm::fvec4 horizonPlane = { 0.0f, 0.0f, 0.0f, 1.0f }; // view-space; positive half-space is visible
     };
-    //static_assert(sizeof(RenderParams) % 16 == 0, "RenderParams must be 16-byte aligned");
+    static_assert(offsetof(RenderParamsGPU, horizonPlane) == 144, "RenderParamsGPU must match its std140 layout");
+    static_assert(sizeof(RenderParamsGPU) == 160, "RenderParamsGPU must match its std140 layout");
 
     struct FrustumGridParamsGPU
     {

@@ -95,6 +95,9 @@ auto Demo_LineFeatures = [](Application& app)
 
         auto& line = reg.get<Line>(entities.front());
         auto& style = reg.get<LineStyle>(line.style);
+        if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+            style.dirty(reg);
+
         if (ImGuiLTable::SliderFloat("Depth offset", &style.depthOffset, 0.0f, 100000.0f))
         {
             style.dirty(reg);

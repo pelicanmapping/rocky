@@ -57,6 +57,8 @@ auto Demo_Line_Absolute = [](Application& app)
             setVisible(r, entity, visible);
 
         auto& style = r.get<LineStyle>(entity);
+        if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+            style.dirty(r);
 
         float* col = (float*)&style.color;
         if (ImGuiLTable::ColorEdit3("Color", col))
@@ -143,6 +145,10 @@ auto Demo_Line_Dynamic_Allocation_Test = [](Application& app)
             if (ImGuiLTable::Checkbox("Show", &visible))
                 setVisible(r, entity, visible);
 
+            auto& style = r.get<LineStyle>(entity);
+            if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+                style.dirty(r);
+
             if (ImGuiLTable::SliderDouble("Tessellation step", &step, 1.0, 90.0, "%.1lf"))
             {
                 // retessellate
@@ -208,6 +214,8 @@ auto Demo_Line_Per_Vertex_Colors = [](Application& app)
             setVisible(r, entity, visible);
 
         auto& style = r.get<LineStyle>(entity);
+        if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+            style.dirty(r);
         if (ImGuiLTable::SliderFloat("Width", &style.width, 1.0f, 15.0f, "%.0f"))
             style.dirty(r);
 
@@ -262,6 +270,8 @@ auto Demo_Line_Relative = [](Application& app)
             setVisible(r, entity, visible);
 
         auto& style = r.get<LineStyle>(entity);
+        if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+            style.dirty(r);
 
         if (ImGuiLTable::ColorEdit3("Color", (float*)&style.color))
             style.dirty(r);
@@ -411,12 +421,18 @@ auto Demo_Line_Shared = [](Application& app)
         auto [_, reg] = app.registry.read();
 
         auto& style0 = reg.get<LineStyle>(styles[0]);
+        if (ImGuiLTable::Checkbox("Depth test 1", &style0.depthTest))
+            style0.dirty(reg);
         if (ImGuiLTable::ColorEdit3("Color 1", (float*)&style0.color))
             style0.dirty(reg);
         auto& style1 = reg.get<LineStyle>(styles[1]);
+        if (ImGuiLTable::Checkbox("Depth test 2", &style1.depthTest))
+            style1.dirty(reg);
         if (ImGuiLTable::ColorEdit3("Color 2", (float*)&style1.color))
             style1.dirty(reg);
         auto& style2 = reg.get<LineStyle>(styles[2]);
+        if (ImGuiLTable::Checkbox("Depth test 3", &style2.depthTest))
+            style2.dirty(reg);
         if (ImGuiLTable::ColorEdit3("Color 3", (float*)&style2.color))
             style2.dirty(reg);
 

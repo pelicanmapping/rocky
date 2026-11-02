@@ -73,18 +73,20 @@ namespace ROCKY_NAMESPACE
             float width;
             float antialias;
             float depthOffset;
-            std::uint32_t perVertexMask = 0; // bit 0 = color, bit 1 = width
+            std::uint32_t featureMask = 0; // bit 0 = color, bit 1 = width, bit 2 = horizon clipping
             float devicePixelRatio = 1.0f;
             std::uint32_t padding[3];
 
+            //! Copies appearance and horizon-clipping flags into the shader record.
             inline void populate(const PointStyle& in) {
                 color = in.color;
                 width = in.width;
                 antialias = in.antialias;
                 depthOffset = in.depthOffset;
-                perVertexMask =
-                    (in.useGeometryColors ? 0x1 : 0x0) |
-                    (in.useGeometryWidths ? 0x2 : 0x0);
+                featureMask =
+                    (in.useGeometryColors ? 0x1u : 0x0u) |
+                    (in.useGeometryWidths ? 0x2u : 0x0u) |
+                    (in.depthTest ? 0x0u : 0x4u);
             }
         };
         static_assert(sizeof(PointStyleRecord) % 16 == 0, "PointStyleRecord must be 16-byte aligned");

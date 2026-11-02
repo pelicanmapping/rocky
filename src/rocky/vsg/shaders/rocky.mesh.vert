@@ -36,6 +36,7 @@ struct MeshStyle {
 #define MASK_HAS_PER_VERTEX_COLORS 4
 #define MASK_TEXTURE_UPPER_LEFT 8
 #define MASK_TEXTURE_PREMULTIPLIED 16
+#define MASK_HORIZON_CLIPPING 32
 
 layout(set = 0, binding = 1) uniform MeshUniform {
     MeshStyle style;
@@ -71,6 +72,9 @@ void main()
     vary.texturePremultiplied = u_mesh.style.featureMask & MASK_TEXTURE_PREMULTIPLIED;
 
     vec4 vertexVs = pc.modelview * vec4(in_vertex, 1.0);
+    // Use the original position, before projection adjustments and visual depth offsets.
+    gl_ClipDistance[0] = (u_mesh.style.featureMask & MASK_HORIZON_CLIPPING) != 0 ?
+        dot(u_renderParams.horizonPlane, vertexVs) : 1.0;
     
     vertexVs = applyProjection(vertexVs, pc.projection);
 

@@ -26,7 +26,7 @@ struct LineStyle {
     int stipplePattern;
     int stippleFactor;
     float depthOffset;
-    uint perVertexMask; // 0x1 = color
+    uint featureMask; // 0x1 = geometry color, 0x2 = surface horizon clipping
     float devicePixelRatio;
     uint widthIsPhysical;
 };
@@ -57,6 +57,7 @@ layout(location = 2) flat out Varyings vary;
 // GL built-ins
 out gl_PerVertex {
     vec4 gl_Position;
+    float gl_ClipDistance[1];
 };
 
 #pragma include "rocky.viewdependentstate.glsl"
@@ -65,7 +66,7 @@ out gl_PerVertex {
 
 void main()
 {
-    bool perVertexColor = (u_line.style.perVertexMask & 0x1) != 0;
+    bool perVertexColor = (u_line.style.featureMask & 0x1) != 0;
 
     vary.color = perVertexColor ? in_color : u_line.style.color;
     vary.outlineColor = u_line.style.outlineColor;
@@ -95,6 +96,10 @@ void main()
     float bias = u_line.style.depthOffset;
 
     vec4 curr_view = pc.modelview * vec4(in_vertex, 1);
+    // Clip the centerline before visual depth offsets or screen-space width extrusion.
+    // Other styles and non-globe/bake views retain the positive half-space everywhere.
+    gl_ClipDistance[0] = (u_line.style.featureMask & 0x2u) != 0u ?
+        dot(u_renderParams.horizonPlane, curr_view) : 1.0;
     curr_view      = applyProjection(curr_view, pc.projection);
     curr_view      = applyDepthOffset(curr_view, bias, pc.projection);
     vec4 curr_clip = pc.projection * curr_view;

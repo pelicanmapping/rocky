@@ -5,6 +5,7 @@
  */
 #pragma once
 #include <rocky/vsg/Common.h>
+#include <vsg/vk/DeviceExtensions.h>
 
 namespace ROCKY_NAMESPACE
 {  
@@ -32,6 +33,22 @@ namespace ROCKY_NAMESPACE
     private:
         vsg::ref_ptr<VulkanExtensions> _ext;
         VkPolygonMode _polygonMode;
+    };
+
+
+    //! Records dynamic depth testing directly in a style pass, without a VSG state-stack slot.
+    class SetDepthTestEnable : public vsg::Inherit<vsg::Command, SetDepthTestEnable>
+    {
+    public:
+        //! Captures the value; the recording device must support dynamic depth-test enable.
+        explicit SetDepthTestEnable(VkBool32 value) : _enable(value) {}
+
+        //! Records on the current device; the bound pipeline must declare depth-test enable dynamic.
+        void record(vsg::CommandBuffer& commandBuffer) const override {
+            commandBuffer.getDevice()->getExtensions()->vkCmdSetDepthTestEnable(commandBuffer, _enable);
+        }
+    private:
+        VkBool32 _enable;
     };
 
 
@@ -82,6 +99,7 @@ namespace ROCKY_NAMESPACE
 
 EVSG_type_name(rocky::VulkanExtensions)
 EVSG_type_name(rocky::SetPolygonMode)
+EVSG_type_name(rocky::SetDepthTestEnable)
 EVSG_type_name(rocky::SetDepthWriteEnable)
 EVSG_type_name(rocky::SetCullMode)
 EVSG_type_name(rocky::SetColorWriteMask)

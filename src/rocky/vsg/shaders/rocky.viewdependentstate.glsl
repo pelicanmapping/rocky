@@ -12,5 +12,6 @@ layout(set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_RENDER_PARAMS) uniform Re
     vec2 ellipsoidAxes;
     uint stereographic;
     float renderDomain;
+    vec4 horizonPlane; // view-space; (0, 0, 0, 1) disables clipping
 }
 u_renderParams;

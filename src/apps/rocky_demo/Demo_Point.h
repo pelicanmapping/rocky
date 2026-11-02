@@ -64,6 +64,8 @@ auto Demo_Point = [](Application& app)
             setVisible(reg, entity, visible);
 
         auto& style = reg.get<PointStyle>(entity);
+        if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+            style.dirty(reg);
 
         float* col = (float*)&style.color;
         if (ImGuiLTable::ColorEdit3("Color", col))

@@ -317,6 +317,7 @@ DisplayManager::configureTraits(vsg::WindowTraits* traits)
 
     // install necessary device features
     traits->deviceFeatures->get().fillModeNonSolid = VK_TRUE;
+    traits->deviceFeatures->get().shaderClipDistance = VK_TRUE;
 
     auto& ds1 = traits->deviceFeatures->get<
         VkPhysicalDeviceExtendedDynamicStateFeaturesEXT, 
@@ -597,6 +598,7 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::WindowTraits> traits)
 
     // install necessary device features
     traits->deviceFeatures->get().fillModeNonSolid = VK_TRUE;
+    traits->deviceFeatures->get().shaderClipDistance = VK_TRUE;
 
     auto& ds1 = traits->deviceFeatures->get<VkPhysicalDeviceExtendedDynamicStateFeaturesEXT, VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTENDED_DYNAMIC_STATE_FEATURES_EXT>();
     ds1.extendedDynamicState = VK_TRUE;

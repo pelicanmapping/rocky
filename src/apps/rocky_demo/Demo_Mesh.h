@@ -64,6 +64,8 @@ auto Demo_Mesh_Absolute = [](Application& app)
                     setVisible(reg, entity, visible);
 
                 auto& style = reg.get<MeshStyle>(entity);
+                if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+                    style.dirty(reg);
 
                 if (ImGuiLTable::ColorEdit4("Color", (float*)&style.color))
                     style.dirty(reg);
@@ -178,6 +180,8 @@ auto Demo_Mesh_Relative = [](Application& app)
             transform.dirty(reg);
 
         auto& style = reg.get<MeshStyle>(entity);
+        if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+            style.dirty(reg);
         if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
             style.dirty(reg);
 
@@ -269,6 +273,10 @@ auto Demo_Mesh_Textured = [](Application& app)
         auto& v = reg.get<Visibility>(entity).visible[0];
         if (ImGuiLTable::Checkbox("Show", &v))
             setVisible(reg, entity, v);
+
+        auto& style = reg.get<MeshStyle>(entity);
+        if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+            style.dirty(reg);
 
         ImGuiLTable::End();
     }
@@ -413,6 +421,15 @@ auto Demo_Mesh_Shared = [](Application& app)
 
     if (ImGuiLTable::Begin("instanced linestring"))
     {
+        auto [lock, reg] = app.registry.read();
+        for (int i = 0; i < 3; ++i)
+        {
+            auto& style = reg.get<MeshStyle>(styles[i]);
+            const auto label = "Depth test " + std::to_string(i + 1);
+            if (ImGuiLTable::Checkbox(label.c_str(), &style.depthTest))
+                style.dirty(reg);
+        }
+
         if (ImGuiLTable::Button("Regenerate"))
         {
             regenerate = true;
@@ -493,6 +510,8 @@ auto Demo_Mesh_Blending = [](Application& app)
         auto [_, reg] = app.registry.read();
 
         auto& style = reg.get<MeshStyle>(entity);
+        if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+            style.dirty(reg);
         if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
             style.dirty(reg);
 
@@ -581,6 +600,8 @@ auto Demo_Mesh_Lighting = [](Application& app)
         auto [_, reg] = app.registry.read();
 
         auto& style = reg.get<MeshStyle>(entity);
+        if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+            style.dirty(reg);
         if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
             style.dirty(reg);
 

@@ -121,7 +121,7 @@ namespace ROCKY_NAMESPACE
             Color color;
             float depthOffset; // meters
             std::uint32_t stipplePattern = 0xFFFFFFFF; // Note, only uses lower 16 bits            
-            // 1 = texture; 2 = lighting; 4 = vertex colors; 8 = upper-left; 16 = premultiplied
+            // 1 = texture; 2 = lighting; 4 = vertex colors; 8 = upper-left; 16 = premultiplied; 32 = horizon clipping
             std::uint32_t featureMask = 0;
             std::uint32_t padding[1]; // pad to 16 bytes
 
@@ -135,7 +135,8 @@ namespace ROCKY_NAMESPACE
                     (in.lighting ? 0x02 : 0) |
                     (in.useGeometryColors ? 0x04 : 0) |
                     (texture && texture->origin == TextureOrigin::UpperLeft ? 0x08 : 0) |
-                    (texture && texture->alphaMode == TextureAlphaMode::Premultiplied ? 0x10 : 0);
+                    (texture && texture->alphaMode == TextureAlphaMode::Premultiplied ? 0x10 : 0) |
+                    (in.depthTest ? 0 : 0x20);
             }
         };
         static_assert(sizeof(MeshStyleUniform) % 16 == 0, "MeshStyleUniform must be 16-byte aligned");

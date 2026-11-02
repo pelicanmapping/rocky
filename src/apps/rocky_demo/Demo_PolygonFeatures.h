@@ -106,6 +106,11 @@ auto Demo_PolygonFeatures = [](Application& app)
             }
 
             auto& style = reg.get<PolygonStyle>(entity);
+            if (ImGuiLTable::Checkbox("Depth test", &style.depthTest))
+            {
+                style.dirty(reg);
+                app.vsgcontext->requestFrame();
+            }
             if (ImGuiLTable::Checkbox("Wireframe", &style.wireframe))
             {
                 style.dirty(reg);

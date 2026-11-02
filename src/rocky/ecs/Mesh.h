@@ -59,7 +59,7 @@ namespace ROCKY_NAMESPACE
 
         //! Whether to use a two-pass rendering technique that will help
         //! blend semi-transparent objects propertly. "writeDepth" must
-        //! also be TRUE for this to take effect. Two-pass alpha first
+        //! also be TRUE, along with depthTest, for this to take effect. Two-pass alpha first
         //! renders all geometry colors with depth writes disabled, and then
         //! renders the depth writes in a second pass.
         bool twoPassAlpha = false;
@@ -74,6 +74,10 @@ namespace ROCKY_NAMESPACE
         //! from polygon features. A value of 0.0 uses the builder's default
         //! curvature-following resolution.
         float resolution = 0.0f;
+
+        //! Test against existing depth. Disabling also disables depth writes; draw order is unchanged.
+        //! On a globe, depth-disabled surface geometry is clipped at the ellipsoid horizon.
+        bool depthTest = true;
     };
 
     //! Mesh comonent

@@ -52,6 +52,10 @@ namespace ROCKY_NAMESPACE
 
         //! If true, the line will be rendered in the transparency bin
         bool transparencyBin = false;
+
+        //! Test against existing depth. Disabling also disables depth writes; draw order is unchanged.
+        //! On a globe, depth-disabled surface lines are clipped at the ellipsoid horizon.
+        bool depthTest = true;
     };
 
 

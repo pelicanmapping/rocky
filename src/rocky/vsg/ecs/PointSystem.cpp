@@ -246,6 +246,13 @@ void
 PointSystemNode::initialize(VSGContext vsgcontext)
 {
     _deviceID = vsgcontext->device()->deviceID;
+    _devicePixelRatio = vsgcontext->devicePixelRatio();
+
+    if (!vsgcontext->device()->getExtensions()->vkCmdSetDepthTestEnable)
+    {
+        status = Failure(Failure::ResourceUnavailable, "Points require dynamic depth-test enable support");
+        return;
+    }
 
     // Now create the pipeline and stategroup to bind it
     auto shaderSet = createShaderSet(vsgcontext);
@@ -298,9 +305,8 @@ PointSystemNode::initialize(VSGContext vsgcontext)
                 //state.rasterizerDiscardEnable = VK_TRUE;
             }
             void apply(vsg::DepthStencilState& state) override {
-                //if ((feature_mask & WRITE_DEPTH) == 0) {
-                //    state.depthWriteEnable = (feature_mask & WRITE_DEPTH) ? VK_TRUE : VK_FALSE;
-                //}
+                state.depthTestEnable = VK_TRUE;
+                state.depthWriteEnable = VK_TRUE;
             }
             void apply(vsg::ColorBlendState& state) override {
                 state.attachments = vsg::ColorBlendState::ColorBlendAttachments {
@@ -311,6 +317,10 @@ PointSystemNode::initialize(VSGContext vsgcontext)
                 };
             }
         };
+        auto dynamicState = vsg::DynamicState::create();
+        dynamicState->dynamicStates.emplace_back(VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT);
+        c.config->pipelineStates.emplace_back(dynamicState);
+
         SetPipelineStates visitor(feature_mask);
         c.config->accept(visitor);
 
@@ -324,8 +334,7 @@ PointSystemNode::initialize(VSGContext vsgcontext)
 
     // Set up our default style detail, which is used when a style is missing.
     initializeHighlights(getPipelineLayout(Point()));
-    initializeStyleDetail(getPipelineLayout(Point()), _defaultStyleDetail);
-    requestCompile(_defaultStyleDetail.bind);
+    createOrUpdateStyle(PointStyle(), _defaultStyleDetail);
 }
 
 void
@@ -506,6 +515,7 @@ PointSystemNode::createOrUpdateStyle(const PointStyle& style, PointStyleDetail& 
     styleDetail.passes.clear();
     styleDetail.passes.emplace_back(vsg::Commands::create());
     styleDetail.passes[0]->addChild(styleDetail.bind);
+    styleDetail.passes[0]->addChild(SetDepthTestEnable::create(style.depthTest ? VK_TRUE : VK_FALSE));
 
     // update the uniform for this style:
     auto& uniforms = *static_cast<PointStyleUniform*>(styleDetail.styleData->dataPointer());
@@ -676,6 +686,8 @@ PointSystemNode::update(VSGContext vsgcontext)
             if (vsgcontext->devicePixelRatio() != _devicePixelRatio)
             {
                 _devicePixelRatio = vsgcontext->devicePixelRatio();
+                if (_defaultStyleDetail.bind)
+                    createOrUpdateStyle(PointStyle(), _defaultStyleDetail);
 
                 // If the DPR changed, dirty all styles so the new dpr will get applied
                 for (auto&& [e, style] : reg.view<PointStyle>().each())

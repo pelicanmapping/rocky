@@ -8,8 +8,45 @@
 #include "ShaderDefines.h"
 #include "MapNode.h"
 #include "ecs/OverlayRenderContext.h"
+#include <cmath>
 
 using namespace ROCKY_NAMESPACE;
+
+namespace
+{
+    //! Returns the ellipsoid's surface-horizon plane in view space, keeping its eye-facing half-space.
+    //! Uses double precision before uploading floats; invalid inputs or an eye inside the ellipsoid disable clipping.
+    glm::vec4 surfaceHorizonPlane(const Ellipsoid& ellipsoid, const glm::dmat4& inverseView, bool orthographic)
+    {
+        const glm::vec4 disabled(0.0f, 0.0f, 0.0f, 1.0f);
+        const glm::dvec3 axes(ellipsoid.semiMajorAxis(), ellipsoid.semiMajorAxis(), ellipsoid.semiMinorAxis());
+        if (!(axes.x > 0.0 && axes.z > 0.0))
+            return disabled;
+
+        const glm::dvec3 eye(inverseView[3]);
+        const auto scaledEye = eye / axes;
+        const double eyeDistance2 = glm::dot(scaledEye, scaledEye);
+        if (!std::isfinite(eyeDistance2) || eyeDistance2 <= 1.0)
+            return disabled;
+
+        // Perspective: (eye / axes^2) dot point = 1 is the plane of ellipsoid tangency.
+        // Orthographic: use the direction toward the viewer, including off-center cameras.
+        const glm::dvec3 towardEye = orthographic ? glm::dvec3(inverseView[2]) : eye;
+        const auto normal = towardEye / (axes * axes);
+        const double normalLength = glm::length(normal);
+        if (!std::isfinite(normalLength) || normalLength <= 0.0)
+            return disabled;
+
+        glm::dvec4 plane(normal / normalLength, orthographic ? 0.0 : -1.0 / normalLength);
+        // Retain a small world-space margin for surface tessellation and float precision at the limb.
+        plane.w += 10.0; // meters
+        plane = glm::transpose(inverseView) * plane;
+        for (int i = 0; i < 4; ++i)
+            if (!std::isfinite(plane[i]))
+                return disabled;
+        return glm::vec4(plane);
+    }
+}
 
 
 ViewDependentStateEx::ViewDependentStateEx(vsg::ref_ptr<vsg::View> vsgView, vsg::ref_ptr<vsg::Device> device) :
@@ -104,7 +141,10 @@ ViewDependentStateEx::traverse(vsg::RecordTraversal& rt) const
     (void)overlayTarget;
 
     renderParams->viewMatrix = to_glm(view->camera->viewMatrix->transform());
-    renderParams->inverseViewMatrix = to_glm(view->camera->viewMatrix->inverse());
+    const auto inverseView = to_glm(view->camera->viewMatrix->inverse());
+    renderParams->inverseViewMatrix = inverseView;
+    // Reset every traversal so switching maps or reusing a view for baking cannot retain a stale plane.
+    renderParams->horizonPlane = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
     renderParams->renderDomain = (renderDomain == detail::RenderDomain::OverlayBake) ? 1.0f : 0.0f;
 
     // ellipsoid params (TODO: don't need to update these constantly!)
@@ -115,6 +155,11 @@ ViewDependentStateEx::traverse(vsg::RecordTraversal& rt) const
     {
         renderParams->ellipsoidAxes.x = mapNode->srs().ellipsoid().semiMajorAxis();
         renderParams->ellipsoidAxes.y = mapNode->srs().ellipsoid().semiMinorAxis();
+        if (mapNode->srs().isGeocentric() && renderDomain != detail::RenderDomain::OverlayBake)
+        {
+            const bool orthographic = view->camera->projectionMatrix->transform()(3, 3) != 0.0;
+            renderParams->horizonPlane = surfaceHorizonPlane(mapNode->srs().ellipsoid(), inverseView, orthographic);
+        }
     }
 
     renderParams.dirty();

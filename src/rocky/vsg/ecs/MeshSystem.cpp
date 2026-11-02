@@ -282,6 +282,12 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
 {
     _deviceID = vsgcontext->device()->deviceID;
 
+    if (!vsgcontext->device()->getExtensions()->vkCmdSetDepthTestEnable)
+    {
+        status = Failure(Failure::ResourceUnavailable, "Meshs require dynamic depth-test enable support");
+        return;
+    }
+
     // make sure all required vulkan features are available:
     bool supported = false;
 
@@ -362,6 +368,7 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
                 state.cullMode = VK_CULL_MODE_BACK_BIT;
             }
             void apply(vsg::DepthStencilState& state) override {
+                state.depthTestEnable = VK_TRUE;
                 state.depthWriteEnable = VK_TRUE;
             }
             void apply(vsg::ColorBlendState& state) override {
@@ -376,6 +383,7 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
             void apply(vsg::DynamicState& state) override {
                 state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_POLYGON_MODE_EXT);
                 state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_DEPTH_WRITE_ENABLE_EXT);
+                state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_DEPTH_TEST_ENABLE_EXT);
                 state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_CULL_MODE_EXT);
                 state.dynamicStates.emplace_back(VK_DYNAMIC_STATE_COLOR_WRITE_MASK_EXT);
             }
@@ -399,8 +407,10 @@ MeshSystemNode::initialize(VSGContext vsgcontext)
 
     // Set up our default style detail, which is used when a MeshStyle is missing.
     initializeHighlights(getPipelineLayout(Mesh()));
-    initializeStyleDetail(getPipelineLayout(Mesh()), _defaultStyleDetail);
-    requestCompile(_defaultStyleDetail.bind);
+    _registry.read([&](entt::registry& reg)
+        {
+            createOrUpdateStyle(MeshStyle(), _defaultStyleDetail, reg, vsgcontext);
+        });
 }
 
 void
@@ -581,6 +591,7 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     styleDetail.passes.clear();
     styleDetail.passes.emplace_back(vsg::Commands::create());
     styleDetail.passes[0]->addChild(styleDetail.bind);
+    styleDetail.passes[0]->addChild(SetDepthTestEnable::create(style.depthTest ? VK_TRUE : VK_FALSE));
 
     // wireframe:
     styleDetail.passes[0]->addChild(SetPolygonMode::create(vsgcontext->ext(),
@@ -590,15 +601,14 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     styleDetail.passes[0]->addChild(SetCullMode::create(vsgcontext->ext(),
         style.drawBackfaces ? VK_CULL_MODE_NONE : VK_CULL_MODE_BACK_BIT));
 
-    if (style.twoPassAlpha == true && style.writeDepth == false)
+    if (style.twoPassAlpha && style.depthTest && !style.writeDepth)
     {
         Log()->warn("MeshStyle: twoPassAlpha requires writeDepth to be true; ignoring twoPassAlpha.");
     }
 
-    // when both 2-pass alpha AND writeDepth are enabled, create a second pass.
-    // render all objects first with no depth-writes; then write the depth 
-    // later in a second pass.
-    if (style.twoPassAlpha && style.writeDepth)
+    // A depth-only second pass is useful only when testing and writing depth.
+    // Render colors first without depth writes, then populate depth in the second pass.
+    if (style.twoPassAlpha && style.writeDepth && style.depthTest)
     {
         styleDetail.passes.emplace_back(vsg::Commands::create());
 
@@ -613,7 +623,8 @@ MeshSystemNode::createOrUpdateStyle(const MeshStyle& style, MeshStyleDetail& sty
     else
     {
         // depth writes, default color mask
-        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(vsgcontext->ext(), style.writeDepth ? VK_TRUE : VK_FALSE));
+        styleDetail.passes[0]->addChild(SetDepthWriteEnable::create(
+            vsgcontext->ext(), style.depthTest && style.writeDepth ? VK_TRUE : VK_FALSE));
         styleDetail.passes[0]->addChild(SetColorWriteMask::create(vsgcontext->ext(), 0x0F));
     }
 #endif

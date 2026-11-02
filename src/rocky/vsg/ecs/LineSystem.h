@@ -90,7 +90,7 @@ namespace ROCKY_NAMESPACE
             std::int32_t stipplePattern;
             std::int32_t stippleFactor;
             float depthOffset;
-            std::uint32_t perVertexMask = 0; // 0x01 = colors
+            std::uint32_t featureMask = 0; // 0x01 = geometry colors, 0x02 = surface horizon clipping
             float devicePixelRatio = 1.0f;
             std::uint32_t widthIsPhysical = 0u;
 
@@ -111,8 +111,9 @@ namespace ROCKY_NAMESPACE
                 stipplePattern = in.stipplePattern;
                 stippleFactor = in.stippleFactor;
                 depthOffset = in.depthOffset;
-                perVertexMask =
-                    (in.useGeometryColors ? 0x1 : 0x0);
+                featureMask =
+                    (in.useGeometryColors ? 0x1u : 0x0u) |
+                    (in.depthTest ? 0x0u : 0x2u);
             }
         };
         static_assert(sizeof(LineStyleRecord) == 64, "LineStyleRecord must match its std140 shader layout");

@@ -423,6 +423,7 @@ void PolygonSystemNode::update(VSGContext vsgcontext)
                 meshStyle.lighting = resolvedStyle.lighting;
                 meshStyle.stipplePattern = resolvedStyle.stipplePattern;
                 meshStyle.writeDepth = resolvedStyle.writeDepth;
+                meshStyle.depthTest = resolvedStyle.depthTest;
                 meshStyle.drawBackfaces = resolvedStyle.drawBackfaces;
                 meshStyle.twoPassAlpha = resolvedStyle.twoPassAlpha;
                 meshStyle.transparencyBin = resolvedStyle.transparencyBin;

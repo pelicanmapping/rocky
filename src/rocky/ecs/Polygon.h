@@ -73,7 +73,7 @@ namespace ROCKY_NAMESPACE
         bool drawBackfaces = false;
 
         //! Render color without depth writes, then depth without color writes.
-        //! Requires writeDepth and a depth buffer. Ignored by vector overlays.
+        //! Requires depthTest, writeDepth, and a depth buffer. Ignored by vector overlays.
         bool twoPassAlpha = false;
 
         //! Sort polygon drawables far-to-near in the main view's transparency bin.
@@ -84,6 +84,11 @@ namespace ROCKY_NAMESPACE
         //! geometry. A value of zero uses the default curvature-following
         //! resolution.
         float resolution = 0.0f;
+
+        //! Test against existing depth. Disabling also disables depth writes; draw order is unchanged.
+        //! On a globe, depth-disabled surface geometry is clipped at the ellipsoid horizon.
+        //! Ignored by vector overlays.
+        bool depthTest = true;
     };
 
     /** Filled polygon primitive, independent of any Mesh on the same entity. */

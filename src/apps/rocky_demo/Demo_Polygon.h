@@ -125,6 +125,7 @@ auto Demo_Polygon = [](Application& app)
             ImGuiLTable::SeparatorText("Shared style");
             auto& style = reg.get<PolygonStyle>(e_style);
             bool styleChanged = false;
+            styleChanged |= ImGuiLTable::Checkbox("Depth test", &style.depthTest);
             styleChanged |= ImGuiLTable::ColorEdit4("Color", reinterpret_cast<float*>(&style.color));
             styleChanged |= ImGuiLTable::Checkbox("Per-polygon colors", &style.useGeometryColors);
             styleChanged |= ImGuiLTable::Checkbox("Wireframe", &style.wireframe);
