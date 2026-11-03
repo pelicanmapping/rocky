@@ -416,12 +416,12 @@ TerrainState::buildTerrainStateGroup(vsg::ref_ptr<vsg::StateGroup>& stateGroup, 
         vsgcontext->dispose(command);
 }
 
-TerrainTileRenderModel
+Result<TerrainTileRenderModel>
 TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel& oldRenderModel, 
     const TerrainTileModel& dataModel, VSGContext vsgcontext) const
 {
-    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), oldRenderModel);
-    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), oldRenderModel);
+    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), status.error());
+    ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), Failure_AssertionFailure);
 
     // Copy the old one
     TerrainTileRenderModel renderModel = oldRenderModel;
@@ -550,7 +550,13 @@ TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel
         descriptorSet
     );
 
-    vsgcontext->compile(descriptors.bind);
+    auto cr = vsgcontext->compile(descriptors.bind);
+    if (cr.result != VK_SUCCESS)
+    {
+        Log()->warn("TerrainState: tile {} failed to compile ({}): {}", key.str(), cr.result, cr.message);
+        vsgcontext->dispose(descriptors.bind);
+        return Failure(cr.message);
+    }
 
     return renderModel;
 }

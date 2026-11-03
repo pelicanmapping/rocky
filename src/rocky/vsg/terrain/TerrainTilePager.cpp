@@ -284,7 +284,11 @@ TerrainTilePager::requestCreateChildren(TileInfo& info, std::shared_ptr<TerrainT
 
             auto tile = tileFactory->createTile(childkey, parent, vsgcontext);
 
-            ROCKY_SOFT_ASSERT_AND_RETURN(tile != nullptr, result);
+            if (!tile)
+            {
+                vsgcontext->dispose(quad);
+                return {};
+            }
 
             quad->children[quadrant] = tile;
         }
@@ -294,7 +298,14 @@ TerrainTilePager::requestCreateChildren(TileInfo& info, std::shared_ptr<TerrainT
 
         if (result)
         {
-            vsgcontext->compile(result);
+            auto cr = vsgcontext->compile(result);
+            if (cr.result != VK_SUCCESS)
+            {
+                Log()->warn("TerrainTilePager: children of {} failed to compile ({}): {}",
+                    parent->key.str(), cr.result, cr.message);
+                vsgcontext->dispose(result);
+                return {};
+            }
 
             vsgcontext->onNextUpdate([result, weak_parent, weak_tileFactory](VSGContext vsgcontext)
                 {
@@ -365,7 +376,10 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io,
         {
             auto newRenderModel = tileFactory->state->updateRenderModel(tile->key, tile->renderModel, dataModel, vsgcontext);
 
-            tile->renderModel = newRenderModel;
+            if (newRenderModel.failed())
+                return false;
+
+            tile->renderModel = newRenderModel.release();
 
             vsgcontext->requestFrame();
 
