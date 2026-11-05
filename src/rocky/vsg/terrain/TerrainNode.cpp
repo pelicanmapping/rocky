@@ -63,21 +63,34 @@ TerrainProfileNode::createRootTiles(VSGContext vsgcontext)
 
     // once the pipeline exists, we can start creating tiles.
     auto keys = _tileFactory->profile.allKeysAtLOD(terrain.minLevel);
+    auto roots = vsg::Group::create();
 
     for (auto& key : keys)
     {
         // create a tile with no parent:
         auto tile = _tileFactory->createTile(key, {}, vsgcontext);
+        if (!tile)
+        {
+            vsgcontext->dispose(roots);
+            return Failure("Failed to create terrain root tile " + key.str());
+        }
 
         // ensure it can't page out:
         tile->doNotExpire = true;
 
-        // Add it to the scene graph
-        this->addChild(tile);
-        terrain.onTileBoundsChanged.fire(key);
+        roots->addChild(tile);
     }
 
-    vsgcontext->compile(vsg::ref_ptr<TerrainProfileNode>(this));
+    auto cr = vsgcontext->compile(roots);
+    if (cr.result != VK_SUCCESS)
+    {
+        vsgcontext->dispose(roots);
+        return Failure("Failed to compile terrain root tiles: " + cr.message);
+    }
+
+    children.swap(roots->children);
+    for (auto& key : keys)
+        terrain.onTileBoundsChanged.fire(key);
 
     return ResultVoidOK;
 }

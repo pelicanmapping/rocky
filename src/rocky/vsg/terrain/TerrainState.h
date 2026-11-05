@@ -98,9 +98,9 @@ namespace ROCKY_NAMESPACE
 
         //! Integrates data from the new data model into an existing render model,
         //! and creates or updates all the necessary descriptors and commands.
-        //! After calling this, you will need to install the find bind command
-        //! in your stategroup.
-        TerrainTileRenderModel updateRenderModel(
+        //! On success, install the returned bind command in your stategroup.
+        //! On compile failure, returns an error and leaves the old render model unchanged.
+        Result<TerrainTileRenderModel> updateRenderModel(
             const TileKey& key,
             const TerrainTileRenderModel& oldRenderModel,
             const TerrainTileModel& newDataModel,
