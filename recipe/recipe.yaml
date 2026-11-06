@@ -1,0 +1,80 @@
+context:
+  name: rocky
+  version: 1.1.0
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  url: https://github.com/pelicanmapping/rocky/archive/refs/tags/v${{ version }}.tar.gz
+  sha256: f3992e063b647993d8ffa3ba93fdcd882d59e03e6e65032b0d4334c803e801c7
+
+build:
+  number: 0
+  script:
+    - if: win
+      then: call "%RECIPE_DIR%\\build.bat"
+    - if: unix
+      then: bash "${RECIPE_DIR}/build.sh"
+  run_exports:
+    - ${{ pin_subpackage('rocky', upper_bound='x.x') }}
+
+requirements:
+  build:
+    - ${{ compiler('cxx') }}
+    - ${{ stdlib('c') }}
+    - cmake
+    - ninja
+    - if: linux
+      then: pkgconfig
+  host:
+    - entt
+    - gdal
+    - glm
+    - libcurl
+    - libvulkan-headers
+    - libvulkan-loader
+    - nlohmann_json
+    - openssl
+    - proj
+    - spdlog
+    - sqlite
+    - vulkanscenegraph
+    - vsgxchange
+    - zlib
+  run:
+    - entt
+    - glm
+    - libcurl
+    - libgdal-core
+    - libvulkan-loader
+    - openssl
+    - proj
+    - spdlog
+    - sqlite
+    - vulkanscenegraph
+    - vsgxchange
+    - zlib
+
+tests:
+  - script:
+      - if: unix
+        then:
+          - test -f "${PREFIX}/include/rocky/Version.h"
+          - test -f "${PREFIX}/lib/cmake/rocky/rocky-config.cmake"
+      - if: win
+        then:
+          - if not exist "%LIBRARY_PREFIX%\\include\\rocky\\Version.h" exit 1
+          - if not exist "%LIBRARY_PREFIX%\\lib\\cmake\\rocky\\rocky-config.cmake" exit 1
+
+about:
+  homepage: https://github.com/pelicanmapping/rocky
+  repository: https://github.com/pelicanmapping/rocky
+  summary: 3D geospatial rendering engine for C++ and Vulkan
+  license: MIT
+  license_file: LICENSE.txt
+
+extra:
+  recipe-maintainers:
+    - pelicanmapping
