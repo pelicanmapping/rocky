@@ -374,7 +374,7 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io,
 
         if (!dataModel.empty())
         {
-            auto newRenderModel = tileFactory->state->updateRenderModel(tile->key, tile->renderModel, dataModel, vsgcontext);
+            auto newRenderModel = tileFactory->state->tryUpdateRenderModel(tile->key, tile->renderModel, dataModel, vsgcontext);
 
             if (newRenderModel.failed())
                 return false;

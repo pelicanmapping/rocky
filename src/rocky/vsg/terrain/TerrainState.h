@@ -98,9 +98,17 @@ namespace ROCKY_NAMESPACE
 
         //! Integrates data from the new data model into an existing render model,
         //! and creates or updates all the necessary descriptors and commands.
-        //! On success, install the returned bind command in your stategroup.
-        //! On compile failure, returns an error and leaves the old render model unchanged.
-        Result<TerrainTileRenderModel> updateRenderModel(
+        //! Preserves the legacy ABI; returns the old render model unchanged on failure.
+        //! Use tryUpdateRenderModel when the caller needs to detect failure before publishing a tile.
+        TerrainTileRenderModel updateRenderModel(
+            const TileKey& key,
+            const TerrainTileRenderModel& oldRenderModel,
+            const TerrainTileModel& newDataModel,
+            VSGContext context) const;
+
+        //! Builds a render model without modifying the old one; on success, install its bind command.
+        //! Returns an error on failure and defers disposal of descriptors rejected by compilation.
+        Result<TerrainTileRenderModel> tryUpdateRenderModel(
             const TileKey& key,
             const TerrainTileRenderModel& oldRenderModel,
             const TerrainTileModel& newDataModel,

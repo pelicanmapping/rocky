@@ -118,6 +118,7 @@ namespace ROCKY_NAMESPACE
             VSGContext cx);
 
         //! Clear out the terrain and rebuild it from the map model
+        //! Allows retrying failed root tiles if the terrain pipeline is valid. Call at a safe update time.
         void reset(VSGContext context);
 
         //! Rebuild the terrain pipeline after startup rendering configuration changes.

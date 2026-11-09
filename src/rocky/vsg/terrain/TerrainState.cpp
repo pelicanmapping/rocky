@@ -416,8 +416,16 @@ TerrainState::buildTerrainStateGroup(vsg::ref_ptr<vsg::StateGroup>& stateGroup, 
         vsgcontext->dispose(command);
 }
 
-Result<TerrainTileRenderModel>
+TerrainTileRenderModel
 TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel& oldRenderModel, 
+    const TerrainTileModel& dataModel, VSGContext vsgcontext) const
+{
+    auto result = tryUpdateRenderModel(key, oldRenderModel, dataModel, vsgcontext);
+    return result.ok() ? result.release() : oldRenderModel;
+}
+
+Result<TerrainTileRenderModel>
+TerrainState::tryUpdateRenderModel(const TileKey& key, const TerrainTileRenderModel& oldRenderModel,
     const TerrainTileModel& dataModel, VSGContext vsgcontext) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), status.error());

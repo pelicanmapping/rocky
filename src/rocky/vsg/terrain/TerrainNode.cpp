@@ -196,7 +196,9 @@ Result<>
 TerrainNode::setMap(Map::Ptr in_map, const Profile& in_profile, const SRS& in_renderingSRS, VSGContext context)
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(in_map, Failure_AssertionFailure);
-    ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), status.error());
+    ROCKY_SOFT_ASSERT_AND_RETURN(state->status.ok(), state->status.error());
+    ROCKY_SOFT_ASSERT_AND_RETURN(_profileNodes && state->pipelineConfig,
+        status.failed() ? status.error() : Failure_AssertionFailure);
 
     // remove old hooks:
     if (map)
@@ -250,6 +252,13 @@ TerrainNode::setMap(Map::Ptr in_map, const Profile& in_profile, const SRS& in_re
 void
 TerrainNode::reset(VSGContext context)
 {
+    // Tile failures are recoverable, but reset cannot repair missing shaders or pipeline state.
+    ROCKY_SOFT_ASSERT_AND_RETURN(state->status.ok(), void());
+    ROCKY_SOFT_ASSERT_AND_RETURN(_profileNodes && state->pipelineConfig, void());
+
+    // Permit another root creation attempt only after an explicit reset (including map/layer changes).
+    status.clear();
+
     // reset all profile nodes:
     for (auto& child : _profileNodes->children)
     {
