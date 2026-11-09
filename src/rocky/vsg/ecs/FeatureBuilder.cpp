@@ -543,8 +543,10 @@ namespace
                     // Populate the line component based on the topology.
                     if (lineGeom.topology == LineTopology::Strip)
                     {
-                        // CHECK THIS
-                        lineGeom.points.reserve(lineGeom.points.size() + line_part.size());
+                        if (lineGeom.points.capacity() < lineGeom.points.size() + line_part.size())
+                            lineGeom.points.reserve(
+                                std::max(lineGeom.points.size() + line_part.size(),
+                                         2 * lineGeom.points.capacity()));
                         lineGeom.points.insert(lineGeom.points.end(), line_part.begin(), line_part.end());
                     }
 
@@ -552,7 +554,10 @@ namespace
                     {
                         std::size_t num_points_in_segments = line_part.size() * 2 - 2;
                         auto ptr = lineGeom.points.size();
-                        lineGeom.points.reserve(lineGeom.points.size() + num_points_in_segments);
+                        if (lineGeom.points.capacity() < lineGeom.points.size() + num_points_in_segments)
+                            lineGeom.points.reserve(
+                                std::max(lineGeom.points.size() + num_points_in_segments,
+                                         2 * lineGeom.points.capacity()));
 
                         // convert from a strip to segments
                         for (std::size_t i = 0; i < line_part.size() - 1; ++i)
