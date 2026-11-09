@@ -7,6 +7,7 @@
 #include "MapManipulator.h"
 #include "ShaderDefines.h"
 #include "SkyNode.h"
+#include "ViewDependentState.h"
 #include "ecs/TransformSystem.h"
 #include "imgui/ImGuiIntegration.h"
 #include <rocky/contrib/EarthFileImporter.h>
@@ -264,6 +265,13 @@ Application::ctor(int& argc, char** argv)
     else if (commandLine.read("--msaa"))
     {
         commandLineStatus = Failure(Failure::ConfigurationError, "--msaa requires a sample count, for example --msaa 4");
+    }
+
+    // The separate Slug pass samples the main pass's single-sample depth.
+    if (vsgcontext->msaaSamples > 1 && DecalSystemNode::slugPassEnabled())
+    {
+        Log()->warn("ROCKY_SLUG_PASS requires --msaa 1; drawing Slug overlays in the terrain instead");
+        DecalSystemNode::disableSlugPass();
     }
 
     scene = vsg::Group::create();
@@ -786,8 +794,10 @@ Application::install(vsg::ref_ptr<ImGuiRenderer> renderer, vsg::ref_ptr<vsg::Vie
     auto& view = display.find(vsgView);
     ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
 
-    // add the renderer to the view's render graph:
-    view.renderGraph->addChild(renderer);
+    // add the renderer to the view's render graph (with the separate Slug pass, to the end of
+    // that pass instead, so ImGui draws over the overlays rather than beneath them):
+    auto slugPassGraph = view.renderGraph->getRefObject<vsg::RenderGraph>("rocky.slugPassGraph");
+    (slugPassGraph ? slugPassGraph : view.renderGraph)->addChild(renderer);
 
     // install the event handler that will pass events from VSG to ImGui:
     auto& handlers = vsgcontext->viewer()->getEventHandlers();
@@ -881,6 +891,88 @@ Application::onAddView(Window& window, View& view)
 
     // wait until the device is idle to avoid changing state while it's being used
     vsgcontext->viewer()->deviceWaitIdle();
+
+    // Slug overlays draw in a second render pass recorded after this view's main pass.
+    // Color and depth are loaded, not cleared; depth stays read-only so the pass can sample it while
+    // it is attached. The pass's View shares the main view's ID (so it finds that view's decal
+    // records) and camera. Its own view-dependent state is private: it supplies the descriptor set
+    // layout the pipeline compiles against, while the draws bind the main view's descriptor set.
+    // Sharing the main view's instead would make VSG clear and re-record it inside this pass.
+    auto* decalSystem = computeSystemsNode ? computeSystemsNode->get<DecalSystemNode>() : nullptr;
+    if (decalSystem && decalSystem->slugPassNode())
+    {
+        // Device creation settles the window's formats and framebuffer sample count.
+        auto device = window.vsgWindow->getOrCreateDevice();
+        if (window.vsgWindow->framebufferSamples() != VK_SAMPLE_COUNT_1_BIT)
+        {
+            Log()->warn("ROCKY_SLUG_PASS requires a single-sample window; Slug overlays will not draw");
+        }
+        else
+        {
+            vsg::AttachmentDescription color = {};
+            color.format = window.vsgWindow->surfaceFormat().format;
+            color.samples = VK_SAMPLE_COUNT_1_BIT;
+            color.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            color.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+            color.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            color.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            color.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            color.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+            vsg::AttachmentDescription depth = {};
+            depth.format = window.vsgWindow->depthFormat();
+            depth.samples = VK_SAMPLE_COUNT_1_BIT;
+            depth.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+            depth.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            depth.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+            depth.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+            depth.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            depth.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+
+            vsg::SubpassDescription subpass;
+            subpass.colorAttachments = { { 0u, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL } };
+            subpass.depthStencilAttachments = { { 1u, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL } };
+
+            // Render pass compatibility requires identical dependencies, so reuse the window's.
+            auto renderPass = vsg::RenderPass::create(
+                device,
+                vsg::RenderPass::Attachments{ color, depth },
+                vsg::RenderPass::Subpasses{ subpass },
+                window.vsgWindow->getOrCreateRenderPass()->dependencies);
+
+            // Those dependencies do not make depth writes visible to fragment shader reads; this
+            // barrier between the two passes does.
+            auto barrier = vsg::PipelineBarrier::create(
+                VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
+                    VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+                0,
+                vsg::MemoryBarrier::create(
+                    VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+                    VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+                        VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT));
+
+            auto passView = vsg::View::create();
+            passView->share(*view.vsgView);
+            passView->camera = view.vsgView->camera;
+            passView->viewDependentState = ViewDependentStateEx::create(passView, device);
+            passView->addChild(decalSystem->slugPassNode());
+
+            auto passGraph = vsg::RenderGraph::create(window.vsgWindow);
+            passGraph->renderPass = renderPass;
+            passGraph->addChild(passView);
+            window.commandGraph->addChild(barrier);
+            window.commandGraph->addChild(passGraph);
+
+            // install() finds the pass here, to draw this view's ImGui at its end.
+            view.renderGraph->setObject("rocky.slugPassGraph", passGraph);
+
+            decalSystem->setSlugPassWindow(window.vsgWindow);
+
+            if (vsgcontext->viewer()->compileManager)
+                vsgcontext->compileRenderGraph(passGraph, window.vsgWindow);
+        }
+    }
 
     // install a manipulator
     auto manip = MapManipulator::create(view.find<MapNode>(), window.vsgWindow, view.vsgView->camera, vsgcontext);

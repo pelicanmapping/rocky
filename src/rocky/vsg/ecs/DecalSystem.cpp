@@ -18,7 +18,12 @@
 #include <rocky/vsg/VSGUtils.h>
 #include <vsg/vk/State.h>
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstdlib>
+#include <cstring>
+#include <string>
+#include <unordered_map>
 #include <unordered_set>
 
 using namespace ROCKY_NAMESPACE;
@@ -214,6 +219,274 @@ namespace ROCKY_NAMESPACE::detail
         }
     };
 
+#ifdef ROCKY_HAS_SLUGHORN
+    //! Separate Slug pass: one instanced box per SlugLayer, recorded in a render pass
+    //! after the main one. The fragment shader rebuilds the scene point from the main pass's stored
+    //! depth, so a pixel evaluates only the layers whose box covers it instead of every layer of
+    //! every decal in its screen tile. Outlines draw first (one instanced draw), then cores.
+    class SlugPassNode : public vsg::Inherit<vsg::Group, SlugPassNode>
+    {
+    public:
+        std::weak_ptr<SharedRenderData> renderData;
+
+        //! Window whose depth attachment the pass samples.
+        vsg::observer_ptr<vsg::Window> window;
+
+        //! Slug layers written for each view by the latest decal update: every outline layer
+        //! first (outlineCounts of them), then every core. Segment layers are not among them.
+        std::array<std::uint32_t, ROCKY_MAX_NUMBER_OF_VIEWS> layerCounts{};
+        std::array<std::uint32_t, ROCKY_MAX_NUMBER_OF_VIEWS> outlineCounts{};
+
+        //! The segment group of each resident atlas with segment layers, numbered when the segment
+        //! buffer is built.
+        std::unordered_map<entt::entity, std::uint32_t> segmentGroups;
+
+        //! Per view: for each segment group, the GPU index of the decal that draws its atlas this
+        //! frame (0: not drawn). The decal update fills it; segment instances read it.
+        std::array<vsg::ref_ptr<vsg::uintArray>, ROCKY_MAX_NUMBER_OF_VIEWS> groupDecals;
+
+        //! Identifies the resident atlas set the segment buffer was built from.
+        std::uint64_t segmentSignature = 0u;
+
+        //! Replaces the resident segment layers (every outline segment, then every core segment;
+        //! uvToEmY.w holds the owning segment group * 2 + outline bit). Called only when the set of
+        //! resident atlases changes, so the segments upload once rather than every frame.
+        void setSegments(const std::vector<SlugLayerGPU>& records, std::uint32_t outlineCount)
+        {
+            // A storage buffer may not be empty.
+            const std::size_t count = std::max<std::size_t>(records.size(), 1u);
+            auto bytes = vsg::ubyteArray::create(count * sizeof(SlugLayerGPU));
+            std::memset(bytes->dataPointer(), 0, bytes->dataSize());
+            if (!records.empty())
+                std::memcpy(bytes->dataPointer(), records.data(), records.size() * sizeof(SlugLayerGPU));
+            _segments = vsg::DescriptorBuffer::create(bytes, 1, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+            _segmentCount = static_cast<std::uint32_t>(records.size());
+            _segmentOutlines = outlineCount;
+            _localDirty = true;
+        }
+
+        //! Creates the pipeline before the render graph's compile traversal. Missing shaders
+        //! disable only this pass.
+        void initialize(VSGContext context)
+        {
+            for (auto& child : children)
+                context->dispose(child);
+            children.clear();
+            renderData = context->sharedRenderData;
+
+            auto vertex = vsg::ShaderStage::read(VK_SHADER_STAGE_VERTEX_BIT, "main",
+                vsg::findFile("shaders/rocky.slug.pass.vert", context->searchPaths), context->readerWriterOptions);
+            auto fragment = vsg::ShaderStage::read(VK_SHADER_STAGE_FRAGMENT_BIT, "main",
+                vsg::findFile("shaders/rocky.slug.pass.frag", context->searchPaths), context->readerWriterOptions);
+            if (!vertex || !fragment)
+            {
+                Log()->warn("DecalSystemNode: missing Slug pass shaders");
+                return;
+            }
+
+            const auto capacity = context->sharedRenderData->projectedTextureCapacity();
+            auto shaderSet = vsg::ShaderSet::create(vsg::ShaderStages{ vertex, fragment });
+            shaderSet->addDescriptorBinding("u_sceneDepth", "", DESCRIPTOR_SET_LOCAL, 0,
+                VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+            shaderSet->addDescriptorBinding("b_slugSegments", "", DESCRIPTOR_SET_LOCAL, 1,
+                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
+            shaderSet->addDescriptorBinding("b_slugSegmentDecals", "", DESCRIPTOR_SET_LOCAL, 2,
+                VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT, {});
+            shaderSet->addDescriptorBinding("u_slugCurveTexture", "", DESCRIPTOR_SET_GLOBAL,
+                BINDING_SLUG_CURVE_TEXTURE, TYPE_SLUG_CURVE_TEXTURE, capacity, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+            shaderSet->addDescriptorBinding("u_slugBandTexture", "", DESCRIPTOR_SET_GLOBAL,
+                BINDING_SLUG_BAND_TEXTURE, TYPE_SLUG_BAND_TEXTURE, capacity, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+            addViewDependentStateToShaderSet(shaderSet);
+            shaderSet->addPushConstantRange("pc", "",
+                VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0, 128);
+
+            _config = vsg::GraphicsPipelineConfigurator::create(shaderSet);
+            _config->shaderHints = context->shaderCompileSettings;
+            _config->enableDescriptor("u_sceneDepth");
+            _config->enableDescriptor("b_slugSegments");
+            _config->enableDescriptor("b_slugSegmentDecals");
+            _config->enableDescriptor("u_slugCurveTexture");
+            _config->enableDescriptor("u_slugBandTexture");
+            enableViewDependentStateUniforms(_config);
+            for (auto& state : _config->pipelineStates)
+            {
+                // Back faces only: one fragment per covered pixel, including from inside the box.
+                if (auto* raster = dynamic_cast<vsg::RasterizationState*>(state.get()))
+                    raster->cullMode = VK_CULL_MODE_FRONT_BIT;
+                if (auto* assembly = dynamic_cast<vsg::InputAssemblyState*>(state.get()))
+                    assembly->topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_STRIP;
+                // A back face survives only at or behind the scene (reversed Z: LESS_OR_EQUAL),
+                // i.e. where the scene point can lie inside the box; tall receiving volumes would
+                // otherwise smear thin boxes across many pixels. The shader rejects the rest.
+                if (auto* depth = dynamic_cast<vsg::DepthStencilState*>(state.get()))
+                {
+                    depth->depthTestEnable = VK_TRUE;
+                    depth->depthWriteEnable = VK_FALSE;
+                    depth->depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+                }
+                if (auto* blend = dynamic_cast<vsg::ColorBlendState*>(state.get()))
+                {
+                    blend->attachments = { {
+                        VK_TRUE,
+                        VK_BLEND_FACTOR_SRC_ALPHA,
+                        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                        VK_BLEND_OP_ADD,
+                        VK_BLEND_FACTOR_ONE,
+                        VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
+                        VK_BLEND_OP_ADD,
+                        VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT |
+                            VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT } };
+                }
+            }
+            _config->init();
+
+            _depthSampler = vsg::Sampler::create();
+            _depthSampler->magFilter = VK_FILTER_NEAREST;
+            _depthSampler->minFilter = VK_FILTER_NEAREST;
+            _depthSampler->mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
+            _depthSampler->addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            _depthSampler->addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+            _depthSampler->addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+
+            auto group = vsg::StateGroup::create();
+            group->add(_config->bindGraphicsPipeline);
+            group->add(vsg::BindViewDescriptorSets::create(
+                VK_PIPELINE_BIND_POINT_GRAPHICS, _config->layout, DESCRIPTOR_SET_VDS));
+            addChild(group);
+
+            setSegments({}, 0u);
+        }
+
+        //! Rebuilds each view's local descriptor set (depth, segments, group decals) and the atlas set
+        //! when their sources change, and uploads this frame's group decals. Runs after the decal
+        //! update has filled groupDecals and written its descriptor slots, before this frame records.
+        void update(VSGContext context)
+        {
+            auto shared = renderData.lock();
+            auto win = window.ref_ptr();
+            if (children.empty() || !shared || !win)
+                return;
+
+            auto depthView = win->getDepthImageView();
+            if (depthView && depthView != _depthView)
+            {
+                _depthView = depthView;
+                _localDirty = true;
+            }
+
+            bool atlasRebuilt = false;
+            if (shared->sharedDescriptorsChanged(_sharedRevision) || !_bindAtlas)
+            {
+                if (_bindAtlas)
+                    context->dispose(_bindAtlas);
+                _bindAtlas = vsg::BindDescriptorSet::create(
+                    VK_PIPELINE_BIND_POINT_GRAPHICS, _config->layout, DESCRIPTOR_SET_GLOBAL,
+                    vsg::DescriptorSet::create(_config->layout->setLayouts[DESCRIPTOR_SET_GLOBAL],
+                        vsg::Descriptors{ shared->slugCurveTexture, shared->slugBandTexture }));
+                context->compile(_bindAtlas);
+                atlasRebuilt = true;
+            }
+
+            auto* group = static_cast<vsg::StateGroup*>(children.front().get());
+            for (std::size_t viewID = 0u; viewID < groupDecals.size(); ++viewID)
+            {
+                auto& local = _views[viewID];
+                if (!groupDecals[viewID] || !_depthView)
+                    continue;
+
+                if (_localDirty || !local.bind || local.groupDecals != groupDecals[viewID])
+                {
+                    // The main pass leaves depth in attachment layout; this pass holds it read-only.
+                    auto depth = vsg::DescriptorImage::create(
+                        vsg::ImageInfo::create(_depthSampler, _depthView, VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL),
+                        0, 0, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER);
+                    auto decals = vsg::DescriptorBuffer::create(
+                        groupDecals[viewID], 2, 0, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER);
+                    if (local.bind)
+                        context->dispose(local.bind);
+                    local.bind = vsg::BindDescriptorSet::create(
+                        VK_PIPELINE_BIND_POINT_GRAPHICS, _config->layout, DESCRIPTOR_SET_LOCAL,
+                        vsg::DescriptorSet::create(_config->layout->setLayouts[DESCRIPTOR_SET_LOCAL],
+                            vsg::Descriptors{ depth, _segments, decals }));
+                    context->compile(local.bind);
+                    local.groupDecals = groupDecals[viewID];
+                    atlasRebuilt = true;
+                }
+
+                if (atlasRebuilt)
+                    local.commands = vsg::StateCommands{
+                        group->stateCommands[0], group->stateCommands[1], local.bind, _bindAtlas };
+
+                // A few hundred bytes per view per frame, in place of every segment's record.
+                groupDecals[viewID]->dirty();
+            }
+            _localDirty = false;
+        }
+
+        //! Records, for the current view: atlas outlines, segment outlines, atlas cores, segment
+        //! cores. Segment instances start at SLUG_PASS_SEGMENT_INSTANCE_BASE.
+        void traverse(vsg::RecordTraversal& record) const override
+        {
+            if (children.empty() || !_bindAtlas)
+                return;
+
+            auto shared = renderData.lock();
+            auto* commandBuffer = record.getCommandBuffer();
+            if (!shared || !commandBuffer || commandBuffer->viewID >= ROCKY_MAX_NUMBER_OF_VIEWS)
+                return;
+            const auto viewID = commandBuffer->viewID;
+            auto& vds = shared->viewDependentState[viewID];
+            auto& local = _views[viewID];
+            const auto count = layerCounts[viewID];
+            const auto outlineCount = std::min(outlineCounts[viewID], count);
+            if (!vds || !vds->slugLayersBuf || !local.bind || (count == 0u && _segmentCount == 0u))
+                return;
+
+            // The pass's View has a private view-dependent state (VSG clears and records it during
+            // the View traversal), so BindViewDescriptorSets borrows the main view's for these draws.
+            auto* previous = commandBuffer->viewDependentState;
+            commandBuffer->viewDependentState = vds.get();
+
+            auto draw = [&](std::uint32_t instances, std::uint32_t first)
+            {
+                if (instances == 0u)
+                    return;
+                vsg::Draw command(14u, instances, 0u, first);
+                command.accept(record);
+            };
+
+            auto* state = record.getState();
+            state->push(local.commands);
+            draw(outlineCount, 0u);
+            draw(_segmentOutlines, SLUG_PASS_SEGMENT_INSTANCE_BASE);
+            draw(count - outlineCount, outlineCount);
+            draw(_segmentCount - _segmentOutlines, SLUG_PASS_SEGMENT_INSTANCE_BASE + _segmentOutlines);
+            state->pop(local.commands);
+
+            commandBuffer->viewDependentState = previous;
+        }
+
+    private:
+        struct ViewLocal
+        {
+            vsg::ref_ptr<vsg::uintArray> groupDecals;
+            vsg::ref_ptr<vsg::BindDescriptorSet> bind;
+            vsg::StateCommands commands;
+        };
+
+        vsg::ref_ptr<vsg::GraphicsPipelineConfigurator> _config;
+        vsg::ref_ptr<vsg::Sampler> _depthSampler;
+        vsg::ref_ptr<vsg::ImageView> _depthView;
+        vsg::ref_ptr<vsg::BindDescriptorSet> _bindAtlas;
+        vsg::ref_ptr<vsg::DescriptorBuffer> _segments;
+        std::uint32_t _segmentCount = 0u;
+        std::uint32_t _segmentOutlines = 0u;
+        bool _localDirty = true;
+        std::array<ViewLocal, ROCKY_MAX_NUMBER_OF_VIEWS> _views;
+        Revision _sharedRevision = 0;
+    };
+#endif
+
     /*
      * The decal renderer consumes a small, composable component model:
      *
@@ -270,6 +543,10 @@ namespace ROCKY_NAMESPACE::detail
         std::uint64_t resourceRevision = 0u;
         std::uint64_t descriptorWriteFrame = 0u;
         bool readyForDraw = false;
+
+        //! Separate Slug pass: every layer is a segment layer, drawn from the pass's
+        //! resident segment buffer, so the atlas takes no descriptor slot.
+        bool segmentsOnly = false;
     };
 #endif
 }
@@ -429,6 +706,11 @@ DecalSystemNode::DecalSystemNode(Registry& registry) :
     Inherit(registry),
     _debugNode(DecalDebugNode::create())
 {
+#ifdef ROCKY_HAS_SLUGHORN
+    if (slugPassEnabled())
+        _slugPassNode = SlugPassNode::create();
+#endif
+
     _registry.write([&](entt::registry& r)
         {
             // Install normalization, ownership, and descriptor-release hooks
@@ -739,6 +1021,24 @@ DecalSystemNode::updateStyles(VSGContext vsgcontext)
         }
 
         auto& detail = reg.get_or_emplace<SlugSlotDetail>(entity);
+
+        // Separate Slug pass: an atlas of segment layers alone is never sampled.
+        if (slugPassEnabled() && !resource->layers.empty() &&
+            std::all_of(resource->layers.begin(), resource->layers.end(),
+                [](const SlugLayerResource& layer) { return layer.uvToEmX.w < 0.0f; }))
+        {
+            if (!detail.segmentsOnly || detail.resourceRevision != resource->revision)
+            {
+                releaseSlugSlot(detail);
+                detail.segmentsOnly = true;
+                detail.resourceRevision = resource->revision;
+                detail.readyForDraw = true;
+            }
+            continue;
+        }
+        if (detail.segmentsOnly)
+            detail = {};
+
         const bool matches =
             detail.descriptorImageIndex >= 0 &&
             detail.descriptorImageIndex < static_cast<std::int32_t>(slugCurves->imageInfoList.size()) &&
@@ -1040,11 +1340,95 @@ DecalSystemNode::rebuildCommands(ViewIDType viewID, VSGContext vsgcontext)
 void
 DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
 {
+#ifdef ROCKY_HAS_SLUGHORN
+    // Separate Slug pass: the segment layers of every resident atlas go to the GPU only
+    // when that set of atlases changes (a tile loads or unloads), as osgSlug uploads path points
+    // once. Each atlas with segments is one segment group; each frame then only says, per group,
+    // which decal places it (groupDecals below).
+    if (auto* slugPass = static_cast<SlugPassNode*>(_slugPassNode.get()))
+    {
+        auto eachResident = [&](entt::registry& reg, auto&& visit)
+        {
+            reg.view<SlugResource, SlugSlotDetail>().each(
+                [&](auto entity, const SlugResource& resource, const SlugSlotDetail& detail)
+                {
+                    if (resource.ready && detail.readyForDraw &&
+                        (detail.descriptorImageIndex >= 0 || detail.segmentsOnly) &&
+                        detail.resourceRevision == resource.revision)
+                        visit(entity, resource, detail);
+                });
+        };
+
+        std::uint64_t signature = 1469598103934665603ull;
+        auto mix = [&](std::uint64_t value) { signature = (signature ^ value) * 1099511628211ull; };
+        _registry.read([&](entt::registry& reg)
+            {
+                eachResident(reg, [&](auto entity, const SlugResource& resource, const SlugSlotDetail& detail)
+                    {
+                        (void)detail;
+                        mix(entt::to_integral(entity));
+                        mix(resource.revision);
+                    });
+            });
+
+        if (signature != slugPass->segmentSignature)
+        {
+            slugPass->segmentSignature = signature;
+            std::vector<SlugLayerGPU> outlines, cores;
+            slugPass->segmentGroups.clear();
+            _registry.read([&](entt::registry& reg)
+                {
+                    eachResident(reg, [&](auto entity, const SlugResource& resource, const SlugSlotDetail&)
+                        {
+                            std::uint32_t group = 0u;
+                            for (const auto& layer : resource.layers)
+                            {
+                                if (!(layer.uvToEmX.w < 0.0f))
+                                    continue;
+                                auto [found, added] = slugPass->segmentGroups.emplace(
+                                    entity, static_cast<std::uint32_t>(slugPass->segmentGroups.size()));
+                                (void)added;
+                                group = found->second;
+                                SlugLayerGPU record;
+                                record.color = layer.color;
+                                record.uvToEmX = layer.uvToEmX;
+                                record.uvToEmY = layer.uvToEmY;
+                                // The owning segment group and the outline bit; groupDecals maps the group.
+                                record.uvToEmY.w = static_cast<float>(group * 2u + (layer.isOutline ? 1u : 0u));
+                                record.bandTransform = layer.bandTransform;
+                                record.shapeData = layer.shapeData;
+                                (layer.isOutline ? outlines : cores).push_back(record);
+                            }
+                        });
+                });
+            const auto outlineCount = static_cast<std::uint32_t>(outlines.size());
+            outlines.insert(outlines.end(), cores.begin(), cores.end());
+            slugPass->setSegments(outlines, outlineCount);
+        }
+    }
+#endif
+
     // update for each view:
     for (unsigned viewID = 0; viewID < _views.size(); ++viewID)
     {
         auto& view = _views[viewID];
         auto& vds = _sharedRenderData->viewDependentState[viewID];
+#ifdef ROCKY_HAS_SLUGHORN
+        auto* slugPass = static_cast<SlugPassNode*>(_slugPassNode.get());
+        if (slugPass && viewID < slugPass->layerCounts.size())
+        {
+            slugPass->layerCounts[viewID] = 0u;
+            slugPass->outlineCounts[viewID] = 0u;
+            auto& groupDecals = slugPass->groupDecals[viewID];
+            const auto groups = std::max<std::size_t>(slugPass->segmentGroups.size(), 1u);
+            if (!groupDecals || groupDecals->size() != groups)
+            {
+                groupDecals = vsg::uintArray::create(static_cast<std::uint32_t>(groups));
+                groupDecals->properties.dataVariance = vsg::DYNAMIC_DATA;
+            }
+            std::fill(groupDecals->begin(), groupDecals->end(), 0u);
+        }
+#endif
         if (!view.picks)
             view.picks = std::make_shared<VectorOverlayPickView>();
         view.picks->records.clear();
@@ -1087,6 +1471,10 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
             // culling/order capacity proportional to overlays rather than to
             // the number of shapes inside each overlay.
             std::vector<SlugLayerGPU> slugLayerRecords;
+
+            // Separate Slug pass: cores collect here and follow every outline, so
+            // the pass draws all outlines, then all cores, each as one contiguous range.
+            std::vector<SlugLayerGPU> slugPassCores;
 #endif
 
             _registry.read([&](entt::registry& reg)
@@ -1295,12 +1683,12 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         if (!resource || !resource->ready || !slugDetail ||
                             !slugDetail->readyForDraw ||
                             slugDetail->resourceRevision != resource->revision ||
-                            slugDetail->descriptorImageIndex < 0 ||
+                            (slugDetail->descriptorImageIndex < 0 && !slugDetail->segmentsOnly) ||
                             resource->textureWidthLog2 == 0u ||
                             resource->indirectionSize != SLUG_INDIRECTION_SIZE)
                             return;
 
-                        pending.textureIndex = slugDetail->descriptorImageIndex;
+                        pending.textureIndex = std::max(slugDetail->descriptorImageIndex, 0);
                         pending.color = projected.color;
                         pending.payloadFlags =
                             DECAL_FLAG_SLUG |
@@ -1309,7 +1697,7 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                                 DECAL_SLUG_TEXTURE_WIDTH_LOG2_SHIFT);
 
                         // Same deferral for Slug layers that changed since the buffers were sized.
-                        if (slugLayerRecords.size() + resource->layers.size() > slugLayerCapacity)
+                        if (slugLayerRecords.size() + slugPassCores.size() + resource->layers.size() > slugLayerCapacity)
                             return;
 
                         // Reorder only the per-view metadata, not the atlas.
@@ -1317,6 +1705,8 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         // pass followed by the ordinary/core pass.
                         const auto firstLayer =
                             static_cast<std::uint32_t>(slugLayerRecords.size());
+                        const auto firstPassCore = slugPassCores.size();
+                        std::uint32_t segmentLayers = 0u;
                         const auto* highlight = reg.try_get<Highlight>(entity);
                         auto appendLayer = [&](const SlugLayerResource& layer)
                         {
@@ -1331,9 +1721,22 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                             }
                             layerRecord.uvToEmX = layer.uvToEmX;
                             layerRecord.uvToEmY = layer.uvToEmY;
+                            // Separate Slug pass: the owning decal's GPU index (record
+                            // zero is the count header) and the outline bit, for the box shader.
+                            layerRecord.uvToEmY.w = static_cast<float>(
+                                (decalRecords.size() + 1u) * 2u + (layer.isOutline ? 1u : 0u));
                             layerRecord.bandTransform = layer.bandTransform;
                             layerRecord.shapeData = layer.shapeData;
-                            slugLayerRecords.emplace_back(std::move(layerRecord));
+                            // Segment layers live in the pass's resident segment buffer instead.
+                            if (slugPassEnabled() && layer.uvToEmX.w < 0.0f)
+                            {
+                                segmentLayers++;
+                                return;
+                            }
+                            if (slugPassEnabled() && !layer.isOutline)
+                                slugPassCores.emplace_back(std::move(layerRecord));
+                            else
+                                slugLayerRecords.emplace_back(std::move(layerRecord));
                         };
 
                         for (const auto& layer : resource->layers)
@@ -1348,7 +1751,8 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                                 appendLayer(layer);
 
                         const auto layerCount =
-                            static_cast<std::uint32_t>(slugLayerRecords.size()) - firstLayer;
+                            static_cast<std::uint32_t>(slugLayerRecords.size()) - firstLayer +
+                            static_cast<std::uint32_t>(slugPassCores.size() - firstPassCore) + segmentLayers;
                         if (layerCount == 0u)
                             return;
 
@@ -1356,6 +1760,20 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                             firstLayer, outlineCount, layerCount, 0u };
                         view.picks->records.push_back({ pending, glm::inverse(effectiveWorld),
                             entity, e_texture, resource->revision });
+                        // With the separate pass, terrain sees an empty layer range, and this
+                        // atlas's segment group names the decal its resident segments are placed by.
+                        if (slugPassEnabled())
+                        {
+                            pending.slugLayerRange = { firstLayer, 0u, 0u, 0u };
+                            auto* pass = static_cast<SlugPassNode*>(_slugPassNode.get());
+                            if (pass && pass->groupDecals[viewID])
+                            {
+                                auto group = pass->segmentGroups.find(e_texture);
+                                if (group != pass->segmentGroups.end() && group->second < pass->groupDecals[viewID]->size())
+                                    pass->groupDecals[viewID]->at(group->second) =
+                                        static_cast<std::uint32_t>(decalRecords.size() + 1u);
+                            }
+                        }
                         decalRecords.emplace_back(std::move(pending));
                         return;
                     }
@@ -1392,6 +1810,8 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                 writePending(record);
 
 #ifdef ROCKY_HAS_SLUGHORN
+            const auto slugPassOutlines = static_cast<std::uint32_t>(slugLayerRecords.size());
+            slugLayerRecords.insert(slugLayerRecords.end(), slugPassCores.begin(), slugPassCores.end());
             ROCKY_HARD_ASSERT(
                 slugLayerRecords.size() <= slugLayerCapacity,
                 "DecalSystemNode: Slug layer SSBO overflow");
@@ -1402,6 +1822,12 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                 ++gpuSlugLayer;
             }
             gpuSlugLayer.dirty();
+
+            if (slugPass && viewID < slugPass->layerCounts.size())
+            {
+                slugPass->layerCounts[viewID] = static_cast<std::uint32_t>(slugLayerRecords.size());
+                slugPass->outlineCounts[viewID] = slugPassOutlines;
+            }
 #endif
 
             // Update the decal count (kept in record #0):
@@ -1425,6 +1851,10 @@ DecalSystemNode::initialize(VSGContext vsgcontext)
 {
     _sharedRenderData = vsgcontext->sharedRenderData;
     static_cast<DecalDebugNode*>(_debugNode.get())->initialize(vsgcontext);
+#ifdef ROCKY_HAS_SLUGHORN
+    if (_slugPassNode)
+        static_cast<SlugPassNode*>(_slugPassNode.get())->initialize(vsgcontext);
+#endif
 
     _cullingShader = vsg::ShaderStage::read(
         VK_SHADER_STAGE_COMPUTE_BIT,
@@ -1491,7 +1921,56 @@ DecalSystemNode::update(VSGContext vsgcontext)
 
     updateDecalsSSBO(vsgcontext);
 
+#ifdef ROCKY_HAS_SLUGHORN
+    if (_slugPassNode)
+        static_cast<SlugPassNode*>(_slugPassNode.get())->update(vsgcontext);
+#endif
+
     Inherit::update(vsgcontext);
+}
+
+#ifdef ROCKY_HAS_SLUGHORN
+namespace
+{
+    bool& slugPassState()
+    {
+        static bool enabled = []()
+            {
+                const char* value = std::getenv("ROCKY_SLUG_PASS");
+                return value && std::string(value) == "1";
+            }();
+        return enabled;
+    }
+}
+#endif
+
+bool
+DecalSystemNode::slugPassEnabled()
+{
+#ifdef ROCKY_HAS_SLUGHORN
+    return slugPassState();
+#else
+    return false;
+#endif
+}
+
+void
+DecalSystemNode::disableSlugPass()
+{
+#ifdef ROCKY_HAS_SLUGHORN
+    slugPassState() = false;
+#endif
+}
+
+void
+DecalSystemNode::setSlugPassWindow(vsg::ref_ptr<vsg::Window> window)
+{
+#ifdef ROCKY_HAS_SLUGHORN
+    if (_slugPassNode)
+        static_cast<SlugPassNode*>(_slugPassNode.get())->window = window;
+#else
+    (void)window;
+#endif
 }
 
 
@@ -1552,7 +2031,8 @@ namespace ROCKY_NAMESPACE::detail
                 if (!projected || (projected->texture == entt::null ? record.entity : projected->texture) != record.payload ||
                     !overlay || resolveOverlayMode(reg, record.payload, overlay->mode) != OverlayMode::Vector ||
                     !resource || !resource->ready || resource->revision != record.revision || !slot ||
-                    !slot->readyForDraw || slot->descriptorImageIndex < 0 || slot->resourceRevision != record.revision)
+                    !slot->readyForDraw || (slot->descriptorImageIndex < 0 && !slot->segmentsOnly) ||
+                    slot->resourceRevision != record.revision)
                     continue;
                 if (!visible(reg.get<Visibility>(record.entity), rs))
                     continue;

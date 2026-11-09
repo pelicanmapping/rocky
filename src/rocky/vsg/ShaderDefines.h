@@ -85,7 +85,7 @@ namespace ROCKY_NAMESPACE
 
     /**
      * Per-shape Slug evaluation metadata, mirrored by struct SlugLayer in
-     * rocky.decal.h.glsl. Keeping it separate lets one logical decal contain
+     * rocky.decal.record.h.glsl. Keeping it separate lets one logical decal contain
      * multiple shapes (for example outline and core) while consuming only one
      * culling/tile-list entry.
      */

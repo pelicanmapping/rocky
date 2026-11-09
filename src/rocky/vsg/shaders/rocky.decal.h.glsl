@@ -41,17 +41,6 @@ struct DecalTile
 
 #pragma include "rocky.decal.record.h.glsl"
 
-#ifdef ROCKY_HAS_SLUGHORN
-struct SlugLayer
-{
-    vec4 color;
-    vec4 uvToEmX; // affine row: U coefficient, V coefficient, offset
-    vec4 uvToEmY;
-    vec4 bandTransform; // bandScaleX/Y, bandOffsetX/Y
-    uvec4 shapeData; // bandTexX/Y, bandMaxX/Y
-};
-#endif
-
 // SSBO containing the output tiles that pass cull (GPU only)
 layout(std430, set = DESCRIPTOR_SET_VDS, binding = BINDING_VDS_DECAL_TILES) DECALS_ACCESS buffer DecalTiles
 {
@@ -105,7 +94,18 @@ void applySlugLayer(
     vec2 uvDx = localDx * uvToEm;
     vec2 uvDy = localDy * uvToEm;
     vec2 emsPerPixel = abs(uvDx) + abs(uvDy);
-    float coverage = slug_Render(
+    // uvToEmX.w > 0 marks a distance-stroke layer and holds its half width (em).
+    float coverage = uvToEmX.w > 0.0 ? slug_RenderStroke(
+        renderCoord,
+        emsPerPixel,
+        b_slugLayers.layer[layerIndex].bandTransform,
+        ivec2(b_slugLayers.layer[layerIndex].shapeData.xy),
+        ivec2(b_slugLayers.layer[layerIndex].shapeData.zw),
+        u_slugCurveTexture[nonuniformEXT(textureIndex)],
+        u_slugBandTexture[nonuniformEXT(textureIndex)],
+        textureWidthLog2,
+        uvToEmX.w
+        ) : slug_Render(
         renderCoord,
         emsPerPixel,
         b_slugLayers.layer[layerIndex].bandTransform,

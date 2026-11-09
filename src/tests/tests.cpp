@@ -14,6 +14,7 @@
 
 #define CATCH_CONFIG_MAIN
 #include "catch.hpp"
+#include "ScopedEnv.h"
 
 #include <rocky/rocky.h>
 #include <rocky/Log.h>
@@ -1630,6 +1631,8 @@ TEST_CASE("slug reduces bands for an oversized indivisible polygon", "[projectio
 
 TEST_CASE("slug overlay auto-fits georeferenced line geometry", "[projection][slug]")
 {
+    // These checks count the curves of CPU-stroked outlines; distance strokes store only centerlines.
+    ScopedEnv bakedStrokes("ROCKY_SLUG_STROKES", "baked");
     Registry registry = Registry::create();
     auto sourceSystems = ECSNode::create(registry, false);
     sourceSystems->add(LineSystemNode::create(registry));
@@ -1923,6 +1926,8 @@ TEST_CASE("slug overlay retries an initially empty georeferenced line", "[projec
 
 TEST_CASE("complex slug geometry uses the full indirection grid", "[projection][slug]")
 {
+    // These checks count the curves of CPU-stroked outlines; distance strokes store only centerlines.
+    ScopedEnv bakedStrokes("ROCKY_SLUG_STROKES", "baked");
     Registry registry = Registry::create();
     auto sourceSystems = ECSNode::create(registry, false);
     sourceSystems->add(LineSystemNode::create(registry));

@@ -4,6 +4,7 @@
  * MIT License
  */
 #include "catch.hpp"
+#include "ScopedEnv.h"
 #include <rocky/Common.h>
 
 #ifdef ROCKY_HAS_SLUGHORN
@@ -132,6 +133,8 @@ TEST_CASE("slug atlas dimensions respect the device image limit", "[projection][
 //! successful reductions must reach the logger once, not once per update.
 TEST_CASE("slug boundary lines reduce bands before atlas packing", "[slug][overlay-fallback][slug-boundary]")
 {
+    // These checks count the curves of CPU-stroked outlines; distance strokes store only centerlines.
+    ScopedEnv bakedStrokes("ROCKY_SLUG_STROKES", "baked");
     unsigned segments = 1024u;
     float outline = 0.0f, alpha = 1.0f;
     SECTION("boundary without outline") {}
@@ -181,6 +184,8 @@ TEST_CASE("slug boundary lines reduce bands before atlas packing", "[slug][overl
 //! to Raster even when its polygon fits, without retries on unchanged frames.
 TEST_CASE("slug boundary exhaustion falls back to raster", "[slug][overlay-fallback][slug-boundary]")
 {
+    // These checks count the curves of CPU-stroked outlines; distance strokes store only centerlines.
+    ScopedEnv bakedStrokes("ROCKY_SLUG_STROKES", "baked");
     unsigned segments = 6000u;
     float outline = 0.0f, alpha = 1.0f;
     SECTION("previously fit at one band") {}

@@ -57,6 +57,24 @@ namespace ROCKY_NAMESPACE
         //! Renderer-owned graphics node; attach once to the main scene, not the compute graph.
         vsg::ref_ptr<vsg::Node> debugNode() const { return _debugNode; }
 
+        //! ROCKY_SLUG_PASS=1 renders Slug overlays in their own render pass after the
+        //! main pass instead of inside the terrain shader. Read once; the window traits, the decal
+        //! records, the Slug atlases and the extra render graph all depend on it.
+        static bool slugPassEnabled();
+
+        //! Draws Slug overlays inside the terrain shader even when ROCKY_SLUG_PASS=1.
+        //! Call before creating any DecalSystemNode (the pass samples single-sample depth,
+        //! so Application calls this for --msaa above 1).
+        static void disableSlugPass();
+
+        //! Graphics node for the separate Slug pass; null unless slugPassEnabled().
+        //! Parent it under a View that shares the main view's ID, in a RenderGraph recorded after
+        //! the main one, and assign the window whose depth it samples with setSlugPassWindow().
+        vsg::ref_ptr<vsg::Node> slugPassNode() const { return _slugPassNode; }
+
+        //! Window whose stored depth attachment the separate Slug pass samples.
+        void setSlugPassWindow(vsg::ref_ptr<vsg::Window> window);
+
     public: // SimpleSystemNodeBase
         void initialize(VSGContext) override;
         void update(VSGContext) override;
@@ -83,6 +101,7 @@ namespace ROCKY_NAMESPACE
         mutable ViewLocal<ViewDetail> _views;
         std::shared_ptr<SharedRenderData> _sharedRenderData;
         vsg::ref_ptr<vsg::Node> _debugNode;
+        vsg::ref_ptr<vsg::Node> _slugPassNode;
 
         vsg::ref_ptr<vsg::ShaderStage> _cullingShader;
 

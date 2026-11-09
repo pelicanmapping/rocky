@@ -37,7 +37,8 @@ if (NOT TARGET imgui::imgui)
             set(IMGUI_ALL_SOURCES_FOUND TRUE)
         
             add_library(imgui::imgui INTERFACE IMPORTED)
-            
+            set_target_properties(imgui::imgui PROPERTIES SYSTEM FALSE)
+
             set_property(TARGET imgui::imgui APPEND PROPERTY
                 INTERFACE_INCLUDE_DIRECTORIES ${IMGUI_INCLUDE_DIR} "${IMGUI_INCLUDE_DIR}/backends")
             

@@ -307,6 +307,11 @@ DisplayManager::configureTraits(vsg::WindowTraits* traits)
     traits->apiDumpLayer = _apilayer;
     if (vsgcontext->msaaSamples != 0)
         traits->samples = vsgcontext->msaaSamples;
+
+    // The separate Slug pass samples the main pass's depth. VSG stores the depth
+    // attachment (rather than discarding it) when its usage includes TRANSFER_SRC.
+    if (DecalSystemNode::slugPassEnabled())
+        traits->depthImageUsage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     if (!_vsync)
     {
         traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
