@@ -122,9 +122,12 @@ steep terrain, transparent layers, or a range of GPUs.
   and `VUID-vkDestroyInstance-instance-00629` for a leaked debug messenger at
   shutdown. Both reproduce with the preserved baseline binary, so Vulkan
   validation is not clean on this environment; these are not claimed as passes.
-- The vendor's public MVT endpoint returned HTTP 403 here. Real-city performance
-  and visual acceptance remain unverified; the offline workload avoids reporting
-  an empty remote scene as a speedup.
+- The public MVT endpoint initially returned HTTP 403 during the synthetic
+  comparison. A subsequent real-demo comparison successfully loaded Tokyo:
+  [fully paged Tokyo benchmark](slughorn-pr269-tokyo-benchmark.md). The exact
+  vendor default reduced mean GPU time by 8.5% across two paired runs, with
+  identical source geometry. This is a separate comparison from the selective
+  integration variants measured above.
 
 Transient probe sources and raw logs live under the out-of-source build folder,
 not in the repository. No new permanent regression tests are committed.
