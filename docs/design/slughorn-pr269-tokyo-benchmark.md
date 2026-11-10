@@ -2,7 +2,7 @@
 
 Measured 2026-11-10 on `codex/slughorn-integration`.
 
-## Result
+## Default-path result
 
 The vendor PR's default path improved steady-state Tokyo performance in both
 paired comparisons. Mean GPU time fell 6.1% in the first pair and 10.9% in the
@@ -108,7 +108,8 @@ synthetic road-grid result. Both mean and tail timings improved in both pairs.
 The vendor run-to-run variation means 8.5% is an observed average, not a precise
 universal speedup. These results cover a stationary camera on this GPU after
 paging completes. They do not establish loading speed, moving-camera behavior,
-other zoom levels, hardware, projection modes, or the optional separate pass.
+other zoom levels, hardware, or projection modes. The optional separate pass is
+measured separately in the follow-up below.
 
 This follow-up does not change the integration branch's runtime defaults. The
 other correctness findings and promotion checks in the integration review still
@@ -140,3 +141,63 @@ Engine DLL SHA-256:
 
 - Baseline: `57c413a017ff75ce60d658bd48a604b71b179c68852da014517023f09c30a6f3`
 - Vendor: `24893f4c71992f3b523ff28c5cef43f6879331a9309eed550ec18e4db0817edb`
+
+
+## Additional-pass follow-up
+
+At the user's request, the same vendor binary was benchmarked with
+`ROCKY_SLUG_PASS=1`. `ROCKY_SLUG_STROKES` and `ROCKY_SLUG_FILL_BATCH` remained
+unset. No renderer changes or integration fixes were applied. The camera, data,
+1920 x 1080 extent, single sampling, no-vsync setting, warmup/readiness checks,
+and 3,000 measured frames per run were unchanged.
+
+The GPU timestamp range surrounds the entire window command graph, including
+both render passes and the barrier between them. Thus the timing includes the
+additional pass's cost. Visual inspection during warmup showed the Tokyo roads
+and buildings present. All registered overlays were ready; the source geometry
+hash and exact tile set matched the original comparison.
+
+The additional pass stores a layer for each road segment's core and casing,
+rather than using the default's atlas-wide road layers. Its recorded resource
+layer count is therefore 56,816 instead of 234. The 96 published decal records
+count projector records, not Vulkan draw calls. Atlas texture payload is still
+76,662,784 bytes (73.11 MiB); this excludes the additional pass's segment buffers
+and depth resources and is not a total-memory comparison.
+
+Two 3,000-frame runs per mode were collected in the order additional pass 1,
+fresh default 3, fresh default 4, additional pass 2. The fresh default controls
+used the same vendor executable with only `ROCKY_SLUG_PASS` unset. All four
+runs passed the unchanged readiness and post-measurement checks.
+
+| Run | GPU mean | GPU p50 | GPU p95 | GPU p99 | Frame mean | Frame p95 | Frame p99 |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| Additional pass 1 | 9.5343 | 9.8927 | 10.0588 | 10.1543 | 10.1117 | 10.7445 | 10.9249 |
+| Fresh default 3 | 20.5692 | 20.2630 | 22.1295 | 22.9417 | 20.8856 | 22.5512 | 23.4355 |
+| Fresh default 4 | 20.5632 | 20.2480 | 22.1483 | 22.9295 | 21.0244 | 22.5648 | 23.5462 |
+| Additional pass 2 | 9.5370 | 9.9049 | 10.0514 | 10.1396 | 10.0684 | 10.9094 | 11.7442 |
+
+All timings are milliseconds. Per-run percentiles are not pooled.
+
+| Aggregate metric | Earlier baseline | Fresh PR default | Additional pass |
+| --- | ---: | ---: | ---: |
+| Mean GPU time | 23.0803 ms | 20.5662 ms | 9.5357 ms |
+| Mean frame time | 23.5019 ms | 20.9550 ms | 10.0901 ms |
+| Throughput, 1000 / mean frame time | 42.55 fps | 47.72 fps | 99.11 fps |
+
+Compared with its fresh default controls, the additional pass reduced mean GPU
+time by 53.6% and mean frame time by 51.8%, yielding 2.08 times the throughput.
+Compared with the earlier baseline, GPU time was 58.7% lower and throughput was
+2.33 times higher. Baseline was not rerun in this follow-up. The fresh default
+controls are close to the earlier faster default run; the original default-path
+measurements above are retained rather than mixed with these new controls.
+
+Both additional-pass runs improved the p95 and p99 GPU and frame timings as well.
+The measured benefit is substantial for this fully paged, stationary Tokyo view.
+This benchmark does not evaluate paging churn or resolve the separate integration
+issues; no runtime defaults were changed as part of this follow-up.
+
+Raw follow-up logs are `pass-1.log`, `vendor-3.log`, `vendor-4.log`, and
+`pass-2.log` under `D:/devel/rocky/build/mvt-comparison/`.
+`comparison-results.json` collects all eight completed runs. Reproduce the
+additional-pass runs with the same instructions above, setting
+`ROCKY_SLUG_PASS=1` while leaving the other two overrides unset.
