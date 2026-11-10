@@ -34,6 +34,49 @@ Recommended first-release scope:
 - Keep promotion to the default as a later decision based on correctness and
   performance evidence; approval of this plan is not approval to flip it.
 
+## 0. Measure and resolve repeated Optics misses separately
+
+The PR identifies repeated focal-point terrain-ray misses in
+`OpticsSystemNode::updateProjections`. The source confirms that only successful
+intersections are cached (`intersectionCacheValid = canCache && found`). A miss
+therefore permits another traversal on the next frame even without a projector
+change. The depth-range cache is separate and already caches its own misses;
+these two caches must not be conflated.
+
+First instrument CPU time in `updateProjections`, rays attempted, hits/misses,
+cache hits, invalidation reasons and repeated misses per projector/view in the
+same Tokyo scenario. Record effective placement/depth-range validity as well as
+source geometry and atlas readiness. Fully paged tiles and idle background jobs
+do not establish that projection fitting is idle or successful.
+
+Determine why the affected rays miss before choosing a fix. Inspect the separately
+reported clamp fix if available and integrate it as an isolated commit after
+review; otherwise implement a focused local correction. Do not assume that
+suppressing retries repairs incorrect placement. Preserve existing geospatial
+precision and the protection against hitting the far side of the globe.
+
+Where misses can be cached safely, represent a completed miss separately from
+an uncomputed query. Invalidate it on projector/pose or SRS changes, target
+replacement, and relevant terrain loads, bounds changes and resets. Store a
+conservative query footprint for misses, using broader invalidation if the
+footprint is unknown. The current loaded-tile invalidation skips entries without
+a valid focal point; that must be changed along with any negative-result cache.
+Targets without reliable change notifications must retain a retry mechanism.
+Do not fix this by permanently disabling optics or freezing failed placements.
+
+Acceptance: stationary unchanged failed queries do not traverse terrain every
+frame when caching is safe; a missing hit is retried when terrain becomes
+available; motion and target changes recover correctly; effective receiving
+volumes and picking remain correct. Keep regression probes transient.
+
+Maintain attribution in the benchmark: measure the Optics change alone with the
+additional pass disabled, then compare off/on rendering with the same Optics
+revision and input scene. Keep untouched baseline/vendor results as historical
+controls, clearly labeled. Report CPU Optics cost separately from GPU render time
+and end-to-end throughput; do not estimate CPU cost by subtracting GPU time from
+frame time, since CPU and GPU work overlap. If the fix changes fitted placements,
+record that change and use matching placements for renderer-only comparisons.
+
 ## 1. Separate payload generation from render-path selection
 
 Primary files: `Application.cpp`, `SlugSystem.cpp`, `SlugResource.h`, and
@@ -214,8 +257,10 @@ Performance acceptance:
 ## Delivery and approval boundary
 
 Implement in reviewable commits corresponding to the stages above on the existing
-branch, with normal build checks as each stage lands. Stages 1-5 establish the
-correctness baseline; stage 6 measures the integrated result. Update the existing
+branch, with normal build checks as each stage lands. Stage 0 isolates the Optics
+issue, stages 1-5 establish the pass correctness baseline, and stage 6 measures
+the integrated result. Include matched off/on builds with the same Optics fix so
+its CPU benefit is not credited to the additional pass. Update the existing
 integration review and Tokyo report with final supported/fallback cases and data.
 
 This turn adds only this proposed design document. After the user approves this

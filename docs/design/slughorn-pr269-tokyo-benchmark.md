@@ -201,3 +201,26 @@ Raw follow-up logs are `pass-1.log`, `vendor-3.log`, `vendor-4.log`, and
 `comparison-results.json` collects all eight completed runs. Reproduce the
 additional-pass runs with the same instructions above, setting
 `ROCKY_SLUG_PASS=1` while leaving the other two overrides unset.
+
+
+## Optics cost caveat
+
+The PR reports repeated terrain-placement focal-ray misses in
+`OpticsSystemNode::updateProjections`. Baseline, vendor head and the integration
+branch used the same Optics source for these measurements. It caches successful
+intersections but leaves misses uncached, permitting repeated CPU terrain
+traversals on subsequent frames.
+
+The benchmark did not instrument ray counts or isolate Optics CPU time, so it
+does not establish how often this happened in Tokyo or its measured cost. Stable
+MVT/atlas counts and idle paging jobs do not prove that these queries stopped or
+that every effective receiving volume was successfully fitted. Matching source
+geometry hashes do not independently verify effective fitted projector transforms.
+
+The frame-throughput results include whatever Optics work occurred. GPU timestamps
+measure the submitted window graph, not these CPU raycasts; the repeated-miss
+issue does not by itself explain away the measured GPU-time reduction. Fixing
+Optics may change throughput and, if placement changes, the rendering workload.
+The [integration plan](slughorn-additional-pass-plan.md) now calls for explicit
+Optics instrumentation and matched off/on comparisons using the same Optics
+revision, keeping that benefit separate from the pass's benefit.
