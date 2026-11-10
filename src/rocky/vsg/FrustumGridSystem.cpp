@@ -144,7 +144,10 @@ FrustumGridSystemNode::update(VSGContext vsgcontext)
                 BufferAccess<FrustumGridParamsGPU> params(vds->frustumParamsBuf);
                 auto& vp = vds->viewportData->at(0);
                 params->viewport = glm::ivec4(vp[0], vp[1], vp[2], vp[3]);
-                params->invProjMatrix = to_glm(vds->view->camera->projectionMatrix->inverse());
+                auto projection = vds->view->camera->projectionMatrix->transform();
+                params->invProjMatrix = to_glm(vsg::inverse(projection));
+                // Keep interpretation coherent with the matrix, including projection switches without a resize.
+                params->projIsOrtho = std::abs(projection[3][3] - 1.0) < 1e-9 ? 1u : 0u;
                 params.dirty();
             }
         }
