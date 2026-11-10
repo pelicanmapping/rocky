@@ -9,8 +9,15 @@ Vendor PR: <https://github.com/pelicanmapping/rocky/pull/269>, head
 
 Integrate the pinned SDK/API update and a guarded centerline-stroke experiment.
 Keep baked strokes and the original terrain coverage math as the default.
-Do not merge the proposed separate render pass or fill batching yet. This is a
-selective integration, not a merge of the complete vendor commit.
+The additional pass is now integrated with per-view ownership, immutable shared
+payloads and conservative whole-view fallback. It remains opt-in with
+`ROCKY_SLUG_PASS=1`; fill batching remains excluded. This is a selective
+integration, not a merge of the complete vendor commit.
+
+The final Tokyo results and validation are recorded in the
+[benchmark report](slughorn-pr269-tokyo-benchmark.md). Preserving overlap order
+costs more than the vendor's fastest material grouping; this performance gap is
+explicitly retained for review, not accepted as grounds to change the default.
 
 Included:
 
@@ -33,13 +40,17 @@ Included:
   geometry reporting. Paging callbacks own their inputs through asynchronous shutdown.
   No persistent test modifications.
 
-Public structure layouts and exported function signatures do not change, so
-`PROJECT_VERSION_ABI` remains 63. Only the private C++20 adapter input changes;
-Rocky's public and demo code remain C++17.
+The subsequent Optics correction and pass integration change public component
+and application/view layouts. `PROJECT_VERSION_ABI` is 64. Rocky public/demo code
+remains C++17; only the private SDK adapter requires C++20.
 
-## Why the complete pass is deferred
+## Vendor issues addressed by the opt-in integration
 
-These findings refer to the vendor head, not the integrated branch:
+These findings describe the original vendor head. The integration addresses
+items 1-5 with view-owned graphs/depth bindings and retirement, all-or-none
+fallback, shared immutable geometry plus independent placement records,
+incremental uploads, and explicit scene/composition eligibility. Item 6 remains
+excluded. The full supported/fallback contract is in [Slughorn usage](../slughorn.md).
 
 1. **Window/view ownership:** `SlugPassNode` has one `window` and `_depthView`,
    overwritten by `setSlugPassWindow` for every new view. All view-local descriptor

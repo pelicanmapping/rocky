@@ -224,3 +224,134 @@ Optics may change throughput and, if placement changes, the rendering workload.
 The [integration plan](slughorn-additional-pass-plan.md) now calls for explicit
 Optics instrumentation and matched off/on comparisons using the same Optics
 revision, keeping that benefit separate from the pass's benefit.
+
+
+## Completed opt-in integration: matched Optics controls (2026-11-10)
+
+These measurements supersede the prototype timings for the integrated path.
+The default remains unchanged; enable the additional pass explicitly with
+`ROCKY_SLUG_PASS=1`. Baked fallback/picking atlases remain available, and no
+optional vendor fill batching is enabled.
+
+All stationary runs use the same fully paged MVT Features Tokyo view, 1920x1080,
+single sample, no vsync, RTX 5080, 60-second minimum warmup, 20 seconds stable
+with idle paging, and 3,000 measured frames. GPU timestamps cover the entire
+window command graph. No build, second benchmark, or other agent-controlled
+rendering work ran during a timed sample.
+
+Every run retained 48 tiles, 56,678 line points, 519,166 polygon parts, 96 ready
+overlays and 96 published placement records. Source hash:
+`5239511238660498999`. Integrated and vendor-with-Optics runs also report the
+corrected placement hash `11964528720301840533`. The older control harness did
+not record that hash; it uses the identical Optics implementation and camera.
+All 96 projections fitted successfully; 23 terrain-edge hits were recovered
+during preparation and zero rays were cast during the measured interval.
+
+The control is the preserved pre-pass branch with the Optics fix. The vendor
+control is PR #269 with that same Optics fix applied; it is **not the untouched
+vendor build** used in the historical sections above. This separates the pass
+from the Optics correction and matches the actual receiving-volume placements.
+
+| Run | GPU mean | GPU p50 | GPU p95 | GPU p99 | Frame mean | Frame p95 | Frame p99 | Update mean |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| final-control-1 | 20.1333 | 20.1233 | 20.3709 | 20.5063 | 21.5641 | 22.5545 | 43.3349 | — |
+| final-off-1 | 20.1347 | 20.1251 | 20.3625 | 20.4928 | 21.5069 | 22.2582 | 22.6623 | 0.5221 |
+| final-vendor-1 | 8.8039 | 8.8007 | 8.8945 | 8.9452 | 10.0062 | 11.0929 | 11.6814 | 1.2708 |
+| final-vendor-2 | 8.8086 | 8.8052 | 8.9008 | 8.9439 | 10.0147 | 10.9173 | 11.4209 | 1.1461 |
+| final-off-2 | 20.1246 | 20.1171 | 20.3476 | 20.4962 | 21.8698 | 43.4153 | 62.3476 | 0.5304 |
+| final-control-2 | 20.1043 | 20.0953 | 20.3344 | 20.4401 | 21.6430 | 43.3091 | 62.7532 | — |
+| final-on-3 | 14.2159 | 13.7210 | 16.1345 | 16.4506 | 16.0627 | 16.9795 | 17.6098 | 0.3818 |
+| final-on-4 | 14.8187 | 14.3174 | 16.8116 | 17.1856 | 16.3078 | 17.5324 | 18.6988 | 0.3670 |
+| final-fallback-2 | 21.2045 | 21.1878 | 21.4966 | 21.8227 | 21.5857 | 22.3347 | 41.1472 | 0.4388 |
+
+All times are milliseconds; percentiles remain per-run, not pooled. The older
+control harness did not record total CPU update time; it did record Optics time.
+
+The disabled integration averaged 20.1296 ms GPU versus 20.1188 ms for the control (+0.05%). There is no repeatable GPU regression evident in these pairs. Both the control
+and disabled runs show intermittent wall-clock frame stalls; their similar
+tails should not be interpreted as a new renderer cost or a universal latency
+guarantee.
+
+The final additional pass averaged 14.5173 ms GPU (27.8% less than the matched control), and 16.1852 ms per frame (61.78 fps versus 46.29 fps). Its GPU and frame tails also remain below the control in this scene.
+
+The vendor pass averaged 8.8063 ms GPU. The integration deliberately preserves relative overlay order and global
+outline/core order. Grouping all fills ahead of roads recovered prototype speed
+in a diagnostic (8.136 ms), but can change overlapping/translucent composition.
+A shader-based correction was too expensive; conservative non-overlap sorting
+produced no useful gain. Neither experiment ships. The remaining gap against
+the vendor prototype is explicit; it does not erase the gain against baseline
+and is not grounds to change the default.
+
+A requested-but-ineligible view initially measured 21.2836 ms GPU
+(`final-fallback-1.log`). Its extra terrain shader shortcut was removed; the
+ordinary terrain shader is now unchanged. `final-on-1/2` used that earlier
+revision and are not included in the final active-path aggregate. The final
+active runs (`final-on-3/4`) and final fallback use the unmodified terrain
+shader. The final C++ cleanup also removes the now-unused shader define/header
+flag; it does not change shader code or the measured drawing path.
+
+Final forced fallback measured 21.2045 ms GPU, with all 96 placements and no pass geometry allocation.
+
+Removing the shortcut did not eliminate the requested-but-ineligible overhead: the final GPU result is 5.4% above the matched pre-pass control. Its mean wall-clock frame time remains comparable. The attached extra graph and sampleable-depth configuration remain present in this state; their individual costs were not isolated. This is an explicit opt-in fallback limitation, not a claim of zero regression for every requested configuration. The default-off path does not attach those resources.
+
+### Storage, updates and paging
+
+The ordinary atlas payload is 84,647,936 bytes (80.73 MiB), retained for fallback
+and picking. Additional geometry is 4,545,280 bytes (4.33 MiB), shared across
+placements and views. All 96 payloads upload during preparation; every stationary
+active sample records **zero geometry upload bytes** during measurement. The
+vendor atlas is smaller at 76,662,784 bytes (73.11 MiB), because it does not
+retain the same baked fallback representation. These figures exclude CPU copies,
+depth/framebuffers, metadata and other GPU allocations; they are not total VRAM.
+
+A deterministic four-stop route pans east, pans north/zooms out to 18 km,
+returns west/zooms in to 8.5 km, then returns to the exact 13.5 km Tokyo view.
+Three cycles ran per mode with capacity 256 in both modes, to avoid the default
+128-atlas cap at the wider stop. This capacity change is confined to the route;
+the stationary comparison remains at 128. Each stop waits at least ten seconds
+and five stable/idle seconds.
+
+| Mode/cycle | GPU mean | GPU p95 | GPU p99 | Frame mean | Frame p95 | Frame p99 | Update mean | Geometry uploaded (MiB) | Resident at return (MiB) | Peak (MiB) |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+| on/0 | 12.374 | 17.799 | 18.392 | 16.455 | 18.677 | 114.822 | 4.195 | 5.080 | 4.335 | 7.068 |
+| on/1 | 12.685 | 17.836 | 18.367 | 17.310 | 18.777 | 165.518 | 4.870 | 5.131 | 4.335 | 7.068 |
+| on/2 | 12.446 | 17.585 | 18.130 | 16.337 | 18.596 | 108.648 | 4.256 | 5.080 | 4.335 | 7.068 |
+| off/0 | 17.672 | 20.204 | 20.353 | 22.236 | 21.844 | 119.874 | 4.483 | 0.000 | 0.000 | 0.000 |
+| off/1 | 17.675 | 20.185 | 20.373 | 22.091 | 21.911 | 147.941 | 4.467 | 0.000 | 0.000 | 0.000 |
+| off/2 | 17.712 | 20.209 | 20.380 | 22.211 | 22.003 | 147.093 | 4.724 | 0.000 | 0.000 | 0.000 |
+
+All 12 settled stop hashes and draw counts match between modes: **True**.
+Pass residency returns to 4.33 MiB on each Tokyo return and peaks at 7.07 MiB,
+with no cycle-over-cycle growth. Uploads follow changed/reloaded payloads rather
+than rebuilding the entire resident geometry buffer. No failed stops or
+cancelled payload jobs occurred. Paging frame tails include source processing,
+resource compilation and uploads. First-idle timings include network/cache wait
+and are recorded in raw logs; this probe does not separately measure network
+and local construction time, so it is not an isolated network benchmark.
+
+### Validation, limits and reproducibility
+
+See the [implementation plan's validation record](slughorn-additional-pass-plan.md)
+for the 156 checks at capacities 128/256, the final 158-check run including
+reflected projectors, image comparisons and startup failure/MSAA fallback.
+A projection-switch defect found by image review was fixed by keeping frustum
+grid projection interpretation synchronized with its inverse matrix. Native
+window resize could not be reliably verified through the desktop helper; inset
+resize and independent-window lifecycle were exercised. Other GPUs/platforms,
+projected maps and steep-terrain/near-plane image coverage remain unverified.
+
+Transient instrumentation and tests are not committed. Raw logs, the harness,
+`run-final-matrix.ps1`, `run-route-final.ps1`, and `final-results.json` are under
+`D:/devel/rocky/build/mvt-comparison/`. The instrumented final executable/library
+and matching shader tree are preserved under
+`D:/devel/rocky/build/slughorn-integrated-final/`. Use the normal installed
+dependencies on PATH and the vcpkg PROJ data directory. Reapply the transient
+harness to `rocky_demo` to reproduce the original demo scenario; the standalone
+Slughorn demo is a different workload.
+
+Final clean builds succeeded with Slughorn enabled and disabled, after removing
+all transient instrumentation and tests. Both full test runs reported only the
+same pre-existing vertical-datum test failure (16 assertions) seen in the
+baseline. No test-source changes are included. Build and test logs are
+`final-clean-build2.log`, `final-off-build2.log`, `final-clean-tests.log` and
+`final-off-tests.log` in the raw-results directory above.

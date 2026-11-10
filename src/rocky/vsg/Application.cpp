@@ -4,6 +4,18 @@
  * MIT License
  */
 #include "Application.h"
+#ifdef ROCKY_HAS_SLUGHORN
+#include "ecs/SlugPass.h"
+#include "ecs/ECSTypes.h"
+#include "NodePager.h"
+#include "NodeLayer.h"
+#include <rocky/ecs/Line.h>
+#include <rocky/ecs/Mesh.h>
+#include <rocky/ecs/Point.h>
+#include <rocky/ecs/Polygon.h>
+#include <rocky/ecs/Label.h>
+#include <rocky/ecs/Model.h>
+#endif
 #include "MapManipulator.h"
 #include "ShaderDefines.h"
 #include "SkyNode.h"
@@ -24,6 +36,23 @@
 
 #ifdef ROCKY_HAS_IMGUI
 #include <rocky/rocky_imgui.h>
+#endif
+
+#ifdef ROCKY_HAS_SLUGHORN
+namespace
+{
+    //! Recognizes lighting-only groups, including VSG's headlight transform; unknown/stateful nodes fail closed.
+    bool containsOnlyLights(const vsg::Node& node, unsigned remaining = 16u)
+    {
+        if (node.cast<vsg::Light>()) return true;
+        auto* group = node.cast<vsg::Group>();
+        if (!group || !remaining || (typeid(node) != typeid(vsg::Group) &&
+            typeid(node) != typeid(vsg::MatrixTransform) && typeid(node) != typeid(vsg::AbsoluteTransform))) return false;
+        for (const auto& child : group->children)
+            if (!containsOnlyLights(*child, remaining - 1u)) return false;
+        return true;
+    }
+}
 #endif
 
 #define ROCKY_HAS_FRUSTUM_GRID
@@ -267,6 +296,10 @@ Application::ctor(int& argc, char** argv)
         commandLineStatus = Failure(Failure::ConfigurationError, "--msaa requires a sample count, for example --msaa 4");
     }
 
+#ifdef ROCKY_HAS_SLUGHORN
+    const char* slugPass = std::getenv("ROCKY_SLUG_PASS");
+    vsgcontext->slugPassRequested = slugPass && std::string(slugPass) == "1";
+#endif
     scene = vsg::Group::create();
 
     mapNode = rocky::MapNode::create(vsgcontext);
@@ -389,6 +422,8 @@ Application::ctor(int& argc, char** argv)
     computeSystemsNode->add(decalSystem);
     vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_DECALS");
 #endif
+
+    _slugPassDefaultSystems = systemsNode->children;
 
     auto xformSystem = systemsNode->get<TransformSystemNode>();
     if (xformSystem)
@@ -680,6 +715,24 @@ Application::frame()
 
         auto num_windows = viewer->windows().size();
 
+        // Resolve main-view resizing before projection/culling updates and depth reconstruction uniforms.
+        // The additional graph observes the same camera and must not resize it again while recording.
+        if (vsgcontext->slugPassRequested)
+            for (auto& window : display.windows())
+                for (auto& view : window.views())
+                {
+                    auto extent = view.renderGraph->getExtent();
+                    if (view.renderGraph->previous_extent.width != extent.width ||
+                        view.renderGraph->previous_extent.height != extent.height)
+                    {
+                        view.renderGraph->resized();
+#ifdef ROCKY_HAS_SLUGHORN
+                        if (auto pass = view.renderGraph->getRefObject<detail::SlugPassNode>("rocky.slugPass"))
+                            pass->refresh(view);
+#endif
+                    }
+                }
+
         // Update the scene graph (see AppUpdateOperation)
         viewer->update();
 
@@ -792,7 +845,8 @@ Application::install(vsg::ref_ptr<ImGuiRenderer> renderer, vsg::ref_ptr<vsg::Vie
     ROCKY_SOFT_ASSERT_AND_RETURN(view, void());
 
     // add the renderer to the view's render graph:
-    view.renderGraph->addChild(renderer);
+    auto slugGraph = view.renderGraph->getRefObject<vsg::RenderGraph>("rocky.slugPassGraph");
+    (slugGraph ? slugGraph : view.renderGraph)->addChild(renderer);
 
     // install the event handler that will pass events from VSG to ImGui:
     auto& handlers = vsgcontext->viewer()->getEventHandlers();
@@ -869,6 +923,14 @@ Application::onAddWindow(Window& window)
     vsgcontext->viewer()->addWindow(window.vsgWindow);
     vsgcontext->viewer()->addRecordAndSubmitTaskAndPresentation({ window.commandGraph });
 
+    // A dynamically added task was absent when addView published its compilation requirements.
+    // Publish the complete graph again so its record state reserves viewport/descriptor slots and uploads.
+    if (vsgcontext->viewer()->compileManager)
+    {
+        auto result = vsgcontext->compile(window.commandGraph);
+        if (result.requiresViewerUpdate()) vsg::updateViewer(*vsgcontext->viewer(), result);
+    }
+
     // Tell Rocky it needs to mutex-protect the terrain engine if we have more than one window.
     if (vsgcontext->viewer()->windows().size() > 1)
     {
@@ -883,6 +945,61 @@ Application::onAddView(Window& window, View& view)
 
     // The shared compute branch is outside the view's scene; resolve its picking dependencies once at assembly.
     view.setComputeGraph(compute.get());
+#ifdef ROCKY_HAS_SLUGHORN
+    if (vsgcontext->slugPassRequested)
+    {
+        const auto standardSystems = _slugPassDefaultSystems;
+        auto mainView = vsg::observer_ptr<vsg::View>(view.vsgView);
+        // Only the known Application scene is inferred safe. Custom callers supply their own explicit policy.
+        view.slugPassPolicy->fallbackReason = [this, mainView, standardSystems]() -> std::string
+        {
+            auto v = mainView.ref_ptr();
+            if (!v || v->children.size() != 1u || v->children.front() != scene) return "custom view scene";
+            if (systemsNode->children != standardSystems) return "custom ECS systems";
+            if (mapNode->children.size() != 1u || mapNode->children.front() != mapNode->terrainNode)
+                return "custom map geometry";
+            if (mapNode->terrainSettings().wireframe.value() || mapNode->terrainSettings().debugTriangles.value())
+                return "terrain debug rendering";
+            auto* decals = computeSystemsNode->get<DecalSystemNode>();
+            if (decals && decals->debugVolumes) return "custom scene geometry";
+            for (const auto& child : scene->children)
+            {
+                if (child == mapNode || child == systemsNode ||
+                    (decals && child == decals->debugNode()) || containsOnlyLights(*child)) continue;
+                bool payloadsOnly = false;
+                if (!child->cast<NodePager>() || !child->getValue("rocky.terrainOverlayPayloadsOnly", payloadsOnly) ||
+                    !payloadsOnly) return "custom scene geometry";
+            }
+            bool compatible = true;
+            mapNode->map->each<NodeLayer>([&](auto layer)
+            {
+                if (!layer->isOpen() || !layer->node) return;
+                bool payloadsOnly = false;
+                if (!layer->node->cast<NodePager>() ||
+                    !layer->node->getValue("rocky.terrainOverlayPayloadsOnly", payloadsOnly) || !payloadsOnly)
+                    compatible = false;
+            });
+            if (!compatible) return "custom map layer geometry";
+            registry.read([&](entt::registry& reg)
+            {
+                // Any main-scene artwork could write depth or composite above terrain. Fall back as a whole.
+                auto check = [&](auto components)
+                {
+                    for (auto entity : components)
+                    {
+                        auto* participation = reg.try_get<RenderParticipation>(entity);
+                        if (!reg.any_of<Overlay>(entity) && (!participation || participation->mainView))
+                            compatible = false;
+                    }
+                };
+                check(reg.view<Line>()); check(reg.view<Mesh>()); check(reg.view<Point>());
+                check(reg.view<rocky::Polygon>()); check(reg.view<Label>());
+                check(reg.view<Model>()); check(reg.view<NodeGraph>());
+            });
+            return compatible ? std::string{} : "main-scene ECS artwork";
+        };
+    }
+#endif
 
     // wait until the device is idle to avoid changing state while it's being used
     vsgcontext->viewer()->deviceWaitIdle();

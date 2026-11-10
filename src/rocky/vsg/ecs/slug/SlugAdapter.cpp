@@ -10,6 +10,7 @@
 #include <array>
 #include <cmath>
 #include <exception>
+#include <cstring>
 #include <limits>
 
 #include <numeric>
@@ -96,6 +97,8 @@ namespace rocky::detail
             // Distance strokes: > 0 makes the shader cover every pixel within this
             // many em of the shape's centerline curves; travels to the GPU in uvToEmX.w.
             float strokeHalfWidth = 0.0f;
+            bool replacedInPass = false;
+            std::size_t passFirst = 0u, passCount = 0u;
 
         };
 
@@ -672,6 +675,7 @@ namespace rocky::detail
             canvas.setSplitStrategy(complexityAwareBandSplits);
 
             std::vector<PendingLayer> pending;
+            std::vector<SlugLayerOutput> segments;
             std::vector<SlugBandReduction> bandReductions;
             pending.reserve(input.shapes.size() * 2u);
 
@@ -710,6 +714,7 @@ namespace rocky::detail
                     }
                 }
 
+                const auto firstPending = pending.size();
                 canvas.beginPath();
                 Layer layer;
                 bool committed = false;
@@ -988,6 +993,68 @@ namespace rocky::detail
                         shape.uvToEmX,
                         shape.uvToEmY });
                 }
+                // Keep fallback contours intact. Only opaque line layers have equivalent segment compositing.
+                if (input.additionalPass && shape.kind == SlugShapeKind::Stroke &&
+                    shape.color[3] == 1.0f && (shape.outlineWidth == 0.0f ||
+                    (shape.useOpaqueOutlineCasing && shape.outlineColor[3] == 1.0f)))
+                {
+                    Atlas::ShapeInfo center;
+                    slughorn::CurveDecomposer decomposer(center.curves);
+                    DecomposerPath path{ decomposer };
+                    if (addContours(path, shape, false, input.mergeConnectedLineSegments))
+                    {
+                        for (unsigned pass = 0; pass < 2; ++pass)
+                        {
+                            const bool outline = pass == 0u;
+                            if (outline && shape.outlineWidth == 0.0f) continue;
+                            const auto firstSegment = segments.size();
+                            for (std::size_t first = 0; first < center.curves.size(); )
+                            {
+                                std::size_t last = first;
+                                while (last + 1 < center.curves.size() &&
+                                    center.curves[last].x3 == center.curves[last + 1].x1 &&
+                                    center.curves[last].y3 == center.curves[last + 1].y1) ++last;
+                                const bool closed = center.curves[last].x3 == center.curves[first].x1 &&
+                                    center.curves[last].y3 == center.curves[first].y1;
+                                for (std::size_t i = first; i <= last; ++i)
+                                {
+                                    const auto& curve = center.curves[i];
+                                    SlugLayerOutput segment;
+                                    segment.owner = shape.owner;
+                                    segment.isOutline = outline;
+                                    segment.color = outline ? shape.outlineColor : shape.color;
+                                    segment.uvToEmX = shape.uvToEmX;
+                                    segment.uvToEmY = shape.uvToEmY;
+                                    segment.uvToEmX[3] = -(shape.strokeWidth * 0.5f +
+                                        (outline ? shape.outlineWidth : 0.0f));
+                                    segment.bandTransform = { curve.x1, curve.y1, curve.x3, curve.y3 };
+                                    const float none = std::numeric_limits<float>::quiet_NaN();
+                                    std::array<float, 4> neighbors{ none, none, none, none };
+                                    if (i > first || closed)
+                                    {
+                                        const auto& prev = center.curves[i > first ? i - 1 : last];
+                                        neighbors[0] = prev.x1; neighbors[1] = prev.y1;
+                                    }
+                                    if (i < last || closed)
+                                    {
+                                        const auto& next = center.curves[i < last ? i + 1 : first];
+                                        neighbors[2] = next.x3; neighbors[3] = next.y3;
+                                    }
+                                    std::memcpy(segment.shapeData.data(), neighbors.data(), sizeof(neighbors));
+                                    segments.emplace_back(std::move(segment));
+                                }
+                                first = last + 1;
+                            }
+                            for (std::size_t i = firstPending; i < pending.size(); ++i)
+                                if (pending[i].isOutline == outline)
+                                {
+                                    pending[i].replacedInPass = true;
+                                    pending[i].passFirst = firstSegment;
+                                    pending[i].passCount = segments.size() - firstSegment;
+                                }
+                        }
+                    }
+                }
             }
 
             atlas.build();
@@ -1035,6 +1102,7 @@ namespace rocky::detail
             result.exportSucceeded = exportSucceeded;
             result.exportMessage = std::move(exportMessage);
             result.layers.reserve(pending.size());
+
             std::unordered_map<Key, std::shared_ptr<const SlugCoverage>, slughorn::KeyHash> decoded;
 
             for (const auto& pendingLayer : pending)
@@ -1088,6 +1156,14 @@ namespace rocky::detail
                     shape->bandMaxX,
                     shape->bandMaxY
                 };
+                if (input.additionalPass)
+                {
+                    if (pendingLayer.replacedInPass)
+                        result.passLayers.insert(result.passLayers.end(), segments.begin() + pendingLayer.passFirst,
+                            segments.begin() + pendingLayer.passFirst + pendingLayer.passCount);
+                    else
+                        result.passLayers.push_back(out);
+                }
                 result.layers.emplace_back(std::move(out));
             }
 

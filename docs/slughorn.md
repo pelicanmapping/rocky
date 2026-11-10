@@ -85,10 +85,10 @@ compositing. Distance-stroke core and casing layers have separate CPU picking
 radii even though they share atlas bands. Existing band/texture capacity limits
 and Raster fallback remain active.
 
-The vendor's separate render pass and fill batching are **not integrated**.
-`ROCKY_SLUG_PASS` and `ROCKY_SLUG_FILL_BATCH` have no effect in this integration.
-See [the integration review](design/slughorn-pr269-integration.md) for the reasons,
-measurements, and work needed before enabling them.
+The additional pass is integrated behind the startup opt-in described below.
+Vendor fill batching remains excluded; `ROCKY_SLUG_FILL_BATCH` has no effect.
+See [the integration review](design/slughorn-pr269-integration.md) for its scope
+and measured performance limits.
 
 `rocky_demo_slughorn` builds with Slughorn and GDAL. It supports the vendor's MVT
 city scenes and a deterministic offline scene:
@@ -146,3 +146,71 @@ and exports the adapter for an installed-consumer check. Configure it with a
 source override, an installed package prefix, or neither (to exercise downloading).
 Only nlohmann-json and a C++20 compiler are needed; no Vulkan or vcpkg toolchain
 is required.
+
+
+## Opt-in additional rendering pass
+
+Set `ROCKY_SLUG_PASS=1` before creating `Application` to request the additional
+pass. The default remains the terrain renderer. This switch is independent of
+`ROCKY_SLUG_STROKES=distance`, which selects the ordinary atlas encoding retained
+for fallback and picking. Optional vendor fill batching is not enabled.
+
+The additional pass draws opaque road segments in small receiving volumes and
+uses atlas coverage for other vector layers. Every payload retains its ordinary
+atlas and picking coverage. Its alternate geometry is immutable and shared
+across placements and views; placement, highlight, depth bindings and camera
+state belong to each view. Stationary views do not reupload segment geometry.
+Adjacent draws of the same material are batched, preserving the original overlay
+order and global outlines-before-cores rule. Fills are not moved ahead of roads
+when doing so could change overlapping or translucent artwork.
+Only changed payload revisions allocate/upload replacement buffers. Retired
+buffers remain alive until their recorded uses are safe to release.
+
+The initial supported scene is opaque terrain in a single-sample window, with a
+VSG perspective or orthographic camera. Multiple independent windows and inset
+viewports are supported. MSAA windows retain the terrain path and may coexist
+with accelerated windows. A whole view falls back for mixed raster/vector
+projections, projector opacity, perspective or reflected projectors, unknown scene geometry,
+custom render targets, unsupported camera projections, mixed segment/generic
+layers within one payload, or resource exhaustion. The device must enable
+`shaderStorageBufferArrayNonUniformIndexing` and support the configured number
+of storage-buffer descriptors plus the renderer bindings. Unsupported devices
+retain terrain rendering.
+The conservative Application policy also excludes terrain wireframe/triangle
+visualization and sky/custom scene additions. This avoids drawing terrain-only
+overlays onto other depth-writing objects or changing their composition order.
+Fallback preserves the complete overlay stack and picking data.
+
+`View::slugPassPolicy` stores the receiver/compositing contract, shared by copies
+of the same logical view. `Application` supplies a conservative policy. Standalone
+clients must configure sampleable single-sample depth through
+`DisplayManager::configureTraits` before creating their window, and provide a
+`fallbackReason` callback and enable the required storage indexing feature when
+creating the shared device. Externally created devices without a known enabled
+feature fall back. Return an empty string only while final depth identifies
+compatible opaque terrain and the render sequence preserves decal composition.
+Unknown/custom scenes should return a reason. Change the callback on the app's
+update thread; do not replace the shared policy object after attachment. A pager
+whose payloads contain only ECS artwork may explicitly declare
+`rocky.terrainOverlayPayloadsOnly=true`; Application still checks its ECS artwork.
+This declaration must not be used for arbitrary scene-graph payloads.
+
+Call `View::dirty()` after changing its camera/viewport properties. Window
+framebuffer recreation refreshes depth bindings automatically. Removing a view
+also removes its additional graph and compilation contexts. Startup without the
+request adds no pass buffers or sampled-depth usage; an MSAA-only display does
+not generate alternate payloads.
+
+The renderer-private diagnostics in `ecs/SlugPass.h` expose published instance
+counts and the current active/fallback reason. `DecalSystemNode::slugPassStatistics`
+reports GPU geometry bytes, peak bytes, upload bytes and upload count. The default
+geometry budget is 256 MiB; each allocation also respects the device's storage-buffer range.
+Capacity failure selects whole-view fallback and can recover after retirement.
+These counters measure alternate geometry, not atlas textures or total GPU use.
+Detailed Optics timing is separately opt-in with `ROCKY_OPTICS_STATS=1`.
+
+Requesting the pass can still add cost when a view becomes ineligible: the final
+Tokyo fallback measurement used about 1.1 ms more GPU time than the matched
+control, with comparable mean frame time. The default-off path was unchanged.
+See the [Tokyo benchmark report](design/slughorn-pr269-tokyo-benchmark.md) for
+the measured gains, fallback cost and validation limits.

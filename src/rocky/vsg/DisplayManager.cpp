@@ -4,6 +4,9 @@
  * MIT License
  */
 #include "DisplayManager.h"
+#ifdef ROCKY_HAS_SLUGHORN
+#include "ecs/SlugPass.h"
+#endif
 #include "MapManipulator.h"
 #include "ViewDependentState.h"
 #include "ecs/DecalSystem.h"
@@ -118,6 +121,10 @@ View::dirty()
     u.context->overridePipelineStates.emplace_back(
         vsg::MultisampleState::create(u.context->renderPass->maxSamples));
     renderGraph->accept(u);
+#ifdef ROCKY_HAS_SLUGHORN
+    if (auto pass = renderGraph->getRefObject<detail::SlugPassNode>("rocky.slugPass"))
+        pass->refresh(*this);
+#endif
 }
 
 
@@ -171,8 +178,15 @@ Window::addView(vsg::ref_ptr<vsg::View> vsgView)
     // arbitrary shadowing defaults
     vsgView->viewDependentState->maxShadowDistance = 15000.0;
 
+    // Attach before callbacks so their UI follows the additional pass, including standalone clients.
+#ifdef ROCKY_HAS_SLUGHORN
+    detail::SlugPassNode::attach(vsgcontext, *this, view);
+#endif
     // fire the callback
     _display->onAddView.fire(*this, view);
+
+    // Pipelines cache by numeric view ID; a recycled ID can now target a different sample count.
+    if (isCompiled(vsgcontext->viewer())) view.dirty();
 
     return view;
 }
@@ -204,6 +218,9 @@ Window::removeView(View& view)
         if (!vsgcontext->removeViewCompileContexts(view.vsgView))
             return;
 
+#ifdef ROCKY_HAS_SLUGHORN
+        if (!detail::SlugPassNode::detach(vsgcontext, *this, view)) return;
+#endif
         // callback before we actually do anything:
         _display->onRemoveView.fire(*this, view);
 
@@ -312,6 +329,10 @@ DisplayManager::configureTraits(vsg::WindowTraits* traits)
         traits->swapchainPreferences.presentMode = VK_PRESENT_MODE_IMMEDIATE_KHR;
     }
 
+    // VSG retains a sampleable depth attachment when TRANSFER_SRC is requested.
+    if (vsgcontext->slugPassRequested && (traits->samples == 0 || traits->samples == VK_SAMPLE_COUNT_1_BIT))
+        traits->depthImageUsage |= VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
     // share the device across all windows
     traits->device = sharedDevice();
 
@@ -364,6 +385,19 @@ DisplayManager::configureTraits(vsg::WindowTraits* traits)
 
     if (pd && pd->vk() != VK_NULL_HANDLE)
     {
+        // The optional pass binds immutable payloads together, preserving layer order in one draw.
+        // An existing externally-created device cannot acquire a feature after creation.
+        if (vsgcontext->slugPassRequested && (!traits->device || vsgcontext->slugPassStorageIndexing))
+        {
+            auto features = pd->getFeatures<VkPhysicalDeviceVulkan12Features,
+                VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES>();
+            if (features.shaderStorageBufferArrayNonUniformIndexing)
+            {
+                vulkan12features.shaderStorageBufferArrayNonUniformIndexing = VK_TRUE;
+                vsgcontext->slugPassStorageIndexing = true;
+            }
+        }
+
         // Query which extended_dynamic_state_3 features are actually supported.
         // Some Vulkan implementations (e.g., MoltenVK on macOS) don't support all features
         // of an extension even when the extension itself is reported as supported.
@@ -475,6 +509,15 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> vsgWindow, vsg::ref_ptr<vsg:
 
     if (vsgView)
     {
+        // Match addView's per-view resources for callers supplying an already-created window/view.
+        if (vsgcontext->slugPassRequested)
+        {
+            auto vds = ViewDependentStateEx::create(vsgView, vsgWindow->getOrCreateDevice());
+            vsgView->viewDependentState = vds;
+            vsgcontext->sharedRenderData->viewDependentState[vsgView->viewID] = vds;
+            vds->maxShadowDistance = 15000.0;
+        }
+
         // rendergraph to control the view within a window:
         auto renderGraph = vsg::RenderGraph::create(vsgWindow, vsgView);
         renderGraph->setClearValues({ {0.0f, 0.0f, 0.0f, 1.0f} });
@@ -496,8 +539,12 @@ DisplayManager::addWindow(vsg::ref_ptr<vsg::Window> vsgWindow, vsg::ref_ptr<vsg:
         // save in our views collection
         auto& view = window.views()._container.emplace_front(View(vsgView, renderGraph, this));
 
+#ifdef ROCKY_HAS_SLUGHORN
+        detail::SlugPassNode::attach(vsgcontext, window, view);
+#endif
         onAddWindow.fire(window);
         onAddView.fire(window, view);
+        if (isCompiled(vsgcontext->viewer())) view.dirty();
     }
 
     else

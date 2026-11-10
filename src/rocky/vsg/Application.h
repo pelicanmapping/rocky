@@ -166,6 +166,7 @@ namespace ROCKY_NAMESPACE
         bool _lastFrameOK = true;
         int _framesUntilStopRender = 2; // for non-continuous rendering
         CallbackSubs _subscriptions;
+        vsg::Group::Children _slugPassDefaultSystems; // Trusted systems captured before caller customization.
         vsg::ref_ptr<vsg::ActivityStatus> _activityStatus; // to safely shut down the delete queue thread
 
         void ctor(int& argc, char** argv);

@@ -16,6 +16,7 @@
 #include <rocky/ecs/ProjectedTexture.h>
 #include <rocky/ecs/Transform.h>
 #include <rocky/vsg/SharedRenderData.h>
+#include <rocky/vsg/ViewDependentState.h>
 
 #include <SlugAdapter.h>
 
@@ -73,6 +74,7 @@ namespace
         // CPU-side adapter input and converted GPU-facing output.
         std::vector<SlugShapeInput> shapes;
         std::vector<SlugLayerResource> layers;
+        std::vector<SlugLayerResource> passLayers;
         vsg::ref_ptr<vsg::ImageInfo> curveTexture;
         vsg::ref_ptr<vsg::ImageInfo> bandTexture;
 
@@ -1160,6 +1162,12 @@ void SlugSystemNode::update(VSGContext vsgcontext)
     if (auto device = vsgcontext->device())
         maxTextureDimension = device->getPhysicalDevice()->getProperties().limits.maxImageDimension2D;
 
+    // A request with no attached capable view must not build unused segment payloads.
+    bool additionalPass = false;
+    if (vsgcontext->slugPassRequested)
+        for (const auto& vds : vsgcontext->sharedRenderData->viewDependentState)
+            if (vds && vds->view && vds->view->getObject("rocky.slugPass")) additionalPass = true;
+
     bool resourcesChanged = false;
     std::unordered_set<entt::entity> retryNextFrame;
     _registry.write([&](entt::registry& registry)
@@ -1229,7 +1237,8 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             {
                 build.exportPath = resource->exportPath;
                 if (resource->sourceSignatureValid &&
-                    resource->sourceSignature == build.sourceSignature)
+                    resource->sourceSignature == build.sourceSignature &&
+                    (!additionalPass || !resource->passLayers.empty()))
                 {
                     if (build.exportPath.empty())
                         continue;
@@ -1301,6 +1310,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         SlugAtlasInput input;
         // Keep a fixed row width; the SDK wraps band lists across rows. The
         // adapter partitions oversized polygon groups into shapes, not atlases.
+        input.additionalPass = additionalPass;
         input.distanceStrokes = vsgcontext->shaderCompileSettings->defines.count("ROCKY_SLUG_DISTANCE_STROKES") != 0;
         input.textureWidth = textureWidth;
         input.mergeConnectedLineSegments = mergeConnectedLineSegments;
@@ -1336,7 +1346,8 @@ void SlugSystemNode::update(VSGContext vsgcontext)
 
         build.textureWidthLog2 = atlas.textureWidthLog2;
         build.indirectionSize = atlas.indirectionSize;
-        for (const auto& source : atlas.layers)
+        // Copy SDK-free layer metadata into the immutable published payload.
+        auto convertLayer = [](const SlugLayerOutput& source)
         {
             SlugLayerResource layer;
             layer.coverage = source.coverage;
@@ -1355,8 +1366,12 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             layer.shapeData = glm::uvec4(
                 source.shapeData[0], source.shapeData[1],
                 source.shapeData[2], source.shapeData[3]);
-            build.layers.emplace_back(std::move(layer));
-        }
+            return layer;
+        };
+        for (const auto& source : atlas.layers)
+            build.layers.emplace_back(convertLayer(source));
+        for (const auto& source : atlas.passLayers)
+            build.passLayers.emplace_back(convertLayer(source));
 
         if (build.layers.empty())
         {
@@ -1442,6 +1457,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
             resource.curveTexture = build.curveTexture;
             resource.bandTexture = build.bandTexture;
             resource.layers = std::move(build.layers);
+            resource.passLayers = std::move(build.passLayers);
             resource.textureWidthLog2 = build.textureWidthLog2;
             resource.indirectionSize = build.indirectionSize;
             resource.sourceSignature = build.sourceSignature;

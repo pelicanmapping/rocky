@@ -118,6 +118,9 @@ namespace rocky::detail
         // Baked outlines remain the default; translucent outlined strokes also stay baked.
         bool distanceStrokes = false;
 
+        //! Also build opaque straight-segment pass data; never changes the ordinary atlas representation.
+        bool additionalPass = false;
+
         std::vector<SlugShapeInput> shapes;
 
         // Optional diagnostic export. The C++20 adapter writes the exact atlas
@@ -182,6 +185,8 @@ namespace rocky::detail
         std::uint32_t textureWidthLog2 = 0u;
         std::uint32_t indirectionSize = 0u;
         std::vector<SlugLayerOutput> layers;
+        //! Alternate draw list; regular atlas layers remain available to every fallback view.
+        std::vector<SlugLayerOutput> passLayers;
         std::vector<SlugBandReduction> bandReductions;
 
         bool exportAttempted = false;

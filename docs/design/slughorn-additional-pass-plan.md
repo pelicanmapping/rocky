@@ -1,6 +1,6 @@
 # Additional Slughorn pass integration plan
 
-Status: approved by the user; implementation in progress. Prepared 2026-11-10 on
+Status: implemented as an opt-in; tested cases and remaining limits are recorded below. Prepared 2026-11-10 on
 `codex/slughorn-integration` at `8fb25a99`. This document authorizes no default
 change; implementation and repeat benchmarking follow approval of this plan.
 
@@ -263,10 +263,11 @@ the integrated result. Include matched off/on builds with the same Optics fix so
 its CPU benefit is not credited to the additional pass. Update the existing
 integration review and Tokyo report with final supported/fallback cases and data.
 
-This turn adds only this proposed design document. After the user approves this
-scope, proceed through implementation, validation and repeat benchmarking without
-another routine approval gate. Changing the default, committing permanent new
-tests, or accepting an unresolved regression is outside this plan's approval.
+The user approved implementation on this branch. The additional pass remains
+opt-in, transient regression tests are not committed, and unresolved performance
+tradeoffs are reported explicitly below and in the benchmark report. Changing
+the default or accepting the gap against the vendor pass remains a separate
+review decision.
 
 ## Implementation progress
 
@@ -284,3 +285,64 @@ probe. Corrected placement changes the GPU workload; subsequent renderer
 comparisons must use the same Optics revision. Transient logs and instrumented
 binaries are preserved outside the source tree. ABI advances from 63 to 64 for
 the changed class/component layouts.
+
+
+## Additional-pass implementation and validation
+
+The branch now owns one additional graph/depth binding per logical view, with
+explicit attachment/removal and shared immutable payload buffers. Startup remains
+opt-in. Every payload retains ordinary atlas coverage for whole-view fallback
+and CPU picking. Scene eligibility is refreshed conservatively; MSAA, unknown
+receivers, custom targets, unsupported projections/features and resource limits
+fall back before terrain ranges are suppressed. The pass requires nonuniform
+storage-buffer-array indexing; unsupported devices retain the terrain renderer.
+
+Placement metadata is per view and instance. Payload revision changes allocate
+only that payload's geometry; unchanged geometry is neither repacked nor
+reuploaded. Global outline/core order and relative overlay order are retained.
+Adjacent equal-material draws share a batch. A payload mixing analytic segments
+and generic layers currently selects fallback for the whole view.
+
+Transient validation passed 156 checks at each of descriptor capacities 128 and
+256. Coverage included 120 picking comparisons, shared payloads with independent
+placements/highlights, removal/revision replacement, budget exhaustion/recovery,
+projector alpha, mixed raster/vector and unknown-scene fallback, orthographic
+and nonzero-origin viewports, repeated inset creation/removal, independent
+windows, a coexisting 4x-MSAA window, and an externally supplied window/view.
+A final reflected-projector fallback/recovery check brought the default-capacity
+run to 158 passing checks.
+Missing shader, shader compile failure and MSAA-only startup each retained all
+96 Tokyo records. No new Vulkan validation messages appeared; the pre-existing
+`VkDeviceCreateInfo-enabledLayerCount-12384` message remains.
+
+Renderer readbacks compared specialized material draws against an unspecialized
+original-order reference for Tokyo, forced translucent overlap and orthographic
+views. The final perspective comparisons were identical; orthographic differences
+above four RGB levels occupied 24 of 1,315,800 tested pixels. Visual review also
+checked the ordinary fallback. That caught a real projection-switch defect:
+frustum-grid uniforms could retain the previous projection interpretation.
+Updating that flag together with its inverse matrix restored the complete scene
+when returning from orthographic to perspective. This correction also benefits
+the ordinary path.
+
+The automated lifecycle checks resize inset viewports, but a native maximize/
+drag-resize result could not be established reliably through the desktop helper.
+Native framebuffer recreation, additional GPU vendors/platforms, projected-map
+and steep-terrain/near-plane image coverage remain explicit validation limits.
+The broader acceptance list above is not represented as fully covered.
+
+The vendor's fastest material grouping was investigated rather than adopted:
+moving fills ahead of roads can change overlapping/translucent composition.
+A direct grouping diagnostic recovered its speed, but overlap-corrected shader
+work was slower, and conservative non-overlap sorting gave no meaningful gain.
+Neither experiment is in the production path. Final paired timings and paging
+measurements are reported in the Tokyo report. The gap against the vendor pass
+remains a review item; the default is unchanged.
+
+A requested-but-ineligible view showed a measurable fallback GPU slowdown.
+Removing a terrain shader shortcut did not eliminate it: final fallback remains
+about 1.1 ms above the matched control, with comparable mean wall-clock frame
+time. The terrain shader is unchanged; the attached graph/depth configuration
+still has cost. This is a documented opt-in limitation, not a passed zero-cost
+fallback gate. The default-off path remains unchanged. Active views suppress
+their ordinary ranges and outline tags.

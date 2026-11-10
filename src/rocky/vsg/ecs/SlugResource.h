@@ -32,14 +32,16 @@ namespace ROCKY_NAMESPACE::detail
         //! Outer stroke/casing; emitted before non-outline layers across payloads.
         bool isOutline = false;
 
-        //! Affine rows converting projector UV into Slughorn em coordinates; X.w is a distance-stroke half width.
+        //! Affine rows converting projector UV into em coordinates; positive X.w is a distance-stroke half width.
+        //! In passLayers only, negative X.w marks an analytic segment and stores its negated half width.
         glm::fvec4 uvToEmX = { 1.0f, 0.0f, 0.0f, 0.0f };
         glm::fvec4 uvToEmY = { 0.0f, 1.0f, 0.0f, 0.0f };
 
-        //! Converts em coordinates into band-space coordinates.
+        //! Converts em coordinates into band space; analytic pass segments store start/end XY instead.
         glm::fvec4 bandTransform = { 0.0f, 0.0f, 0.0f, 0.0f };
 
-        //! Band texture X/Y followed by maximum band index X/Y.
+        //! Band texture X/Y followed by maximum band index X/Y. Analytic pass segments store bit-cast
+        //! previous/next point coordinates, with NaN sentinels for unconnected endpoints.
         glm::uvec4 shapeData = { 0u, 0u, 0u, 0u };
     };
 
@@ -56,6 +58,9 @@ namespace ROCKY_NAMESPACE::detail
         //! Ordered layers stored in the atlas. DecalSystem groups outlines
         //! ahead of cores when it writes the per-view layer buffer.
         std::vector<SlugLayerResource> layers;
+
+        //! Optional immutable alternate draw list. Atlas/picking layers above remain valid for fallback views.
+        std::vector<SlugLayerResource> passLayers;
 
         //! Runtime atlas width and indirection-table contract consumed by the
         //! shader. Width is logarithmic because band offsets wrap by bit shift.
