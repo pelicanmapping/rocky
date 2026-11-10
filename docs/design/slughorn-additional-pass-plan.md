@@ -1,6 +1,6 @@
 # Additional Slughorn pass integration plan
 
-Status: proposed, awaiting user approval. Prepared 2026-11-10 on
+Status: approved by the user; implementation in progress. Prepared 2026-11-10 on
 `codex/slughorn-integration` at `8fb25a99`. This document authorizes no default
 change; implementation and repeat benchmarking follow approval of this plan.
 
@@ -267,3 +267,20 @@ This turn adds only this proposed design document. After the user approves this
 scope, proceed through implementation, validation and repeat benchmarking without
 another routine approval gate. Changing the default, committing permanent new
 tests, or accepting an unresolved regression is outside this plan's approval.
+
+## Implementation progress
+
+Optics investigation reproduced 23 repeated Tokyo terrain-edge misses per frame.
+Unbounded and shortened rays still missed; one-centimetre offset probes hit the
+adjacent triangles. The correction projects a nearby triangle-plane hit back
+onto the original ray, bounded to two centimetres, and caches confirmed genuine
+misses until notified terrain or projector changes. The first miss retains one
+immediate retry. No public projection/picking semantics are disabled.
+
+All 50 existing projection tests pass (311,096 assertions). A 3,000-frame Tokyo
+probe recovered all 23 edge hits: 96 fitted projections, zero timed raycasts,
+and 0.0919 ms mean Optics CPU time versus approximately 2.5-3.2 ms in the original
+probe. Corrected placement changes the GPU workload; subsequent renderer
+comparisons must use the same Optics revision. Transient logs and instrumented
+binaries are preserved outside the source tree. ABI advances from 63 to 64 for
+the changed class/component layouts.
