@@ -61,6 +61,53 @@ resolve Slughorn via `find_dependency`; the dependency remains link-only for
 application compilation. Shared Rocky incorporates the static SDK and adapter,
 so applications do not need a Slughorn DLL or its headers.
 
+## Vendor update and experimental strokes
+
+The pinned SDK is now `1e09656e5fe2da7a24c164fe8697187ebf28f673` (still reporting
+SDK version 0.0.2). Source/package overrides must provide the new `Point` and
+`canvas::Stroke` APIs; an older 0.0.2 package is not compatible with this adapter.
+
+Baked outlines remain the default. Before constructing `Application`, set
+`ROCKY_SLUG_STROKES=distance` to try centerline strokes. This selects matching
+atlas and shader variants once per application; do not change the variant after
+resources/pipelines have been built. Applications assembling their own systems
+can insert `ROCKY_SLUG_DISTANCE_STROKES` into the context's shader compile
+settings before initializing their systems and pipelines. `SlugSystem` consumes
+that same setting, so producer and renderer cannot independently select modes.
+Unset the environment variable or select `baked` to use the default.
+
+The experimental variant stores road centerlines and widths instead of expanded
+outlines, uses an exact segment-distance shortcut for straight roads, and enables
+the vendor's stable quadratic-root solver. The default GPU coverage evaluator
+retains its previous math: the stable solver showed a measurable slowdown in our
+baseline workload. Translucent outlined strokes stay baked to retain ring
+compositing. Distance-stroke core and casing layers have separate CPU picking
+radii even though they share atlas bands. Existing band/texture capacity limits
+and Raster fallback remain active.
+
+The vendor's separate render pass and fill batching are **not integrated**.
+`ROCKY_SLUG_PASS` and `ROCKY_SLUG_FILL_BATCH` have no effect in this integration.
+See [the integration review](design/slughorn-pr269-integration.md) for the reasons,
+measurements, and work needed before enabling them.
+
+`rocky_demo_slughorn` builds with Slughorn and GDAL. It supports the vendor's MVT
+city scenes and a deterministic offline scene:
+
+```text
+rocky_demo_slughorn --synthetic --bench --strokes baked
+rocky_demo_slughorn --synthetic --bench --strokes distance
+rocky_demo_slughorn --synthetic --bench --no-roads
+rocky_demo_slughorn --synthetic --bench --no-buildings
+rocky_demo_slughorn --city tokyo --tiles /path/to/cached/tiles --bench
+```
+
+Use `--help` for timing controls. The benchmark reports GPU timestamps, frame
+wall time, source geometry counts, ready atlas counts, and atlas bytes. It rejects
+empty or unfinished vector scenes, rejects unsupported timestamp queues, and
+bounds timestamp collection. Results marked `UNSETTLED` are not regression
+measurements. Network-loaded MVT results require checking that the same complete
+tile set loaded in both runs; `--synthetic` avoids that source of variation.
+
 ## Updating and testing
 
 Polygon groups are partitioned into independent shapes within one atlas when

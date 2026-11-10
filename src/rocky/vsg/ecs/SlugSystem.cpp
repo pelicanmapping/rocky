@@ -1301,6 +1301,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         SlugAtlasInput input;
         // Keep a fixed row width; the SDK wraps band lists across rows. The
         // adapter partitions oversized polygon groups into shapes, not atlases.
+        input.distanceStrokes = vsgcontext->shaderCompileSettings->defines.count("ROCKY_SLUG_DISTANCE_STROKES") != 0;
         input.textureWidth = textureWidth;
         input.mergeConnectedLineSegments = mergeConnectedLineSegments;
         input.shapes = std::move(build.shapes);

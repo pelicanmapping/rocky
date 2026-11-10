@@ -20,6 +20,7 @@
 #include <rocky/vsg/ecs/OpticsSystem.h>
 #include <rocky/vsg/ecs/TerrainAnchorSystem.h>
 #include <charconv>
+#include <cstdlib>
 
 #ifdef ROCKY_HAS_IMGUI
 #include <rocky/rocky_imgui.h>
@@ -378,6 +379,10 @@ Application::ctor(int& argc, char** argv)
     slugSystem->worldSRS = mapNode->srs();
     computeSystemsNode->add(slugSystem);
     vsgcontext->shaderCompileSettings->defines.insert("ROCKY_HAS_SLUGHORN");
+    // Select matching atlas/shader paths once, before any overlay is built. Keep the default shader unchanged.
+    const char* slugStrokes = std::getenv("ROCKY_SLUG_STROKES");
+    if (slugStrokes && std::string(slugStrokes) == "distance")
+        vsgcontext->shaderCompileSettings->defines.insert("ROCKY_SLUG_DISTANCE_STROKES");
 #endif
 
     auto decalSystem = DecalSystemNode::create(registry);

@@ -23,7 +23,7 @@ namespace ROCKY_NAMESPACE::detail
      */
     struct SlugLayerResource
     {
-        //! Decoded once per unique shape in this atlas generation; shared by all instances.
+        //! Decoded per shape/radius in this atlas generation; shared by all instances.
         std::shared_ptr<const SlugCoverage> coverage;
 
         //! Shape color before Overlay/ProjectedTexture modulation.
@@ -32,7 +32,7 @@ namespace ROCKY_NAMESPACE::detail
         //! Outer stroke/casing; emitted before non-outline layers across payloads.
         bool isOutline = false;
 
-        //! Affine rows converting projector UV into Slughorn em coordinates.
+        //! Affine rows converting projector UV into Slughorn em coordinates; X.w is a distance-stroke half width.
         glm::fvec4 uvToEmX = { 1.0f, 0.0f, 0.0f, 0.0f };
         glm::fvec4 uvToEmY = { 0.0f, 1.0f, 0.0f, 0.0f };
 
