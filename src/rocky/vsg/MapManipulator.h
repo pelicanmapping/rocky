@@ -441,6 +441,9 @@ namespace ROCKY_NAMESPACE
         //! intersect the terrain at the closest point, and make that the new focal point.
         bool recalculateCenterFromLookVector();
 
+        //! On the event thread, checks for a camera edit since updateCamera(); false if the camera is unavailable.
+        bool cameraChangedExternally() const;
+
         bool recalculateCenterAndDistanceFromLookVector();
 
         vsg::dmat4 getWorldLookAtMatrix(const vsg::dvec3& center) const;
@@ -524,6 +527,8 @@ namespace ROCKY_NAMESPACE
         vsg::dvec2 _throwDelta;
         vsg::dvec2 _delta;
         vsg::dmat4 _viewMatrix;
+        // Actual view transform last written to the camera; empty until the first update.
+        std::optional<vsg::dmat4> _lastCameraViewMatrix;
         State _state;
         Task _task;
         int _continuous = 0;
