@@ -7,9 +7,13 @@
 #include <unordered_map>
 
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <cstdlib>
 #include <exception>
+#include <bit>
 #include <limits>
+
 #include <numeric>
 #include <string>
 #include <utility>
@@ -33,6 +37,7 @@ namespace rocky::detail
         using slughorn::canvas::LineCap;
         using slughorn::canvas::LineJoin;
         using slughorn::canvas::Path;
+        using slughorn::canvas::Stroke;
 
         //! Owns an SDK sampler behind the C++17 boundary; sampling never mutates or allocates.
         class DecodedCoverage final : public SlugCoverage
@@ -83,6 +88,43 @@ namespace rocky::detail
             std::array<float, 4> uvToEmX = { 1.0f, 0.0f, 0.0f, 0.0f };
             std::array<float, 4> uvToEmY = { 0.0f, 1.0f, 0.0f, 0.0f };
             bool isOutline = false;
+
+            // Distance strokes: > 0 makes the shader cover every pixel within this
+            // many em of the shape's centerline curves; travels to the GPU in uvToEmX.w.
+            float strokeHalfWidth = 0.0f;
+
+            // Separate Slug pass: a single centerline segment (em x0, y0, x1, y1)
+            // and its road's neighboring points (before x0/y0, after x1/y1; NaN at a road end),
+            // output as a segment layer (see SlugLayerOutput).
+            bool isSegment = false;
+            std::array<float, 4> segment = { 0.0f, 0.0f, 0.0f, 0.0f };
+            std::array<float, 4> neighbors = { 0.0f, 0.0f, 0.0f, 0.0f };
+        };
+
+        //! Stroke shapes store their centerline and render by distance unless
+        //! ROCKY_SLUG_STROKES=baked selects the original CPU-stroked outlines.
+        bool distanceStrokes()
+        {
+            const char* mode = std::getenv("ROCKY_SLUG_STROKES");
+            return !mode || std::string(mode) != "baked";
+        }
+
+        //! ROCKY_SLUG_FILL_BATCH=N splits polygon fills into batches of at most N
+        //! curves (an indivisible overlap component may exceed it); 0 or unset disables.
+        std::size_t fillBatchCurves()
+        {
+            const char* value = std::getenv("ROCKY_SLUG_FILL_BATCH");
+            return value ? static_cast<std::size_t>(std::strtoul(value, nullptr, 10)) : 0u;
+        }
+
+        //! Lets addContours() author straight into a CurveDecomposer (no Path, no stroking).
+        struct DecomposerPath
+        {
+            slughorn::CurveDecomposer& decomposer;
+
+            void moveTo(float x, float y) { decomposer.moveTo({ x, y }); }
+            void lineTo(float x, float y) { decomposer.lineTo({ x, y }); }
+            void closePath() { decomposer.close(); }
         };
 
         bool finite(float value)
@@ -261,8 +303,8 @@ namespace rocky::detail
             auto axisFits = [&](bool yAxis)
             {
                 const auto& splits = yAxis ? info.splitsY : info.splitsX;
-                const float lo = yAxis ? info.bearingY - info.height : info.bearingX;
-                const float hi = yAxis ? info.bearingY : info.bearingX + info.width;
+                const float lo = yAxis ? info.bearing.y - info.height : info.bearing.x;
+                const float hi = yAxis ? info.bearing.y : info.bearing.x + info.width;
                 const float range = yAxis ? info.height : info.width;
                 std::vector<float> boundaries{ lo };
                 for (float split : splits)
@@ -270,14 +312,16 @@ namespace rocky::detail
                         Atlas::INDIRECTION_SIZE * range);
                 boundaries.push_back(hi);
                 std::vector<std::uint64_t> counts(boundaries.size() - 1u, 0u);
+                // Matches Atlas::buildShapeBands: stroke shapes join every band within reach.
+                const float reach = info.strokeRadius;
                 visitCurves([&](const Atlas::Curve& curve)
                 {
-                    const float cmin = yAxis ?
+                    const float cmin = (yAxis ?
                         std::min({ curve.y1, curve.y2, curve.y3 }) :
-                        std::min({ curve.x1, curve.x2, curve.x3 });
-                    const float cmax = yAxis ?
+                        std::min({ curve.x1, curve.x2, curve.x3 })) - reach;
+                    const float cmax = (yAxis ?
                         std::max({ curve.y1, curve.y2, curve.y3 }) :
-                        std::max({ curve.x1, curve.x2, curve.x3 });
+                        std::max({ curve.x1, curve.x2, curve.x3 })) + reach;
                     for (std::size_t b = 0u; b < counts.size(); ++b)
                     {
                         if (cmax >= boundaries[b] && cmin <= boundaries[b + 1u])
@@ -361,12 +405,12 @@ namespace rocky::detail
             info.autoMetrics = false;
             info.curves = std::move(shape->curves);
             info.contourStarts = std::move(shape->contourStarts);
-            info.bearingX = shape->bearingX;
-            info.bearingY = shape->bearingY;
+            info.bearing = shape->bearing;
             info.width = shape->width;
             info.height = shape->height;
             info.advance = shape->advance;
             info.origin = shape->origin;
+            info.strokeRadius = shape->strokeRadius;
             const int originalBandCount = static_cast<int>(shape->bandMaxX + 1u);
             setUniformBandCount(info, originalBandCount);
             const auto fits = [&]()
@@ -439,6 +483,37 @@ namespace rocky::detail
                 result[unit].polygons.push_back(&polygons[i]);
                 result[unit].bounds.expand(polygons[i].bounds);
             }
+
+            // With ROCKY_SLUG_FILL_BATCH=N, a component of more than N curves splits
+            // into its polygons (each keeps its holes). Touching bounds chain dense city blocks
+            // into a few huge components whose long band lists dominate fill cost. A batch cut
+            // through such a component can leave a faint seam along a shared wall, and overlapping
+            // translucent polygons in different batches blend twice.
+            const std::size_t budget = fillBatchCurves();
+            if (budget > 0u)
+            {
+                std::vector<PolygonBatchUnit> split;
+                split.reserve(result.size());
+                for (auto& unit : result)
+                {
+                    std::size_t curves = 0u;
+                    for (const auto* polygon : unit.polygons)
+                        curves += polygon->curves.size();
+                    if (curves <= budget || unit.polygons.size() < 2u)
+                    {
+                        split.push_back(std::move(unit));
+                        continue;
+                    }
+                    for (const auto* polygon : unit.polygons)
+                    {
+                        PolygonBatchUnit single;
+                        single.polygons.push_back(polygon);
+                        single.bounds = polygon->bounds;
+                        split.push_back(std::move(single));
+                    }
+                }
+                result = std::move(split);
+            }
             return result;
         }
 
@@ -476,9 +551,9 @@ namespace rocky::detail
                         polygon.bounds.expand({ point.x, point.y, point.x, point.y });
                     }
                     polygon.contourStarts.push_back(polygon.curves.size());
-                    decomposer.moveTo(ring.points.front().x, ring.points.front().y);
+                    decomposer.moveTo({ ring.points.front().x, ring.points.front().y });
                     for (std::size_t i = 1u; i < ring.points.size(); ++i)
-                        decomposer.lineTo(ring.points[i].x, ring.points[i].y);
+                        decomposer.lineTo({ ring.points[i].x, ring.points[i].y });
                     decomposer.close();
                     return true;
                 };
@@ -518,8 +593,7 @@ namespace rocky::detail
                 // Explicit tight metrics enable the shader's existing carrier
                 // rejection per batch WITHOUT rebasing or rescaling its curves.
                 info.autoMetrics = false;
-                info.bearingX = bounds.minX;
-                info.bearingY = bounds.maxY;
+                info.bearing = { bounds.minX, bounds.maxY };
                 info.width = std::max(bounds.maxX - bounds.minX, 1e-6f);
                 info.height = std::max(bounds.maxY - bounds.minY, 1e-6f);
                 if (!finite(info.width) || !finite(info.height))
@@ -529,7 +603,14 @@ namespace rocky::detail
                 }
                 const int originalBandCount = bandCountForCurveCount(curveCount);
                 setUniformBandCount(info, originalBandCount);
-                if (!polygonBandDataFits(info, units, begin, end))
+                // An over-budget batch takes the same partition/median-split path as
+                // an overflowing one; a single indivisible unit is only checked for capacity.
+                const std::size_t batchCurves = fillBatchCurves();
+                const bool overBudget =
+                    batchCurves > 0u &&
+                    curveCount > batchCurves &&
+                    !(partitioned && end - begin < 2u);
+                if (overBudget || !polygonBandDataFits(info, units, begin, end))
                 {
                     if (!partitioned)
                     {
@@ -733,6 +814,125 @@ namespace rocky::detail
                         }
                     }
 
+                    if (distanceStrokes())
+                    {
+                        // Commit the centerline itself (open contours, no stroking)
+                        // with bands widened to the outline's outer reach. The outline and core
+                        // are two layers on the same shape, differing only in half width.
+                        const float coreHalfWidth = 0.5f * shape.strokeWidth;
+                        const float reach = coreHalfWidth + shape.outlineWidth;
+                        Atlas::ShapeInfo info;
+                        slughorn::CurveDecomposer decomposer(info.curves);
+                        DecomposerPath centerline{ decomposer };
+
+                        if (!addContours(centerline, shape, false, input.mergeConnectedLineSegments))
+                        {
+                            for (const auto& contour : shape.contours)
+                            {
+                                for (const auto& point : contour.points)
+                                {
+                                    if (!valid(point))
+                                    {
+                                        error = "Slug stroke shape " + std::to_string(index) +
+                                            " has a non-finite point";
+                                        return false;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+
+                        // Full-cell metrics, as Canvas commits with autoMetrics off.
+                        info.autoMetrics = false;
+                        info.bearing = { 0.0f, 1.0f };
+                        info.width = 1.0f;
+                        info.height = 1.0f;
+                        info.strokeRadius = reach;
+
+                        const int originalBandCount = bandCountForCurveCount(info.curves.size());
+                        setUniformBandCount(info, originalBandCount);
+
+                        const auto fits = [&]()
+                        {
+                            return shapeBandDataFits(info, [&](const auto& visit)
+                            {
+                                for (const auto& curve : info.curves)
+                                    visit(curve);
+                            });
+                        };
+
+                        if (!fits() && !reduceBandsToFit(info, fits))
+                        {
+                            output.bandCapacityExceeded = true;
+                            error = "Slug stroke shape " + keyStem +
+                                " exceeds the uint16_t band capacity (65535) at the " +
+                                std::to_string(minimumCapacityBands) + "-band-per-axis performance floor";
+                            return false;
+                        }
+
+                        atlas.addShape(key, info);
+
+                        if (info.numBandsX < originalBandCount)
+                            bandReductions.push_back({ keyStem, originalBandCount, info.numBandsX });
+
+                        if (input.separateSlugPass)
+                        {
+                            // Separate Slug pass: one layer per centerline segment
+                            // (lineTo() commits {p1, p3, p3}), each drawn as its own box and covered
+                            // in closed form. The committed shape stays for picking. Outlines first.
+                            // Consecutive curves that share an endpoint belong to one road; each
+                            // segment carries those neighbors so a pixel near a joint is shaded by
+                            // the nearest segment alone.
+                            constexpr float none = std::numeric_limits<float>::quiet_NaN();
+                            const auto& curves = info.curves;
+                            for (int pass = 0; pass < 2; ++pass)
+                            {
+                                const bool outline = pass == 0;
+                                if (outline && shape.outlineWidth <= 0.0f)
+                                    continue;
+                                for (std::size_t i = 0u; i < curves.size(); ++i)
+                                {
+                                    const auto& curve = curves[i];
+                                    const bool hasPrev = i > 0u &&
+                                        curves[i - 1u].x3 == curve.x1 && curves[i - 1u].y3 == curve.y1;
+                                    const bool hasNext = i + 1u < curves.size() &&
+                                        curves[i + 1u].x1 == curve.x3 && curves[i + 1u].y1 == curve.y3;
+                                    Layer segmentLayer;
+                                    segmentLayer.key = key;
+                                    segmentLayer.color = outline ? makeColor(shape.outlineColor) : color;
+                                    PendingLayer segment{
+                                        shape.owner, std::move(segmentLayer), shape.uvToEmX, shape.uvToEmY,
+                                        outline, outline ? reach : coreHalfWidth };
+                                    segment.isSegment = true;
+                                    segment.segment = { curve.x1, curve.y1, curve.x3, curve.y3 };
+                                    segment.neighbors = {
+                                        hasPrev ? curves[i - 1u].x1 : none,
+                                        hasPrev ? curves[i - 1u].y1 : none,
+                                        hasNext ? curves[i + 1u].x3 : none,
+                                        hasNext ? curves[i + 1u].y3 : none };
+                                    pending.push_back(std::move(segment));
+                                }
+                            }
+                        }
+                        else
+                        {
+                            if (shape.outlineWidth > 0.0f)
+                            {
+                                Layer outlineLayer;
+                                outlineLayer.key = key;
+                                outlineLayer.color = makeColor(shape.outlineColor);
+                                pending.push_back(PendingLayer{
+                                    shape.owner, std::move(outlineLayer), shape.uvToEmX, shape.uvToEmY, true, reach });
+                            }
+
+                            Layer coreLayer;
+                            coreLayer.key = key;
+                            coreLayer.color = color;
+                            pending.push_back(PendingLayer{
+                                shape.owner, std::move(coreLayer), shape.uvToEmX, shape.uvToEmY, false, coreHalfWidth });
+                        }
+                    }
+                    else
                     {
                         Path centerline;
                         if (!addContours(
@@ -770,14 +970,16 @@ namespace rocky::detail
                                 // reversed inner boundary used by a ring.
                                 outlineLayer = canvas.stroke(
                                     centerline,
-                                    outerWidth,
+                                    Stroke{
+                                        .width = outerWidth,
+                                        .join = LineJoin::Round,
+                                        .cap = LineCap::Round,
+                                        .miterLimit = 4.0f,
+                                    },
                                     makeColor(shape.outlineColor),
                                     1.0f,
                                     outlineKey,
-                                    {},
-                                    LineJoin::Round,
-                                    LineCap::Round,
-                                    4.0f);
+                                    {});
                             }
                             else
                             {
@@ -822,14 +1024,16 @@ namespace rocky::detail
 
                         layer = canvas.stroke(
                             centerline,
-                            shape.strokeWidth,
+                            Stroke{
+                                .width = shape.strokeWidth,
+                                .join = LineJoin::Round,
+                                .cap = LineCap::Round,
+                                .miterLimit = 4.0f,
+                            },
                             color,
                             1.0f,
                             key,
-                            {},
-                            LineJoin::Round,
-                            LineCap::Round,
-                            4.0f);
+                            {});
                         committed = layer.key == key;
                         if (!committed)
                         {
@@ -952,7 +1156,7 @@ namespace rocky::detail
                     pendingLayer.uvToEmX[0] * inverseScale,
                     pendingLayer.uvToEmX[1] * inverseScale,
                     (pendingLayer.uvToEmX[2] - pendingLayer.layer.transform.x) * inverseScale,
-                    0.0f
+                    pendingLayer.strokeHalfWidth * inverseScale
                 };
                 out.uvToEmY = {
                     pendingLayer.uvToEmY[0] * inverseScale,
@@ -972,6 +1176,25 @@ namespace rocky::detail
                     shape->bandMaxX,
                     shape->bandMaxY
                 };
+                if (pendingLayer.isSegment)
+                {
+                    // Points in the layer's em space, as uvToEm maps it above (NaN stays NaN).
+                    const auto toEmX = [&](float x) { return (x - pendingLayer.layer.transform.x) * inverseScale; };
+                    const auto toEmY = [&](float y) { return (y - pendingLayer.layer.transform.y) * inverseScale; };
+                    out.uvToEmX[3] = -out.uvToEmX[3];
+                    out.bandTransform = {
+                        toEmX(pendingLayer.segment[0]),
+                        toEmY(pendingLayer.segment[1]),
+                        toEmX(pendingLayer.segment[2]),
+                        toEmY(pendingLayer.segment[3])
+                    };
+                    out.shapeData = {
+                        std::bit_cast<std::uint32_t>(toEmX(pendingLayer.neighbors[0])),
+                        std::bit_cast<std::uint32_t>(toEmY(pendingLayer.neighbors[1])),
+                        std::bit_cast<std::uint32_t>(toEmX(pendingLayer.neighbors[2])),
+                        std::bit_cast<std::uint32_t>(toEmY(pendingLayer.neighbors[3]))
+                    };
+                }
                 result.layers.emplace_back(std::move(out));
             }
 

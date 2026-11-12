@@ -5,6 +5,7 @@
  */
 #include "SlugSystem.h"
 #include "SlugResource.h"
+#include "DecalSystem.h"
 #include "OverlayBakeSystem.h"
 #include "OverlayRenderContext.h"
 
@@ -1303,6 +1304,7 @@ void SlugSystemNode::update(VSGContext vsgcontext)
         // adapter partitions oversized polygon groups into shapes, not atlases.
         input.textureWidth = textureWidth;
         input.mergeConnectedLineSegments = mergeConnectedLineSegments;
+        input.separateSlugPass = DecalSystemNode::slugPassEnabled();
         input.shapes = std::move(build.shapes);
         input.exportPath = build.exportPath;
 

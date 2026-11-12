@@ -114,6 +114,10 @@ namespace rocky::detail
         // starting point.
         bool mergeConnectedLineSegments = true;
 
+        // Slug overlays draw in their own pass (DecalSystemNode::slugPassEnabled()),
+        // where distance strokes become segment layers.
+        bool separateSlugPass = false;
+
         std::vector<SlugShapeInput> shapes;
 
         // Optional diagnostic export. The C++20 adapter writes the exact atlas
@@ -155,6 +159,11 @@ namespace rocky::detail
         // band texture X/Y followed by maximum band index X/Y.
         std::array<std::uint32_t, 4> shapeData = { 0u, 0u, 0u, 0u };
     };
+
+    //! Separate Slug pass: a segment layer is one straight centerline segment
+    //! rendered by distance with no band data. uvToEmX[3] holds its NEGATED half width (em),
+    //! bandTransform its em endpoints (x0, y0, x1, y1), and shapeData the float bits of the
+    //! connected points before x0/y0 and after x1/y1 in its road (NaN where the road ends).
 
     //! Build-time diagnostic for one shape that needed coarser bands. Returned
     //! only with a successful atlas, so the host can log the accepted decision

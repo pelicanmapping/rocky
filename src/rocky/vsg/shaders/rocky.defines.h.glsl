@@ -50,6 +50,16 @@
 #define DECAL_SLUG_TEXTURE_WIDTH_LOG2_MASK   31
 #define SLUG_INDIRECTION_SIZE                32
 
+// Separate Slug pass: segment layers' join and cap (slughorn::canvas::LineJoin /
+// LineCap as int; see rocky.slug.path.glsl). Round, as the atlas distance strokes draw.
+#define SLUG_PASS_ROAD_JOIN                  2
+#define SLUG_PASS_ROAD_CAP                   1
+#define SLUG_PASS_ROAD_MITER_LIMIT           4.0
+
+// Separate Slug pass: segment layers live in the pass's resident segment buffer, drawn
+// with this firstInstance so the vertex shader can tell them from per-frame SlugLayers instances.
+#define SLUG_PASS_SEGMENT_INSTANCE_BASE      16777216u
+
 
 // configuration and limits:
 #define FRUSTUM_GRID_TILE_SIZE_PIXELS       16

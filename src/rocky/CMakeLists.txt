@@ -88,7 +88,7 @@ endif()
 
 # CURL - HTTP library
 if(BUILD_WITH_CURL)
-    find_package(CURL CONFIG REQUIRED)
+    find_package(CURL REQUIRED)
     set(ROCKY_HAS_CURL TRUE)
 endif()
 
