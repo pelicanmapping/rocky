@@ -971,11 +971,11 @@ Application::onAddView(Window& window, View& view)
                     !payloadsOnly) return "custom scene geometry";
             }
             bool compatible = true;
-            mapNode->map->each<NodeLayer>([&](auto layer)
+            mapNode->map->each<NodeLayer>([&](const NodeLayer::Ptr& layer)
             {
                 if (!layer->isOpen() || !layer->node) return;
                 bool payloadsOnly = false;
-                if (!layer->node->template cast<NodePager>() ||
+                if (!layer->node->cast<NodePager>() ||
                     !layer->node->getValue("rocky.terrainOverlayPayloadsOnly", payloadsOnly) || !payloadsOnly)
                     compatible = false;
             });
