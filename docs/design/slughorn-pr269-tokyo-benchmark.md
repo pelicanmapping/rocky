@@ -355,3 +355,30 @@ same pre-existing vertical-datum test failure (16 assertions) seen in the
 baseline. No test-source changes are included. Build and test logs are
 `final-clean-build2.log`, `final-off-build2.log`, `final-clean-tests.log` and
 `final-off-tests.log` in the raw-results directory above.
+
+## Merge retest (2026-11-17)
+
+The integration was combined with main's camera fix (`f814414b`) in `4d9e44c7`.
+The combined ABI is 65. The additional pass remains opt-in; the ordinary terrain
+renderer remains the default.
+
+The enabled build, clean production rebuild and Slughorn-disabled build passed.
+Both full test suites had
+exactly the same 16 vertical-datum assertion failures as the previous baseline,
+with no additional failing assertions. Offline synthetic rendering smoke tests
+passed for baked/default strokes, the active additional pass, and distance
+strokes. Each completed with 14,400 road points, 3,600 polygon parts and 50 ready
+atlases. These short synthetic runs are smoke tests, not replacements for the
+fully paged Tokyo performance comparison or the earlier 158 integration checks.
+
+The Tokyo rerun was blocked before timing: the preserved matched-control binary
+could not load any of its 48 MVT tiles. The readymap.org tile endpoint now returns
+a Cloudflare Access sign-in redirect and HTML instead of MVT data. The harness
+correctly reported `NOT_SETTLED` and emitted no timing result. Consequently the
+2026-11-10 timings above remain the latest valid Tokyo measurements, and the
+Tokyo-dependent integration checks could not be repeated on the merged code.
+No access controls were bypassed and no alternate dataset was substituted.
+
+Raw evidence is under `D:/devel/rocky/build/mvt-comparison/`, with filenames
+starting `retest-20261117-`. All temporary demo instrumentation was restored out
+of the source tree before the clean production rebuild.

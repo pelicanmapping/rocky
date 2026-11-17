@@ -41,7 +41,8 @@ Included:
   No persistent test modifications.
 
 The subsequent Optics correction and pass integration change public component
-and application/view layouts. `PROJECT_VERSION_ABI` is 64. Rocky public/demo code
+and application/view layouts. After incorporating main's camera fix on 2026-11-17,
+`PROJECT_VERSION_ABI` is 65. Rocky public/demo code
 remains C++17; only the private SDK adapter requires C++20.
 
 ## Vendor issues addressed by the opt-in integration
