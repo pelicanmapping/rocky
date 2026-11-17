@@ -54,6 +54,8 @@ auto Demo_MVTFeatures = [](Application& app)
         pager->maxLevel = 14;
         pager->refinePolicy = NodePager::RefinePolicy::Replace;
         pager->pixelError = 256;
+        // Payloads own ECS entities only; Application can validate their actual main-view rendering separately.
+        pager->setValue("rocky.terrainOverlayPayloadsOnly", true);
 
         // This functor will calculate the bounding sphere for each streamed tile.
         // Since the feature data will be clamped, we need the tile itself to conform

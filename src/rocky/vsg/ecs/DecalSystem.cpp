@@ -9,6 +9,7 @@
 #include "OverlayRenderContext.h"
 #ifdef ROCKY_HAS_SLUGHORN
 #include "SlugResource.h"
+#include "SlugPass.h"
 #endif
 #include "../ViewDependentState.h"
 #include "../SharedRenderData.h"
@@ -270,6 +271,7 @@ namespace ROCKY_NAMESPACE::detail
         std::uint64_t resourceRevision = 0u;
         std::uint64_t descriptorWriteFrame = 0u;
         bool readyForDraw = false;
+        vsg::ref_ptr<SlugPassGeometry> passGeometry;
     };
 #endif
 }
@@ -1045,6 +1047,10 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
     {
         auto& view = _views[viewID];
         auto& vds = _sharedRenderData->viewDependentState[viewID];
+#ifdef ROCKY_HAS_SLUGHORN
+        auto pass = vds ? vds->view->getRefObject<SlugPassNode>("rocky.slugPass") : nullptr;
+        bool passCompatible = pass && pass->begin(vsgcontext);
+#endif
         if (!view.picks)
             view.picks = std::make_shared<VectorOverlayPickView>();
         view.picks->records.clear();
@@ -1288,7 +1294,10 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                         // Perspective UV derivatives are intentionally deferred from
                         // this first Slug slice; the shader also guards this case.
                         if (pending.distance > 0.0f)
+                        {
+                            passCompatible = false;
                             return;
+                        }
 
                         const auto* resource = reg.try_get<SlugResource>(e_texture);
                         const auto* slugDetail = reg.try_get<SlugSlotDetail>(e_texture);
@@ -1356,6 +1365,20 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                             firstLayer, outlineCount, layerCount, 0u };
                         view.picks->records.push_back({ pending, glm::inverse(effectiveWorld),
                             entity, e_texture, resource->revision });
+                        if (passCompatible)
+                        {
+                            // The normal atlas remains available if ANY placement forces this view to fallback.
+                            auto& geometry = reg.get<SlugSlotDetail>(e_texture).passGeometry;
+                            if (!geometry || geometry->revision != resource->revision)
+                                geometry = createSlugPassGeometry(vsgcontext, *resource, slugPassStatistics);
+                            // Back-face volume rasterization requires a non-mirrored, nonsingular affine basis.
+                            // Ordinary terrain evaluation remains valid for reflected projectors.
+                            const auto volume = glm::determinant(glm::mat3(pending.mvm));
+                            passCompatible = projected.color.a == 1.0f && pending.distance <= 0.0f &&
+                                std::isfinite(volume) && volume > 0.0f &&
+                                pass->add(static_cast<std::uint32_t>(decalRecords.size() + 1u),
+                                    geometry, highlight ? highlight->color : Color(0, 0, 0, 0));
+                        }
                         decalRecords.emplace_back(std::move(pending));
                         return;
                     }
@@ -1365,6 +1388,9 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                     if (!applyTexture(e_texture, projected.color, pending, texturePayloadFlags))
                         return;
                     pending.payloadFlags = texturePayloadFlags;
+#ifdef ROCKY_HAS_SLUGHORN
+                    passCompatible = false; // Preserve mixed raster/vector ordering through the terrain path.
+#endif
                     view.picks->records.push_back({ pending });
                     decalRecords.emplace_back(std::move(pending));
                 };
@@ -1388,6 +1414,17 @@ DecalSystemNode::updateDecalsSSBO(VSGContext vsgcontext)
                 *gpudecal.operator->() = record;
             };
 
+#ifdef ROCKY_HAS_SLUGHORN
+            const bool passActive = pass && pass->finish(vsgcontext, passCompatible);
+            if (passActive)
+                for (auto& record : decalRecords)
+                    if ((record.payloadFlags & DECAL_FLAG_SLUG) != 0)
+                    {
+                        // Picking above retains the complete original range. Clear the outline tag as well,
+                        // so terrain skips its outline traversal while this view draws both passes separately.
+                        record.slugLayerRange.y = record.slugLayerRange.z = 0u;
+                    }
+#endif
             for (const auto& record : decalRecords)
                 writePending(record);
 
@@ -1424,6 +1461,9 @@ void
 DecalSystemNode::initialize(VSGContext vsgcontext)
 {
     _sharedRenderData = vsgcontext->sharedRenderData;
+#ifdef ROCKY_HAS_SLUGHORN
+    if (vsgcontext->slugPassRequested) slugPassStatistics = std::make_shared<SlugPassStatistics>();
+#endif
     static_cast<DecalDebugNode*>(_debugNode.get())->initialize(vsgcontext);
 
     _cullingShader = vsg::ShaderStage::read(

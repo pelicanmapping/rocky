@@ -114,6 +114,13 @@ namespace rocky::detail
         // starting point.
         bool mergeConnectedLineSegments = true;
 
+        // Must match the consumer's ROCKY_SLUG_DISTANCE_STROKES shader variant.
+        // Baked outlines remain the default; translucent outlined strokes also stay baked.
+        bool distanceStrokes = false;
+
+        //! Also build opaque straight-segment pass data; never changes the ordinary atlas representation.
+        bool additionalPass = false;
+
         std::vector<SlugShapeInput> shapes;
 
         // Optional diagnostic export. The C++20 adapter writes the exact atlas
@@ -145,7 +152,7 @@ namespace rocky::detail
         //! True for the outer ring generated ahead of a stroke core.
         bool isOutline = false;
 
-        // em.x = dot({uv,1}, uvToEmX.xyz), likewise for Y.
+        // em.x = dot({uv,1}, uvToEmX.xyz), likewise for Y. X.w is the distance-stroke half width.
         std::array<float, 4> uvToEmX = { 1.0f, 0.0f, 0.0f, 0.0f };
         std::array<float, 4> uvToEmY = { 0.0f, 1.0f, 0.0f, 0.0f };
 
@@ -178,6 +185,8 @@ namespace rocky::detail
         std::uint32_t textureWidthLog2 = 0u;
         std::uint32_t indirectionSize = 0u;
         std::vector<SlugLayerOutput> layers;
+        //! Alternate draw list; regular atlas layers remain available to every fallback view.
+        std::vector<SlugLayerOutput> passLayers;
         std::vector<SlugBandReduction> bandReductions;
 
         bool exportAttempted = false;

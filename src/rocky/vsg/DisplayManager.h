@@ -16,6 +16,13 @@ namespace ROCKY_NAMESPACE
     class Window;
     class ECSNode;
     class DecalSystemNode;
+
+    //! Explicit receiver/compositing contract, shared by copies of a logical View. Updated on the app thread.
+    struct SlugPassPolicy
+    {
+        //! Return an empty string only for compatible opaque terrain receivers; otherwise explain the fallback.
+        std::function<std::string()> fallbackReason;
+    };
     class ECSIntersector;
 
 
@@ -78,6 +85,9 @@ namespace ROCKY_NAMESPACE
 
         //! If ImGui is installed, this is the ImGuiContext* created for this View
         void* imguiContext = nullptr;
+
+        //! Additional-pass eligibility; Application supplies a conservative policy for its known default scene.
+        std::shared_ptr<SlugPassPolicy> slugPassPolicy = std::make_shared<SlugPassPolicy>();
 
     protected:
 

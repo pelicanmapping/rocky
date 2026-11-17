@@ -72,6 +72,12 @@ namespace ROCKY_NAMESPACE
         //! Whether rendering is enabled in the current frame.
         bool renderingEnabled = true;
 
+        //! Startup request for the opt-in vector pass; each view resolves its own eligibility and fallback.
+        bool slugPassRequested = false;
+
+        //! Capability enabled while creating the shared device; unknown external devices retain fallback.
+        bool slugPassStorageIndexing = false;
+
         //! Requested samples for new DisplayManager windows; zero preserves the caller's traits.
         //! Set before creating windows. VSG selects the supported count for each render pass.
         VkSampleCountFlags msaaSamples = 0;

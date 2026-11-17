@@ -5,7 +5,7 @@
  */
  
 // GLSL include file - decal subsystem
-#pragma import_defines(ROCKY_HAS_SLUGHORN)
+#pragma import_defines(ROCKY_HAS_SLUGHORN, ROCKY_SLUG_DISTANCE_STROKES)
 #include "rocky.defines.h.glsl"
 #ifdef ROCKY_HAS_DECALS
 
@@ -105,6 +105,31 @@ void applySlugLayer(
     vec2 uvDx = localDx * uvToEm;
     vec2 uvDy = localDy * uvToEm;
     vec2 emsPerPixel = abs(uvDx) + abs(uvDy);
+#ifdef ROCKY_SLUG_DISTANCE_STROKES
+    // uvToEmX.w > 0 marks a distance-stroke layer and holds its half width (em).
+    float coverage = uvToEmX.w > 0.0 ? slug_RenderStroke(
+        renderCoord,
+        emsPerPixel,
+        b_slugLayers.layer[layerIndex].bandTransform,
+        ivec2(b_slugLayers.layer[layerIndex].shapeData.xy),
+        ivec2(b_slugLayers.layer[layerIndex].shapeData.zw),
+        u_slugCurveTexture[nonuniformEXT(textureIndex)],
+        u_slugBandTexture[nonuniformEXT(textureIndex)],
+        textureWidthLog2,
+        uvToEmX.w
+        ) :
+    slug_Render(
+        renderCoord,
+        emsPerPixel,
+        b_slugLayers.layer[layerIndex].bandTransform,
+        ivec2(b_slugLayers.layer[layerIndex].shapeData.xy),
+        ivec2(b_slugLayers.layer[layerIndex].shapeData.zw),
+        u_slugCurveTexture[nonuniformEXT(textureIndex)],
+        u_slugBandTexture[nonuniformEXT(textureIndex)],
+        textureWidthLog2
+        );
+
+#else
     float coverage = slug_Render(
         renderCoord,
         emsPerPixel,
@@ -115,6 +140,8 @@ void applySlugLayer(
         u_slugBandTexture[nonuniformEXT(textureIndex)],
         textureWidthLog2
         );
+
+#endif
 
     vec4 layerColor = decalColor * b_slugLayers.layer[layerIndex].color;
     color.rgb = mix(

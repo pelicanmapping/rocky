@@ -9,6 +9,8 @@
 #include <rocky/vsg/VSGUtils.h>
 #include <algorithm>
 #include <cmath>
+#include <chrono>
+#include <cstdlib>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -97,8 +99,72 @@ namespace
     //! Invalidates only terrain-intersection caches affected by a tile; an unknown footprint is conservative.
     bool affectsIntersection(const TileKey& key, const ProjectionViewDetail& detail)
     {
-        return detail.intersectionCacheValid && (!detail.intersectionFootprint.valid() ||
+        return (detail.intersectionCacheValid || detail.intersectionMisses > 0u) &&
+            (!detail.intersectionFootprint.valid() ||
             key.extent().intersects(detail.intersectionFootprint));
+    }
+
+    //! Finds a terrain hit, recovering sub-centimetre mesh-edge cracks without moving the authored ray.
+    //! Called on the update thread with normalized direction; the target scene must not change during traversal.
+    //! Nearby triangle planes are accepted only within two probe offsets of their actual hit and inside the ray.
+    std::optional<glm::dvec3> intersectTerrainRay(
+        vsg::Node& target, const glm::dvec3& start, const glm::dvec3& end,
+        const SRS& worldSRS, bool recoverEdges, OpticsSystemNode::Statistics* statistics)
+    {
+        const auto direction = glm::normalize(end - start);
+        const double length = glm::length(end - start);
+        const double tolerance = worldSRS.transformDistance(Distance(0.01, Units::METERS), worldSRS.units());
+        const glm::dvec3 axis = std::abs(direction.z) < 0.9 ? glm::dvec3(0, 0, 1) : glm::dvec3(0, 1, 0);
+        const auto tangent = glm::normalize(glm::cross(direction, axis));
+        const auto bitangent = glm::cross(direction, tangent);
+        const glm::dvec3 offsets[] = { {}, tangent * tolerance, -tangent * tolerance,
+            bitangent * tolerance, -bitangent * tolerance };
+        for (unsigned probe = 0; probe < (recoverEdges ? 5u : 1u); ++probe)
+        {
+            if (statistics)
+            {
+                ++statistics->rays;
+                if (probe != 0u) ++statistics->edgeProbes;
+            }
+            vsg::LineSegmentIntersector query(to_vsg(start + offsets[probe]), to_vsg(end + offsets[probe]));
+            target.accept(query);
+            std::optional<glm::dvec3> result;
+            double nearest = length;
+            for (const auto& hit : query.intersections)
+            {
+                auto point = to_glm(hit->worldIntersection);
+                if (probe != 0u)
+                {
+                    if (hit->arrays.empty() || hit->indexRatios.size() < 3u)
+                        continue;
+                    auto vertices = hit->arrays.front()->cast<vsg::vec3Array>();
+                    if (!vertices) continue;
+                    const auto& indices = hit->indexRatios;
+                    const auto a = glm::dvec3(to_glm(vertices->at(indices[0].index)));
+                    const auto b = glm::dvec3(to_glm(vertices->at(indices[1].index)));
+                    const auto c = glm::dvec3(to_glm(vertices->at(indices[2].index)));
+                    const auto matrix = to_glm(hit->localToWorld);
+                    const auto normal = glm::cross(glm::dmat3(matrix) * (b - a), glm::dmat3(matrix) * (c - a));
+                    const double divisor = glm::dot(normal, direction);
+                    if (std::abs(divisor) <= 1e-12 * glm::length(normal)) continue;
+                    const auto onRay = start + direction * (glm::dot(normal, point - start) / divisor);
+                    if (glm::length(onRay - point) > 2.0 * tolerance) continue;
+                    point = onRay;
+                }
+                const double distance = glm::dot(point - start, direction);
+                if (distance >= 0.0 && distance <= nearest)
+                {
+                    nearest = distance;
+                    result = point;
+                }
+            }
+            if (result)
+            {
+                if (statistics && probe != 0u) ++statistics->recoveredEdges;
+                return result;
+            }
+        }
+        return {};
     }
 
     //! Refreshes a receiving-volume cache from resident terrain boxes, retaining the original depth on a miss.
@@ -195,6 +261,7 @@ void OpticsSystemNode::on_destroy_ProjectedTexture(entt::registry& r, entt::enti
 OpticsSystemNode::OpticsSystemNode(Registry& registry) :
     Inherit(registry)
 {
+    collectStatistics = std::getenv("ROCKY_OPTICS_STATS") != nullptr;
     registry.write([&](entt::registry& r)
     {
         r.on_construct<Optics>().connect<&OpticsSystemNode::on_construct_Optics>(*this);
@@ -271,6 +338,7 @@ void OpticsSystemNode::updateOptics(VSGContext vsgcontext)
 
 void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
 {
+    const auto started = collectStatistics ? std::chrono::steady_clock::now() : std::chrono::steady_clock::time_point{};
     std::unordered_set<TileKey> loadedTiles;
     std::unordered_set<TileKey> changedBoundsTiles;
     bool terrainBoundsReset = false;
@@ -294,6 +362,7 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
                 if (_targetChanged || terrainBoundsReset)
                 {
                     detail.intersectionCacheValid = false;
+                    detail.intersectionMisses = 0u;
                     detail.terrainDepthCacheValid = false;
                     detail.terrainDepthRangeValid = false;
                     continue;
@@ -311,10 +380,11 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
                     if (affectsIntersection(key, detail))
                     {
                         detail.intersectionCacheValid = false;
+                        detail.intersectionMisses = 0u;
                     }
                 }
 
-                if (!detail.intersectionCacheValid || !detail.focalPointValid || !detail.lastWorldSRS.valid())
+                if ((!detail.intersectionCacheValid && detail.intersectionMisses == 0u) || !detail.lastWorldSRS.valid())
                     continue;
 
                 for (const auto& key : loadedTiles)
@@ -322,6 +392,7 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
                     if (affectsIntersection(key, detail))
                     {
                         detail.intersectionCacheValid = false;
+                        detail.intersectionMisses = 0u;
                         break;
                     }
                 }
@@ -370,6 +441,7 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
             {
                 setManualProjection(optics, detail);
                 detail.intersectionCacheValid = false;
+                detail.intersectionMisses = 0u;
                 continue;
             }
 
@@ -383,16 +455,18 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
             {
                 setManualProjection(optics, detail);
                 detail.intersectionCacheValid = false;
+                detail.intersectionMisses = 0u;
                 continue;
             }
             forward /= forwardLength;
 
             const bool useCachedIntersection =
                 canCache &&
-                detail.intersectionCacheValid &&
+                (detail.intersectionCacheValid || detail.intersectionMisses >= 2u) &&
                 detail.lastWorldSRS == transformView.cache.world_srs &&
                 matricesEqual(projectorWorld, detail.lastProjectorWorld);
 
+            if (collectStatistics && useCachedIntersection) ++statistics.cacheHits;
             if (!useCachedIntersection)
             {
                 const auto origin = glm::dvec3(projectorWorld[3]);
@@ -403,36 +477,42 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
                 auto start = origin;
                 if (projection == Optics::Projection::Orthographic)
                     start -= forward * 1e6;
+                if (detail.lastWorldSRS != transformView.cache.world_srs ||
+                    !matricesEqual(projectorWorld, detail.lastProjectorWorld))
+                    detail.intersectionMisses = 0u;
+                detail.lastProjectorWorld = projectorWorld;
+                detail.lastWorldSRS = transformView.cache.world_srs;
+                // An unknown miss footprint invalidates conservatively on every terrain change.
+                detail.intersectionFootprint = {};
+                detail.intersectionCacheValid = false;
                 double rayLength = 1e8;
                 if (terrain && !limitTerrainRay(transformView.cache.world_srs, start, forward, rayLength))
                 {
-                    detail.intersectionCacheValid = false;
+                    detail.intersectionMisses = std::min(2u, detail.intersectionMisses + 1u);
+                    if (collectStatistics) ++statistics.misses;
                     continue;
                 }
                 const auto end = start + forward * rayLength;
 
-                vsg::LineSegmentIntersector intersector(to_vsg(start), to_vsg(end));
-                terrainTarget->accept(intersector);
-                const bool found = !intersector.intersections.empty();
-                if (found)
+                const auto hit = intersectTerrainRay(*terrainTarget, start, end,
+                    transformView.cache.world_srs, terrain != nullptr, collectStatistics ? &statistics : nullptr);
+                if (hit)
                 {
-                    auto closest = std::min_element(
-                        intersector.intersections.begin(), intersector.intersections.end(),
-                        [](const auto& lhs, const auto& rhs)
-                        {
-                            return lhs->ratio < rhs->ratio;
-                        });
-                    detail.focalPoint = to_glm(closest->get()->worldIntersection);
+                    detail.intersectionMisses = 0u;
+                    detail.intersectionCacheValid = canCache;
+                    detail.focalPoint = *hit;
                     detail.focalPointValid = true;
                     detail.focalDistance = glm::length(detail.focalPoint - origin);
                     if (canCache)
                         detail.intersectionFootprint = intersectionFootprint(
                             projectorWorld, transformView.cache.world_srs, detail.focalPoint);
+                    if (collectStatistics) ++statistics.hits;
                 }
-
-                detail.lastProjectorWorld = projectorWorld;
-                detail.lastWorldSRS = transformView.cache.world_srs;
-                detail.intersectionCacheValid = canCache && found;
+                else
+                {
+                    detail.intersectionMisses = std::min(2u, detail.intersectionMisses + 1u);
+                    if (collectStatistics) ++statistics.misses;
+                }
             }
 
             detail.nearDistance = optics ?
@@ -456,6 +536,12 @@ void OpticsSystemNode::updateProjections(VSGContext vsgcontext)
             }
         }
     });
+    if (collectStatistics)
+    {
+        ++statistics.frames;
+        statistics.cpuMilliseconds +=
+            std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - started).count();
+    }
 }
 
 void OpticsSystemNode::initialize(VSGContext)

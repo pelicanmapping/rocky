@@ -17,6 +17,7 @@ namespace ROCKY_NAMESPACE
     namespace detail
     {
         struct VectorOverlayPickView;
+        struct SlugPassStatistics;
 
         /**
          * Consumer-side residency for a TextureResource, not image ownership.
@@ -48,6 +49,9 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct the system
         DecalSystemNode(Registry& registry);
+
+        //! Additional-pass memory/upload counters, absent when the startup request is disabled.
+        std::shared_ptr<detail::SlugPassStatistics> slugPassStatistics;
 
         //! Draw receiving-volume edges for all submitted decals, independently of cell-list limits.
         //! Change these settings during update; disabled debug drawing records no graphics commands.

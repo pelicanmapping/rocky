@@ -23,9 +23,11 @@ namespace ROCKY_NAMESPACE::detail
         double farDistance = 1.0;
         bool focalPointValid = false;
 
-        // Terrain-intersection cache. The cache is invalidated by a changed
+        // Caches hits and confirmed repeated misses separately. Invalidated by a changed
         // projector matrix or terrain changes along the intended query area, not only at the last hit.
         bool intersectionCacheValid = false;
+        //! Two identical misses permit negative caching; the first miss gets one immediate recovery attempt.
+        unsigned intersectionMisses = 0u;
         glm::dmat4 lastProjectorWorld = glm::dmat4(1.0);
         SRS lastWorldSRS;
         GeoExtent intersectionFootprint;
@@ -70,6 +72,17 @@ namespace ROCKY_NAMESPACE
     public:
         //! Construct the system
         OpticsSystemNode(Registry& registry);
+
+        //! Optional cumulative update-thread diagnostics; snapshot/difference these to measure an interval.
+        struct Statistics
+        {
+            std::uint64_t frames = 0, rays = 0, hits = 0, misses = 0, cacheHits = 0;
+            std::uint64_t edgeProbes = 0, recoveredEdges = 0;
+            double cpuMilliseconds = 0.0;
+        } statistics;
+
+        //! Enable on the update thread; disabled by default unless ROCKY_OPTICS_STATS is set at construction.
+        bool collectStatistics = false;
 
         //! Target geometry used for projected-texture terrain intersections.
         vsg::observer_ptr<vsg::Node> target;
