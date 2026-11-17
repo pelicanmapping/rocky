@@ -969,7 +969,8 @@ MapManipulator::apply(vsg::KeyPressEvent& keyPress)
 
     _keyPress = keyPress;
 
-    recalculateCenterAndDistanceFromLookVector();
+    if (cameraChangedExternally())
+        recalculateCenterAndDistanceFromLookVector();
 
     //std::cout << "KeyPressEvent" << std::endl;
 
@@ -1005,7 +1006,8 @@ MapManipulator::apply(vsg::ButtonPressEvent& buttonPress)
 
     _buttonPress = buttonPress;
 
-    recalculateCenterAndDistanceFromLookVector();
+    if (cameraChangedExternally())
+        recalculateCenterAndDistanceFromLookVector();
 
     buttonPress.handled = true;
 }
@@ -1208,6 +1210,7 @@ MapManipulator::updateCamera()
         }
 
         lookat->set(_viewMatrix);
+        _lastCameraViewMatrix = lookat->transform();
 
         updateProjection(camera.get());
 
@@ -1390,6 +1393,33 @@ MapManipulator::recalculateCenterFromLookVector()
     }
 
     return ok;
+}
+
+bool
+MapManipulator::cameraChangedExternally() const
+{
+    auto camera = _camera_weakptr.ref_ptr();
+    if (!camera || !camera->viewMatrix)
+        return false;
+
+    if (!_lastCameraViewMatrix.has_value())
+        return true;
+
+    // Compare against the actual LookAt output, which includes its normalization
+    // and origin. Comparing directly to _viewMatrix can introduce roundoff at globe scale.
+    auto current = camera->viewMatrix->transform();
+    for (unsigned c = 0; c < 4; ++c)
+    {
+        for (unsigned r = 0; r < 4; ++r)
+        {
+            if (!glm::epsilonEqual(current[c][r], (*_lastCameraViewMatrix)[c][r], EPSILON))
+                return true;
+        }
+    }
+
+    // Retain the full manipulator state when the camera is still ours. Rebuilding
+    // only center and distance would apply positionOffset twice and change orientation.
+    return false;
 }
 
 bool
