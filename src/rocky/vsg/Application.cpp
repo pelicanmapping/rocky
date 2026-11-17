@@ -975,7 +975,7 @@ Application::onAddView(Window& window, View& view)
             {
                 if (!layer->isOpen() || !layer->node) return;
                 bool payloadsOnly = false;
-                if (!layer->node->cast<NodePager>() ||
+                if (!layer->node->template cast<NodePager>() ||
                     !layer->node->getValue("rocky.terrainOverlayPayloadsOnly", payloadsOnly) || !payloadsOnly)
                     compatible = false;
             });
