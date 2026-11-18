@@ -79,6 +79,8 @@ namespace ROCKY_NAMESPACE
         //! Creates a mapnode with the default global geodetic profile.
         MapNode(VSGContext);
 
+        // Retains the shared service configuration for map-file serialization.
+        IOOptions _io;
         bool _openedLayers = false;
 
         mutable ViewLocal<Horizon> _horizon;

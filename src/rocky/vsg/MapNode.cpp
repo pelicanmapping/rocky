@@ -17,7 +17,7 @@ using namespace ROCKY_NAMESPACE::detail;
 #undef LC
 #define LC "[MapNode] "
 
-MapNode::MapNode(VSGContext vsgcontext)
+MapNode::MapNode(VSGContext vsgcontext) : _io(vsgcontext->io)
 {
     map = Map::create();
 
@@ -41,6 +41,13 @@ MapNode::from_json(const std::string& JSON, const IOOptions& io)
     const auto j = parse_json(JSON);
     if (j.status.failed())
         return j.status.error();
+
+    if (j.contains("services"))
+    {
+        auto r = io.services().from_json(j.at("services").dump());
+        if (r.failed()) return r.error();
+    }
+    _io = io;
 
     if (map && j.contains("map"))
     {        
@@ -68,6 +75,8 @@ std::string
 MapNode::to_json() const
 {
     auto j = json::object();
+    const auto services = json::parse(_io.services().to_json());
+    if (!services.empty()) j["services"] = services;
 
     if (map)
     {

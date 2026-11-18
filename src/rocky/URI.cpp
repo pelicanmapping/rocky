@@ -842,6 +842,7 @@ auto URI::read(const IOOptions& io) const -> Result<URIResponse>
     }
 
     auto t1 = std::chrono::steady_clock::now();
+    content.timestamp = std::chrono::system_clock::now();
 
     if (io.services().contentCache)
     {

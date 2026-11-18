@@ -31,6 +31,7 @@
 #endif
 #include <rocky/vsg/ecs/OpticsSystem.h>
 #include <rocky/vsg/ecs/TerrainAnchorSystem.h>
+#include <rocky/FileContentCache.h>
 #include <charconv>
 #include <cstdlib>
 
@@ -259,6 +260,7 @@ Application::ctor(int& argc, char** argv)
             << "rocky " << ROCKY_VERSION_STRING << std::endl
             << argv[0] << std::endl
             << "    [--map <filename>]        // load a JSON map file" << std::endl
+            << "    [--cache <directory>]     // shared persistent URI content cache" << std::endl
             << "    [--earth-file <filename>] // import an osgEarth earth file" << std::endl
             << "    [--no-vsync]              // disable vertical sync" << std::endl
             << "    [--msaa <samples>]        // request 1, 2, 4, 8, 16, 32, or 64 samples per pixel" << std::endl
@@ -344,6 +346,21 @@ Application::ctor(int& argc, char** argv)
 
     vsgcontext->sharedObjects = vsg::SharedObjects::create();
 
+    // Install the shared URI cache before reading a map or opening its layers.
+    std::string contentCacheDirectory;
+    const bool hasContentCache = commandLine.read({ "--cache", "--vector-cache" }, contentCacheDirectory);
+    if (hasContentCache)
+    {
+        try
+        {
+            io().services().contentCache = std::make_shared<FileContentCache>(contentCacheDirectory);
+        }
+        catch (const std::exception& e)
+        {
+            commandLineStatus = Failure(Failure::ConfigurationError, e.what());
+        }
+    }
+
     // read map from file:
     std::string infile; 
     if (commandLine.read("--map", infile))
@@ -367,6 +384,14 @@ Application::ctor(int& argc, char** argv)
         auto r = loadMapFile(commandLine[1], *mapNode, vsgcontext);
         if (r.failed())
             commandLineStatus = r.error();
+    }
+
+    // Explicit command-line settings take precedence over settings loaded from the map.
+    if (hasContentCache && commandLineStatus.ok())
+    {
+        auto cache = std::dynamic_pointer_cast<FileContentCache>(io().services().contentCache);
+        if (!cache || cache->directory() != contentCacheDirectory)
+            io().services().contentCache = std::make_shared<FileContentCache>(contentCacheDirectory);
     }
 
     // Create the ECS system manager and all its default systems.

@@ -23,6 +23,8 @@ namespace ROCKY_NAMESPACE
     class Cache
     {
     public:
+        //! Releases cache implementations through the public service interface.
+        virtual ~Cache() = default;
         virtual std::optional<V> get(const K& k) = 0;
         virtual void put(const K& k, const V& v) = 0;
         virtual void clear() = 0;

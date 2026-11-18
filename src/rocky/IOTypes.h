@@ -58,6 +58,11 @@ namespace ROCKY_NAMESPACE
     {
     public:
         Services();
+
+        //! Configures built-in services from JSON before starting I/O workers; absent settings leave services unchanged.
+        Result<> from_json(std::string_view JSON);
+        //! Serializes supported service configuration only; custom cache implementations are left to the application.
+        std::string to_json() const;
         Services(const Services&) = delete;
         Services& operator=(const Services&) = delete;
         Services(Services&&) noexcept = delete;
