@@ -809,11 +809,22 @@ namespace rocky::detail
                             break;
                         }
 
-                        // Full-cell metrics, as Canvas commits with autoMetrics off.
+                        // Centerlines can be recentered or extend beyond the carrier's unit square.
+                        // Explicit padded bounds also let capacity preflight use the exact same grid
+                        // as the SDK. Fixed unit metrics clip negative coordinates and boundary caps.
+                        float minX = std::numeric_limits<float>::max(), minY = minX;
+                        float maxX = std::numeric_limits<float>::lowest(), maxY = maxX;
+                        for (const auto& curve : info.curves)
+                        {
+                            minX = std::min({minX, curve.x1, curve.x2, curve.x3});
+                            minY = std::min({minY, curve.y1, curve.y2, curve.y3});
+                            maxX = std::max({maxX, curve.x1, curve.x2, curve.x3});
+                            maxY = std::max({maxY, curve.y1, curve.y2, curve.y3});
+                        }
                         info.autoMetrics = false;
-                        info.bearing = { 0.0f, 1.0f };
-                        info.width = 1.0f;
-                        info.height = 1.0f;
+                        info.bearing = { minX - reach, maxY + reach };
+                        info.width = std::max(maxX - minX, 1e-6f) + 2.0f * reach;
+                        info.height = std::max(maxY - minY, 1e-6f) + 2.0f * reach;
                         info.strokeRadius = reach;
 
                         const int originalBandCount = bandCountForCurveCount(info.curves.size());
