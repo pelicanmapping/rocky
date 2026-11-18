@@ -11,6 +11,7 @@
 #include <rocky/GDALElevationLayer.h>
 #include <rocky/TMSImageLayer.h>
 #include <rocky/VectorTileLayer.h>
+#include <rocky/MapboxVectorTileLayer.h>
 #include <rocky/TMSElevationLayer.h>
 #include <rocky/MBTilesImageLayer.h>
 #include <rocky/MBTilesElevationLayer.h>
