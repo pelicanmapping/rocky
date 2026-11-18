@@ -906,8 +906,8 @@ namespace ROCKY_NAMESPACE
             if (j.contains("headers")) {
                 auto headers = j.at("headers");
                 if (headers.is_array()) {
-                    for (auto i = headers.begin(); i != headers.end(); ++i)
-                        context.headers.emplace_back(i.key(), i.value());
+                    // Match the array of [name, value] pairs written by to_json.
+                    context.headers = headers.get<URI::Headers>();
                 }
             }
             obj = URI(base, context);
