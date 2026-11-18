@@ -1,0 +1,4 @@
+add_executable(rocky_demo_vector_tiles rocky_demo_vector_tiles.cpp)
+target_link_libraries(rocky_demo_vector_tiles rocky)
+install(TARGETS rocky_demo_vector_tiles RUNTIME DESTINATION bin)
+set_target_properties(rocky_demo_vector_tiles PROPERTIES FOLDER "apps")

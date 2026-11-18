@@ -1,0 +1,27 @@
+{
+    "map": {
+        "name": "OpenFreeMap terrain vectors",
+        "layers": [
+            {
+                "type": "MapboxVectorTile",
+                "name": "OpenFreeMap",
+                "style": "openfreemap-terrain.style.json",
+                "maxDataLevel": 14,
+                "maximumSourceZoom": 14,
+                "attribution": {
+                    "text": "OpenFreeMap | OpenMapTiles | (c) OpenStreetMap contributors",
+                    "href": "https://openfreemap.org"
+                }
+            }
+        ]
+    },
+    "terrain": {
+        "maxLevel": 18
+    },
+    "services": {
+        "contentCache": {
+            "directory": "rocky-cache",
+            "memoryEntries": 256
+        }
+    }
+}

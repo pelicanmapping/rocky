@@ -1,0 +1,43 @@
+{
+  "version": 8,
+  "name": "Rocky OpenFreeMap terrain",
+  "sources": {
+    "openfreemap": { "type": "vector", "url": "https://tiles.openfreemap.org/planet" }
+  },
+  "layers": [
+    { "id": "land", "type": "background", "paint": { "background-color": "#eeeae2" } },
+    { "id": "wood", "type": "fill", "source": "openfreemap", "source-layer": "landcover",
+      "filter": ["in", ["get", "class"], ["literal", ["wood", "grass", "scrub"]]],
+      "paint": { "fill-color": "#b9cfa9" } },
+    { "id": "park", "type": "fill", "source": "openfreemap", "source-layer": "park",
+      "paint": { "fill-color": "#b3cda3", "fill-opacity": 0.65 } },
+    { "id": "industrial", "type": "fill", "source": "openfreemap", "source-layer": "landuse",
+      "filter": ["in", ["get", "class"], ["literal", ["industrial", "commercial"]]],
+      "paint": { "fill-color": "#dcd7d2" } },
+    { "id": "water", "type": "fill", "source": "openfreemap", "source-layer": "water",
+      "paint": { "fill-color": "#8dbbce" } },
+    { "id": "rivers", "type": "line", "source": "openfreemap", "source-layer": "waterway",
+      "filter": ["in", ["get", "class"], ["literal", ["river", "canal", "stream"]]],
+      "layout": { "line-cap": "round", "line-join": "round" },
+      "paint": { "line-color": "#8dbbce", "line-width": ["interpolate", ["exponential", 1.2], ["zoom"], 7, 0.5, 13, 2, 18, 8] } },
+    { "id": "buildings", "type": "fill", "source": "openfreemap", "source-layer": "building", "minzoom": 13,
+      "paint": { "fill-color": "#c1b8ac" } },
+    { "id": "minor-casing", "type": "line", "source": "openfreemap", "source-layer": "transportation", "minzoom": 11,
+      "filter": ["in", ["get", "class"], ["literal", ["minor", "service", "tertiary", "secondary"]]],
+      "layout": { "line-cap": "round", "line-join": "round" },
+      "paint": { "line-color": "#c6bdb0", "line-width": ["interpolate", ["exponential", 1.2], ["zoom"], 11, 1.5, 14, 5, 18, 18] } },
+    { "id": "minor-roads", "type": "line", "source": "openfreemap", "source-layer": "transportation", "minzoom": 11,
+      "filter": ["in", ["get", "class"], ["literal", ["minor", "service", "tertiary", "secondary"]]],
+      "layout": { "line-cap": "round", "line-join": "round" },
+      "paint": { "line-color": "#ffffff", "line-width": ["interpolate", ["exponential", 1.2], ["zoom"], 11, 0.5, 14, 3, 18, 15] } },
+    { "id": "major-casing", "type": "line", "source": "openfreemap", "source-layer": "transportation",
+      "filter": ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary"]]],
+      "layout": { "line-cap": "round", "line-join": "round" },
+      "paint": { "line-color": "#c3a778", "line-width": ["interpolate", ["exponential", 1.2], ["zoom"], 5, 0.6, 12, 4, 16, 13, 20, 28] } },
+    { "id": "major-roads", "type": "line", "source": "openfreemap", "source-layer": "transportation",
+      "filter": ["in", ["get", "class"], ["literal", ["motorway", "trunk", "primary"]]],
+      "layout": { "line-cap": "round", "line-join": "round" },
+      "paint": { "line-color": ["match", ["get", "class"], "motorway", "#f0c987", "trunk", "#f5d7a0", "#f7e3b6"],
+        "line-width": ["interpolate", ["exponential", 1.2], ["zoom"], 5, 0.3, 12, 2.5, 16, 10, 20, 24] } }
+  ]
+}

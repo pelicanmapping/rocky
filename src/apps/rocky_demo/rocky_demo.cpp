@@ -233,6 +233,11 @@ struct MainGUI : public vsg::Inherit<ImGuiContextNode, MainGUI>
 
 int main(int argc, char** argv)
 {
+    vsg::CommandLine args(&argc, argv);
+    const bool openfreemap = args.read("--openfreemap");
+    std::string vectorStyle = "openfreemap-terrain.style.json";
+    args.read("--vector-style", vectorStyle);
+
     // instantiate the application engine.
     rocky::Application app(argc, argv);
 
@@ -245,6 +250,22 @@ int main(int argc, char** argv)
 
     // Add some default layers if the user didn't load a file:
     auto map = app.mapNode->map;
+
+    // This configures an ordinary map layer; terrain paging and view styling live entirely in Rocky.
+    if (openfreemap)
+    {
+        auto vectors = MapboxVectorTileLayer::create();
+        vectors->name = "OpenFreeMap terrain vectors";
+        vectors->attribution = { "OpenFreeMap | OpenMapTiles | (c) OpenStreetMap contributors", "https://openfreemap.org" };
+        auto found = vsg::findFile(vectorStyle, app.vsgcontext->searchPaths);
+        vectors->styleURI = URI(found.empty() ? vectorStyle : found.string());
+        vectors->maxDataLevel = 14u;
+        auto opened = vectors->open(app.io());
+        if (opened.failed()) { Log()->error(opened.error().message); return 1; }
+        map->add(vectors);
+        app.mapNode->terrainSettings().maxLevel = 18u;
+        Log()->info("OpenFreeMap attribution: {}", vectors->attributionText());
+    }
 
     if (map->layers().empty())
     {
@@ -261,6 +282,14 @@ int main(int argc, char** argv)
     // Create the main window:
     auto traits = vsg::WindowTraits::create(10, 10, 1920, 1080, "Main Window");
     auto& window = app.display.addWindow(traits);
+
+    if (openfreemap)
+    {
+        Viewpoint vp;
+        vp.point = GeoPoint(SRS::WGS84, -77.0365, 38.8985);
+        vp.range = Distance(4.0, Units::KILOMETERS);
+        MapManipulator::get(window.view(0).vsgView)->setViewpoint(vp, std::chrono::duration<float>(0));
+    }
 
     // Attach our GUI in the main view:
     auto imguiRenderer = ImGuiRenderer::create(window.vsgWindow);

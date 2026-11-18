@@ -1,5 +1,8 @@
 if(ROCKY_RENDERER_VSG)
     add_subdirectory(rocky_simple)
+    if(ROCKY_SUPPORTS_SLUGHORN)
+        add_subdirectory(rocky_demo_vector_tiles)
+    endif()
 
     if(ROCKY_SUPPORTS_SLUGHORN AND ROCKY_SUPPORTS_GDAL)
         add_subdirectory(rocky_demo_slughorn)
