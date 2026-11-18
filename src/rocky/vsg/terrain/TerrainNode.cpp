@@ -116,6 +116,7 @@ TerrainProfileNode::update(VSGContext vsgcontext)
         {
             ROCKY_HARD_ASSERT(_tileFactory);
 
+            _tileFactory->vectorStyleZoom = terrain.vectorStyleZoom();
             if (_tiles.update(_tileFactory, vsgcontext))
                 changes = true;
 
@@ -305,9 +306,36 @@ TerrainNode::createProfiles(VSGContext vsgcontext)
     return ResultVoidOK;
 }
 
+void TerrainNode::accept(vsg::RecordTraversal& rv) const
+{
+    if (rv.traversalMask != VSG_SHADOW_CAMERA_TRAVERSAL_MASK && map &&
+        !map->layers<VectorTileLayer>().empty())
+    {
+        auto* recordState = rv.getState();
+        const auto viewport = recordState->_commandBuffer->viewDependentState->viewportData->at(0);
+        const auto zoom = terrainViewStyleZoom(renderingSRS, to_glm(recordState->modelviewMatrixStack.top()),
+            to_glm(recordState->projectionMatrixStack.top()), viewport[3]);
+        std::scoped_lock lock(_vectorViewMutex);
+        const auto frame = rv.getFrameStamp()->frameCount;
+        if (_vectorViewFrame != frame) { _recordedVectorZoom.reset(); _vectorViewFrame = frame; }
+        if (zoom && (!_recordedVectorZoom || *zoom > *_recordedVectorZoom)) _recordedVectorZoom = zoom;
+    }
+    Inherit::accept(rv);
+}
+
+std::optional<double> TerrainNode::vectorStyleZoom() const
+{
+    std::scoped_lock lock(_vectorViewMutex);
+    return _vectorZoom;
+}
+
 bool
 TerrainNode::update(VSGContext vsgcontext)
 {
+    {
+        std::scoped_lock lock(_vectorViewMutex);
+        if (_recordedVectorZoom) _vectorZoom = _recordedVectorZoom;
+    }
     if (vsgcontext->sharedRenderData->sharedDescriptorsChanged(_sharedDataRevision))
     {
         Log()->debug("TerrainNode: shared buffers changed; updating global descriptor set");
@@ -330,6 +358,8 @@ TerrainNode::update(VSGContext vsgcontext)
 
     state->updateSettings(*this);
 
+    // Paging transitions also need a new record pass in render-on-demand applications.
+    if (changes) vsgcontext->requestFrame();
     return changes;
 }
 

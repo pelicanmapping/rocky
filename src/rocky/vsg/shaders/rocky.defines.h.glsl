@@ -11,6 +11,10 @@
 #define BINDING_TERRAIN_COLOR                1
 #define BINDING_TERRAIN_ELEVATION            2
 #define BINDING_TERRAIN_TILE                 3
+#define BINDING_TERRAIN_VECTOR_CURVES        4
+#define BINDING_TERRAIN_VECTOR_BANDS         5
+#define BINDING_TERRAIN_VECTOR_LAYERS        6
+#define BINDING_TERRAIN_VECTOR_GRID          7
 
 
 // view dependent state (in descriptor set 1):

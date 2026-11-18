@@ -9,6 +9,7 @@
 #include <rocky/Color.h>
 #include <rocky/Image.h>
 #include <rocky/TileKey.h>
+#include "TerrainVectorTexture.h"
 
 namespace ROCKY_NAMESPACE
 {
@@ -34,11 +35,13 @@ namespace ROCKY_NAMESPACE
             glm::fmat4 elevation_matrix;
             glm::fmat4 color_matrix;
             glm::fmat4 model_matrix;
+            glm::fmat4 vector_matrix;
             float min_height = 1.0f;
             float max_height = 0.0f;
             float span = 0.0f;
             float padding[1];
         };
+        static_assert(sizeof(Uniforms) == 272, "Terrain tile uniforms must match the GLSL std140 layout");
         vsg::ref_ptr<vsg::DescriptorImage> color;
         vsg::ref_ptr<vsg::DescriptorImage> elevation;
         vsg::ref_ptr<vsg::DescriptorBuffer> uniforms;
@@ -59,6 +62,8 @@ namespace ROCKY_NAMESPACE
         glm::fmat4 modelMatrix;
         TextureData color;
         TextureData elevation;
+        vsg::ref_ptr<TerrainVectorTexture> vectors;
+        glm::dmat4 vectorMatrix{ 1.0 };
         float minHeight = 0.0f;
         float maxHeight = 0.0f;
 
@@ -70,6 +75,8 @@ namespace ROCKY_NAMESPACE
                 color.matrix *= sb;
             if (elevation.image)
                 elevation.matrix *= sb;
+            if (vectors)
+                vectorMatrix *= sb;
         }
     };
 
@@ -108,11 +115,13 @@ namespace ROCKY_NAMESPACE
 
         //! Builds a render model without modifying the old one; on success, install its bind command.
         //! Returns an error on failure and defers disposal of descriptors rejected by compilation.
+        //! A null vector argument preserves coverage; a non-null empty resource clears it.
         Result<TerrainTileRenderModel> tryUpdateRenderModel(
             const TileKey& key,
             const TerrainTileRenderModel& oldRenderModel,
             const TerrainTileModel& newDataModel,
-            VSGContext context) const;
+            VSGContext context,
+            vsg::ref_ptr<TerrainVectorTexture> vectors = {}) const;
 
         //! Synchronize the terrain state with the rendering profile
         void updateProfile(const Profile&);
@@ -140,6 +149,7 @@ namespace ROCKY_NAMESPACE
         //! that will populate a descriptor set when no other textures are available.
         //! Terrain tiles copy and use this until new data becomes available.
         TerrainTileDescriptors defaultTileDescriptors;
+        vsg::ref_ptr<TerrainVectorTexture> emptyVectors;
 
     protected:
 

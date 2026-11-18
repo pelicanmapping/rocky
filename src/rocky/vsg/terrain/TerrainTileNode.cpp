@@ -128,6 +128,8 @@ TerrainTileNode::accept(vsg::RecordTraversal& rv) const
 
         if (traversePayload)
         {
+            if (rv.traversalMask != VSG_SHADOW_CAMERA_TRAVERSAL_MASK)
+                lastSurfaceFrame.store(frame);
             // children do not exist or are out of range; use this tile's geometry
             children[0]->accept(rv);
 
@@ -165,7 +167,10 @@ TerrainTileNode::inheritFrom(vsg::ref_ptr<TerrainTileNode> parent)
     // copy the parent's model and apply a scale bias based on the new tile's quadrant
     auto& sb = scaleBias[key.getQuadrant()];
 
-    renderModel = parent->renderModel;
+    {
+        std::scoped_lock lock(parent->renderModelMutex);
+        renderModel = parent->renderModel;
+    }
     renderModel.applyScaleBias(sb);
 
     revision = parent->revision;

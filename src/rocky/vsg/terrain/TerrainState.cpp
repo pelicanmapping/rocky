@@ -112,6 +112,11 @@ TerrainState::~TerrainState()
 void
 TerrainState::createDefaultDescriptors(VSGContext context)
 {
+#ifdef ROCKY_HAS_SLUGHORN
+    auto empty = buildTerrainVectorTexture({}, context->io, 0u);
+    ROCKY_HARD_ASSERT(empty.ok(), "Failed to create empty terrain vector descriptors");
+    emptyVectors = empty.release();
+#endif
     // First create our samplers - each one is shared across all tiles.
     // In Vulkan, the sampler is separate from the image you are sampling,
     // so you can share a sampler between any number of images.
@@ -258,6 +263,17 @@ TerrainState::createShaderSet(VSGContext vsgcontext) const
         BINDING_TERRAIN_TILE, TYPE_TERRAIN_TILE, 1,
         VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, {});
 
+#ifdef ROCKY_HAS_SLUGHORN
+    shaderSet->addDescriptorBinding("u_vectorCurves", "", DESCRIPTOR_SET_LOCAL,
+        BINDING_TERRAIN_VECTOR_CURVES, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addDescriptorBinding("u_vectorBands", "", DESCRIPTOR_SET_LOCAL,
+        BINDING_TERRAIN_VECTOR_BANDS, VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addDescriptorBinding("u_vectorLayers", "", DESCRIPTOR_SET_LOCAL,
+        BINDING_TERRAIN_VECTOR_LAYERS, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+    shaderSet->addDescriptorBinding("u_vectorGrid", "", DESCRIPTOR_SET_LOCAL,
+        BINDING_TERRAIN_VECTOR_GRID, VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_FRAGMENT_BIT, {});
+#endif
+
 
     shaderSet->addDescriptorBinding(TERRAIN_SETTINGS_UBO_NAME, "",
         DESCRIPTOR_SET_GLOBAL,
@@ -317,6 +333,12 @@ TerrainState::createPipelineConfig(VSGContext vsgcontext) const
 
     config->enableDescriptor(TILE_UBO_NAME);
     config->enableDescriptor(TERRAIN_SETTINGS_UBO_NAME);
+#ifdef ROCKY_HAS_SLUGHORN
+    config->enableDescriptor("u_vectorCurves");
+    config->enableDescriptor("u_vectorBands");
+    config->enableDescriptor("u_vectorLayers");
+    config->enableDescriptor("u_vectorGrid");
+#endif
 
 #ifdef ROCKY_HAS_DECALS
     config->enableDescriptor(DECAL_TEXTURES_UBO_NAME);
@@ -426,7 +448,8 @@ TerrainState::updateRenderModel(const TileKey& key, const TerrainTileRenderModel
 
 Result<TerrainTileRenderModel>
 TerrainState::tryUpdateRenderModel(const TileKey& key, const TerrainTileRenderModel& oldRenderModel,
-    const TerrainTileModel& dataModel, VSGContext vsgcontext) const
+    const TerrainTileModel& dataModel, VSGContext vsgcontext,
+    vsg::ref_ptr<TerrainVectorTexture> vectors) const
 {
     ROCKY_SOFT_ASSERT_AND_RETURN(status.ok(), status.error());
     ROCKY_SOFT_ASSERT_AND_RETURN(pipelineConfig.valid(), Failure_AssertionFailure);
@@ -434,6 +457,20 @@ TerrainState::tryUpdateRenderModel(const TileKey& key, const TerrainTileRenderMo
     // Copy the old one
     TerrainTileRenderModel renderModel = oldRenderModel;
     TerrainTileDescriptors& descriptors = renderModel.descriptors;
+    if (vectors)
+    {
+        renderModel.vectors = vectors;
+        renderModel.vectorMatrix = glm::dmat4(1.0);
+        if (vectors->key.valid())
+        {
+            const auto src = key.extent();
+            const auto dst = vectors->key.extent();
+            renderModel.vectorMatrix[0][0] = src.width() / dst.width();
+            renderModel.vectorMatrix[1][1] = src.height() / dst.height();
+            renderModel.vectorMatrix[3][0] = (src.xmin() - dst.xmin()) / dst.width();
+            renderModel.vectorMatrix[3][1] = (src.ymin() - dst.ymin()) / dst.height();
+        }
+    }
 
     if (dataModel.colorLayers.size() > 0 && dataModel.colorLayers[0].image)
     {
@@ -514,6 +551,7 @@ TerrainState::tryUpdateRenderModel(const TileKey& key, const TerrainTileRenderMo
     uniforms.elevation_matrix = renderModel.elevation.matrix;
     uniforms.color_matrix = renderModel.color.matrix;
     uniforms.model_matrix = renderModel.modelMatrix;
+    uniforms.vector_matrix = renderModel.vectorMatrix;
     uniforms.min_height = renderModel.minHeight;
     uniforms.max_height = renderModel.maxHeight;
     uniforms.span = key.extent().height(Units::METERS);
@@ -544,6 +582,11 @@ TerrainState::tryUpdateRenderModel(const TileKey& key, const TerrainTileRenderMo
         descriptors.color,
         descriptors.uniforms
     };
+#ifdef ROCKY_HAS_SLUGHORN
+    auto vectorData = renderModel.vectors ? renderModel.vectors : emptyVectors;
+    allDescriptors.insert(allDescriptors.end(), {
+        vectorData->curves, vectorData->bands, vectorData->layers, vectorData->grid });
+#endif
 
     auto descriptorSet = vsg::DescriptorSet::create(
         pipelineConfig->layout->setLayouts[DESCRIPTOR_SET_LOCAL],

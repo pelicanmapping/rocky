@@ -28,6 +28,7 @@ layout(set = DESCRIPTOR_SET_LOCAL, binding = BINDING_TERRAIN_TILE) uniform TileD
     mat4 elevationMatrix;
     mat4 colorMatrix;
     mat4 modelMatrix;
+    mat4 vectorMatrix;
     float minHeight;
     float maxHeight;
     float span;
@@ -37,6 +38,7 @@ layout(set = DESCRIPTOR_SET_LOCAL, binding = BINDING_TERRAIN_TILE) uniform TileD
 // inter-stage interface block
 layout(location = 0) out Varyings {
     vec2 uv;
+    vec2 vectorUV;
     vec3 normalVs;
     vec3 vertexVs;
     vec3 lookWs;
@@ -126,6 +128,7 @@ void main()
     mat3 normalMatrix = mat3(transpose(inverse(pc.modelview)));
 
     vary.uv = (u_tile.colorMatrix * vec4(in_uvw.st, 0, 1)).st;
+    vary.vectorUV = (u_tile.vectorMatrix * vec4(in_uvw.st, 0, 1)).st;
     vary.normalVs = normalize(normalMatrix * computeTBN_ts(in_up_ts) * computeNormal_ts(in_uvw.st));
 
     // Rotation from view space to world space

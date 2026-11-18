@@ -5,6 +5,7 @@
  * MIT License
  */
 #pragma import_defines(ROCKY_HAS_ATMOSPHERE, ROCKY_HAS_SLUGHORN)
+#define ROCKY_SLUG_DISTANCE_STROKES
 
 #pragma include "rocky.defines.h.glsl"
 #pragma include "rocky.viewdependentstate.glsl"
@@ -13,6 +14,7 @@
 #pragma include "rocky.debug.frag.glsl"
 #pragma include "rocky.frustumgrid.h.glsl"
 #pragma include "rocky.decal.h.glsl"
+#pragma include "rocky.terrain.vector.glsl"
 
 layout(push_constant) uniform PushConstants {
     mat4 projection;
@@ -22,6 +24,7 @@ layout(push_constant) uniform PushConstants {
 // inter-stage interface block
 layout(location = 0) in Varyings {
     vec2 uv;
+    vec2 vectorUV;
     vec3 normalVs;
     vec3 vertexVs;
     vec3 lookWs;
@@ -46,6 +49,10 @@ layout(location = 0) out vec4 outColor;
 
 void main()
 {
+#ifdef ROCKY_HAS_SLUGHORN
+    vec2 vectorDx = dFdx(vary.vectorUV);
+    vec2 vectorDy = dFdy(vary.vectorUV);
+#endif
     if (vary.discardVert > 0.0)
         discard;
 
@@ -54,6 +61,9 @@ void main()
 
     // mix in the background color
     outColor = mix(u_terrain.backgroundColor, clamp(texel, 0, 1), texel.a);
+#ifdef ROCKY_HAS_SLUGHORN
+    applyTerrainVectors(outColor, vary.vectorUV, vectorDx, vectorDy);
+#endif
 
     vec3 normalVs = normalize(vary.normalVs);
 

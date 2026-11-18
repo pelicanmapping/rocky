@@ -56,6 +56,9 @@ namespace ROCKY_NAMESPACE
         //! name of job arena used to load data
         std::string loadSchedulerName = "rocky::terrain_loader";
 
+        //! View style snapshot supplied by the terrain at update, independent of application cameras.
+        std::optional<double> vectorStyleZoom;
+
         //! Create a single terrain tile; returns null if its descriptors fail to compile.
         vsg::ref_ptr<TerrainTileNode> createTile(
             const TileKey& key,

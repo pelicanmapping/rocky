@@ -1,7 +1,7 @@
 set(APP_NAME rocky_tests)
 
 set(SOURCES tests.cpp tests_projection_lifecycle.cpp tests_tessellation.cpp tests_slug_fallback.cpp
-    tests_terrain_anchor.cpp tests_overlay_depth.cpp tests_overlay_lifecycle.cpp tests_texture.cpp tests_units.cpp tests_uri_serialization.cpp tests_content_cache.cpp catch.hpp)
+    tests_terrain_anchor.cpp tests_overlay_depth.cpp tests_overlay_lifecycle.cpp tests_texture.cpp tests_units.cpp tests_uri_serialization.cpp tests_content_cache.cpp tests_terrain_vectors.cpp catch.hpp)
 
 add_executable(${APP_NAME} ${SOURCES})
 

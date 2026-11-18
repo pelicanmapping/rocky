@@ -70,8 +70,12 @@ namespace
         // UBOs, and SSBOs in the same pipeline layout/stages.
 #ifdef ROCKY_HAS_SLUGHORN
         constexpr std::uint32_t arrayCount = 3u; // RTT + Slug curve + Slug band
+        constexpr std::uint32_t terrainVectorImages = 2u;
+        constexpr std::uint32_t terrainVectorResources = 4u;
 #else
         constexpr std::uint32_t arrayCount = 1u; // RTT only
+        constexpr std::uint32_t terrainVectorImages = 0u;
+        constexpr std::uint32_t terrainVectorResources = 0u;
 #endif
         auto availablePerArray = [arrayCount](std::uint32_t limit, std::uint32_t reserved)
         {
@@ -82,11 +86,11 @@ namespace
         // Divide the available descriptors among the projected image arrays
         // compiled into this build, leaving room for terrain and shadows.
         auto supported = std::min({
-            availablePerArray(limits.maxPerStageDescriptorSamplers, 3u),
-            availablePerArray(limits.maxPerStageDescriptorSampledImages, 2u),
-            availablePerArray(limits.maxDescriptorSetSamplers, 4u),
-            availablePerArray(limits.maxDescriptorSetSampledImages, 3u),
-            availablePerArray(limits.maxPerStageResources, 16u)
+            availablePerArray(limits.maxPerStageDescriptorSamplers, 3u + terrainVectorImages),
+            availablePerArray(limits.maxPerStageDescriptorSampledImages, 2u + terrainVectorImages),
+            availablePerArray(limits.maxDescriptorSetSamplers, 4u + terrainVectorImages),
+            availablePerArray(limits.maxDescriptorSetSampledImages, 3u + terrainVectorImages),
+            availablePerArray(limits.maxPerStageResources, 16u + terrainVectorResources)
         });
 
         return std::clamp(requested, 1u, supported);

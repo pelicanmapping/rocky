@@ -25,6 +25,16 @@ namespace ROCKY_NAMESPACE
 
         using Tracker = detail::SentryTracker<TerrainTileNode*>;
 
+        //! Owns a compiled candidate until publication or cancellation; retirement is deferred through VSG.
+        struct VectorPublication
+        {
+            VSGContext context;
+            vsg::ref_ptr<vsg::BindDescriptorSet> base;
+            std::optional<TerrainTileRenderModel> model;
+            //! Even abandoned worker results must retire compiled descriptors safely.
+            ~VectorPublication() { if (model) context->dispose(model->descriptors.bind); }
+        };
+
         struct TileInfo
         {
             // this needs to be a ref ptr because it's possible for the unloader
@@ -36,6 +46,10 @@ namespace ROCKY_NAMESPACE
             jobs::future<vsg::ref_ptr<vsg::Node>> childrenCreator;
             jobs::future<bool> dataLoader;
             jobs::future<bool> dataMerger;
+            std::optional<std::pair<TileKey, std::size_t>> failedVectorPublication;
+            std::optional<std::pair<TileKey, std::size_t>> vectorRequest;
+            jobs::future<std::shared_ptr<VectorPublication>> vectorPreparation;
+            jobs::future<bool> vectorMerger;
         };
 
         using TileTable = std::map<TileKey, TileInfo>;
@@ -86,6 +100,24 @@ namespace ROCKY_NAMESPACE
         Revision _sharedDataRevision = 0;
 
     private:
+
+        struct VectorLoad
+        {
+            jobs::future<Result<vsg::ref_ptr<TerrainVectorTexture>>> future;
+            std::uint64_t lastUsed = 0;
+            // Dynamic priority shared with queued terrain-loader jobs; does not own a tile.
+            std::shared_ptr<std::atomic<float>> priority = std::make_shared<std::atomic<float>>(-FLT_MAX);
+            bool reportedFailure = false;
+        };
+        // One request per source ancestor/revision, shared by all overzoomed children.
+        std::map<std::pair<TileKey, std::size_t>, VectorLoad> _vectorLoads;
+
+        std::vector<TileKey> _vectorDemand;
+        std::uint64_t _vectorDemandFrame = 0;
+
+        //! Consumes terrain visibility demand using the terrain loader and metered merge queue.
+        //! Vectors run alongside imagery and never gate progressive terrain refinement.
+        bool updateVectors(std::shared_ptr<TerrainTileFactory>, VSGContext);
 
         //! Loads the geometry for 4 new subtiles, and inherits their data models from a parent.
         void requestCreateChildren(

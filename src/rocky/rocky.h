@@ -10,6 +10,7 @@
 #include <rocky/GDALImageLayer.h>
 #include <rocky/GDALElevationLayer.h>
 #include <rocky/TMSImageLayer.h>
+#include <rocky/VectorTileLayer.h>
 #include <rocky/TMSElevationLayer.h>
 #include <rocky/MBTilesImageLayer.h>
 #include <rocky/MBTilesElevationLayer.h>

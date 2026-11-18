@@ -29,12 +29,15 @@ namespace ROCKY_NAMESPACE
         TileKey key;
         bool doNotExpire = false;
         Revision revision = 0;
-        TerrainTileRenderModel renderModel;       
+        TerrainTileRenderModel renderModel;
+        mutable std::mutex renderModelMutex; // serializes parent inheritance with vector publication
         vsg::ref_ptr<SurfaceNode> surface;
         vsg::ref_ptr<vsg::StateGroup> stategroup;
         
         mutable jobs::future<bool> subtilesLoader;
         mutable std::atomic<uint64_t> lastTraversalFrame = { 0 };
+        //! Last main-view frame that actually drew this surface (not a cached parent or culled sibling).
+        mutable std::atomic<uint64_t> lastSurfaceFrame = { 0 };
         mutable std::atomic<vsg::time_point> lastTraversalTime;
         mutable std::atomic<float> lastTraversalRange = { FLT_MAX };
 

@@ -124,6 +124,13 @@ namespace ROCKY_NAMESPACE
         //! Rebuild the terrain pipeline after startup rendering configuration changes.
         void rebuildRenderPipeline(VSGContext context);
 
+        using Inherit::accept;
+        //! Captures view scale during record; actual style requests are created later during update.
+        void accept(vsg::RecordTraversal&) const override;
+
+        //! Current engine-selected style scale; highest zoom among views rendering this terrain.
+        std::optional<double> vectorStyleZoom() const;
+
         //! Updates the terrain periodically at a safe time.
         //! @return true if any updates were applied
         bool update(VSGContext context);
@@ -158,6 +165,10 @@ namespace ROCKY_NAMESPACE
 
     private:
 
+        mutable std::mutex _vectorViewMutex;
+        mutable std::uint64_t _vectorViewFrame = 0;
+        mutable std::optional<double> _recordedVectorZoom;
+        std::optional<double> _vectorZoom;
         vsg::ref_ptr<vsg::StateGroup> _profileNodes;
         Result<> createProfiles(VSGContext);
         CallbackSubs _callbacks;

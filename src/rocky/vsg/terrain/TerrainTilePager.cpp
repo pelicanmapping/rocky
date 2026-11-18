@@ -11,6 +11,7 @@
 #include "SurfaceNode.h"
 #include "../VSGUtils.h"
 #include <rocky/TerrainTileModelFactory.h>
+#include <rocky/Map.h>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -44,6 +45,8 @@ TerrainTilePager::releaseAll()
     _loadData.clear();
     _mergeData.clear();
     _updateData.clear();
+    _vectorLoads.clear();
+    _vectorDemand.clear();
 }
 
 void
@@ -66,6 +69,18 @@ TerrainTilePager::ping(TerrainTileNode* tile, const TerrainTileNode* parent, vsg
         info.trackerToken = _tracker.update(info.trackerToken);
     else
         info.trackerToken = _tracker.emplace(info.tile);
+
+    // Keep the last recorded demand through idle updates in render-on-demand applications.
+    // Only a new record frame replaces it; an idle update is not a visibility change.
+    if (_vectorDemandFrame != rv.getFrameStamp()->frameCount)
+    {
+        _vectorDemand.clear();
+        _vectorDemandFrame = rv.getFrameStamp()->frameCount;
+    }
+    // Sibling pings preserve terrain residency, but only drawn surfaces request vector work.
+    if (tile->lastSurfaceFrame.load() == rv.getFrameStamp()->frameCount &&
+        rv.traversalMask != VSG_SHADOW_CAMERA_TRAVERSAL_MASK)
+        _vectorDemand.push_back(tile->key);
 
     // next, see if the tile needs anything.
     // "progressive" means do not load LOD N+1 until LOD N is complete.
@@ -194,6 +209,8 @@ TerrainTilePager::update(std::shared_ptr<TerrainTileFactory> tileFactory, VSGCon
         changes = true;
     }
     _mergeData.clear();
+
+    changes = updateVectors(tileFactory, vsgcontext) || changes;
 
     // Flush unused tiles (i.e., tiles that failed to ping) out of the system.
     // Tiles ping their children all at once; this should in theory prevent
@@ -374,6 +391,7 @@ TerrainTilePager::requestLoadData(TileInfo& info, const IOOptions& in_io,
 
         if (!dataModel.empty())
         {
+            std::scoped_lock lock(tile->renderModelMutex);
             auto newRenderModel = tileFactory->state->tryUpdateRenderModel(tile->key, tile->renderModel, dataModel, vsgcontext);
 
             if (newRenderModel.failed())
@@ -436,12 +454,15 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io,
 
     auto merge = [key, weak_tileFactory, vsgcontext](Cancelable& c) -> bool
     {
+        if (c.canceled()) return false;
         auto tileFactory = weak_tileFactory.lock();
         if (!tileFactory) return false;
 
         auto tile = tileFactory->host->tiles().getTile(key);
         if (tile)
         {
+            // Serialize publication with worker-side base-data updates and parent inheritance.
+            std::scoped_lock lock(tile->renderModelMutex);
             // get rid of old state:
             for (auto c : tile->stategroup->stateCommands)
                 vsgcontext->dispose(c);
@@ -481,4 +502,180 @@ TerrainTilePager::requestMergeData(TileInfo& info, const IOOptions& in_io,
     };
 
     vsgcontext->scheduleMeteredUpdate(merge_operation, priority_func);
+}
+
+bool TerrainTilePager::updateVectors(std::shared_ptr<TerrainTileFactory> factory, VSGContext context)
+{
+#ifndef ROCKY_HAS_SLUGHORN
+    _vectorDemand.clear();
+    return false;
+#else
+    if (factory->map->layers<VectorTileLayer>().empty())
+    {
+        _vectorDemand.clear();
+        return false;
+    }
+    const auto frame = context->viewer()->getFrameStamp()->frameCount;
+    // A main view that stopped traversing this terrain must eventually release its demand.
+    if (frame > _vectorDemandFrame + 1u) _vectorDemand.clear();
+    std::sort(_vectorDemand.begin(), _vectorDemand.end());
+    _vectorDemand.erase(std::unique(_vectorDemand.begin(), _vectorDemand.end()), _vectorDemand.end());
+    auto& jobs = context->io.services().jobs;
+    auto pool = jobs.get_pool(factory->loadSchedulerName);
+    auto device = context->device();
+    const auto limit = device ? device->getPhysicalDevice()->getProperties().limits.maxImageDimension2D : 0u;
+    bool changed = false;
+
+    // Reset stale tile publications before the metered queue can install obsolete artwork.
+    // Cached, invisible tiles retain their last good resource but produce no new vector work.
+    for (auto& entry : _tiles)
+    {
+        if (!std::binary_search(_vectorDemand.begin(), _vectorDemand.end(), entry.first))
+        {
+            if (!entry.second.vectorPreparation.empty()) entry.second.vectorPreparation.reset();
+            if (!entry.second.vectorMerger.empty()) entry.second.vectorMerger.reset();
+            entry.second.vectorRequest.reset();
+        }
+    }
+    for (auto& entry : _vectorLoads) entry.second.priority->store(-FLT_MAX);
+
+    for (const auto& key : _vectorDemand)
+    {
+        auto found = _tiles.find(key);
+        if (found == _tiles.end()) continue;
+        auto& info = found->second;
+        auto tile = info.tile;
+        const auto request = terrainVectorRequest(*factory->map, key, factory->vectorStyleZoom);
+        const auto identity = std::make_pair(request.key, request.signature);
+        if (info.vectorRequest != identity)
+        {
+            info.vectorPreparation.reset();
+            info.vectorMerger.reset();
+            info.failedVectorPublication.reset();
+            info.vectorRequest = identity;
+        }
+        TerrainTileRenderModel current;
+        {
+            std::scoped_lock lock(tile->renderModelMutex);
+            current = tile->renderModel;
+        }
+        if (request.sources.empty() && !current.vectors) continue;
+        const bool upToDate = current.vectors && current.vectors->key == request.key &&
+            current.vectors->signature == request.signature;
+        auto cached = _vectorLoads.find(identity);
+        if (cached != _vectorLoads.end()) cached->second.lastUsed = frame;
+        if (upToDate)
+        {
+            if (!info.vectorPreparation.empty()) info.vectorPreparation.reset();
+            if (!info.vectorMerger.empty()) info.vectorMerger.reset();
+            continue;
+        }
+        if (info.failedVectorPublication == identity) continue;
+
+        auto& load = _vectorLoads[identity];
+        load.lastUsed = frame;
+        const float priority = -(std::sqrt(tile->lastTraversalRange.load()) * std::max(1u, key.level));
+        load.priority->store(std::max(load.priority->load(), priority));
+        if (load.future.empty())
+        {
+            auto io = context->io;
+            auto getPriority = [weak = std::weak_ptr<std::atomic<float>>(load.priority)]() {
+                auto p = weak.lock(); return p ? p->load() : -FLT_MAX;
+            };
+            load.future = jobs.dispatch([request, io, limit, context](Cancelable& cancel)
+                -> Result<vsg::ref_ptr<TerrainVectorTexture>>
+                {
+                    auto result = buildTerrainVectorTexture(request, io.with(cancel), limit);
+                    context->requestFrame();
+                    return result;
+                }, jobs::context{ "terrain vectors " + request.key.str(), pool, getPriority, nullptr });
+        }
+        if (!load.future.available()) continue;
+        const auto& result = load.future.value();
+        if (result.failed())
+        {
+            if (!load.reportedFailure)
+            {
+                Log()->warn("Terrain vectors {}: {}", request.key.str(), result.error().message);
+                load.reportedFailure = true;
+            }
+            continue;
+        }
+
+        // Compile a snapshot on a terrain worker, alongside imagery/elevation loading.
+        // No scene mutation or lengthy Vulkan compilation takes place in updateVectors.
+        vsg::observer_ptr<TerrainTileNode> weakTile(tile);
+        auto getPriority = [weakTile]() {
+            auto t = weakTile.ref_ptr();
+            return t ? -(std::sqrt(t->lastTraversalRange.load()) * std::max(1u, t->key.level)) : -FLT_MAX;
+        };
+        if (info.vectorPreparation.empty())
+        {
+            auto resource = result.value();
+            auto state = factory->state;
+            info.vectorPreparation = jobs.dispatch([key, current, resource, state, context](Cancelable& cancel)
+                -> std::shared_ptr<VectorPublication>
+                {
+                    if (cancel.canceled()) return {};
+                    auto publication = std::make_shared<VectorPublication>();
+                    publication->context = context;
+                    publication->base = current.descriptors.bind;
+                    auto updated = state->tryUpdateRenderModel(key, current, {}, context, resource);
+                    if (updated.ok()) publication->model = updated.release();
+                    else Log()->warn("Terrain vector publication {}: {}", key.str(), updated.error().message);
+                    context->requestFrame();
+                    return cancel.canceled() ? nullptr : publication;
+                }, jobs::context{ "prepare terrain vectors " + key.str(), pool, getPriority, nullptr });
+        }
+        if (!info.vectorPreparation.available()) continue;
+        auto publication = info.vectorPreparation.value();
+        if (!publication || !publication->model)
+        {
+            info.failedVectorPublication = identity;
+            info.vectorPreparation.reset();
+            continue;
+        }
+        if (info.vectorMerger.available())
+        {
+            // An imagery update won the race. Rebase the vector descriptor snapshot on its latest model.
+            if (!info.vectorMerger.value())
+            {
+                info.vectorPreparation.reset();
+                info.vectorMerger.reset();
+                context->requestFrame();
+            }
+            continue;
+        }
+        if (!info.vectorMerger.empty()) continue;
+        std::weak_ptr<TerrainTileFactory> weakFactory(factory);
+        auto merge = [weakTile, weakFactory, publication, context](Cancelable& cancel) -> bool
+        {
+            if (cancel.canceled()) return false;
+            auto tile = weakTile.ref_ptr();
+            auto factory = weakFactory.lock();
+            if (!tile || !factory || factory->host->tiles().getTile(tile->key) != tile) return false;
+            std::scoped_lock lock(tile->renderModelMutex);
+            if (tile->renderModel.descriptors.bind != publication->base) return false;
+            for (auto& command : tile->stategroup->stateCommands) context->dispose(command);
+            tile->renderModel = *publication->model;
+            tile->stategroup->stateCommands = { tile->renderModel.descriptors.bind };
+            tile->surface->setElevation(tile->renderModel.elevation.image, tile->renderModel.elevation.matrix);
+            tile->bound = tile->surface->recomputeBound();
+            factory->host->activity().onTileBoundsChanged.fire(tile->key);
+            context->requestFrame();
+            return true;
+        };
+        auto operation = PromiseOperation<bool>::create(merge);
+        info.vectorMerger = operation->future();
+        context->scheduleMeteredUpdate(operation, getPriority);
+        context->requestFrame();
+        changed = true;
+    }
+    // This is a sharing table for current terrain demand, not a second resident cache.
+    // Releasing its last future cooperatively cancels obsolete work on the terrain loader.
+    for (auto i = _vectorLoads.begin(); i != _vectorLoads.end(); )
+        if (i->second.lastUsed != frame) i = _vectorLoads.erase(i);
+        else ++i;
+    return changed;
+#endif
 }
