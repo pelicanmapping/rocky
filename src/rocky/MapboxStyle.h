@@ -14,6 +14,8 @@ namespace ROCKY_NAMESPACE
         struct Source
         {
             std::string id, url;
+            //! Single collections use GeoJSON source semantics; vector sources require source-layer.
+            std::string type = "vector";
             std::vector<std::string> tiles;
             unsigned minZoom = 0, maxZoom = 14;
             std::string attribution;

@@ -254,7 +254,7 @@ int main(int argc, char** argv)
     // This configures an ordinary map layer; terrain paging and view styling live entirely in Rocky.
     if (openfreemap)
     {
-        auto vectors = MapboxVectorTileLayer::create();
+        auto vectors = StyledFeatureLayer::create();
         vectors->name = "OpenFreeMap terrain vectors";
         vectors->attribution = { "OpenFreeMap | OpenMapTiles | (c) OpenStreetMap contributors", "https://openfreemap.org" };
         auto found = vsg::findFile(vectorStyle, app.vsgcontext->searchPaths);

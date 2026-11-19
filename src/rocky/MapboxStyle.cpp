@@ -388,12 +388,14 @@ Result<> MapboxStyle::load(std::string_view text)
         for (const auto& entry : root["sources"].items())
         {
             const auto& s = entry.value();
-            if (s.value("type", "") != "vector")
+            const auto sourceType = s.value("type", "");
+            if (sourceType != "vector" && sourceType != "geojson")
                 continue;
             if (s.value("scheme", "xyz") != "xyz")
                 return Failure("Only XYZ MVT sources are supported");
             Source source;
             source.id = entry.key();
+            source.type = sourceType;
             source.url = s.value("url", "");
             source.tiles = s.value("tiles", std::vector<std::string>{});
             source.minZoom = s.value("minzoom", 0u);
@@ -422,10 +424,15 @@ Result<> MapboxStyle::load(std::string_view text)
                 layer.type = type == "line" ? Type::Line : type == "fill" ? Type::Fill : Type::Background;
                 layer.minZoom = plan.value("minzoom", 0.0);
                 layer.maxZoom = plan.value("maxzoom", 24.0);
-                if (type != "background" &&
-                    (layer.sourceLayer.empty() || std::none_of(impl->sources.begin(), impl->sources.end(),
-                                                               [&](const auto& s) { return s.id == layer.source; })))
-                    throw std::runtime_error("missing vector source or source-layer");
+                if (type != "background")
+                {
+                    auto source = std::find_if(impl->sources.begin(), impl->sources.end(),
+                        [&](const auto& s) { return s.id == layer.source; });
+                    if (source == impl->sources.end() ||
+                        (source->type == "vector" && layer.sourceLayer.empty()) ||
+                        (source->type == "geojson" && !layer.sourceLayer.empty()))
+                        throw std::runtime_error("invalid source or source-layer for the source type");
+                }
                 plan["filter"] = filterExpression(plan.value("filter", json(true)));
                 validate(plan["filter"]);
                 if (!plan.contains("paint"))

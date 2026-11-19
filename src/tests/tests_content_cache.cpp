@@ -140,9 +140,8 @@ TEST_CASE("Application cache arguments override shared map configuration", "[con
         { "map", { { "layers", json::array() } } }
     };
     { std::ofstream out(mapPath); out << config.dump(); }
-    for (const auto* option : { "--cache", "--vector-cache" })
     {
-        std::vector<std::string> args = { "cache-test", "--map", mapPath.generic_string(), option, cliCache };
+        std::vector<std::string> args = { "cache-test", "--map", mapPath.generic_string(), "--cache", cliCache };
         std::vector<char*> argv;
         for (auto& arg : args) argv.push_back(arg.data());
         int argc = static_cast<int>(argv.size());

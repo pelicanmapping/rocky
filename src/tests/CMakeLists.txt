@@ -2,11 +2,16 @@ set(APP_NAME rocky_tests)
 
 set(SOURCES tests.cpp tests_projection_lifecycle.cpp tests_tessellation.cpp tests_slug_fallback.cpp
     tests_terrain_anchor.cpp tests_overlay_depth.cpp tests_overlay_lifecycle.cpp tests_texture.cpp tests_units.cpp
-    tests_terrain_vectors.cpp tests_mapbox_style.cpp tests_content_cache.cpp tests_uri_serialization.cpp catch.hpp)
+    tests_terrain_vectors.cpp tests_mapbox_style.cpp tests_styled_features.cpp
+    tests_content_cache.cpp tests_uri_serialization.cpp catch.hpp)
 
 add_executable(${APP_NAME} ${SOURCES})
 
 target_link_libraries(${APP_NAME} rocky)
+if(BUILD_WITH_GDAL)
+    find_package(GDAL REQUIRED)
+    target_link_libraries(${APP_NAME} GDAL::GDAL)
+endif()
 
 if(WIN32)
     target_link_libraries(${APP_NAME} ws2_32)

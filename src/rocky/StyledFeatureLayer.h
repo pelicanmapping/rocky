@@ -6,13 +6,17 @@
 
 namespace ROCKY_NAMESPACE
 {
-    //! Terrain surface provider for a supported subset of Mapbox/MapLibre styles and XYZ MVT sources.
+    //! Terrain surface provider for Mapbox/MapLibre styles and tiled or spatially queried feature sources.
     //! Configure before open. Reprojects into destination profiles using Rocky SRS operations.
-    class ROCKY_EXPORT MapboxVectorTileLayer : public Inherit<VectorTileLayer, MapboxVectorTileLayer>
+    class ROCKY_EXPORT StyledFeatureLayer : public Inherit<VectorTileLayer, StyledFeatureLayer>
     {
     public:
         //! Style document URI; JSON "style" resolves relative to the referring map file.
         URI styleURI;
+        //! Inline v8 style document, mutually exclusive with styleURI. Configure before open.
+        std::string styleJSON;
+        //! JSON object of source-ID bindings to GDAL or TiledFeatures configurations; configure before open.
+        std::string sourceBindings;
         //! Memory budget for decoded features; raw URI content uses IOOptions::services().contentCache.
         std::size_t decodedCacheBytes = 128u * 1024u * 1024u;
         unsigned maximumSourceZoom = 14u;
@@ -22,9 +26,9 @@ namespace ROCKY_NAMESPACE
         bool automaticStyleZoom = true;
 
         //! Constructs an unopened styled vector layer.
-        MapboxVectorTileLayer();
+        StyledFeatureLayer();
         //! Restores configuration without reading sources; URI context comes from the referring map file.
-        MapboxVectorTileLayer(std::string_view JSON, const IOOptions& io);
+        StyledFeatureLayer(std::string_view JSON, const IOOptions& io);
         //! Serializes configuration only; runtime caches, counters and camera snapshots are not persisted.
         std::string to_json() const override;
         //! Sets zoom for direct createTile calls and automaticStyleZoom=false; quantizes to quarter levels.
@@ -63,6 +67,7 @@ namespace ROCKY_NAMESPACE
         //! Parses provider options and retains configuration errors for open().
         void construct(std::string_view JSON, const IOOptions& io);
         Status _configurationStatus;
+        std::string _referrer;
         struct Impl;
         std::shared_ptr<Impl> _impl;
         std::atomic<double> _styleZoom{12.0};

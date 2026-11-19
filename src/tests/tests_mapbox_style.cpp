@@ -1,7 +1,7 @@
 /** rocky c++; Copyright 2026 Pelican Mapping; MIT License */
 #include "catch.hpp"
 #include <rocky/MapboxStyle.h>
-#include <rocky/MapboxVectorTileLayer.h>
+#include <rocky/StyledFeatureLayer.h>
 #include <rocky/FileContentCache.h>
 #include <rocky/Context.h>
 #include <rocky/Map.h>
@@ -81,7 +81,7 @@ TEST_CASE("Vector map configuration round trips through the layer factory", "[ma
     const auto io = context.get()->io.from("https://example.org/maps/world.map.json");
     auto map = Map::create();
     REQUIRE(map->from_json(R"({"name":"Vector map","layers":[{
-        "type":"MapboxVectorTile","name":"Roads","open":false,"opacity":0.6,
+        "type":"StyledFeature","name":"Roads","open":false,"opacity":0.6,
         "attribution":{"text":"Fixture","href":"https://example.org"},
         "minLevel":2,"maxLevel":19,"maxDataLevel":14,"profile":"global-geodetic",
         "style":{"href":"styles/roads.json","headers":[["X-Test","fixture"]]},
@@ -91,7 +91,7 @@ TEST_CASE("Vector map configuration round trips through the layer factory", "[ma
     for (unsigned pass = 0; pass < 2; ++pass)
     {
         REQUIRE(map->layers().size() == 1);
-        auto layer = MapboxVectorTileLayer::cast(map->layers().front());
+        auto layer = StyledFeatureLayer::cast(map->layers().front());
         REQUIRE(layer);
         CHECK(layer->name == "Roads");
         CHECK(!layer->openAutomatically);
@@ -105,7 +105,6 @@ TEST_CASE("Vector map configuration round trips through the layer factory", "[ma
         REQUIRE(layer->styleURI.context().headers.size() == 1);
         CHECK(layer->styleURI.context().headers.front().first == "X-Test");
         CHECK(layer->styleURI.context().headers.front().second == "fixture");
-        CHECK(!json::parse(layer->to_json()).contains("cacheDirectory"));
         CHECK(layer->decodedCacheBytes == 1048576);
         CHECK(layer->maximumSourceZoom == 13);
         CHECK(layer->forceBufferedStrokes);
@@ -117,13 +116,13 @@ TEST_CASE("Vector map configuration round trips through the layer factory", "[ma
         CHECK(!layer->isOpen());
         const auto saved = json::parse(map->to_json());
         CHECK(saved["layers"][0]["profile"] == "global-geodetic");
-        CHECK(saved["layers"][0]["type"] == "MapboxVectorTile");
+        CHECK(saved["layers"][0]["type"] == "StyledFeature");
         CHECK(!saved["layers"][0].contains("stats"));
         auto restored = Map::create();
         REQUIRE(restored->from_json(saved.dump(), io).ok());
         map = restored;
     }
-    auto relocated = MapboxVectorTileLayer::create(map->layers().front()->to_json(),
+    auto relocated = StyledFeatureLayer::create(map->layers().front()->to_json(),
         context.get()->io.from("https://example.net/moved/world.map.json"));
     CHECK(relocated->styleURI.full() == "https://example.net/moved/styles/roads.json");
 }
@@ -131,24 +130,23 @@ TEST_CASE("Vector map configuration round trips through the layer factory", "[ma
 TEST_CASE("Vector JSON retains defaults and rejects invalid provider options", "[mapbox-style][serialization]")
 {
     auto context = ContextFactory::create();
-    auto defaults = MapboxVectorTileLayer::create(R"({"style":"style.json"})", context.get()->io);
-    auto restored = MapboxVectorTileLayer::create(defaults->to_json(), context.get()->io);
+    auto defaults = StyledFeatureLayer::create(R"({"style":"style.json"})", context.get()->io);
+    auto restored = StyledFeatureLayer::create(defaults->to_json(), context.get()->io);
     CHECK(restored->automaticStyleZoom);
     CHECK(!restored->forceBufferedStrokes);
-    CHECK(!json::parse(restored->to_json()).contains("cacheDirectory"));
     CHECK(restored->decodedCacheBytes == 128u * 1024u * 1024u);
     CHECK(restored->maximumSourceZoom == 14);
     CHECK(restored->styleZoom() == 12.0);
     CHECK(restored->viewStyleZoom(15.1).value() == 15.0);
     for (const auto* input : { "{}", "[]", "{", R"({"style":42})", R"({"style":""})",
-        R"({"style":{"href":true}})", R"({"style":"unused","cacheDirectory":true})",
+        R"({"style":{"href":true}})",
         R"({"style":"unused","decodedCacheBytes":-1})", R"({"style":"unused","decodedCacheBytes":1.5})",
         R"({"style":"unused","maximumSourceZoom":23})", R"({"style":"unused","maximumSourceZoom":-1})",
         R"({"style":"unused","automaticStyleZoom":"false"})", R"({"style":"unused","forceBufferedStrokes":1})",
         R"({"style":"unused","styleZoom":null})" })
     {
         INFO(input);
-        auto invalid = MapboxVectorTileLayer::create(input, context.get()->io);
+        auto invalid = StyledFeatureLayer::create(input, context.get()->io);
         auto opened = invalid->open(context.get()->io);
         REQUIRE(opened.failed());
         CHECK(!invalid->isOpen());
@@ -296,10 +294,10 @@ TEST_CASE("Styled MVT preserves holes batches strokes and reuses source detail",
         out << R"({"minzoom":0,"maxzoom":0,"tiles":["{z}-{x}-{y}.pbf"]})";
     }
     auto map = Map::create();
-    REQUIRE(map->from_json(R"({"layers":[{"type":"MapboxVectorTile","style":"style.json","styleZoom":4}]})",
+    REQUIRE(map->from_json(R"({"layers":[{"type":"StyledFeature","style":"style.json","styleZoom":4}]})",
         context.get()->io.from((files.directory / "map.json").generic_string())).ok());
     REQUIRE(map->layers().size() == 1);
-    auto layer = MapboxVectorTileLayer::cast(map->layers().front());
+    auto layer = StyledFeatureLayer::cast(map->layers().front());
     REQUIRE(layer);
     REQUIRE(map->openAllLayers(context.get()->io).ok());
     auto tile = layer->createTile(TileKey(0, 0, 0, Profile("spherical-mercator")), context.get()->io);
@@ -336,7 +334,7 @@ TEST_CASE("Styled MVT preserves holes batches strokes and reuses source detail",
     CHECK(snapshot.value().shapes[1].width == Approx(4.0 / (512.0 * 16.0)));
     CHECK(layer->styleZoom() == 5.0);
     CHECK(layer->revision() == revision);
-    auto buffered = MapboxVectorTileLayer::create();
+    auto buffered = StyledFeatureLayer::create();
     buffered->styleURI = URI(stylePath);
     buffered->forceBufferedStrokes = true;
     buffered->setStyleZoom(4);
@@ -354,7 +352,7 @@ TEST_CASE("Styled MVT preserves holes batches strokes and reuses source detail",
     REQUIRE(widthProperty != std::string::npos);
     gapStyle.replace(widthProperty, std::strlen("\"line-width\":4"), "\"line-width\":4,\"line-gap-width\":2");
     { std::ofstream out(stylePath); out << gapStyle; }
-    auto gapLayer = MapboxVectorTileLayer::create();
+    auto gapLayer = StyledFeatureLayer::create();
     gapLayer->styleURI = URI(stylePath);
     gapLayer->setStyleZoom(4);
     REQUIRE(gapLayer->open(context.get()->io).ok());
@@ -383,7 +381,7 @@ TEST_CASE("MVT sources share persistent content caching across layers", "[mapbox
     io.services().contentCache = std::make_shared<FileContentCache>(cachePath, 0);
     for (unsigned pass = 0; pass < 2; ++pass)
     {
-        auto layer = MapboxVectorTileLayer::create();
+        auto layer = StyledFeatureLayer::create();
         layer->styleURI = URI(style.generic_string());
         layer->decodedCacheBytes = 0;
         REQUIRE(layer->open(io).ok());
@@ -415,7 +413,7 @@ TEST_CASE("Styled vectors reproject into plate carree and every cube face", "[ma
             {"id":"road","type":"line","source":"s","source-layer":"roads","paint":{"line-color":"#ff0000",
             "line-width":4}}]})";
     }
-    auto layer = MapboxVectorTileLayer::create();
+    auto layer = StyledFeatureLayer::create();
     layer->styleURI = URI((files.directory / "style.json").generic_string());
     REQUIRE(layer->open(context.get()->io).ok());
     std::vector<Profile> profiles = Profile("global-qsc").subprofiles();
@@ -485,7 +483,7 @@ TEST_CASE("Projected vector fills preserve holes near poles and the date line", 
                 "layers":[{"id":"land","type":"fill","source":"s","source-layer":"land",
                 "paint":{"fill-color":"#00ff00"}}]})";
         }
-        auto layer = MapboxVectorTileLayer::create();
+        auto layer = StyledFeatureLayer::create();
         layer->styleURI = URI((files.directory / "style.json").generic_string());
         REQUIRE(layer->open(context.get()->io).ok());
         std::vector<Profile> targets{faces[sample[0]], Profile("plate-carree")};

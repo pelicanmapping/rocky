@@ -3,7 +3,7 @@
         "name": "OpenFreeMap terrain vectors",
         "layers": [
             {
-                "type": "MapboxVectorTile",
+                "type": "StyledFeature",
                 "name": "OpenFreeMap",
                 "style": "openfreemap-terrain.style.json",
                 "maxDataLevel": 14,

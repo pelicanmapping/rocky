@@ -294,6 +294,38 @@ namespace ROCKY_NAMESPACE
         //! Creates a feature iterator
         virtual iterator iterate(const IOOptions& io) = 0;
 
+        //! Bounded spatial query. Sources return complete candidates or an error, never truncated coverage.
+        struct Query
+        {
+            GeoExtent extent;
+            double resolution = 0.0;
+            unsigned level = 0;
+            std::size_t maxFeatures = 100000;
+            std::size_t maxBytes = 128u * 1024u * 1024u;
+            std::size_t maxVertices = 1000000;
+        };
+
+        //! A georeferenced feature and optional source-tile core ownership, before styling or clipping.
+        struct Record
+        {
+            Feature feature;
+            std::string collection;
+            GeoExtent ownership;
+        };
+
+        //! Immutable query result. Empty means valid empty coverage; failed queries do not populate caches.
+        struct Batch
+        {
+            std::vector<Record> records;
+            std::size_t bytes = 0;
+        };
+
+        //! Optional spatial access; sources must explicitly implement queries instead of scanning on every request.
+        virtual Result<std::shared_ptr<const Batch>> query(const Query&, const IOOptions&)
+        {
+            return Failure(Failure::ServiceUnavailable, "Feature source does not support spatial queries");
+        }
+
         //! Iterate over all features with a callable function with the signature
         //! void(Feature&&)
         template<typename CALLABLE>

@@ -103,16 +103,6 @@ namespace ROCKY_NAMESPACE
         //! Add an external descriptor that should be bound to the pipeline.
         void add(vsg::ref_ptr<vsg::Descriptor>);
 
-        //! Integrates data from the new data model into an existing render model,
-        //! and creates or updates all the necessary descriptors and commands.
-        //! Preserves the legacy ABI; returns the old render model unchanged on failure.
-        //! Use tryUpdateRenderModel when the caller needs to detect failure before publishing a tile.
-        TerrainTileRenderModel updateRenderModel(
-            const TileKey& key,
-            const TerrainTileRenderModel& oldRenderModel,
-            const TerrainTileModel& newDataModel,
-            VSGContext context) const;
-
         //! Builds a render model without modifying the old one; on success, install its bind command.
         //! Returns an error on failure and defers disposal of descriptors rejected by compilation.
         //! A null vector argument preserves coverage; a non-null empty resource clears it.

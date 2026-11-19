@@ -31,6 +31,8 @@ rocky_glob(SOURCES_ECS ecs/*.cpp)
 # data files to install
 list(APPEND DATA_FILES "${PROJECT_SOURCE_DIR}/data/fonts/times.vsgb")
 list(APPEND DATA_FILES "${PROJECT_SOURCE_DIR}/data/openfreemap-terrain.style.json")
+list(APPEND DATA_FILES "${PROJECT_SOURCE_DIR}/data/styled-features.map.json")
+list(APPEND DATA_FILES "${PROJECT_SOURCE_DIR}/data/styled-features.geojson")
 
 
 # find dependecies ----

@@ -6,7 +6,7 @@ resource. The fragment shader evaluates vector coverage using terrain UVs before
 lighting. There are no projectors, ECS entities, decal slots, or screen-space
 decal lists for this channel.
 
-`MapboxVectorTileLayer` supplies MVT data using the Mapbox/MapLibre style subset
+`StyledFeatureLayer` supplies MVT data using the Mapbox/MapLibre style subset
 described below. Solid round strokes use GPU analytic path coverage where the
 projection permits it; fills, gap strokes and distorted strokes use analytic
 filled coverage.
@@ -78,7 +78,7 @@ Load the bundled example through the ordinary map-file path:
 rocky_demo --map data/openfreemap.map.json
 ```
 
-The map uses a registered `MapboxVectorTile` layer; no application-specific layer
+The map uses a registered `StyledFeature` layer; no application-specific layer
 creation or update callback is required. The existing `--openfreemap` shortcut
 remains available for comparison with earlier runs.
 
@@ -88,7 +88,7 @@ remains available for comparison with earlier runs.
 {
     "map": {
         "layers": [{
-            "type": "MapboxVectorTile",
+            "type": "StyledFeature",
             "name": "OpenFreeMap",
             "style": "openfreemap-terrain.style.json",
             "maxDataLevel": 14,
@@ -150,10 +150,9 @@ start. Maps without this setting preserve the application cache, including
 custom ContentCache implementations. Custom implementations are not serialized.
 
 Application accepts --cache <directory> before map loading; the explicit command
-line overrides the map directory. The former --vector-cache spelling remains an
-alias. Both now apply to every URI reader using those services, including styles,
-TileJSON and PBFs. The layer-specific cacheDirectory property was removed; old
-map files receive a configuration error explaining the replacement.
+line overrides the map directory. This applies to every URI reader using those
+services, including styles, TileJSON and tile files. Configure persistent caching
+through shared services.
 
 FileContentCache stores content bytes, MIME type and timestamps in a private
 rocky-content-v1 subdirectory. Records contain the original URI key plus an
@@ -264,7 +263,7 @@ whole-traversal convergence counts below.
 
 ## Styled MVT implementation
 
-`MapboxVectorTileLayer` now supplies this terrain carrier with real XYZ MVT.
+`StyledFeatureLayer` now supplies this terrain carrier with real XYZ MVT.
 `MapboxStyle` is a separate immutable style plan with no renderer or network
 dependency. It consumes a documented subset of version 8 Mapbox/MapLibre JSON.
 GDAL decodes MVT into typed attributes and immutable WKB. Slughorn remains the
@@ -272,7 +271,7 @@ analytic coverage renderer; no decals, projected overlays, or rasterized vector
 color textures are involved.
 
 ```cpp
-auto vectors = MapboxVectorTileLayer::create();
+auto vectors = StyledFeatureLayer::create();
 vectors->styleURI = URI("openfreemap-terrain.style.json");
 vectors->maxDataLevel = 14u;
 app.mapNode->map->add(vectors);
@@ -560,7 +559,7 @@ to QSC, plate carrée and back to geodetic through Demo_Views.
 Built and installed with Slughorn enabled and disabled using D:\vcpkg and the
 existing dependencies. All 19 focused cases / 576 assertions passed with Slughorn;
 the no-Slughorn subset passed 10 cases / 192 assertions. Application checks also
-verify --cache and its --vector-cache alias take precedence over map settings.
+verify --cache takes precedence over map settings.
 
 The persistence tests cover binary payloads, MIME types, timestamps, memory eviction,
 record corruption/replacement, concurrent URI reads, and shared map-file configuration.
@@ -569,6 +568,9 @@ TileJSON and rebuild MVT coverage after all three source files are removed, usin
 only a newly constructed shared disk cache. No network is involved in these tests.
 
 ### Remaining work
+
+- [x] Support inline Mapbox/MapLibre style JSON alongside URI forms, with authored-form serialization and map-relative URLs.
+  Implemented in [StyledFeatureLayer](styled-feature-layer.md).
 
 Visibility-aware scheduling is now part of terrain paging. Next prioritize bounded GPU atlas memory, then
 continuous screen-space stroke widths and additional paint operations. Labels

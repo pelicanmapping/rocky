@@ -36,6 +36,13 @@ namespace ROCKY_NAMESPACE
         //! GDAL driver open options, each in the format "VAR=VALUE"
         std::vector<std::string> openOptions;
 
+        //! Optional explicit CRS; used by spatial queries when metadata is absent or overridden.
+        SRS querySRS;
+        //! Query mode avoids forced full-dataset counts/extents during open. Set before opening.
+        bool spatialQueriesOnly = false;
+        //! Bound the one-time import of datasets without fast spatial filtering. Zero requires an index.
+        std::size_t unindexedCacheBytes = 32u * 1024u * 1024u;
+
     public:
 
         //! Opens the source and returns a status indicating success or failure.
@@ -46,6 +53,9 @@ namespace ROCKY_NAMESPACE
 
         //! Create an interator to read features from the source
         FeatureSource::iterator iterate(const IOOptions& io) override;
+
+        //! Queries with an exclusive GDAL cursor and original field names. Configure before open; no concurrent close.
+        Result<std::shared_ptr<const FeatureSource::Batch>> query(const FeatureSource::Query&, const IOOptions&) override;
 
         //! Number of features, or -1 if the count isn't available
         int featureCount() const override;
@@ -63,6 +73,8 @@ namespace ROCKY_NAMESPACE
         std::thread::id _dsHandleThreadId;
         Metadata _metadata;
         std::string _source;
+        struct QueryState;
+        std::shared_ptr<QueryState> _queryState;
 
         void* openGDALDataset() const;
 

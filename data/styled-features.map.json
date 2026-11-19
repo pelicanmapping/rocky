@@ -1,0 +1,38 @@
+{
+  "map": {
+    "name": "Styled GDAL features",
+    "layers": [
+      {
+        "type": "StyledFeature",
+        "name": "Local GDAL dataset",
+        "sourceBindings": {
+          "features": { "type": "GDAL", "uri": "styled-features.geojson" }
+        },
+        "style": {
+          "version": 8,
+          "sources": {
+            "features": {
+              "type": "geojson",
+              "data": { "type": "FeatureCollection", "features": [] }
+            }
+          },
+          "layers": [
+            { "id": "background", "type": "background", "paint": { "background-color": "#d9e7ee" } },
+            {
+              "id": "parks", "type": "fill", "source": "features",
+              "filter": ["==", ["get", "Kind"], "park"],
+              "paint": { "fill-color": "#6d9f69", "fill-opacity": 0.8 }
+            },
+            {
+              "id": "roads", "type": "line", "source": "features",
+              "filter": ["==", ["get", "Kind"], "road"],
+              "layout": { "line-cap": "round", "line-join": "round" },
+              "paint": { "line-color": "#e19a42", "line-width": 4 }
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "terrain": { "maxLevel": 16 }
+}

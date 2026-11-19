@@ -10,6 +10,8 @@
 #include <gdal.h> // OGR API
 #include <ogr_spatialref.h>
 #include <cassert>
+#include <mutex>
+#include <algorithm>
 
 using namespace ROCKY_NAMESPACE;
 using namespace ROCKY_NAMESPACE::detail;
@@ -82,6 +84,7 @@ namespace
                 {
                     out_geom.parts.push_back({});
                     Geometry& hole = out_geom.parts.back();
+                    hole.type = Geometry::Type::LineString;
                     populate(partRef, hole, numPoints);
 #if 0
                     if (rewindPolygons)
@@ -229,7 +232,9 @@ namespace
     }
 
 
-    void create_feature_from_OGR_handle(void* vhandle, const SRS& srs, const std::vector<std::string>& fieldNames, Feature& out_feature)
+    //! Converts attributes without case folding or type coercion for both iteration and spatial queries.
+    void create_feature_from_OGR_handle(void* vhandle, const SRS& srs,
+        const std::vector<std::string>& fieldNames, Feature& out_feature)
     {
         OGRFeatureH handle = (OGRFeatureH)vhandle;
         out_feature.id = OGR_F_GetFID(handle);
@@ -259,13 +264,21 @@ namespace
             }
             else
             {
-                // get the field name and convert to lower case:
                 name = std::string(OGR_Fld_GetNameRef(field_handle_ref));
-                name = detail::toLower(name);
             }
 
             // get the field type and set the value appropriately
             OGRFieldType field_type = OGR_Fld_GetType(field_handle_ref);
+            if (!OGR_F_IsFieldSetAndNotNull(handle, i))
+            {
+                out_feature.fields[name].emplace<std::monostate>();
+                continue;
+            }
+            if (field_type == OFTInteger && OGR_Fld_GetSubType(field_handle_ref) == OFSTBoolean)
+            {
+                out_feature.fields[name].emplace<bool>(OGR_F_GetFieldAsInteger(handle, i) != 0);
+                continue;
+            }
             switch (field_type)
             {
             case OFTInteger:
@@ -483,6 +496,7 @@ GDALFeatureSource::iterator_impl::next()
 Result<>
 GDALFeatureSource::open()
 {
+    _queryState.reset();
     // Pre-existing layer handle?
     if (externalLayerHandle)
     {
@@ -522,7 +536,12 @@ GDALFeatureSource::open()
             return Failure(Failure::ResourceUnavailable, "Failed to open \"" + _source + "\"");
         }
 
+        if (spatialQueriesOnly && layerName.empty() && GDALDatasetGetLayerCount(_dsHandle) != 1)
+            return Failure(Failure::ConfigurationError, "Select a layer for a multi-layer GDAL dataset");
+
         // Open a specific layer within the data source, if applicable:
+        if (spatialQueriesOnly && !layerName.empty() && !GDALDatasetGetLayerByName(_dsHandle, layerName.c_str()))
+            return Failure(Failure::ConfigurationError, "GDAL dataset has no layer named " + layerName);
         _layerHandle = open_OGR_layer(_dsHandle, layerName);
 
         if (!_layerHandle)
@@ -531,7 +550,7 @@ GDALFeatureSource::open()
                 "Failed to open layer \"" + layerName + "\" from \"" + _source + "\"");
         }
 
-        _featureCount = (int)OGR_L_GetFeatureCount((OGRLayerH)_layerHandle, 1);
+        _featureCount = (int)OGR_L_GetFeatureCount((OGRLayerH)_layerHandle, spatialQueriesOnly ? 0 : 1);
 
         // Build the field schema:
         auto fetaureDefHandle = OGR_L_GetLayerDefn((OGRLayerH)_layerHandle);
@@ -546,7 +565,7 @@ GDALFeatureSource::open()
                     auto* name = OGR_Fld_GetNameRef(fieldDefHandle);
                     if (name)
                     {
-                        _metadata.fieldNames.emplace_back(toLower(std::string(name)));
+                        _metadata.fieldNames.emplace_back(name);
                     }
                 }
             }
@@ -554,14 +573,14 @@ GDALFeatureSource::open()
 
         // extract the SRS and Extent:
         OGRSpatialReferenceH srHandle = OGR_L_GetSpatialRef((OGRLayerH)_layerHandle);
-        if (!srHandle)
+        if (!srHandle && !(spatialQueriesOnly && querySRS.valid()))
         {
             return Failure(Failure::ResourceUnavailable, "No spatial reference found in \"" + _source + "\"");
         }
 
         SRS srs;
         char* wktbuf;
-        if (OSRExportToWkt(srHandle, &wktbuf) == OGRERR_NONE)
+        if (srHandle && OSRExportToWkt(srHandle, &wktbuf) == OGRERR_NONE)
         {
             srs = SRS(wktbuf);
             CPLFree(wktbuf);
@@ -571,10 +590,20 @@ GDALFeatureSource::open()
             }
         }
 
-        // extract the full extent of the layer:
-        OGREnvelope env;
-        if (OGR_L_GetExtent((OGRLayerH)_layerHandle, &env, 1) != OGRERR_NONE)
+        if (spatialQueriesOnly && querySRS.valid())
         {
+            if (srs.valid() && srs != querySRS)
+                Log()->warn("GDAL feature query CRS overrides dataset metadata: {}", _source);
+            srs = querySRS;
+        }
+        if (spatialQueriesOnly)
+            querySRS = srs;
+
+        // Query mode does not scan an entire dataset just to determine its extent.
+        OGREnvelope env;
+        if (OGR_L_GetExtent((OGRLayerH)_layerHandle, &env, spatialQueriesOnly ? 0 : 1) != OGRERR_NONE)
+        {
+            if (spatialQueriesOnly) return ResultVoidOK;
             return Failure(Failure::ResourceUnavailable, "Invalid extent returned from \"" + _source + "\"");
         }
 
@@ -602,6 +631,7 @@ GDALFeatureSource::featureCount() const
 void
 GDALFeatureSource::close()
 {
+    _queryState.reset();
     if (_layerHandle)
     {
         _layerHandle = nullptr;
@@ -612,6 +642,157 @@ GDALFeatureSource::close()
         OGRReleaseDataSource((OGRDataSourceH)_dsHandle);
         _dsHandle = nullptr;
     }
+}
+
+//! One bounded import shared by unindexed queries; the index is ordered by minimum X.
+struct GDALFeatureSource::QueryState
+{
+    std::mutex mutex;
+    std::shared_ptr<const FeatureSource::Batch> imported;
+    std::vector<std::pair<double, std::size_t>> index;
+    Status failure;
+};
+
+namespace
+{
+    //! Counts decoded coordinate storage before allocating Rocky geometry.
+    std::size_t queryVertices(OGRGeometryH geometry)
+    {
+        std::size_t result = OGR_G_GetPointCount(geometry);
+        for (int i = 0; i < OGR_G_GetGeometryCount(geometry); ++i)
+            result += queryVertices(OGR_G_GetGeometryRef(geometry, i));
+        return result;
+    }
+
+    //! Counts geometry vertices in an immutable imported feature.
+    std::size_t queryVertices(const Geometry& geometry)
+    {
+        std::size_t result = geometry.points.size();
+        for (const auto& part : geometry.parts) result += queryVertices(part);
+        return result;
+    }
+
+    //! Accounts for the owned geometry and field storage of a query record.
+    std::size_t queryBytes(const FeatureSource::Record& record)
+    {
+        std::size_t result = sizeof(record) + record.collection.size() + queryVertices(record.feature.geometry) * 32;
+        for (const auto& field : record.feature.fields)
+            result += 128 + field.first.size() + field.second.stringValue().size();
+        return result;
+    }
+}
+
+Result<std::shared_ptr<const FeatureSource::Batch>> GDALFeatureSource::query(
+    const FeatureSource::Query& request, const IOOptions& io)
+{
+    if (io.canceled()) return Failure_OperationCanceled;
+    if (externalLayerHandle)
+        return Failure(Failure::ConfigurationError, "Spatial queries require an owned GDAL dataset, not an external handle");
+    if (!request.extent.valid() || !request.maxBytes || !request.maxFeatures || !request.maxVertices)
+        return Failure(Failure::ConfigurationError, "Invalid feature query extent or budgets");
+    // Initialization is protected separately so indexed cursors do not serialize their actual reads.
+    static std::mutex initializationMutex;
+    std::shared_ptr<QueryState> state;
+    {
+        std::scoped_lock lock(initializationMutex);
+        if (!_queryState) _queryState = std::make_shared<QueryState>();
+        state = _queryState;
+    }
+    auto ds = openGDALDataset();
+    if (!ds) return Failure("Cannot open GDAL query dataset: " + _source);
+    std::unique_ptr<void, decltype(&GDALClose)> dataset(ds, GDALClose);
+    auto layer = layerName.empty() ? GDALDatasetGetLayer(ds, 0) : GDALDatasetGetLayerByName(ds, layerName.c_str());
+    if (!layer) return Failure("Cannot open GDAL query layer: " + layerName);
+    SRS srs = querySRS;
+    if (!srs.valid())
+    {
+        auto sr = OGR_L_GetSpatialRef(layer);
+        char* wkt = nullptr;
+        if (sr && OSRExportToWkt(sr, &wkt) == OGRERR_NONE) { srs = SRS(wkt); CPLFree(wkt); }
+    }
+    if (!srs.valid()) return Failure("GDAL query requires a dataset CRS or explicit srs");
+    auto extent = request.extent.transform(srs);
+    if (!extent.valid()) return Failure("Cannot transform the feature query footprint into the dataset CRS");
+    // A wrapped geographic query is conservatively widened; precise clipping occurs in the compiler.
+    const double minX = extent.crossesAntimeridian() ? -180.0 : extent.xmin();
+    const double maxX = extent.crossesAntimeridian() ? 180.0 : extent.xmax();
+    const bool indexed = OGR_L_TestCapability(layer, OLCFastSpatialFilter) != 0;
+    std::unique_lock<std::mutex> importLock(state->mutex, std::defer_lock);
+    if (!indexed) importLock.lock();
+    if (!indexed && state->failure.failed()) return state->failure.error();
+    if (!indexed && !unindexedCacheBytes)
+        return Failure("GDAL dataset needs a spatial index or a nonzero unindexedCacheBytes budget");
+
+    auto batch = std::make_shared<Batch>();
+    std::size_t vertices = 0;
+    if (indexed || !state->imported)
+    {
+        if (indexed) OGR_L_SetSpatialFilterRect(layer, minX, extent.ymin(), maxX, extent.ymax());
+        OGR_L_ResetReading(layer);
+        std::vector<std::string> names;
+        auto definition = OGR_L_GetLayerDefn(layer);
+        for (int i = 0; i < OGR_FD_GetFieldCount(definition); ++i)
+            names.emplace_back(OGR_Fld_GetNameRef(OGR_FD_GetFieldDefn(definition, i)));
+        CPLErrorReset();
+        while (auto handle = OGR_L_GetNextFeature(layer))
+        {
+            std::unique_ptr<void, decltype(&OGR_F_Destroy)> feature(handle, OGR_F_Destroy);
+            if (io.canceled()) return Failure_OperationCanceled;
+            auto geometry = OGR_F_GetGeometryRef(handle);
+            if (!geometry || OGR_G_IsEmpty(geometry)) continue;
+            const auto geometryType = wkbFlatten(OGR_G_GetGeometryType(geometry));
+            if (geometryType != wkbPoint && geometryType != wkbMultiPoint && geometryType != wkbLineString &&
+                geometryType != wkbMultiLineString && geometryType != wkbPolygon && geometryType != wkbMultiPolygon)
+                return Failure("GDAL spatial queries require simple point, line, or polygon geometry");
+            // The private query feature can drop M while retaining Z; Rocky has no measure ordinate.
+            OGR_G_SetMeasured(geometry, FALSE);
+            vertices += queryVertices(geometry);
+            if (vertices > request.maxVertices || batch->records.size() >= request.maxFeatures)
+            {
+                auto failure = Failure("GDAL query exceeds feature/vertex budget; prepare an index or coarser data");
+                if (!indexed) state->failure = failure;
+                return failure;
+            }
+            Record record;
+            record.collection = OGR_L_GetName(layer);
+            create_feature_from_OGR_handle(handle, srs, names, record.feature);
+            batch->bytes += queryBytes(record);
+            const auto budget = indexed ? request.maxBytes : std::min(request.maxBytes, unindexedCacheBytes);
+            if (batch->bytes > budget)
+            {
+                auto failure = Failure("GDAL query exceeds byte budget; prepare an index or coarser data");
+                if (!indexed) state->failure = failure;
+                return failure;
+            }
+            batch->records.push_back(std::move(record));
+        }
+        if (CPLGetLastErrorType() >= CE_Failure) return Failure(CPLGetLastErrorMsg());
+        if (indexed) return std::shared_ptr<const Batch>(batch);
+        for (std::size_t i = 0; i < batch->records.size(); ++i)
+            state->index.emplace_back(batch->records[i].feature.extent.xmin(), i);
+        std::sort(state->index.begin(), state->index.end());
+        state->imported = batch;
+    }
+    batch = std::make_shared<Batch>();
+    vertices = 0;
+    std::vector<std::size_t> selected;
+    for (const auto& entry : state->index)
+    {
+        if (io.canceled()) return Failure_OperationCanceled;
+        if (entry.first > maxX) break;
+        const auto& record = state->imported->records[entry.second];
+        const auto& box = record.feature.extent;
+        if (box.xmax() < minX || box.ymax() < extent.ymin() || box.ymin() > extent.ymax()) continue;
+        batch->bytes += queryBytes(record);
+        vertices += queryVertices(record.feature.geometry);
+        if (batch->bytes > request.maxBytes || vertices > request.maxVertices || selected.size() >= request.maxFeatures)
+            return Failure("GDAL query exceeds its result budget");
+        selected.push_back(entry.second);
+    }
+    // Restore source ordering after spatial-index traversal so translucent paint is deterministic.
+    std::sort(selected.begin(), selected.end());
+    for (auto index : selected) batch->records.push_back(state->imported->records[index]);
+    return std::shared_ptr<const Batch>(batch);
 }
 
 #endif // ROCKY_HAS_GDAL

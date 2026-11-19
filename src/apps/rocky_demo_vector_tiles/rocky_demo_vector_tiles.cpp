@@ -5,7 +5,7 @@
  */
 #include <rocky/rocky.h>
 #include <rocky/VectorTileLayer.h>
-#include <rocky/MapboxVectorTileLayer.h>
+#include <rocky/StyledFeatureLayer.h>
 #include <rocky/vsg/terrain/TerrainVectorTexture.h>
 #include <atomic>
 #include <set>
@@ -158,10 +158,10 @@ int main(int argc, char** argv)
         if (io.canceled()) { ++*canceledRequests; return Failure_OperationCanceled; }
         return empty->load() ? VectorTile{} : artwork(key);
     };
-    MapboxVectorTileLayer::Ptr styled;
+    StyledFeatureLayer::Ptr styled;
     if (openfreemap)
     {
-        styled = MapboxVectorTileLayer::create();
+        styled = StyledFeatureLayer::create();
         auto found = vsg::findFile(style,app.vsgcontext->searchPaths);
         styled->styleURI = URI(found.empty() ? style : found.string());
         styled->forceBufferedStrokes = bufferedStrokes;

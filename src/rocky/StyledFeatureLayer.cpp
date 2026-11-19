@@ -1,10 +1,13 @@
 /** rocky c++; Copyright 2026 Pelican Mapping; MIT License */
-#include "MapboxVectorTileLayer.h"
+#include "StyledFeatureLayer.h"
 #include "json.h"
 #include "Threading.h"
 #include "Context.h"
+#include "GDALFeatureSource.h"
+#include "TiledFeatureSource.h"
 #include <limits>
 #include <map>
+#include <set>
 #include <cmath>
 #include <cstring>
 #ifdef ROCKY_HAS_GDAL
@@ -16,9 +19,9 @@
 
 using namespace ROCKY_NAMESPACE;
 
-ROCKY_ADD_OBJECT_FACTORY(MapboxVectorTile,
+ROCKY_ADD_OBJECT_FACTORY(StyledFeature,
     [](std::string_view JSON, const IOOptions& io) {
-        return MapboxVectorTileLayer::create(JSON, io); })
+        return StyledFeatureLayer::create(JSON, io); })
 
 namespace
 {
@@ -82,6 +85,7 @@ namespace
         std::string layer;
         std::vector<unsigned char> wkb;
         OGREnvelope bounds{};
+        std::vector<unsigned char> ownership;
     };
     struct SourceTile
     {
@@ -247,12 +251,14 @@ namespace
     {
         GeoExtent extent;
         SRSOperation operation;
+        SRS sourceSRS;
         const IOOptions& io;
         std::size_t points = 0;
 
         //! Captures a worker-local operation and cancellation context for one destination tile.
-        TileProjection(const GeoExtent& dst, const IOOptions& in_io) :
-            extent(dst), operation(SRS::SPHERICAL_MERCATOR.to(dst.srs())), io(in_io) { }
+        TileProjection(const GeoExtent& dst, const IOOptions& in_io,
+            const SRS& source = SRS::SPHERICAL_MERCATOR) :
+            extent(dst), operation(source.to(dst.srs())), sourceSRS(source), io(in_io) { }
 
         //! Returns finite tile UVs, rejecting projection-domain failures instead of joining across them.
         glm::dvec2 project(glm::dvec2 p) const
@@ -315,7 +321,7 @@ namespace
         //! GPU round strokes require a nearly uniform similarity in UV; otherwise buffer in source meters.
         double strokeScale() const
         {
-            auto toMercator = extent.srs().to(SRS::SPHERICAL_MERCATOR);
+            auto toMercator = extent.srs().to(sourceSRS);
             double scale = 0.0;
             for (double u : { 0.0, 0.5, 1.0 })
             for (double v : { 0.0, 0.5, 1.0 })
@@ -343,13 +349,150 @@ namespace
             count += coordinateCount(OGR_G_GetGeometryRef(geometry, i));
         return count;
     }
+
+    //! Converts Rocky geometry into private OGR geometry, preserving polygon holes and multipart structure.
+    Geom featureGeometry(const Geometry& geometry)
+    {
+        const auto type = geometry.type;
+        if (type == Geometry::Type::Polygon)
+        {
+            Geom polygon(OGR_G_CreateGeometry(wkbPolygon));
+            auto ring = [&](const Geometry& contour) {
+                Geom output(OGR_G_CreateGeometry(wkbLinearRing));
+                for (const auto& p : contour.points) OGR_G_AddPoint_2D(output.get(), p.x, p.y);
+                OGR_G_CloseRings(output.get());
+                if (OGR_G_AddGeometry(polygon.get(), output.get()) != OGRERR_NONE)
+                    throw std::runtime_error("Cannot assemble polygon ring");
+            };
+            ring(geometry);
+            for (const auto& hole : geometry.parts) ring(hole);
+            return polygon;
+        }
+        const auto ogrType = type == Geometry::Type::LineString ? wkbLineString :
+            type == Geometry::Type::MultiLineString ? wkbMultiLineString :
+            type == Geometry::Type::MultiPolygon ? wkbMultiPolygon : wkbMultiPoint;
+        Geom output(OGR_G_CreateGeometry(ogrType));
+        for (const auto& p : geometry.points) OGR_G_AddPoint_2D(output.get(), p.x, p.y);
+        for (const auto& part : geometry.parts)
+        {
+            auto child = featureGeometry(part);
+            if (OGR_G_AddGeometry(output.get(), child.get()) != OGRERR_NONE)
+                throw std::runtime_error("Cannot assemble feature geometry");
+        }
+        return output;
+    }
+
+    //! Rescales private projected coordinates after adaptive subdivision in a normalized metric frame.
+    void scaleGeometry(OGRGeometryH geometry, double scale)
+    {
+        for (int i = 0; i < OGR_G_GetPointCount(geometry); ++i)
+            OGR_G_SetPoint_2D(geometry, i, OGR_G_GetX(geometry, i)*scale, OGR_G_GetY(geometry, i)*scale);
+        for (int i = 0; i < OGR_G_GetGeometryCount(geometry); ++i)
+            scaleGeometry(OGR_G_GetGeometryRef(geometry, i), scale);
+    }
+
+    //! Normalizes source features to the compiler's metric frame without changing source/cache geometry.
+    std::shared_ptr<const SourceTile> normalizeFeatures(const FeatureSource::Batch& input,
+        const std::string& collection, const SRS& frame, double tolerance, const IOOptions& io)
+    {
+        auto output = std::make_shared<SourceTile>();
+        std::size_t points = 0;
+        const double scale = std::max(1.0, tolerance*8192.0);
+        const GeoExtent normalized(frame, 0, 0, scale, scale);
+        for (const auto& item : input.records)
+        {
+            if (io.canceled()) throw std::runtime_error("Feature normalization canceled");
+            const auto type = item.feature.geometry.type;
+            if (type == Geometry::Type::Points || type == Geometry::Type::MultiPoints) continue;
+            auto raw = featureGeometry(item.feature.geometry);
+            TileProjection projection(normalized, io, item.feature.srs);
+            auto geometry = projection.geometry(raw.get());
+            points += coordinateCount(geometry.get());
+            if (points > 1000000) throw std::runtime_error("Normalized features exceed one million coordinates");
+            scaleGeometry(geometry.get(), scale);
+            const bool polygon = type == Geometry::Type::Polygon || type == Geometry::Type::MultiPolygon;
+            if (polygon && !OGR_G_IsValid(geometry.get()))
+            {
+                Geom repaired(OGR_G_MakeValid(geometry.get()));
+                if (!repaired) throw std::runtime_error("Cannot repair feature polygon");
+                geometry = std::move(repaired);
+            }
+            SourceFeature record;
+            record.feature = item.feature;
+            record.feature.geometry = Geometry(polygon ? Geometry::Type::Polygon : Geometry::Type::LineString);
+            record.feature.srs = frame;
+            record.layer = collection;
+            OGR_G_GetEnvelope(geometry.get(), &record.bounds);
+            record.wkb.resize(OGR_G_WkbSize(geometry.get()));
+            OGR_G_ExportToWkb(geometry.get(), wkbNDR, record.wkb.data());
+            if (item.ownership.valid())
+            {
+                const auto& e = item.ownership;
+                auto box = rectangle(e.xmin(), e.ymin(), e.xmax(), e.ymax());
+                TileProjection ownerProjection(normalized, io, e.srs());
+                auto owner = ownerProjection.geometry(box.get());
+                scaleGeometry(owner.get(), scale);
+                record.ownership.resize(OGR_G_WkbSize(owner.get()));
+                OGR_G_ExportToWkb(owner.get(), wkbNDR, record.ownership.data());
+            }
+            output->bytes += record.wkb.size() + record.ownership.size() + sizeof(record);
+            if (output->bytes > 128u*1024u*1024u) throw std::runtime_error("Normalized feature data exceeds 128 MiB");
+            output->features.push_back(std::move(record));
+        }
+        return output;
+    }
+
+    //! Adapts cached MVT geometry to a polar metric frame when a style also contains polar dataset sources.
+    std::shared_ptr<const SourceTile> normalizeMercatorTile(const SourceTile& input, const GeoExtent& core,
+        const GeoExtent& query, const SRS& frame, double tolerance, const IOOptions& io)
+    {
+        auto output = std::make_shared<SourceTile>();
+        const double scale = std::max(1.0, tolerance*8192.0);
+        TileProjection projection(GeoExtent(frame, 0, 0, scale, scale), io);
+        auto clip = rectangle(query.xmin(), query.ymin(), query.xmax(), query.ymax());
+        auto sourceCore = rectangle(core.xmin(), core.ymin(), core.xmax(), core.ymax());
+        Geom owned(OGR_G_Intersection(sourceCore.get(), clip.get()));
+        if (!owned || OGR_G_IsEmpty(owned.get())) return output;
+        auto projectedCore = projection.geometry(owned.get());
+        scaleGeometry(projectedCore.get(), scale);
+        std::vector<unsigned char> ownership(OGR_G_WkbSize(projectedCore.get()));
+        OGR_G_ExportToWkb(projectedCore.get(), wkbNDR, ownership.data());
+        for (const auto& feature : input.features)
+        {
+            if (io.canceled()) throw std::runtime_error("MVT polar normalization canceled");
+            OGRGeometryH raw = nullptr;
+            if (OGR_G_CreateFromWkb(feature.wkb.data(), nullptr, &raw, int(feature.wkb.size())) != OGRERR_NONE)
+                throw std::runtime_error("Invalid MVT geometry");
+            Geom geometry(raw);
+            Geom clipped(OGR_G_Intersection(geometry.get(), clip.get()));
+            if (!clipped) throw std::runtime_error("Cannot clip polar source geometry");
+            if (OGR_G_IsEmpty(clipped.get())) continue;
+            auto projected = projection.geometry(clipped.get());
+            scaleGeometry(projected.get(), scale);
+            SourceFeature record = feature;
+            record.ownership = ownership;
+            OGR_G_GetEnvelope(projected.get(), &record.bounds);
+            record.wkb.resize(OGR_G_WkbSize(projected.get()));
+            OGR_G_ExportToWkb(projected.get(), wkbNDR, record.wkb.data());
+            output->bytes += sizeof(record) + record.wkb.size() + record.ownership.size();
+            if (output->bytes > 128u*1024u*1024u) throw std::runtime_error("Polar features exceed 128 MiB");
+            output->features.push_back(std::move(record));
+        }
+        return output;
+    }
 #endif
 } // namespace
 
-struct MapboxVectorTileLayer::Impl
+struct StyledFeatureLayer::Impl
 {
     MapboxStyle style;
     std::vector<MapboxStyle::Source> sources;
+    struct Binding
+    {
+        std::string id, collection;
+        std::shared_ptr<FeatureSource> source;
+    };
+    std::vector<Binding> bindings;
     std::string attribution;
     mutable std::mutex mutex;
     std::atomic_uint64_t reads{0}, hits{0}, tilesBuilt{0}, features{0};
@@ -367,7 +510,7 @@ struct MapboxVectorTileLayer::Impl
 
     //! Shares decoded tiles within this layer; raw content caching is provided by URI and Services.
     Result<std::shared_ptr<const SourceTile>> read(const std::string& url, const TileKey& key,
-                                                   const MapboxVectorTileLayer& owner, const IOOptions& io)
+                                                   const StyledFeatureLayer& owner, const IOOptions& io)
     {
         const auto identity = url + "|" + key.str();
         detail::ScopedGate<std::string> guard(gate, identity);
@@ -416,39 +559,43 @@ struct MapboxVectorTileLayer::Impl
 #endif
 };
 
-MapboxVectorTileLayer::MapboxVectorTileLayer()
+StyledFeatureLayer::StyledFeatureLayer()
 {
     construct({}, {});
 }
 
-MapboxVectorTileLayer::MapboxVectorTileLayer(std::string_view JSON, const IOOptions& io) :
+StyledFeatureLayer::StyledFeatureLayer(std::string_view JSON, const IOOptions& io) :
     super(JSON, io)
 {
     construct(JSON, io);
 }
 
-void MapboxVectorTileLayer::construct(std::string_view JSON, const IOOptions& io)
+void StyledFeatureLayer::construct(std::string_view JSON, const IOOptions& io)
 {
-    setLayerTypeName("MapboxVectorTile");
+    setLayerTypeName("StyledFeature");
+    _referrer = io.referrer.value_or("");
     const auto j = parse_json(JSON);
     if (j.status.failed()) { _configurationStatus = j.status; return; }
     // Reject invalid provider options before any source I/O, including unsigned integer wraparound.
     const auto invalid = [&](const char* key) {
-        _configurationStatus = Failure(Failure::ConfigurationError, std::string("Invalid MapboxVectorTile option: ") + key);
+        _configurationStatus = Failure(Failure::ConfigurationError, std::string("Invalid StyledFeature option: ") + key);
     };
     if (!j.is_object()) { invalid("expected object"); return; }
     if (j.contains("style"))
     {
         const auto& value = j.at("style");
-        if ((!value.is_string() && !(value.is_object() && value.contains("href") && value.at("href").is_string())) ||
+        if (value.is_object() && value.contains("version") && value.contains("href"))
+        { invalid("ambiguous style document and URI"); return; }
+        if (value.is_object() && value.contains("version") && !value.contains("href"))
+            styleJSON = value.dump();
+        else if ((!value.is_string() && !(value.is_object() && value.contains("href") && value.at("href").is_string())) ||
             !get_to(j, "style", styleURI, io) || styleURI.empty())
         { invalid("style"); return; }
     }
-    if (j.contains("cacheDirectory"))
+    if (j.contains("sourceBindings"))
     {
-        _configurationStatus = Failure(Failure::ConfigurationError,
-            "Move cacheDirectory to services.contentCache.directory at the map-file root");
-        return;
+        if (!j.at("sourceBindings").is_object()) { invalid("sourceBindings"); return; }
+        sourceBindings = j.at("sourceBindings").dump();
     }
     for (const auto* key : { "decodedCacheBytes", "maximumSourceZoom" })
     {
@@ -475,10 +622,12 @@ void MapboxVectorTileLayer::construct(std::string_view JSON, const IOOptions& io
     }
 }
 
-std::string MapboxVectorTileLayer::to_json() const
+std::string StyledFeatureLayer::to_json() const
 {
     auto j = parse_json(super::to_json());
-    set(j, "style", styleURI);
+    if (!styleJSON.empty()) j["style"] = json::parse(styleJSON);
+    else set(j, "style", styleURI);
+    if (!sourceBindings.empty()) j["sourceBindings"] = json::parse(sourceBindings);
     set(j, "decodedCacheBytes", decodedCacheBytes);
     set(j, "maximumSourceZoom", maximumSourceZoom);
     set(j, "forceBufferedStrokes", forceBufferedStrokes);
@@ -486,7 +635,7 @@ std::string MapboxVectorTileLayer::to_json() const
     set(j, "styleZoom", styleZoom());
     return j.dump();
 }
-void MapboxVectorTileLayer::setStyleZoom(double zoom)
+void StyledFeatureLayer::setStyleZoom(double zoom)
 {
     if (!std::isfinite(zoom))
         return;
@@ -494,22 +643,22 @@ void MapboxVectorTileLayer::setStyleZoom(double zoom)
     if (_styleZoom.exchange(bucket) != bucket)
         dirty();
 }
-std::optional<double> MapboxVectorTileLayer::viewStyleZoom(double zoom) const
+std::optional<double> StyledFeatureLayer::viewStyleZoom(double zoom) const
 {
     return automaticStyleZoom && std::isfinite(zoom) ?
         std::round(std::clamp(zoom, 0.0, 22.0) * 4.0) / 4.0 : _styleZoom.load();
 }
-MapboxStyle MapboxVectorTileLayer::style() const
+MapboxStyle StyledFeatureLayer::style() const
 {
     std::shared_lock lock(layerStateMutex());
     return _impl ? _impl->style : MapboxStyle{};
 }
-std::string MapboxVectorTileLayer::attributionText() const
+std::string StyledFeatureLayer::attributionText() const
 {
     std::shared_lock lock(layerStateMutex());
     return _impl ? _impl->attribution : std::string{};
 }
-MapboxVectorTileLayer::Stats MapboxVectorTileLayer::stats() const
+StyledFeatureLayer::Stats StyledFeatureLayer::stats() const
 {
     std::shared_lock stateLock(layerStateMutex());
     Stats result;
@@ -530,10 +679,13 @@ MapboxVectorTileLayer::Stats MapboxVectorTileLayer::stats() const
     return result;
 }
 
-Result<> MapboxVectorTileLayer::openImplementation(const IOOptions& io)
+Result<> StyledFeatureLayer::openImplementation(const IOOptions& io)
 {
     if (_configurationStatus.failed()) return _configurationStatus.error();
-    if (styleURI.empty()) return Failure(Failure::ConfigurationError, "MapboxVectorTile requires a style URI");
+    if (styleURI.empty() && styleJSON.empty())
+        return Failure(Failure::ConfigurationError, "StyledFeature requires a style URI or inline document");
+    if (!styleURI.empty() && !styleJSON.empty())
+        return Failure(Failure::ConfigurationError, "Set either styleURI or styleJSON, not both");
     auto base = super::openImplementation(io);
     if (base.failed())
         return base;
@@ -543,17 +695,107 @@ Result<> MapboxVectorTileLayer::openImplementation(const IOOptions& io)
     try
     {
         GDALAllRegister();
-        auto read = styleURI.read(io);
-        if (read.failed())
-            return read.error();
+        std::string document = styleJSON;
+        if (document.empty())
+        {
+            auto read = styleURI.read(io);
+            if (read.failed()) return read.error();
+            document = read->content.data;
+        }
         auto impl = std::make_shared<Impl>();
-        auto loaded = impl->style.load(read.value().content.data);
+        auto loaded = impl->style.load(document);
         if (loaded.failed())
             return loaded;
         impl->sources = impl->style.sources();
+        const auto bindings = sourceBindings.empty() ? json::object() : json::parse(sourceBindings);
+        auto bindingIO = io;
+        bindingIO.referrer = _referrer;
+        if (!bindings.is_object()) return Failure("sourceBindings must be an object");
+        for (const auto& entry : bindings.items())
+        {
+            auto found = std::find_if(impl->sources.begin(), impl->sources.end(),
+                [&](const auto& s) { return s.id == entry.key(); });
+            if (found == impl->sources.end()) return Failure("Unknown source binding: " + entry.key());
+            const auto& config = entry.value();
+            const auto type = config.at("type").get<std::string>();
+            const std::set<std::string> options = type == "GDAL" ?
+                std::set<std::string>{"type","uri","layer","srs","sourceLayer","unindexedCacheBytes"} :
+                std::set<std::string>{"type","tiles","format","profile","srs","scheme","minZoom","maxZoom",
+                    "sourceLayer","geometryMode","idField"};
+            for (const auto& option : config.items())
+                if (options.count(option.key()) == 0) return Failure("Unknown source binding option: " + option.key());
+            Impl::Binding binding;
+            binding.id = entry.key();
+            binding.collection = config.value("sourceLayer", "");
+            if ((found->type == "vector" && binding.collection.empty()) ||
+                (found->type == "geojson" && !binding.collection.empty()))
+                return Failure("sourceLayer binding does not match style source type: " + entry.key());
+            if (type == "GDAL")
+            {
+                auto source = GDALFeatureSource::create();
+                URI uri;
+                if (!get_to(config, "uri", uri, bindingIO) || uri.empty())
+                    return Failure("GDAL source binding requires uri");
+                if (uri.isRemote())
+                    return Failure("GDAL dataset bindings require local data; remote tile URLs use TiledFeatures");
+                source->uri = uri;
+                source->layerName = config.value("layer", "");
+                if (config.contains("srs")) source->querySRS = SRS(config.at("srs").get<std::string>());
+                if (config.contains("srs") && !source->querySRS.valid()) return Failure("Invalid GDAL source CRS");
+                source->spatialQueriesOnly = true;
+                if (config.contains("unindexedCacheBytes"))
+                {
+                    const auto& value = config.at("unindexedCacheBytes");
+                    if (!value.is_number_unsigned() && (!value.is_number_integer() || value.get<std::int64_t>() < 0))
+                        return Failure("Invalid unindexedCacheBytes");
+                    source->unindexedCacheBytes = value.get<std::size_t>();
+                }
+                auto opened = source->open();
+                if (opened.failed()) return opened;
+                binding.source = source;
+            }
+            else if (type == "TiledFeatures")
+            {
+                auto source = TiledFeatureSource::create();
+                source->format = config.value("format", "FlatGeobuf");
+                source->profile = Profile(config.value("profile", "spherical-mercator"));
+                const auto scheme = config.value("scheme", "xyz");
+                if (scheme != "xyz" && scheme != "tms") return Failure("Unknown tile addressing scheme");
+                source->tms = scheme == "tms";
+                source->minZoom = config.value("minZoom", 0u);
+                source->maxZoom = config.value("maxZoom", maximumSourceZoom);
+                for (const auto* key : {"minZoom", "maxZoom"})
+                    if (config.contains(key) && (!config.at(key).is_number_integer() ||
+                        config.at(key).get<std::int64_t>() < 0 || config.at(key).get<std::uint64_t>() > 22))
+                        return Failure("Invalid source zoom range");
+                source->sourceLayer = binding.collection;
+                source->decodedCacheBytes = decodedCacheBytes / std::max<std::size_t>(1, bindings.size());
+                if (config.contains("srs")) source->dataSRS = SRS(config.at("srs").get<std::string>());
+                if (config.contains("srs") && !source->dataSRS.valid()) return Failure("Invalid tiled feature CRS");
+                const auto mode = config.value("geometryMode", "tile-clipped");
+                if (mode != "tile-clipped" && mode != "whole-features") return Failure("Unknown geometryMode");
+                source->wholeFeatures = mode == "whole-features";
+                source->idField = config.value("idField", "");
+                if (!config.at("tiles").is_array()) return Failure("tiles must be an array of URIs");
+                for (const auto& tile : config.at("tiles"))
+                {
+                    URI uri;
+                    const json holder = {{"uri", tile}};
+                    if (!get_to(holder, "uri", uri, bindingIO) || uri.empty()) return Failure("Invalid tile URI");
+                    source->tiles.push_back(uri);
+                }
+                auto valid = source->validate();
+                if (valid.failed()) return valid;
+                binding.source = source;
+            }
+            else return Failure("Unknown feature source type: " + type);
+            impl->bindings.push_back(std::move(binding));
+            impl->sources.erase(found);
+        }
         for (auto& source : impl->sources)
         {
-            std::string referrer = styleURI.full();
+            if (source.type != "vector") return Failure("GeoJSON style sources currently require a sourceBinding: " + source.id);
+            std::string referrer = styleURI.empty() ? _referrer : styleURI.full();
             if (!source.url.empty())
             {
                 URI uri(source.url, referrer);
@@ -587,13 +829,13 @@ Result<> MapboxVectorTileLayer::openImplementation(const IOOptions& io)
     }
 #endif
 }
-void MapboxVectorTileLayer::closeImplementation()
+void StyledFeatureLayer::closeImplementation()
 {
     _impl.reset();
     super::closeImplementation();
 }
 
-Result<VectorTile> MapboxVectorTileLayer::createTileImplementation(
+Result<VectorTile> StyledFeatureLayer::createTileImplementation(
     const TileKey& key, const IOOptions& io, std::optional<double> styleZoom) const
 {
 #ifndef ROCKY_HAS_GDAL
@@ -604,38 +846,85 @@ Result<VectorTile> MapboxVectorTileLayer::createTileImplementation(
     try
     {
         const auto dst = key.extent();
-        const bool geographic = dst.srs() == SRS::WGS84;
-        const bool reproject = !geographic && dst.srs() != SRS::SPHERICAL_MERCATOR;
+        // Keep the existing Mercator fast path. Generic polar datasets use a valid metric polar frame.
+        SRS frame = SRS::SPHERICAL_MERCATOR;
+        const auto geodetic = dst.transform(SRS::WGS84);
+        if (!_impl->bindings.empty() && geodetic.valid())
+        {
+            if (geodetic.ymin() >= 0.0 && geodetic.ymax() > maxLatitude)
+                frame = SRS("+proj=stere +lat_0=90 +lat_ts=70 +lon_0=0 +datum=WGS84 +units=m +no_defs");
+            else if (geodetic.ymax() <= 0.0 && geodetic.ymin() < -maxLatitude)
+                frame = SRS("+proj=stere +lat_0=-90 +lat_ts=-70 +lon_0=0 +datum=WGS84 +units=m +no_defs");
+        }
+        const bool polar = frame != SRS::SPHERICAL_MERCATOR;
+        const bool geographic = !polar && dst.srs() == SRS::WGS84;
+        const bool reproject = polar || (!geographic && dst.srs() != frame);
         const auto footprint = reproject ? dst.transform(SRS::WGS84) : dst;
         if (!footprint.valid() || !(footprint.width() > 0.0) || !(footprint.height() > 0.0))
             return Failure("Cannot determine the vector source footprint for the destination profile");
-        TileProjection projection(dst, io);
+        TileProjection projection(dst, io, frame);
         const double gpuScale = reproject ? projection.strokeScale() : 0.0;
-        const double zoom = styleZoom.value_or(_styleZoom.load()), pixel = world / (512.0 * std::exp2(zoom));
+        const double zoom = styleZoom.value_or(_styleZoom.load());
+        const double latitudeScale = polar ? std::max(0.01, std::cos(
+            (geodetic.ymin()+geodetic.ymax())*0.5*pi/180.0)) : 1.0;
+        const double pixel = latitudeScale * world / (512.0 * std::exp2(zoom));
+        const auto metric = polar ? dst.transform(frame) : GeoExtent();
+        if (polar && !metric.valid()) return Failure("Cannot determine polar feature query footprint");
         const bool lonlat = geographic || reproject;
-        const double x0 = lonlat ? footprint.xmin() * pi / 180 * radius : dst.xmin();
-        const double x1 = lonlat ? (footprint.xmin()+footprint.width()) * pi / 180 * radius : dst.xmax();
-        const double y0 = lonlat ? mercatorY(footprint.ymin()) : dst.ymin();
-        const double y1 = lonlat ? mercatorY(footprint.ymax()) : dst.ymax();
+        const double x0 = polar ? metric.xmin() : lonlat ? footprint.xmin() * pi / 180 * radius : dst.xmin();
+        const double x1 = polar ? metric.xmax() : lonlat ? (footprint.xmin()+footprint.width()) * pi / 180 * radius : dst.xmax();
+        const double y0 = polar ? metric.ymin() : lonlat ? mercatorY(footprint.ymin()) : dst.ymin();
+        const double y1 = polar ? metric.ymax() : lonlat ? mercatorY(footprint.ymax()) : dst.ymax();
         // Stable clipping within a source-zoom interval permits geometry reuse across paint updates.
-        const double guard = 128 * world / (512.0 * std::exp2(std::floor(zoom)));
+        const double guard = 128 * latitudeScale * world / (512.0 * std::exp2(std::floor(zoom)));
         // General projections use canonical longitude copies. A full-world footprint must not wrap twice.
-        const double clipX0 = reproject && footprint.width() >= 359.999 ? -halfWorld : x0-guard;
-        const double clipX1 = reproject && footprint.width() >= 359.999 ? halfWorld : x1+guard;
-        auto clip = rectangle(clipX0, std::max(-halfWorld, y0-guard), clipX1, std::min(halfWorld, y1+guard));
+        const double clipX0 = !polar && reproject && footprint.width() >= 359.999 ? -halfWorld : x0-guard;
+        const double clipX1 = !polar && reproject && footprint.width() >= 359.999 ? halfWorld : x1+guard;
+        auto clip = rectangle(clipX0, polar ? y0-guard : std::max(-halfWorld, y0-guard),
+            clipX1, polar ? y1+guard : std::min(halfWorld, y1+guard));
         struct Tile
         {
             std::string source;
             std::shared_ptr<const SourceTile> data;
             TileKey key;
             int wrap;
+            GeoExtent extent;
         };
         std::vector<Tile> tiles;
+        for (const auto& binding : _impl->bindings)
+        {
+            const bool visible = std::any_of(_impl->style.layers().begin(), _impl->style.layers().end(),
+                [&](const auto& layer) { return layer.source == binding.id && zoom >= layer.minZoom && zoom < layer.maxZoom; });
+            if (!visible) continue;
+            FeatureSource::Query request;
+            request.resolution = pixel;
+            request.level = static_cast<unsigned>(std::floor(zoom));
+            const int firstWrap = polar ? 0 : int(std::floor((clipX0+halfWorld)/world));
+            const int lastWrap = polar ? 0 : int(std::ceil((clipX1+halfWorld)/world))-1;
+            for (int wrap = firstWrap; wrap <= lastWrap; ++wrap)
+            {
+                request.extent = GeoExtent(frame, polar ? clipX0 : std::max(-halfWorld, clipX0-wrap*world),
+                    polar ? y0-guard : std::max(-halfWorld, y0-guard),
+                    polar ? clipX1 : std::min(halfWorld, clipX1-wrap*world),
+                    polar ? y1+guard : std::min(halfWorld, y1+guard));
+                auto queried = binding.source->query(request, io);
+                if (queried.failed()) return queried.error();
+                auto normalized = normalizeFeatures(*queried.value(), binding.collection, frame, pixel*0.1, io);
+                tiles.push_back({binding.id, normalized, TileKey(), wrap, request.extent});
+            }
+        }
         Profile mercator("spherical-mercator");
-        if (y1 > y0)
+        const double mx0 = polar ? geodetic.xmin()*pi/180.0*radius : x0;
+        const double mx1 = polar ? (geodetic.xmin()+geodetic.width())*pi/180.0*radius : x1;
+        const double my0 = polar ? mercatorY(geodetic.ymin()) : y0;
+        const double my1 = polar ? mercatorY(geodetic.ymax()) : y1;
+        const double mguard = 128 * world / (512.0 * std::exp2(std::floor(zoom)));
+        const double mclip0 = polar ? std::max(-halfWorld, mx0-mguard) : clipX0;
+        const double mclip1 = polar ? std::min(halfWorld, mx1+mguard) : clipX1;
+        if (my1 > my0)
             for (const auto& source : _impl->sources)
             {
-                int z = std::max(0, static_cast<int>(std::floor(std::log2(world / (x1 - x0)))));
+                int z = std::max(0, static_cast<int>(std::floor(std::log2(world / (mx1 - mx0)))));
                 z = std::min({z, static_cast<int>(std::floor(zoom)), static_cast<int>(source.maxZoom),
                               static_cast<int>(maximumSourceZoom)});
                 z = std::max(z, static_cast<int>(source.minZoom));
@@ -645,10 +934,10 @@ Result<VectorTile> MapboxVectorTileLayer::createTileImplementation(
                 {
                     n = 1 << z;
                     span = world / n;
-                    left = static_cast<int>(std::floor((clipX0 + halfWorld) / span));
-                    right = static_cast<int>(std::ceil((clipX1 + halfWorld) / span)) - 1;
-                    top = std::clamp(static_cast<int>(std::floor((halfWorld - y1 - guard) / span)), 0, n - 1);
-                    bottom = std::clamp(static_cast<int>(std::floor((halfWorld - y0 + guard) / span)), 0, n - 1);
+                    left = static_cast<int>(std::floor((mclip0 + halfWorld) / span));
+                    right = static_cast<int>(std::ceil((mclip1 + halfWorld) / span)) - 1;
+                    top = std::clamp(static_cast<int>(std::floor((halfWorld - my1 - mguard) / span)), 0, n - 1);
+                    bottom = std::clamp(static_cast<int>(std::floor((halfWorld - my0 + mguard) / span)), 0, n - 1);
                     if (std::int64_t(right - left + 1) * (bottom - top + 1) <= 64)
                         break;
                     if (z <= static_cast<int>(source.minZoom))
@@ -669,7 +958,15 @@ Result<VectorTile> MapboxVectorTileLayer::createTileImplementation(
                         auto tile = _impl->read(url, sourceKey, *this, io);
                         if (tile.failed())
                             return tile.error();
-                        tiles.push_back({source.id, tile.value(), sourceKey, wrap});
+                        if (polar)
+                        {
+                            auto normalized = normalizeMercatorTile(*tile.value(), sourceKey.extent(),
+                                GeoExtent(SRS::SPHERICAL_MERCATOR,mclip0,std::max(-halfWorld,my0-mguard),
+                                    mclip1,std::min(halfWorld,my1+mguard)),frame,pixel*0.1,io);
+                            tiles.push_back({source.id, normalized, TileKey(), 0,
+                                GeoExtent(frame,clipX0,y0-guard,clipX1,y1+guard)});
+                        }
+                        else tiles.push_back({source.id, tile.value(), sourceKey, wrap});
                     }
             }
         VectorTile result;
@@ -705,7 +1002,7 @@ Result<VectorTile> MapboxVectorTileLayer::createTileImplementation(
             {
                 if (tile.source != layer.source)
                     continue;
-                const auto bounds = tile.key.extent();
+                const auto bounds = tile.key.valid() ? tile.key.extent() : tile.extent;
                 const double offset = tile.wrap * world;
                 auto owned = rectangle(bounds.xmin() + offset, bounds.ymin(), bounds.xmax() + offset, bounds.ymax());
                 Geom footprint(OGR_G_Intersection(owned.get(), clip.get()));
@@ -741,7 +1038,19 @@ Result<VectorTile> MapboxVectorTileLayer::createTileImplementation(
                     // Polygon outlines use the original rings, before ownership clipping introduces new edges.
                     if (!fill && record.feature.geometry.type == Geometry::Type::Polygon)
                         geometry.reset(OGR_G_Boundary(geometry.get()));
-                    Geom clipped(OGR_G_Intersection(geometry.get(), footprint.get()));
+                    Geom ownedFootprint;
+                    if (!record.ownership.empty())
+                    {
+                        OGRGeometryH owner = nullptr;
+                        if (OGR_G_CreateFromWkb(record.ownership.data(), nullptr, &owner,
+                            static_cast<int>(record.ownership.size())) != OGRERR_NONE)
+                            return Failure("Invalid feature ownership geometry");
+                        Geom ownership(owner);
+                        if (offset != 0.0) shiftX(ownership.get(), offset);
+                        ownedFootprint.reset(OGR_G_Intersection(ownership.get(), footprint.get()));
+                        if (!ownedFootprint) return Failure("Cannot clip feature ownership");
+                    }
+                    Geom clipped(OGR_G_Intersection(geometry.get(), ownedFootprint ? ownedFootprint.get() : footprint.get()));
                     if (!clipped)
                         return Failure("MVT geometry clipping failed");
                     if (OGR_G_IsEmpty(clipped.get()))
@@ -849,10 +1158,11 @@ Result<VectorTile> MapboxVectorTileLayer::createTileImplementation(
                     // Buffer in source space first, then restrict the footprint before projecting.
                     // This keeps wide source guards away from the far-side singularities of cube faces.
                     const double fringe = std::max(x1-x0, y1-y0)*0.01;
-                    const bool canonical = x0 >= -halfWorld && x1 <= halfWorld;
+                    const bool canonical = !polar && x0 >= -halfWorld && x1 <= halfWorld;
                     auto sourceClip = rectangle(canonical ? std::max(-halfWorld, x0-fringe) : x0-fringe,
-                        std::max(-halfWorld, y0-fringe), canonical ? std::min(halfWorld, x1+fringe) : x1+fringe,
-                        std::min(halfWorld, y1+fringe));
+                        polar ? y0-fringe : std::max(-halfWorld, y0-fringe),
+                        canonical ? std::min(halfWorld, x1+fringe) : x1+fringe,
+                        polar ? y1+fringe : std::min(halfWorld, y1+fringe));
                     Geom local(OGR_G_Intersection(coverage.get(), sourceClip.get()));
                     if (!local) return Failure("MVT projection footprint clipping failed");
                     auto transformed = projection.geometry(local.get());

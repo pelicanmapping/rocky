@@ -1,0 +1,24 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "Kind": "park" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [[-82, 32], [-68, 32], [-68, 44], [-82, 44], [-82, 32]],
+          [[-78, 36], [-78, 40], [-73, 40], [-73, 36], [-78, 36]]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": { "Kind": "road" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [[-95, 28], [-86, 35], [-78, 38], [-69, 46]]
+      }
+    }
+  ]
+}

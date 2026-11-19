@@ -352,7 +352,7 @@ Application::ctor(int& argc, char** argv)
 
     // Install the shared URI cache before reading a map or opening its layers.
     std::string contentCacheDirectory;
-    const bool hasContentCache = commandLine.read({ "--cache", "--vector-cache" }, contentCacheDirectory);
+    const bool hasContentCache = commandLine.read("--cache", contentCacheDirectory);
     if (hasContentCache)
     {
         try
