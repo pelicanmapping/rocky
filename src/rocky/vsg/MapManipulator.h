@@ -446,6 +446,10 @@ namespace ROCKY_NAMESPACE
 
         bool recalculateCenterAndDistanceFromLookVector();
 
+        //! On the event thread, refreshes ordinary perspective navigation from loaded terrain, preserving the camera pose.
+        //! Leaves explicit offsets, tethers, transitions, orthographic views, and missed intersections unchanged.
+        void refreshTerrainFocus();
+
         vsg::dmat4 getWorldLookAtMatrix(const vsg::dvec3& center) const;
 
         bool isMouseClick(vsg::ButtonReleaseEvent&) const;

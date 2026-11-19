@@ -1486,8 +1486,41 @@ MapManipulator::recalculateCenterAndDistanceFromLookVector()
 }
 
 void
+MapManipulator::refreshTerrainFocus()
+{
+    // Explicit offsets, tethers, transitions, and orthographic scale own their focal point.
+    if (isTethering() || isSettingViewpoint() || _isOrtho || _state.localPositionOffset != vsg::dvec3())
+        return;
+
+    // Use the current state, including input that has not reached updateCamera() yet.
+    auto rotation = _state.centerRotation * vsg::rotate(_state.tetherRotation) * vsg::rotate(_state.localRotation);
+    auto look = -vsg::normalize(getZAxis(rotation));
+    auto eye = _state.center - look * _state.distance;
+    auto rayLength = std::max(vsg::length(eye), _state.distance * 1.5);
+    vsg::dvec3 intersection;
+    if (!intersect(eye, eye + look * rayLength, intersection))
+        return;
+
+    auto distance = std::clamp(vsg::length(intersection - eye), settings.minDistance, settings.maxDistance);
+    auto center = eye + look * distance;
+    if (vsg::length(center - _state.center) < EPSILON)
+        return;
+
+    setCenter(center);
+    setDistance(distance);
+
+    // Re-express the same world orientation in the new tangent frame, without moving the eye.
+    auto localRotation = vsg::inverse(vsg::rotate(_state.tetherRotation)) *
+        vsg::inverse(_state.centerRotation) * rotation;
+    _state.localRotation = to_vsg(glm::normalize(glm::quat_cast(to_glm(localRotation))));
+}
+
+void
 MapManipulator::pan(double dx, double dy)
 {
+    if (dx == 0.0 && dy == 0.0)
+        return;
+
     auto camera = _camera_weakptr.ref_ptr();
     if (!camera)
         return;
@@ -1495,6 +1528,8 @@ MapManipulator::pan(double dx, double dy)
     auto mapNode = getMapNode();
     if (!mapNode)
         return;
+
+    refreshTerrainFocus();
 
     double scale = -0.3 * _state.distance;
 
@@ -1636,9 +1671,14 @@ namespace
 void
 MapManipulator::zoom(double dx, double dy)
 {
+    if (dy == 0.0)
+        return;
+
     auto mapNode = getMapNode();
     if (!mapNode)
         return;
+
+    refreshTerrainFocus();
 
     if (settings.zoomToMouse == true && dy < 0.0 && !isTethering())
     {
